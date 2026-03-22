@@ -1,0 +1,95 @@
+{
+  $jsonSchema: {
+    bsonType: 'object',
+    required: [
+      'address'
+    ],
+    properties: {
+      address: {
+        bsonType: 'object',
+        properties: {
+          fullAddress: {
+            bsonType: 'string'
+          },
+          streetName: {
+            bsonType: 'string',
+            description: 'Street name is required'
+          },
+          streetNameOnly: {
+            bsonType: 'string',
+            description: 'Street name is required (e.g., \'George\')'
+          },
+          suburb: {
+            bsonType: 'string',
+            description: 'Suburb is required (e.g., \'Parramatta\')'
+          },
+          state: {
+            'enum': [
+              'NSW',
+              'VIC',
+              'QLD',
+              'SA',
+              'WA',
+              'TAS',
+              'ACT',
+              'NT'
+            ],
+            description: 'Must be a valid Australian state/territory abbreviation'
+          },
+          postcode: {
+            bsonType: 'string',
+            pattern: '^[0-9]{4}$',
+            description: 'Must be a 4-digit Australian postcode'
+          },
+          unitNumber: {
+            bsonType: 'string',
+            description: 'Optional unit/apartment number (e.g., \'5B\')'
+          }
+        }
+      },
+      rpDataId: {
+        bsonType: 'string'
+      },
+      primaryContact: {
+        bsonType: 'object',
+        properties: {
+          firstName: {
+            bsonType: 'string'
+          },
+          lastName: {
+            bsonType: 'string'
+          },
+          phone: {
+            bsonType: 'string'
+          },
+          phone2: {
+            bsonType: 'string'
+          },
+          email: {
+            bsonType: 'string'
+          },
+          email2: {
+            bsonType: 'string'
+          }
+        }
+      },
+      owners: {
+        bsonType: 'array',
+        items: {
+          bsonType: 'object',
+          properties: {
+            firstName: {
+              bsonType: 'string'
+            },
+            lastName: {
+              bsonType: 'string'
+            }
+          }
+        }
+      },
+      createdAt: {
+        bsonType: 'date'
+      }
+    }
+  }
+}

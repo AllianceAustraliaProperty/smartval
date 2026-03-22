@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "D:\smartval\backend\reproduce_smsf_error.py", line 83, in <module>
+    output = template.render(**mock_data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Swarnavo Mukherjee\AppData\Roaming\Python\Python312\site-packages\jinja2\environment.py", line 1301, in render
+    self.environment.handle_exception()
+  File "C:\Users\Swarnavo Mukherjee\AppData\Roaming\Python\Python312\site-packages\jinja2\environment.py", line 936, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "D:\smartval\backend\templates\smsf.html", line 1074, in top-level template code
+    valuation_report["valuationDetails"]["squareMeterRate"]|format_currency|default('N/A') }} PER
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\smartval\backend\reproduce_smsf_error.py", line 60, in format_currency
+    return f"${value:,.2f}"
+              ^^^^^^^^^^^^
+TypeError: unsupported format string passed to Undefined.__format__

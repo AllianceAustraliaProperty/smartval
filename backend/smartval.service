@@ -1,0 +1,50 @@
+[Unit]
+Description=SmartVal Flask App with Gunicorn
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/smartval/backend
+
+# Environment variables
+Environment="PATH=/home/ubuntu/smartval/backend/venv/bin"
+Environment="FLASK_ENV=production"
+Environment="FLASK_DEBUG=False"
+Environment="PYTHONPATH=/home/ubuntu/smartval/backend"
+
+# Remove old socket if it exists before starting
+ExecStartPre=/bin/rm -f /home/ubuntu/smartval/backend/app.sock
+
+# Start Gunicorn with proper configuration
+ExecStart=/home/ubuntu/smartval/backend/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/home/ubuntu/smartval/backend/app.sock \
+    --chmod-socket=666 \
+    --timeout 30 \
+    --keep-alive 2 \
+    --max-requests 1000 \
+    --max-requests-jitter 50 \
+    --preload \
+    --access-logfile - \
+    --error-logfile - \
+    --log-level info \
+    wsgi:app
+
+# Restart settings
+Restart=always
+RestartSec=3
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/ubuntu/smartval/backend
+
+[Install]
+WantedBy=multi-user.target

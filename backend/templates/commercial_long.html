@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: "Avenir Next", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            /* Light gray background to distinguish page boundaries */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            font-size: 12px;
+        }
+
+        p {
+            text-align: justify !important;
+        }
+
+        .page {
+            height: 297.35mm;
+            width: 211mm;
+            box-sizing: border-box;
+            position: relative;
+            page-break-after: always;
+            background-color: #ffffff;
+            margin: 0px;
+            padding: 80px 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .banner {
+            background-color: lightgray;
+            padding: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            padding-left: 10px;
+        }
+
+        .header-logo {
+            display: block;
+            width: auto !important;
+            max-width: 400px;
+            object-fit: contain !important;
+            print-color-adjust: exact;
+            margin-bottom: 0px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: end;
+            margin-top: -30px;
+            margin-bottom: 20px;
+        }
+
+        .footer-container {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            margin-top: auto;
+            /* Push footer to bottom */
+            padding-top: 20px;
+            /* Add some space before footer */
+            /*width: 100%;*/
+            position: absolute;
+            bottom: 50px;
+            /* Match the page padding */
+            left: 50px;
+            /* Match the page padding */
+            right: 50px;
+            /* Match the page padding */
+        }
+
+        /* Cover page footer stacks lines vertically */
+        .footer-container.vertical {
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            gap: 3px;
+        }
+
+        td:first-child {
+            width: 33%;
+            text-align: right;
+            vertical-align: top;
+            /* Align text to top for multi-line content */
+            padding-right: 15px;
+            /* Add more padding to separate from value */
+            color: #333;
+            /* Restore original color - no longer gray */
+        }
+
+        /* Second column (even) */
+        td:last-child {
+            width: 67%;
+            text-align: justify;
+            vertical-align: top;
+            /* Align text to top for multi-line content */
+        }
+
+        td {
+            padding: 5px 5px;
+            /* Increased padding for better spacing */
+            line-height: 1.4;
+            /* Improved line height for readability */
+        }
+
+        table {
+            width: 100%;
+            border-spacing: 0;
+            /* Remove default cell spacing */
+            border-collapse: collapse;
+            /* Clean table appearance */
+        }
+
+
+        .no-display {
+            display: none;
+        }
+
+        .map-container {
+            display: flex;
+            justify-content: end;
+            position: relative;
+        }
+
+        .map {
+            width: 500px;
+            height: 250px;
+        }
+
+        .valuation-comments-photo {
+            margin-top: 10px;
+            width: 400px;
+            height: 230px;
+        }
+
+        .location-map {
+            width: 100%;
+            height: 330px;
+        }
+
+        .cover-container {
+            margin-top: 150px;
+            margin-bottom: 37px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cover-container * {
+            margin: 0;
+        }
+
+        .cover-description {
+            margin-top: 60px;
+        }
+
+        .cover-description p {
+            padding: 0;
+            margin: 5px;
+            font-size: 15px;
+        }
+
+        .cover-title {
+            font-size: 30px;
+        }
+
+        .table-boder,
+        .table-border td {
+            border: 1px solid lightgray;
+        }
+
+
+        /* Ensuring padding exists in table cells */
+        .table-border td {
+            padding: 15px 10px;
+        }
+
+        .space-between-xs {
+            margin: 5px;
+        }
+
+        .space-between-sm {
+            margin: 5px;
+        }
+
+        .space-between-md {
+            margin: 15px;
+        }
+
+        .space-between-lg {
+            margin: 20px;
+        }
+
+        .space-between-xl {
+            margin: 40px;
+        }
+
+        .photos-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            margin-bottom: 20px;
+            /* Add margin to ensure container doesn't get too close to footer */
+        }
+
+        .photos-container img {
+            width: calc(50% - 6px);
+            height: 245px;
+            /* Adjusted to fit taller header logo */
+            object-fit: cover;
+            /* Ensure images cover the area without distortion */
+            border-radius: 1px;
+            border: 2px solid black;
+        }
+
+        /* Market Evidence Styles */
+        .market-evidence-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0px;
+        }
+
+        .property-card {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            border-radius: 0px;
+        }
+
+        .property-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 5px;
+        }
+
+        .property-address {
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+
+        .map-pin {
+            position: relative;
+            display: inline-block;
+            margin-right: 8px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .map-pin img {
+            width: 28px;
+            height: 28px;
+        }
+
+        .map-pin span {
+            position: absolute;
+            top: 5px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .property-status {
+            display: flex;
+            align-items: center;
+            min-width: 150px;
+            background-color: #E0E0E0;
+            padding: 10px;
+
+        }
+
+        .status-label {
+            font-size: 11px;
+            font-weight: bold;
+            flex: 0 0 auto;
+            margin-right: 20px;
+        }
+
+        .status-price {
+            font-size: 13px;
+            font-weight: bold;
+            flex: 0 0 auto;
+        }
+
+        .property-content {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .property-image {
+            width: 170px;
+            height: 95px;
+            object-fit: cover;
+        }
+
+        .property-details {
+            display: flex;
+            flex-direction: column;
+            padding: 5px 8px;
+            flex: 1;
+        }
+
+        .property-specs {
+            display: flex;
+            justify-content: flex-start;
+            gap: 12px;
+            margin-bottom: 3px;
+        }
+
+        .spec-item {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .spec-item i {
+            color: #555;
+        }
+
+        .property-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(3, auto);
+            gap: 2px 5px;
+            margin-bottom: 3px;
+        }
+
+        .info-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #999;
+            /* Changed from #666 to lighter gray */
+            min-width: 70px;
+            display: inline-block;
+        }
+
+        .info-value {
+            color: #000;
+            display: inline-block;
+            flex: 1;
+            text-align: left;
+            margin-left: 0px;
+        }
+
+        .property-comparison {
+            font-size: 11px;
+            color: #333;
+            line-height: 1.2;
+            border-top: 1px solid #eee;
+            padding-top: 3px;
+        }
+
+        .no-border-bottom {
+            border-bottom: none !important;
+        }
+
+        .no-border-top {
+            border-top: none !important;
+        }
+
+        /* Make all odd rows in tables bold - except in Table of Contents */
+        table:not(.toc-table) tr td:nth-child(odd) {
+            font-weight: bold;
+        }
+
+        /* Table of Contents specific styling */
+        .toc-table td {
+            font-size: 10.44pt !important;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .toc-main-row {
+            height: 10px;
+        }
+
+        .toc-main-row>td,
+        .toc-subtitle-row>td:nth-child(2) {
+            font-family: "Avenir Next Demi Bold", Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        .toc-subtitle-row {
+            height: 24px;
+        }
+
+        .toc-subtitle-row>td:nth-child(1) {
+            font-family: "Avenir Next", Arial, sans-serif;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .external-links-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 0 20px;
+        }
+
+
+        button[title='Close'] {
+            display: none !important;
+
+        }
+
+        .map-infobox {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            box-shadow: 0 2px 7px 1px rgba(0, 0, 0, 0.3);
+            font-size: 13px;
+            z-index: 10;
+            text-align: center;
+            min-width: 150px;
+            pointer-events: none;
+        }
+
+        .map-infobox::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
+        }
+
+        .compact-table {
+            border-collapse: collapse;
+        }
+
+        .compact-table tr td {
+            padding: 2px 8px;
+            line-height: 1.4;
+        }
+
+        .subtitle-lg {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .subtitle-md {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .subtitle-sm {
+            font-weight: bold;
+        }
+
+        .subtitle-xs {
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-bold {
+            font-weight: bold;
+        }
+
+        tr>td {
+            padding: 3px;
+        }
+
+
+        .comparable {
+            margin-top: 18px;
+            margin-bottom: 18px;
+        }
+
+        .comparable td {
+            text-align: left;
+            line-height: 0.5;
+            width: unset;
+            padding-right: 0;
+            vertical-align: top;
+            font-weight: normal !important;
+        }
+    </style>
+    {% if logo_type == 'CPV' %}
+    <style>
+        .header-logo {
+            height: 90px !important;
+        }
+    </style>
+    {% else %}
+    <style>
+        .header-logo {
+            height: 115px !important;
+        }
+    </style>
+    {% endif %}
+</head>
+
+<body>
+    {% if logo_type == 'CPV' %}
+    <!-- CPV Cover Page -->
+    <div class="page" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <!-- CPV logo at top left -->
+        <div style="position: absolute; top: 50px; left: 50px;">
+            <img src="{{ logo_url }}" alt="CPV Logo" style="height: 90px; width: auto; object-fit: contain;" />
+        </div>
+        <!-- Title, address, ref centered on page -->
+        <div style="text-align: center;">
+            <p style="font-weight: bold; font-size: 28px; margin-bottom: 15px;">Valuation Report</p>
+            <p style="font-weight: bold; font-size: 15px; margin: 5px 0;">{{ record.location_details.street|default('')
+                }}</p>
+            <p style="font-weight: bold; font-size: 15px; margin: 5px 0;">
+                {{ record.location_details.suburb|default('') }}
+                {{ record.location_details.state|default('') }}
+                {{ record.location_details.postcode|default('') }}
+            </p>
+            <p style="font-size: 14px; margin-top: 15px;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
+        </div>
+        <!-- Contact info centered below -->
+        <div style="text-align: center; margin-top: 60px;">
+            <p style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">Certified Property Valuer</p>
+            <p style="font-size: 14px; margin: 4px 0;">0485 008 806</p>
+            <p style="font-size: 14px; margin: 4px 0;">
+                <a href="mailto:info@certifiedpropertyvaluer.com.au"
+                    style="color: #2563eb;">info@certifiedpropertyvaluer.com.au</a>
+            </p>
+            <p style="font-size: 14px; margin: 4px 0;">
+                <a href="https://www.certifiedpropertyvaluer.com.au"
+                    style="color: #2563eb;">www.certifiedpropertyvaluer.com.au</a>
+            </p>
+        </div>
+        <div class="footer-container vertical">
+            <span
+                style="font-size: 9.5pt; display: inline-block; padding-bottom: 2px; border-bottom: 2px solid #2563eb;">Alliance
+                Australia Property Pty Ltd</span>
+            <span style="font-family: Calibri, Arial, sans-serif; font-size: 8.5pt; font-style: italic;">Liability
+                Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>
+        </div>
+    </div>
+    {% else %}
+    <!-- AAP Cover Page -->
+    <div class="page">
+        <div class="cover-container">
+            <div>
+                <h2>AAP Valuations</h2>
+                <p style="color: #c00000">Trusted property valuers</p>
+            </div>
+        </div>
+        <div class="cover-description">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; font-weight: normal;">
+                <div>
+                    <p>Jugal Saha</p>
+                    <p>Director (AAP Valuations)</p>
+                    <p><a href="mailto:info@allianceaustraliaproperty.com.au">info@allianceaustraliaproperty.com.au</a>
+                    </p>
+                </div>
+                <div>
+                    <p>allianceaustraliaproperty.com.au</p>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr; margin-top: 100px;">
+                <div style="margin-left: 150px;">
+                    <p style="font-weight: bold; font-size: 20px;">Valuation Report</p>
+                    <p>{{ record.location_details.street|default('') }}</p>
+                    <p>{{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }}
+                        {{ record.location_details.postcode|default('') }}</p>
+                    <p>Ref #{{ sf_record.Job_Number__c|default('') }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-container vertical">
+            <!-- Footer removed as per request for AAP cover page -->
+        </div>
+    </div>
+    {% endif %}
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner" style="display: flex; justify-content: space-between;">Valuation Executive Summary<span
+                style="font-size: 15px;">{{ record.valuation_date|format_date|default('N/A') }}</span></div>
+        <div class="space-between-sm"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                {% if record.cover_photo %}
+                <img src="{{ record.cover_photo.large or record.cover_photo.base }}" width="100%" height="260">
+                {% else %}
+                <b>NO COVER PHOTO</b>
+                {% endif %}
+            </div>
+            <div style="padding-top: 10px;">
+                <div class="subtitle-lg" style="margin-bottom: 10px;">Instructions</div>
+                <div class="subtitle-xs">Commercial Property</div>
+                <p>{{ record.location_details.street|default('N/A') }}, {{ record.location_details.suburb|default('N/A')
+                    }}, {{ record.location_details.state|default('N/A') }} {{
+                    record.location_details.postcode|default('N/A') }}</p>
+                <div class="subtitle-xs">Instructed by / For and On Behalf of (Client):</div>
+                <p>{{ sf_record.Owners__c|default('N/A') }}</p>
+                <div class="subtitle-xs">Interest Valued:</div>
+                <p>{{ record.property_valuation.interest_valued|default('N/A') }}</p>
+                <div class="subtitle-xs">Valuation Purpose:</div>
+                <p>{% if record.purpose_of_report %} {{ record.purpose_of_report }} {% else %} To determine the {{
+                    'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market value
+                    for {{ record.valuation_type|default('N/A')|title }} purposes only. {% endif %}</p>
+            </div>
+        </div>
+        <div>
+            <table>
+                <tr>
+                    <td class="subtitle-lg">Property Description</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Property Type</td>
+                    <td>{{ record.property_details.property_type|default('N/A')|title }}</td>
+                </tr>
+                <tr>
+                    <td>Net Lettable Area</td>
+                    <td>{{ record.property_details.lettable_area|default('N/A') }} sqm</td>
+                </tr>
+                <tr>
+                    <td>Site Area</td>
+                    <td>{{ record.property_details.site_area|format_area_smart|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Car Parking</td>
+                    <td>{{ record.property_descriptors.parking_type|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Council Area</td>
+                    <td>{{ record.property_details.council_area|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Zoning</td>
+                    <td>{{ record.property_details.zoning|default('N/A') }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="space-between-sm"></div>
+        <div>
+            <table>
+                <tr>
+                    <td class="subtitle-lg">Valuation Summary</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Date of Valuation</td>
+                    <td>{{ record.valuation_date|format_date|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Date of Inspection</td>
+                    <td>{{ 'External/Desktop Valuation' if record.property_valuation.external_desktop_valuation else
+                        sf_record.InspectionDate__c|format_date|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Legal Description</td>
+                    <td>{{ record.property_details.title_reference|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Valuation Methodology</td>
+                    <td>Direct Comparison and Capitalisation Method</td>
+                </tr>
+                <tr>
+                    <td>Occupancy Status</td>
+                    <td>{{ record.property_valuation.occupancy_status|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>NLA Value Rate</td>
+                    <td>{{ record.property_valuation.nla_value_rate|format_currency|default('N/A') }} psm</td>
+                </tr>
+                <tr>
+                    <td>Assessed Net Rental</td>
+                    <td>{{ record.property_valuation.assessed_net_rental|format_currency|default('N/A') }} per annum
+                    </td>
+                </tr>
+                <tr>
+                    <td>Yield Adopted</td>
+                    <td>{{ record.property_valuation.capitalisation_rate|default('N/A') }}%</td>
+                </tr>
+                <tr>
+                    <td>Valuation</td>
+                    <td class="text-bold">{{ record.property_valuation.market_value|format_currency|default('N/A') }}
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="text-bold">{{ record.property_valuation.market_value|format_currency_words|default('N/A')
+                        }} (Excluding GST)</td>
+                </tr>
+                {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
+                <tr>
+                    <td>Prepared By</td>
+                    <td>JUGAL SAHA, AAPI CPV (Certified Practising Valuer 101474) {% if record.location_details.state ==
+                        'WA' %}WA Licence Number - LV45321 {% elif record.location_details.state == 'QLD' %}QVRB No:
+                        5429MR{% endif %}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td> Certified Practising Valuer 101474 </td>
+                </tr>
+
+                {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
+                <tr>
+                    <td>Prepared By</td>
+                    <td>PETER LEE, AAPI CPV</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td> Certified Practising Valuer 70581 {% if record.location_details.state == 'WA' %}WA Licence
+                        Number - LV45411 {% elif record.location_details.state == 'QLD' %}QVRB No: 5434{% endif %}</td>
+                </tr>
+                {% elif sf_record.PropertyValuer__r.Name == 'Edward Aoun' %}
+                <tr>
+                    <td>Prepared By</td>
+                    <td>EDWARD AOUN, AVI CPV (Certified Property Valuer 20231)</td>
+                </tr>
+                {% elif sf_record.PropertyValuer__r.Name == 'Timothy Jang' %}
+                <tr>
+                    <td>Prepared By</td>
+                    <td>GOOSUK JANG, AAPI (Certified Practising Valuer 69833)</td>
+                </tr>
+                {% endif %}
+
+
+            </table>
+        </div>
+    </div>
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner" style="background-color: #E5E5E5; text-align: left; padding-left: 10px;">Table of Contents
+        </div>
+        <div class="space-between-sm"></div>
+        <div style="padding: 0 50px;">
+            <table class="toc-table" style="width: 100%; border-collapse: collapse;">
+                <tr class="toc-main-row">
+                    <td style="text-align: left; width: 90%; font-weight: bold;">Instructions</td>
+                    <td style="text-align: right; width: 10%;">3</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Title & Land Description</td>
+                    <td style="text-align: right;">4</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Planning Details</td>
+                    <td style="text-align: right;">4</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Environmental Statement</td>
+                    <td style="text-align: right;">5</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">General Market Overview</td>
+                    <td style="text-align: right;">5</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Locality</td>
+                    <td style="text-align: right;">6</td>
+                </tr>
+
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Statutory Details</td>
+                    <td style="text-align: right;">6</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Building Improvements</td>
+                    <td style="text-align: right;">7</td>
+                </tr>
+                <tr class="toc-subtitle-row">
+                    <td style="text-align: left; padding-left: 30px;">Condition and Repair</td>
+                    <td style="text-align: right;">8</td>
+                </tr>
+                <tr class="toc-subtitle-row">
+                    <td style="text-align: left; padding-left: 30px;">Occupancy Details</td>
+                    <td style="text-align: right;">8</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Income Assessment</td>
+                    <td style="text-align: right;">9</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Rental Schedule</td>
+                    <td style="text-align: right;">9</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Market Evidence</td>
+                    <td style="text-align: right;">10</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Valuation Methodology</td>
+                    <td style="text-align: right;">12</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Valuation Remarks</td>
+                    <td style="text-align: right;">12</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Assumptions and Qualifications</td>
+                    <td style="text-align: right;">12</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Photographs</td>
+                    <td style="text-align: right;">15</td>
+                </tr>
+                <tr class="toc-main-row">
+                    <td style="text-align: left;">Annexures</td>
+                    <td style="text-align: right;">16</td>
+                </tr>
+
+
+
+            </table>
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner" style="display: flex; justify-content: space-between;">Instructions</div>
+        <div class="space-between-sm"></div>
+        <div>
+            <table>
+                <tr>
+                    <td style="padding: 3px;">Instructed by / On Behalf of (Client):</td>
+                    <td>{{ sf_record.Owners__c|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px;">Purpose of Report:</td>
+                    <td>{% if record.purpose_of_report %} {{ record.purpose_of_report }} {% else %} To determine the {{
+                        'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market
+                        value for {{ record.valuation_type|default('N/A')|title }} purposes only. {% endif %}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px;">Date of Valuation:</td>
+                    <td>{{ record.valuation_date|format_date|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px;">Date of Inspection:</td>
+                    <td>{{ 'External/Desktop Valuation' if record.property_valuation.external_desktop_valuation else
+                        sf_record.InspectionDate__c|format_date|default('N/A') }}</td>
+                </tr>
+
+                <tr>
+                    <td style="padding: 3px;">Date of Issue:</td>
+                    <td>{{ ''|now }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px;">Interest Valued:</td>
+                    <td>{{ record.property_valuation.interest_valued|default('N/A') }}</td>
+                </tr>
+
+            </table>
+        </div>
+        <div class="space-between-md"></div>
+        <div class="banner" style="display: flex; justify-content: space-between;">Title & Land Description</div>
+        <div class="space-between-sm"></div>
+        <div>
+            <table>
+                <tr>
+                    <td>Title Particulars:</td>
+                    <td>{{ record.property_details.title_reference|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Registered Proprietor:</td>
+                    <td>{{ sf_record["Owners__c"]|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Encumbrances:</td>
+                    <td>Refer to Assumptions and Qualifications - Encumbrances</td>
+                </tr>
+                <tr>
+                    <td>Zoning Description:</td>
+                    <td>{{ record.property_details.zoning|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Land Area and Dimensions:</td>
+                    <td>Site frontage of {{ record.property_details.frontage|default('N/A') }} m, {{
+                        record.property_details.depth|default('N/A') }} m, site area of {{
+                        record.property_details.site_area|format_area_smart|default('N/A') }}</td>
+                </tr>
+
+            </table>
+        </div>
+        <div class="space-between-md"></div>
+        <div class="banner" style="display: flex; justify-content: space-between;">Planning Details</div>
+        <div class="space-between-sm"></div>
+        <div>
+            <p style="font-size: 13.5px;"> The property is {{ record.property_details.zoning|default('N/A') }} under the
+                {{ record.planning_details.planning_scheme|default('N/A') }}. The objectives of
+                this zone are summarised as follows:</p>
+            <div style="border: 2px solid black; border-left: 0px; border-right: 0px;">
+                <ul style="margin: 5px; display: grid; grid-template-columns: 1fr; gap: 10px;">
+                    <li style="margin-left: 50px;">To encourage employment opportunities in accessible locations.</li>
+                    <li style="margin-left: 50px;">To facilitate and support investment, economic growth, development
+                        for the area.</li>
+                </ul>
+            </div>
+            <div style="border: 2px solid black; border-left: 0px; border-right: 0px; border-top: 0px;">
+                <table>
+                    <tr>
+                        <td>
+                            Local Authority:
+                        </td>
+                        <td>{{ record.property_details.council_area|default('N/A') }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div style="border: 2px solid black; border-left: 0px; border-right: 0px; border-top: 0px;">
+                <table>
+                    <tr>
+                        <td>
+                            Planning Scheme:
+                        </td>
+                        <td>{{ record.planning_details.planning_scheme|default('N/A') }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div style="border: 2px solid black; border-left: 0px; border-right: 0px; border-top: 0px;">
+                <table>
+                    <tr>
+                        <td>Planning Approval:</td>
+                        <td>{{ record.planning_details.planning_approval|default('N/A') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Potential/Future Use:</td>
+                        <td>{{ record.planning_details.potential_future_use|default('N/A') }}</td>
+                    </tr>
+                </table>
+            </div>
+            <table>
+                <tr>
+                    <td>Current Use:</td>
+                    <td>{{ record.planning_details.current_use|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Heritage Registration:</td>
+                    <td>{{ record.planning_details.heritage_registration|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Native Title:</td>
+                    <td>Refer to Assumptions/Qualifications</td>
+                </tr>
+                <!-- <tr>
+                    <td style="vertical-align: bottom;">SOURCE: {{ record.planning_details.map_source|default('N/A') }}</td>
+                    <td>
+                        {% if record.planning_details.map_photo %}
+                            <img src="{{ record.planning_details.map_photo.base }}" width="100%" height="140">
+                        {% else %}
+                            NO PHOTO
+                        {% endif %}
+                    </td>
+                </tr> -->
+            </table>
+            {% if record.statutory_details.show %}
+            <div class="space-between-md"></div>
+            <div class="banner">Statutory Details</div>
+            <div class="space-between-sm"></div>
+            <p>{{ record.statutory_details.site_value|format_currency|default('N/A') }} effective from {{
+                record.statutory_details.relevant_date|format_date|default('N/A') }} for local authority rating and land
+                tax purposes. We note the statutory asessment also includes the land value for {{
+                record.property_details.title_reference|default('N/A') }}.</p>
+            {% endif %}
+        </div>
+
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Environmental Statement</div>
+        <div class="space-between-sm"></div>
+        <div>
+            <div>
+                <p>We have enquired with the proprietor who confirmed there are not appropriately qualified
+                    environmental or
+                    asbestos reports for the subject property, together with there being no underground tanks.
+                    In summary, a visual site inspection has not revealed any obvious signs of pollution or
+                    contaminations.
+                    Nevertheless. we are not experts in the detection or quantification of environmental problems and,
+                    accordingly,
+                    have not carried out a detailed environmental investigation. Therefore, this valuation and our
+                    report is made
+                    subject to the being no actual or potential contamination issues or environmental hazards, including
+                    surface or subsurface soil problems including instability, toxic or hazardous wastes or building
+                    material hazards issues affecting:
+                </p>
+                <ul style="padding-left: 15px;">
+                    <li>The existing or potential use of the property</li>
+                    <li>The value or marketability of the property or The Site</li>
+                </ul>
+                <p>
+                    Verification that the property is free from contamination or environmental hazards and has not been
+                    affected by
+                    pollutants of any kind may be obtained from a suitably qualified environmental expert. Should
+                    subsequent
+                    investigation show that this is contaminated or has environmental hazards this valuation report may
+                    require revision. The right is reserved to review, and if necessary, vary the valuation figure if
+                    any contamination or other environmental hazards found to exist.
+                </p>
+            </div>
+        </div>
+        <div class="space-between-md"></div>
+        <div class="banner">Valuation Comments</div>
+        <div class="space-between-sm"></div>
+        <div>
+            <p>In providing our assessment for the subject property, regard has been given to the following relevant
+                factors:</p>
+            <ul style="padding-left: 15px;">
+                <li>The location of the property and the surrounding land uses.</li>
+                <li>The area of the land, its configuration and topographical features.</li>
+                <li>The zoning of the land.</li>
+                <li>The availability of utility services.</li>
+                <li>The functional design and utility of the improvements</li>
+                <li>The available comparable sales evidence within reasonable proximity and</li>
+                <li>The demand which exists for premises of this nature within the {{
+                    record.location_details.suburb|default('N/A') }} locality.</li>
+            </ul>
+            <p style="white-space: pre-line;">{{ record.general_comments.valuation_comments|default('N/A') }}</p>
+            {% if record.general_comments.valuation_comments_photo_id %}
+            <div style="display: flex; justify-content: center;">
+                <img class="valuation-comments-photo" src="{{ record.general_comments.valuation_comments_photo.base }}"
+                    alt="">
+            </div>
+            {% endif %}
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Locality</div>
+        <div class="space-between-sm"></div>
+        <div>
+            <p style="white-space: pre-line;">{{ record.location_details.suburb_description|default('N/A') }}</p>
+            <p style="white-space: pre-line;">{{ record.location_details.suburb_description_2|default('N/A') }}</p>
+        </div>
+        <div>
+            <div>
+                <table>
+                    <tr>
+                        <td>
+                            <div style="position: relative;">
+                                <div class="map-infobox">{{ record.location_details.street|default('N/A') }}, {{
+                                    record.location_details.suburb|default('N/A') }}, {{
+                                    record.location_details.state|default('N/A') }} {{
+                                    record.location_details.postcode|default('N/A') }}</div>
+                                <img class="location-map"
+                                    src="https://maps.googleapis.com/maps/api/staticmap?center={{ record.location_details.latitude }},{{ record.location_details.longitude }}&zoom=15&size=800x400&maptype=roadmap&markers=color:red%7C{{ record.location_details.latitude }},{{ record.location_details.longitude }}&key={{ maps_api_key }}"
+                                    alt="">
+                            </div>
+                            <div style="margin-top: 5px; font-size: 10px;">Source: Google Maps</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="space-between-sm"></div>
+        <div>
+            <table>
+                <tr>
+                    <td style="width: 20%;"><strong>Services</strong></td>
+                    <td style="width: 80%;">The following major services are connected: reticulated water, sewerage,
+                        telephone, electricity.</td>
+                </tr>
+                <tr>
+                    <td style="width: 20%;"><strong>Access</strong></td>
+                    <td style="width: 80%;">Vehicular access is easy and direct.</td>
+                </tr>
+            </table>
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Site</div>
+        <div class="space-between-sm"></div>
+        <div>
+            <table>
+                <tr>
+                    <td>Site Area</td>
+                    <td>{% if record.property_details.site_area %}Approximately {{
+                        record.property_details.site_area|format_area_smart|default('N/A') }}{% else %}N/A{% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Site Description</td>
+                    <td>{{ record.site_details.description|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Access</td>
+                    <td>{{ record.site_details.access|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Identification</td>
+                    <td>{{ record.site_details.identification|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        {% if record.site_details.map_photo %}
+                        <img class="map" src="{{ record.site_details.map_photo.base }}" alt="">
+                        {% else %}
+                        <img class="map"
+                            src="https://maps.googleapis.com/maps/api/staticmap?center={{ record.location_details.latitude }},{{ record.location_details.longitude }}&zoom=20&size=800x400&maptype=hybrid&markers=color:red%7Clabel:A%7C{{ record.location_details.latitude }},{{ record.location_details.longitude }}&key={{ maps_api_key }}"
+                            alt="">
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Source: {{ record.site_details.map_source|default('N/A') }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="space-between-md"></div>
+        <div class="banner">Building Improvements</div>
+        <div class="space-between-sm"></div>
+        <div>
+            <table>
+                <tr>
+                    <td>General Description</td>
+                    <td>{{ record.property_descriptors.general_description|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Rough Build Date</td>
+                    <td>CIRCA {{ record.property_details.build_year|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>External Wall</td>
+                    <td>{{ record.property_descriptors.external_walls|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Internal Wall</td>
+                    <td>{{ record.property_descriptors.internal_walls|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Roof</td>
+                    <td>{{ record.property_descriptors.roofing_type|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Parking</td>
+                    <td>{{ record.property_descriptors.parking_type|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Flooring</td>
+                    <td>{{ record.photos_summary.floorings|join(', ')|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Lettable Area</td>
+                    <td>{{ record.property_details.lettable_area|default('N/A') }} sqm</td>
+                </tr>
+                <tr>
+                    <td>Site Area</td>
+                    <td>{{ record.property_details.site_area|format_area_smart|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Other Improvements</td>
+                    <td>{{ record.ancillary_improvements.accommodation|default('N/A') }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Building Services</div>
+        <div class="space-between-sm"></div>
+        <div>
+            <table>
+                <tr>
+                    <td>Lighting</td>
+                    <td>{{ record.property_descriptors.lighting|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Airconditioning</td>
+                    <td>{{ record.property_descriptors.airconditioning|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Fire Services</td>
+                    <td>{{ record.property_descriptors.fire_services|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Lifts</td>
+                    <td>{{ record.property_descriptors.lift|default('N/A') }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="space-between-md"></div>
+        <div class="banner">Condition and Repair</div>
+        <div class="space-between-xs"></div>
+        <div>
+            <p>The subject property construction appears to be in good condition throughout. The facilities such as
+                toilets and
+                fixtures and fittings are in average condition.
+            </p>
+            <p>As we are not experts in building and construction matters, we are unable to comment on the structural
+                integrity of
+                the improvements. Our valuation necessarily assumes that the improvements are structurally sound, and we
+                have no
+                reason to suspect otherwise. However, should a report by an expert in construction matters identify
+                major structural
+                defects in the building, our valuation may be adversely affected, and it should be referred to us for
+                review and
+                possible amendment.</p>
+        </div>
+        <div class="space-between-md"></div>
+        <div class="banner">Occupancy Details</div>
+        <div class="space-between-xs"></div>
+        <div>
+            <div>
+                <p>The subject property has a site area of {{
+                    record.property_details.site_area|format_area_smart|default('N/A') }} and floor area of {{
+                    record.property_details.lettable_area|default('N/A') }} sqm approximately.</p>
+                <p>We advise that we are not Registered Surveyors and therefore we are unable to confirm that the
+                    building areas shown on the Strata Plan are correct. Should a survey by a Registered Surveyor reveal
+                    that the actual Strata Area of the premises is significantly different from that shown, our
+                    valuation may be affected, and it should be referred to us for comment and possible amendment. The
+                    premises are currently {{ record.property_valuation.occupancy_status }}. Estimated Outgoings
+                    (Council rates, Water rates, Othes outgoings) {{
+                    record.estimated_outgoings|format_currency|default('N/A') }} pa approx. this is an acceptable range
+                    of this size, and in line with industry average.</p>
+            </div>
+        </div>
+        <div class="space-between-md"></div>
+        <div class="banner">Income Statement</div>
+        <div class="space-between-md"></div>
+        <div>
+            <div>
+                <p style="margin: 0px;">In Assessing a fair net rental, we have had regard to the following essential
+                    considerations.</p>
+                <ul style="padding-left: 15px; margin: 0px;">
+                    <li>The Location of the parent development within a well recognised business centre.</li>
+                    <li>The particular location of the subject suite with frontage to the street.</li>
+                    <li>The size of the subject property (NLA) together with the level of its natural light.</li>
+                    <li>The Level of demand for this nature of premises within particular area.</li>
+                </ul>
+                <p style="margin: 0px;">Furthermore, we have had consideration of the rental evidence analysed within
+                    this report.</p>
+            </div>
+        </div>
+
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    {% for listing_comparables in record.listing_comparables %}
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Rental Schedule {{ "(cont’d)" if loop.index > 1 else "" }}</div>
+        <div class="space-between-sm"></div>
+        <div id="rental-schedule">
+            {% for comparable in listing_comparables %}
+            <div class="comparable">
+                <div style="display: flex; gap: 20px;">
+                    <table>
+                        <colgroup>
+                            <col style="width: 15%;"> <!-- Label -->
+                            <col style="width: 25%;"> <!-- Value -->
+                            <col style="width: 20%;"> <!-- Label -->
+                            <col style="width: 40%;"> <!-- Value -->
+                        </colgroup>
+                        <tr>
+                            <td>Address</td>
+                            <td colspan="3"><b>{{ comparable.full_address|default('N/A')|title }}</b></td>
+                        </tr>
+                        <tr>
+                            <td>Lessor</td>
+                            <td>The Proprietors</td>
+                            {% if comparable.building_area %}
+                            <td>Building Area</td>
+                            <td>{{ comparable.building_area }}</td>
+                            {% else %}
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Lease Date</td>
+                            <td>{{ comparable.sale_lease_date|format_date|default('N/A') }}</td>
+                            {% if comparable.net_income_rental %}
+                            <td>Net Rental</td>
+                            <td>{{ comparable.net_income_rental|format_currency }} {{
+                                comparable.net_income_rental_suffix|default('') }}</td>
+                            {% else %}
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        {% if comparable.net_rental_rate or comparable.passing_rent %}
+                        <tr>
+                            {% if comparable.passing_rent %}
+                            <td>Passing Rent</td>
+                            <td>{{ comparable.passing_rent|format_currency }}</td>
+                            {% else %}
+                            <td>Outgoings</td>
+                            <td>N/A</td>
+                            {% endif %}
+                            {% if comparable.net_rental_rate %}
+                            <td>Net Rental Rate</td>
+                            <td>{{ comparable.net_rental_rate|format_currency }}/sqm</td>
+                            {% else %}
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                    </table>
+                    {% if comparable.image_url %}
+                    <div style="flex-shrink: 0;">
+                        <img src="{{ comparable.image_url }}" width="110" height="110"
+                            style="object-fit: cover; width: 110px; height: 110px;" alt="">
+                    </div>
+                    {% endif %}
+                </div>
+                {% if comparable.description %}
+                <div style="display: flex; gap: 15px; margin: 2px 0;">
+                    <p style="margin: 0; white-space: nowrap;"><b>Description</b></p>
+                    <p style="margin: 0;">{{ comparable.description }}</p>
+                </div>
+                {% endif %}
+                <div>
+                    <p style="margin-top: 2px; margin-bottom: 2px;">Comparison to Subject: <i>{{
+                            comparable.comparison|default('', true) }}</i></p>
+                </div>
+                {% if not loop.last %}
+                <hr style="margin: 2px 0;">
+                {% endif %}
+
+            </div>
+            {% endfor %}
+
+        </div>
+        {% if loop.last %}
+        <h3 class="subtitle-md">Rental Assessment</h3>
+        <p>The rentals identifed above reflect a broad rate range in the order of {{
+            record.lowest_rental_rate|format_currency|default('N/A') }} to {{
+            record.highest_rental_rate|format_currency|default('N/A') }} per square metre per annum net plus GST with
+            relevant floor sizes ranging from {{ record.lowest_building_area|default('N/A') }} to {{
+            record.highest_building_area|default('N/A') }} square metres.</p>
+        {% endif %}
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% for sales_comparables in record.sales_comparables %}
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Market Evidence {{ "(cont’d)" if loop.index > 1 else "" }}</div>
+        <div class="space-between-sm"></div>
+        <div id="market-evidence">
+            {% for comparable in sales_comparables %}
+            <div class="comparable">
+                <div style="display: flex; gap: 20px;">
+                    <table>
+                        <colgroup>
+                            <col style="width: 15%;"> <!-- Label -->
+                            <col style="width: 25%;"> <!-- Value -->
+                            <col style="width: 20%;"> <!-- Label -->
+                            <col style="width: 40%;"> <!-- Value -->
+                        </colgroup>
+                        <tr>
+                            <td>Address</td>
+                            <td colspan="3"><b>{{ comparable.full_address|default('N/A')|title_address }}</b></td>
+                        </tr>
+                        <tr>
+                            <td>Sale Date</td>
+                            <td>{{ comparable.sale_lease_date|format_date|default('N/A') }}</td>
+                            {% if comparable.site_area %}
+                            <td>Site Area</td>
+                            <td>{{ comparable.site_area|format_area_smart }}</td>
+                            {% else %}
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <td>Sale Price</td>
+                            <td>{{ comparable.sale_lease_price|format_currency|default('N/A') }}</td>
+                            {% if comparable.building_area %}
+                            <td>NLA</td>
+                            <td>{{ comparable.building_area }}</td>
+                            {% else %}
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        {% if comparable.net_income_rental or comparable.nla_rate %}
+                        <tr>
+                            {% if comparable.net_income_rental %}
+                            <td>Net Income</td>
+                            <td>{{ comparable.net_income_rental|format_currency }} {{
+                                comparable.net_income_rental_suffix|default('') }}</td>
+                            {% else %}
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                            {% if comparable.nla_rate %}
+                            <td>NLA Rate</td>
+                            <td>{{ comparable.nla_rate|format_currency }}/sqm</td>
+                            {% else %}
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if comparable.passing_rent %}
+                        <tr>
+                            <td>Passing Rent</td>
+                            <td>{{ comparable.passing_rent|format_currency }}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% endif %}
+                        {% if comparable.yield_ or comparable.build_year %}
+                        <tr>
+                            {% if comparable.yield_ %}
+                            <td>Yield</td>
+                            <td>{{ '%.2f%%' % comparable.yield_ }}</td>
+                            {% else %}
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                            {% if comparable.build_year %}
+                            <td>Year Built</td>
+                            <td>{{ comparable.build_year }}</td>
+                            {% else %}
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                    </table>
+                    {% if comparable.image_url %}
+                    <div style="flex-shrink: 0;">
+                        <img src="{{ comparable.image_url }}" width="110" height="110"
+                            style="object-fit: cover; width: 110px; height: 110px;" alt="">
+                    </div>
+                    {% endif %}
+                </div>
+                {% if comparable.description %}
+                <div style="display: flex; gap: 15px; margin: 2px 0;">
+                    <p style="margin: 0; white-space: nowrap;"><b>Description</b></p>
+                    <p style="margin: 0;">{{ comparable.description }}</p>
+                </div>
+                {% endif %}
+                <div>
+                    <p style="margin-top: 2px; margin-bottom: 2px;">Comparison to Subject: <i>{{
+                            comparable.comparison|default('', true) }}</i></p>
+                </div>
+                {% if not loop.last %}
+                <hr style="margin: 2px 0;">
+                {% endif %}
+            </div>
+            {% endfor %}
+
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    {% endfor %}
+
+
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">9. Valuation Methodology</div>
+        <div class="space-between-md"></div>
+        <table>
+            <tr>
+                <td>Primary Methodology</td>
+                <td>Direct Comparison</td>
+            </tr>
+            <tr>
+                <td>Secondary Methodology</td>
+                <td>Capitalisation</td>
+            </tr>
+        </table>
+        <div class="space-between-md"></div>
+        <div class="banner">10. Valuation Remarks</div>
+        <div class="space-between-xs"></div>
+        <div class="subtitle">
+            Method 1: Direct Comparison
+        </div>
+        <div class="space-between-xs"></div>
+        <div style="line-height: 13px;">
+            <p>Sales evidence reflects a range of {{ record.direct_comparison_min|format_currency|default('N/A') }}/sqm
+                area up to {{ record.direct_comparison_max|format_currency|default('N/A') }}/sqm area. Referring to
+                these rate and adjusting for size, age, condition, location, we consider an average rate of {{
+                record.property_valuation.nla_value_rate|format_currency|default('N/A')}}/sqm area would appropriate as
+                well reflecting the market. Based on the above comparable sales evidence and considerations, we consider
+                a value rate of {{ record.property_valuation.nla_value_rate|format_currency|default('N/A') }} p.sqm to
+                be appropriate, which when applied to the NET LETTABLE AREA, equates to value as follows: NLA {{
+                record.property_details.lettable_area|default('N/A') }} Sqm @ {{
+                record.property_valuation.nla_value_rate|format_currency|default('N/A') }} p.sqm = {{
+                record.direct_comparison_summation|format_currency|default('N/A') }}</p>
+        </div>
+        <div class="space-between-md"></div>
+        <div class="subtitle">
+            Method 2: Capitalisation
+        </div>
+        <div class="space-between-xs"></div>
+        <table>
+            <tr>
+                <td>Net Annual Income</td>
+                <td>{{ record.property_valuation.assessed_net_rental|format_currency|default('N/A') }}</td>
+            </tr>
+            <tr>
+                <td>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</td>
+                <td>{{ record.capitalised_value|format_currency|default('N/A') }}</td>
+            </tr>
+            <tr>
+                <td>Letting up expenses</td>
+                <td>{{ record.property_valuation.letting_up_expenses|format_currency|default('N/A') }}</td>
+            </tr>
+
+            <tr>
+                <td>Market Value</td>
+                <td>{{ record.market_value|format_currency|default('N/A') }}</td>
+            </tr>
+        </table>
+        <div class="space-between-xs"></div>
+        <div style="display: flex; justify-content: center;">
+            <p style="font-size: 14px;">
+                {% if record.property_valuation.current_day_valuation %}
+                Certificate of Property Valuation
+                {% else %}
+                Declaration
+                {% endif %}
+            </p>
+        </div>
+        <div style="text-align: center; width: 60%; margin: 0 auto;">
+            <hr />
+        </div>
+        {% if not record.property_valuation.current_day_valuation %}
+        <div>
+            <p>I hereby certify that I have carried out the assessments of the above property as at that valuation on
+                date of inspection. Neither I, nor to
+                the best of my knowledge, any member of this firm, has any conflict of interest; direct, indirect or
+                financial interest in relation to this
+                property that is not disclosed herein. This report is for the use only of the party/s to which it is
+                addressed for retrospective capital gain
+                tax purposes only and is not to be used for any other purpose.</p>
+        </div>
+        {% endif %}
+        <div>
+            <p>We certify the following subject property:</p>
+            <p class="bold">{{ record.location_details.street|default('N/A') }}, {{
+                record.location_details.suburb|default('N/A') }}, {{ record.location_details.state|default('N/A') }} {{
+                record.location_details.postcode|default('N/A') }}</p>
+            <p>We assess the subject property's Fair Market Value in its present condition and on a vacant possession
+                basis to be:</p>
+            <p class="bold">As at {{ record.valuation_date|format_date|default('N/A') }} (Date of Valuation)</p>
+            <p class="bold">Fair Market Value - {{ record.property_valuation.market_value|format_currency|default('N/A')
+                }} (Excluding GST)</p>
+            <p class="bold">{{ record.property_valuation.market_value|format_currency_words|default('N/A') }}</p>
+            <div class="space-between-md"></div>
+
+            {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
+            <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="" srcset="">
+            <p>JUGAL SAHA, AAPI CPV (Certified Practising Valuer 101474) {% if record.location_details.state == 'WA'
+                %}WA Licence Number - LV45321 {% elif record.location_details.state == 'QLD' %}QVRB No: 5429MR{% endif
+                %}</p>
+
+            {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
+            <img src="https://valai.duo.tax/assets/peter-signature.png" alt="" srcset="">
+            <p>PETER LEE, AAPI CPV (Certified Practising Valuer 70581) {% if record.location_details.state == 'WA' %}WA
+                Licence Number - LV45411 {% elif record.location_details.state == 'QLD' %}QVRB No: 5434{% endif %}</p>
+            {% elif sf_record.PropertyValuer__r.Name == 'Edward Aoun' %}
+            <img src="https://valai.duo.tax/assets/edward-signature.png" alt="" srcset="">
+            <p>EDWARD AOUN, AVI CPV (Certified Property Valuer 20231)</p>
+            {% elif sf_record.PropertyValuer__r.Name == 'Timothy Jang' %}
+            <img src="https://valai.duo.tax/assets/goosuk-signature.png" alt="" srcset="">
+            <p>GOOSUK JANG, AAPI (Certified Practising Valuer 69833)</p>
+            {% else %}
+            <span>NO SIGNATURE</span>
+            {% endif %}
+
+
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Assumptions and Qualifications</div>
+        <div style="line-height: 15px;">
+            <p>The valuation is made on the basis of "Market Value" as adopted by the International Valuation Standards
+                Council definition. That is: "The estimated amount for which an asset should exchange on the date of
+                valuation between a willing buyer and a willing seller in an arm’s length transaction after proper
+                marketing wherein the parties had each acted knowledgeably, Prudently, and without compulsion".</p>
+            <p>This report has been prepared for the private and confidential use of our client for the specified
+                purpose. It should not be reproduced in whole or part without the express written authority of AAP
+                Valuations or relied upon any other party for any purpose and the valuer shall not have any liability to
+                any party who does so. Our warning is registered here, that any party other than those specifically
+                named in this report should obtain their own valuation before acting in any way in respect of the
+                subject property. Where a digital copy of the report has been provided and has not been received
+                directly from us, especially the valuation and critical assumption should be verified by contacting the
+                using office to ensure contents are appropriate. In particular if this report appears to be suspicious -
+                that the report is tampered or altered, we recommend to contact the office. This valuation should be
+                read in its entirety, inclusive of any summary and also its expiration date, 3 months from the date of
+                valuation. The valuer and firm does not accept any responsibility where part of this report has been
+                relied upon without reference to the full context of the valuation report.</p>
+            <p><b>Accuracy of Information:</b> We advise that any objective information, data or calculations set out in
+                the Valuation Report will be accurate so far as is reasonably expected from a qualified and experienced
+                valuer, reflecting due skill, care and diligence. However, we have not independently verified third
+                party information, adopted it as our own, or accepted its reliability. If any of the information
+                provided by others and referred to in the report is incorrect, it may have an impact on the valuation.
+                The valuation is provided on the proviso that the reliant party accepts this risk.</p>
+            <p><b>Condition of Improvements:</b> Whilst we have carried out a building inspection, we have not completed
+                a detailed structural survey, verified the condition of the plant and machinery, tested any of the
+                services or inspected unexposed or inaccessible portions of the building. We are therefore unable to
+                state that these are free from defect, rot or infestation. We have viewed the general state of repair of
+                the building and have assumed that the improvements are reasonably structurally sound considering their
+                age.</p>
+            <p><b>Conflict of Interest:</b> Neither the valuer, nor to the best of their knowledge, any member of this
+                firm, has any conflict of interest, or direct, indirect or financial interest in relation to this
+                property that is not disclosed herein.</p>
+            <p><b>Encroachments:</b> We have physically identified the boundaries upon inspection and there do not
+                appear to be any encroachments. However, we are not surveyors and no warranty can be given without the
+                benefit of an identification survey.</p>
+            <p><b>Goods and Services Tax (GST):</b> We stress we are not experts in assessment of GST. We are not privy
+                to the financial circumstances of the owner(s), any agreements executed (or to be executed) between the
+                parties or the previous transactions relating to the property which may impact upon the status of the
+                property for GST. We recommend any party relying upon this valuation seek independent advice in regard
+                to any GST liabilities which may attach to the property. </p>
+            <p><b>Building and/or Lettable Areas:</b> The report relies on the areas noted within it. If any subsequent
+                surveys indicate variations, AAP Valuations should be contacted for a review of the report.</p>
+            <p><b>Building Compliance and Hazards:</b> AAP Valuations is not responsible for identifying building
+                compliance issues or hazards, such as structural problems, health and safety issues, or pest
+                infestations. The valuation assumes all improvements comply with relevant regulations and approvals.</p>
+            <p><b>Community Title:</b> If the property is part of a community title or similar scheme, no searches of
+                the body corporate records have been made. Therefore, AAP Valuations cannot comment on the body
+                corporate’s financial position or legal liabilities. The valuation assumes the body corporate is fully
+                functional and maintains the common property.</p>
+            <p><b>Compulsory Acquisition:</b> Unless specified otherwise, there are no known compulsory acquisition
+                orders from a Government Authority affecting the property. If such orders exist, the report must be
+                reassessed.</p>
+            <p><b>Conditions Based Upon Opinion:</b> Any opinions expressed are based on the market, leasing, and sales
+                evidence provided in the report.</p>
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Assumptions and Qualifications (cont’d)</div>
+        <div style="line-height: 15px;">
+            <p><b>Contract of Sale:</b> If the property is under contract or was recently sold, the valuation assumes no
+                special agreements or commissions that would distort the price. Market evidence and industry benchmarks
+                form the basis of the valuation.</p>
+            <p><b>Encumbrances:</b> If there are encumbrances, encroachments, restrictions, leases or covenants, which
+                are not noted in this valuation report, they may affect the assessment of value. In such matters are
+                known, the valuation report to be returned so valuation can be reviewed.</p>
+            <p><b>Cultural Heritage/Sacred Sites:</b> No investigations have been made regarding Aboriginal sacred sites
+                or cultural heritage issues. The valuation assumes no such sites affect the property. If later found to
+                be affected, AAP Valuations reserves the right to revise the report.</p>
+            <p><b>Land not Affected:</b> Unless identified within the body of this report, we assume, the land is not
+                affected by unstable, hazardous, or toxic soil material; however, no professional expert advice has been
+                sought in this regard. This valuation assumes that there are no problems, however, should any such
+                issues arise; then this matter should be referred to the Valuer for further comment.</p>
+            <p><b>Market Movement:</b> This valuation is current as at the date of valuation only. The value assessed
+                herein may change significantly and unexpectedly over a relatively short period (including as a result
+                of general market movements or factors specific to the particular property). We do not accept liability
+                for losses arising from such subsequent changes in value. Without limiting the generality of the above
+                comment, we do not assume any responsibility or accept any liability where this valuation is relied upon
+                after the expiration of 90 days from the date of the valuation, or such earlier date if you become aware
+                of any factors that have any effect on the valuation. However, it should be recognised that the 90 day
+                reliance period does not guarantee the value for that period; it always remains a valuation at the date
+                of valuation only.</p>
+            <p><b>Native Title:</b> Although title searches have not been carried out for the subject property, it is
+                understood that tenure to the subject property is freehold and, as such, it is likely that any native
+                title claim over the subject property has been extinguished. No Compliance Certificate No Compliance
+                Certificate/Certificate of Classification has been obtained. This valuation is subject to the
+                building(s) complying in all material respects with any restrictive covenants affecting the site.
+                Furthermore, it is assumed that the site improvements have been built, occupied and operated in full
+                compliance with all requirements of law, including all zoning, land-use classifications, building,
+                planning, fire and health by-laws (including asbestos and legionnaires disease), rules, regulations,
+                orders and codes of all authorities, and that there are no outstanding requisitions.</p>
+            <p><b>No Pecuniary Interest:</b> The valuer has no pecuniary interest in the subject property either past,
+                present or prospective at the date of preparing this report and the opinion expressed is free of any
+                bias in this regard. Not to be reproduced without permission Neither the whole nor any part of this
+                valuation or any reference thereto may be included in any published documents, circular or statement,
+                nor published in part or full in any way, without written approval of the form and context in which it
+                may appear.</p>
+            <p><b>Structural Survey:</b> This valuation report does not purport to be a site or structural survey of the
+                land or improvements thereon, and any advice provided is not given in the capacity as an expert.</p>
+            <p><b>Termite/Pest Infestation:</b> The subject property is located in an area considered susceptible to
+                termite infestation. We are not pest inspectors / pest experts. Inspection of the subject improvements
+                did not reveal any obvious visible termite infestation. However, this can only be confirmed by a
+                certified pest control expert.</p>
+            <p><b>Town Planning:</b> We assume that planning data obtained from the relevant Local Planning Authority is
+                accurate. In the event that a Town Planning search or any other relevant Planning document is obtained
+                and the information therein is later found to be materially different to the town planning information
+                detailed within the valuation, we reserve the right to amend the valuation. A search has not been
+                provided or obtained and therefore this valuation has been undertaken on the basis that all necessary
+                and appropriate town planning and/or building, consents, approvals and certifications have been issued
+                for the use of occupation of the improvements as more fully described in this report.</p>
+            <p><b>Valuation for Court Purposes:</b> Please note that our Valuation Report not suitable for Court
+                Purposes. This report should not be used for litigation proceedings and does not meet the criteria of
+                Property Disputes, Expert Witness, Family Court Matters.</p>
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    {% for photos_group in record.gallery_photos_groups %}
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Photographs {{ "(cont’d)" if loop.index > 1 else "" }}</div>
+        <div class="space-between-sm"></div>
+        <div class="photos-container">
+            {% for photo in photos_group %}
+            <img src="{{ photo.large or photo.base }}" alt="">
+            {% endfor %}
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    {% endfor %}
+    {% if record.title_search %}
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Title Search</div>
+        <div class="space-between-sm"></div>
+        <div style="text-align: center;">
+            <img style="max-width: 100%; max-height: 800px;" src="{{ record.title_search }}" alt="Title Search">
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    {% endif %}
+    {% for annexure in record.annexures %}
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">{{ annexure.annexure_header }}</div>
+        <div class="space-between-sm"></div>
+        <div class="annexure_container">
+            <img style="width: 100%; height: 800px;" src="{{ annexure.base }}" alt="">
+        </div>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    {% endfor %}
+    {% for i in range(record.blank_pages_count|default(0)|int) %}
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        {% if record.blank_pages_heading %}
+        <div class="banner">{{ record.blank_pages_heading }}</div>
+        {% endif %}
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    {% endfor %}
+    {% if record.capitalisation_method and record.capitalisation_method.nla %}
+    <div class="page">
+        <div class="header-container">
+            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        </div>
+        <div class="banner">Capitalisation Method</div>
+        <div class="space-between-sm"></div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <colgroup>
+                <col style="width: 40%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+            </colgroup>
+            <tr>
+                <td style="text-align: left; width: 40%; font-weight: bold; padding: 6px 8px;">Total Market Gross Rental
+                </td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">{{
+                    "%.2f"|format(record.capitalisation_method.nla) }} m²</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">@ ${{
+                    "%.2f"|format(record.capitalisation_method.gross_rental_rate) }}/m² p.a.</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; font-weight: bold;">${{
+                    "{:,.0f}".format(record.capitalisation_method.total_gross_rental) }} p.a.</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Vacancy Allowance</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
+                    "%.2f"|format(record.capitalisation_method.vacancy_pct) }}%</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
+                    "{:,.0f}".format(record.capitalisation_method.vacancy_amount) }}) p.a.</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Adopted Market Outgoings</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">{{
+                    "%.2f"|format(record.capitalisation_method.nla) }} m²</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">@ ${{
+                    "%.2f"|format(record.capitalisation_method.outgoings_rate) }}/m² p.a.</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
+                    "{:,.0f}".format(record.capitalisation_method.outgoings_amount) }}) p.a.</td>
+            </tr>
+            <tr style="border-top: 2px solid #333;">
+                <td style="text-align: left; width: 40%; font-weight: bold; padding: 8px 8px;">Estimated Market Net
+                    Rental</td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px;">{{
+                    "%.2f"|format(record.capitalisation_method.nla) }} m²</td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px;">@ ${{
+                    "%.2f"|format(record.capitalisation_method.net_rental_rate) }}/m² p.a.</td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px; font-weight: bold;">${{
+                    "{:,.0f}".format(record.capitalisation_method.net_rental) }} p.a.</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="padding: 4px;"></td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Capitalised @</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
+                    "%.2f"|format(record.capitalisation_method.cap_rate_low) }}%</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">${{
+                    "{:,.0f}".format(record.capitalisation_method.cap_value_low) }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Capitalised @</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
+                    "%.2f"|format(record.capitalisation_method.cap_rate_mid) }}%</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">${{
+                    "{:,.0f}".format(record.capitalisation_method.cap_value_mid) }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Capitalised @</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
+                    "%.2f"|format(record.capitalisation_method.cap_rate_high) }}%</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">${{
+                    "{:,.0f}".format(record.capitalisation_method.cap_value_high) }}</td>
+            </tr>
+            <tr style="border-top: 1px solid #999;">
+                <td style="text-align: left; width: 40%; font-weight: bold; padding: 8px 8px;">Adopt</td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px; font-weight: bold;">${{
+                    "{:,.0f}".format(record.capitalisation_method.adopted_cap_value) }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="padding: 4px;"></td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Capital Expenditure</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">{{
+                    "%.2f"|format(record.capitalisation_method.nla) }} m²</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">@ ${{
+                    "%.2f"|format(record.capitalisation_method.cap_exp_rate) }}/m²</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
+                    "{:,.0f}".format(record.capitalisation_method.cap_expenditure) }})</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Incentive for Vacant Space</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
+                    "%.2f"|format(record.capitalisation_method.incentive_months) }} months</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
+                    "{:,.0f}".format(record.capitalisation_method.incentive_cost) }})</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Letting Up of Vacant Space</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
+                    "%.2f"|format(record.capitalisation_method.letting_up_months) }} months</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
+                    "{:,.0f}".format(record.capitalisation_method.letting_up_cost) }})</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Agent's Commission</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
+                    "%.2f"|format(record.capitalisation_method.agents_commission_pct) }}%</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
+                    "{:,.0f}".format(record.capitalisation_method.agents_commission) }})</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: PV of Reversion Rent</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
+                    "%.2f"|format(record.capitalisation_method.pv_discount_rate) }}%</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
+                    "{:,.0f}".format(record.capitalisation_method.pv_reversion) }})</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Miscellaneous</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
+                    "{:,.0f}".format(record.capitalisation_method.misc_amount) }})</td>
+            </tr>
+            <tr style="border-top: 1px solid #999;">
+                <td style="text-align: left; width: 40%; font-weight: bold; padding: 8px 8px;">Sub-total</td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px; font-weight: bold;">${{
+                    "{:,.0f}".format(record.capitalisation_method.subtotal_after_deductions) }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="padding: 4px;"></td>
+            </tr>
+            <tr>
+                <td style="text-align: left; width: 40%; padding: 6px 8px;">Add: PV of Overage Rent</td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 6px 8px;">${{
+                    "{:,.0f}".format(record.capitalisation_method.pv_overage_rent) }}</td>
+            </tr>
+            <tr style="border-top: 1px solid #999;">
+                <td style="text-align: left; width: 40%; font-weight: bold; padding: 8px 8px;">Sub-total</td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 8px 8px; font-weight: bold;">${{
+                    "{:,.0f}".format(record.capitalisation_method.subtotal_after_overage) }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="padding: 4px;"></td>
+            </tr>
+            <tr style="border-top: 2px solid #333; border-bottom: 2px solid #333;">
+                <td style="text-align: left; width: 40%; font-weight: bold; padding: 10px 8px; font-size: 14px;">Current
+                    Market Value</td>
+                <td style="text-align: right; width: 20%; padding: 10px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 10px 8px;"></td>
+                <td style="text-align: right; width: 20%; padding: 10px 8px; font-weight: bold; font-size: 14px;">${{
+                    "{:,.0f}".format(record.capitalisation_method.market_value) }}</td>
+            </tr>
+        </table>
+        <div class="footer-container">
+            <div>
+                <span>{{ record.location_details.street|default('N/A') }}</span>
+                <br>
+                <span>{{ record.location_details.suburb|default('N/A') }} {{
+                    record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A')
+                    }}</span>
+            </div>
+            <span class="page-num"></span>
+        </div>
+    </div>
+    {% endif %}
+    <script>
+        const pageNums = document.querySelectorAll('.page-num');
+        pageNums.forEach((v, k) => {
+            v.textContent = k + 3;
+        });
+    </script>
+</body>
+
+</html>

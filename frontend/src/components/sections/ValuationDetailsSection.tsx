@@ -1,0 +1,756 @@
+import React, { useEffect } from 'react';
+import { FormField, Input, Checkbox, Textarea } from '../ui/FormField';
+import { SectionProps } from '@/types/property-valuation';
+import { Wand2 } from 'lucide-react';
+
+export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue }) => {
+  const landValue = watch('valuationDetails.landValue');
+  const improvements = watch('valuationDetails.improvements');
+  const marketValue = watch('valuationDetails.marketValue');
+  const isUnit = watch('valuationDetails.isUnit');
+  const directComparisonText = watch('valuationDetails.directComparison');
+  const valuationType = watch('valuationDetails.valuationType');
+  const capitalisedValue = watch('valuationDetails.capitalisedValue');
+
+  // Auto-set market value when capitalised value changes (for SMSF reports)
+  useEffect(() => {
+    if (capitalisedValue !== undefined) {
+      setValue('valuationDetails.marketValue', capitalisedValue, { shouldDirty: true });
+    }
+  }, [capitalisedValue, setValue]);
+
+  // Auto-calculate market value when land value or improvements change
+  useEffect(() => {
+    const land = Number(landValue) || 0;
+    const impr = Number(improvements) || 0;
+    const total = land + impr;
+
+    // Always set the market value (even if 0) when either field changes
+    // This ensures market value is cleared when both land and improvements are deleted
+    if (landValue !== undefined || improvements !== undefined) {
+      setValue('valuationDetails.marketValue', total, { shouldDirty: true });
+    }
+  }, [landValue, improvements, setValue]);
+
+  // Auto-set valuation amount equal to market value when it's a Unit
+  useEffect(() => {
+    if (isUnit && marketValue !== undefined) {
+      setValue('valuationDetails.valuationAmount', marketValue, { shouldDirty: true });
+    }
+  }, [isUnit, marketValue, setValue]);
+
+  // Normalize state abbreviations inside Direct Comparison Approach text (e.g., Nsw -> NSW)
+  useEffect(() => {
+    if (!directComparisonText) return;
+    const fixed = directComparisonText.replace(/\b(nsw|vic|qld|sa|wa|tas|nt|act)\b/gi, (m) => m.toUpperCase());
+    if (fixed !== directComparisonText) {
+      setValue('valuationDetails.directComparison', fixed, { shouldDirty: true });
+    }
+  }, [directComparisonText, setValue]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: 'AUD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const handleAutoFillDirectComparison = () => {
+    const comparables = watch('comparables');
+    const salesComparables = comparables?.sales || [];
+
+    // Find the sales comparable with isComparable: true
+    const evidence = salesComparables.find((comp: any) => comp.isComparable === true);
+
+    if (evidence) {
+      // Convert address to title case but keep state abbreviations in CAPS
+      const toTitleCase = (str: string) => {
+        if (!str) return 'N/A';
+        const stateAbbreviations = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT'];
+        return str.split(' ').map(word => {
+          // Keep state abbreviations in uppercase
+          if (stateAbbreviations.includes(word.toUpperCase())) {
+            return word.toUpperCase();
+          }
+          // Convert other words to title case
+          return word.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+        }).join(' ');
+      };
+
+      const formattedAddress = toTitleCase(evidence.fullAddress || '');
+      const autoText = `Sales evidence at ${formattedAddress} comprises of ${evidence.bedrooms || 'N/A'} bedroom(s) and ${evidence.bathrooms || 'N/A'} bathroom(s). In comparison to subject: ${evidence.comparison || 'N/A'}. On balance, the considered indicative market value of the subject property is ${evidence.saleLeasePrice ? formatCurrency(evidence.saleLeasePrice) : 'N/A'}`;
+
+      setValue('valuationDetails.directComparison', autoText, { shouldDirty: true });
+    } else {
+      alert('No comparable sales evidence found. Please mark a sales comparable as "Is Comparable" first.');
+    }
+  };
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Valuation Details</h2>
+        <p className="text-gray-600">Capture the valuation approach, figures, and any qualifications.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Valuation Type"
+          error={errors.valuationDetails?.valuationType?.message}
+        >
+          <select
+            {...register('valuationDetails.valuationType')}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+          >
+            <option value="">Select valuation type</option>
+            <option value="Capital Gains">Capital Gains</option>
+            <option value="Market Assessment">Market Assessment</option>
+            <option value="Stamp Duty">Stamp Duty</option>
+            <option value="Transfer Duty">Transfer Duty</option>
+            <option value="SMSF Audit">SMSF Audit</option>
+            <option value="Retrospective Capital Gains">Retrospective Capital Gains</option>
+            <option value="Land Valuation">Land Valuation</option>
+            <option value="Commercial Short Report">Commercial Short Report</option>
+            <option value="Commercial">Commercial</option>
+            <option value="Rural">Rural</option>
+            <option value="Rural (2 Hectare Exemption)">Rural (2 Hectare Exemption)</option>
+          </select>
+        </FormField>
+
+        <FormField
+          label="Valuation Date"
+          error={errors.valuationDetails?.valuationDate?.message}
+        >
+          <Input
+            type="date"
+            max="2100-12-31"
+            {...register('valuationDetails.valuationDate')}
+            error={errors.valuationDetails?.valuationDate?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Valuation Date 2"
+          error={errors.valuationDetails?.valuationDate2?.message}
+        >
+          <Input
+            type="date"
+            max="2100-12-31"
+            {...register('valuationDetails.valuationDate2')}
+            error={errors.valuationDetails?.valuationDate2?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Logo Type"
+          error={errors.valuationDetails?.logoType?.message}
+        >
+          <select
+            {...register('valuationDetails.logoType')}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+          >
+            <option value="AAP">AAP</option>
+            <option value="CPV">CPV</option>
+          </select>
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Inspection Date"
+          error={errors.valuationDetails?.inspectionDate?.message}
+        >
+          <Input
+            type="date"
+            max="2100-12-31"
+            {...register('valuationDetails.inspectionDate')}
+            error={errors.valuationDetails?.inspectionDate?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Conversion Date"
+          error={errors.valuationDetails?.conversionDate?.message}
+        >
+          <Input
+            type="date"
+            max="2100-12-31"
+            {...register('valuationDetails.conversionDate')}
+            error={errors.valuationDetails?.conversionDate?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Deadline Date"
+          error={errors.valuationDetails?.deadlineDate?.message}
+        >
+          <Input
+            type="date"
+            max="2100-12-31"
+            {...register('valuationDetails.deadlineDate')}
+            error={errors.valuationDetails?.deadlineDate?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Survey Type"
+          error={errors.valuationDetails?.surveyType?.message}
+        >
+          <select
+            {...register('valuationDetails.surveyType')}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+          >
+            <option value="">Select survey type</option>
+            <option value="Inspection">Inspection</option>
+            <option value="External/Desktop Valuation">External/Desktop Valuation</option>
+            <option value="Kerbside Valuation">Kerbside Valuation</option>
+          </select>
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Requested Valuation Target"
+          error={errors.valuationDetails?.requestedValuationTarget?.message}
+        >
+          <Input
+            {...register('valuationDetails.requestedValuationTarget')}
+            placeholder="e.g., Market Value, Insurance Value"
+            error={errors.valuationDetails?.requestedValuationTarget?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Stage"
+          error={errors.valuationDetails?.stage?.message}
+        >
+          <Input
+            {...register('valuationDetails.stage')}
+            placeholder="e.g., Draft, Final, Under Review"
+            error={errors.valuationDetails?.stage?.message}
+          />
+        </FormField>
+      </div>
+
+      <FormField
+        label="Purpose of Report"
+        error={errors.valuationDetails?.purposeOfReport?.message}
+      >
+        <Textarea
+          {...register('valuationDetails.purposeOfReport')}
+          placeholder="Describe the specific purpose and intended use of this valuation report"
+          rows={3}
+          error={errors.valuationDetails?.purposeOfReport?.message}
+        />
+      </FormField>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Current Day Valuation"
+          error={errors.valuationDetails?.currentDayValuation?.message}
+        >
+          <Checkbox
+            {...register('valuationDetails.currentDayValuation')}
+            label="Valuation represents current day assessment"
+          />
+        </FormField>
+
+        <FormField
+          label="External/Desktop Valuation"
+          error={errors.valuationDetails?.externalDesktopValuation?.message}
+        >
+          <Checkbox
+            {...register('valuationDetails.externalDesktopValuation')}
+            label="Valuation prepared without internal inspection"
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Market Value"
+          error={errors.valuationDetails?.marketValue?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.marketValue', { valueAsNumber: true })}
+            placeholder="Auto-calculated (Land + Improvements)"
+            error={errors.valuationDetails?.marketValue?.message}
+            readOnly
+            className="bg-gray-100 cursor-not-allowed"
+          />
+        </FormField>
+
+        <FormField
+          label="Interest Valued"
+          error={errors.valuationDetails?.interestValued?.message}
+        >
+          <Input
+            {...register('valuationDetails.interestValued')}
+            placeholder="e.g., Fee Simple"
+            error={errors.valuationDetails?.interestValued?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FormField
+          label="Show Currency of Valuation"
+          error={errors.valuationDetails?.showCurrencyOfValuation?.message}
+        >
+          <Checkbox
+            {...register('valuationDetails.showCurrencyOfValuation')}
+            label="Display currency in report"
+          />
+        </FormField>
+
+        <FormField
+          label="Show Land Value"
+          error={errors.valuationDetails?.showLandValue?.message}
+        >
+          <Checkbox
+            {...register('valuationDetails.showLandValue')}
+            label="Include land value component"
+          />
+        </FormField>
+
+        <FormField
+          label="Show Improvements"
+          error={errors.valuationDetails?.showImprovements?.message}
+        >
+          <Checkbox
+            {...register('valuationDetails.showImprovements')}
+            label="Include improvements component"
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FormField
+          label="Land Value"
+          error={errors.valuationDetails?.landValue?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.landValue', { valueAsNumber: true })}
+            placeholder="e.g., 500000"
+            error={errors.valuationDetails?.landValue?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Improvements Value"
+          error={errors.valuationDetails?.improvements?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.improvements', { valueAsNumber: true })}
+            placeholder="e.g., 350000"
+            error={errors.valuationDetails?.improvements?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Property Type"
+          error={errors.valuationDetails?.isUnit?.message}
+        >
+          <div className="flex gap-6 pt-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                value="false"
+                checked={!watch('valuationDetails.isUnit')}
+                onChange={() => setValue('valuationDetails.isUnit', false, { shouldDirty: true })}
+                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-900">House</span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                value="true"
+                checked={watch('valuationDetails.isUnit') === true}
+                onChange={() => setValue('valuationDetails.isUnit', true, { shouldDirty: true })}
+                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-900">Unit</span>
+            </label>
+          </div>
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Square Meter Rate"
+          error={errors.valuationDetails?.squareMeterRate?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.squareMeterRate', { valueAsNumber: true })}
+            placeholder="e.g., 5000"
+            error={errors.valuationDetails?.squareMeterRate?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="NLA (sqm)"
+          error={errors.valuationDetails?.nla?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.nla', { valueAsNumber: true })}
+            placeholder="e.g., 100"
+            error={errors.valuationDetails?.nla?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Assessed Net Rental ($ p.a.)"
+          error={(errors as any).valuationDetails?.assessedNetRental?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.assessedNetRental', { valueAsNumber: true })}
+            placeholder="e.g., 50000"
+            error={(errors as any).valuationDetails?.assessedNetRental?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Capitalisation Rate / Yield Adopted (%)"
+          error={(errors as any).valuationDetails?.capitalisationRate?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.capitalisationRate', { valueAsNumber: true })}
+            placeholder="e.g., 5.5"
+            error={(errors as any).valuationDetails?.capitalisationRate?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Letting Up Expenses ($)"
+          error={(errors as any).valuationDetails?.lettingUpExpenses?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.lettingUpExpenses', { valueAsNumber: true })}
+            placeholder="e.g., 10000"
+            error={(errors as any).valuationDetails?.lettingUpExpenses?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Planning Scheme"
+          error={(errors as any).valuationDetails?.planningScheme?.message}
+        >
+          <Input
+            {...register('valuationDetails.planningScheme')}
+            placeholder="e.g., Local Environmental Plan"
+            error={(errors as any).valuationDetails?.planningScheme?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Planning Approval"
+          error={(errors as any).valuationDetails?.planningApproval?.message}
+        >
+          <Input
+            {...register('valuationDetails.planningApproval')}
+            placeholder="e.g., DA Approved"
+            error={(errors as any).valuationDetails?.planningApproval?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Current Use"
+          error={(errors as any).valuationDetails?.currentUse?.message}
+        >
+          <Input
+            {...register('valuationDetails.currentUse')}
+            placeholder="e.g., Commercial retail"
+            error={(errors as any).valuationDetails?.currentUse?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Potential / Future Use"
+          error={(errors as any).valuationDetails?.potentialFutureUse?.message}
+        >
+          <Input
+            {...register('valuationDetails.potentialFutureUse')}
+            placeholder="e.g., Mixed-use development"
+            error={(errors as any).valuationDetails?.potentialFutureUse?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Registered Proprietor"
+          error={(errors as any).valuationDetails?.registeredProprietor?.message}
+        >
+          <Input
+            {...register('valuationDetails.registeredProprietor')}
+            placeholder="e.g., John Smith"
+            error={(errors as any).valuationDetails?.registeredProprietor?.message}
+          />
+        </FormField>
+      </div>
+
+      {/* Capitalisation Method Fields */}
+      <h3 className="text-lg font-semibold text-gray-800 mt-4">Capitalisation Method</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FormField
+          label="Gross Rental Rate ($/m² p.a.)"
+          error={(errors as any).valuationDetails?.grossRentalRate?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.grossRentalRate', { valueAsNumber: true })}
+            placeholder="e.g., 170.00"
+            error={(errors as any).valuationDetails?.grossRentalRate?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Vacancy Allowance (%)"
+          error={(errors as any).valuationDetails?.vacancyAllowancePct?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.vacancyAllowancePct', { valueAsNumber: true })}
+            placeholder="e.g., 0.00"
+            error={(errors as any).valuationDetails?.vacancyAllowancePct?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Outgoings Rate ($/m² p.a.)"
+          error={(errors as any).valuationDetails?.outgoingsRate?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.outgoingsRate', { valueAsNumber: true })}
+            placeholder="e.g., 30.00"
+            error={(errors as any).valuationDetails?.outgoingsRate?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <FormField
+          label="Cap Rate Low (%)"
+          error={(errors as any).valuationDetails?.capRateLow?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.capRateLow', { valueAsNumber: true })}
+            placeholder="e.g., 4.75"
+            error={(errors as any).valuationDetails?.capRateLow?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Cap Rate Mid (%)"
+          error={(errors as any).valuationDetails?.capRateMid?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.capRateMid', { valueAsNumber: true })}
+            placeholder="e.g., 5.00"
+            error={(errors as any).valuationDetails?.capRateMid?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Cap Rate High (%)"
+          error={(errors as any).valuationDetails?.capRateHigh?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.capRateHigh', { valueAsNumber: true })}
+            placeholder="e.g., 5.25"
+            error={(errors as any).valuationDetails?.capRateHigh?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Adopted Cap Value ($)"
+          error={(errors as any).valuationDetails?.adoptedCapValue?.message}
+        >
+          <Input
+            type="number"
+            step="1"
+            {...register('valuationDetails.adoptedCapValue', { valueAsNumber: true })}
+            placeholder="e.g., 3060000"
+            error={(errors as any).valuationDetails?.adoptedCapValue?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FormField
+          label="Capital Expenditure Rate ($/m²)"
+          error={(errors as any).valuationDetails?.capitalExpenditureRate?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.capitalExpenditureRate', { valueAsNumber: true })}
+            placeholder="e.g., 13.00"
+            error={(errors as any).valuationDetails?.capitalExpenditureRate?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Incentive Months"
+          error={(errors as any).valuationDetails?.incentiveMonths?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.incentiveMonths', { valueAsNumber: true })}
+            placeholder="e.g., 0"
+            error={(errors as any).valuationDetails?.incentiveMonths?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Letting Up Months"
+          error={(errors as any).valuationDetails?.lettingUpMonths?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.lettingUpMonths', { valueAsNumber: true })}
+            placeholder="e.g., 3"
+            error={(errors as any).valuationDetails?.lettingUpMonths?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FormField
+          label="Agent's Commission (%)"
+          error={(errors as any).valuationDetails?.agentsCommissionPct?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.agentsCommissionPct', { valueAsNumber: true })}
+            placeholder="e.g., 12.00"
+            error={(errors as any).valuationDetails?.agentsCommissionPct?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="PV Discount Rate (%)"
+          error={(errors as any).valuationDetails?.pvDiscountRate?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.pvDiscountRate', { valueAsNumber: true })}
+            placeholder="e.g., 10.00"
+            error={(errors as any).valuationDetails?.pvDiscountRate?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Miscellaneous ($)"
+          error={(errors as any).valuationDetails?.miscellaneousAmount?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.miscellaneousAmount', { valueAsNumber: true })}
+            placeholder="e.g., 0.00"
+            error={(errors as any).valuationDetails?.miscellaneousAmount?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="PV of Overage Rent ($)"
+          error={(errors as any).valuationDetails?.pvOverageRent?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.pvOverageRent', { valueAsNumber: true })}
+            placeholder="e.g., 0.00"
+            error={(errors as any).valuationDetails?.pvOverageRent?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {valuationType === 'Land Valuation' && (
+          <FormField
+            label="Land Valuation Type"
+            error={(errors as any).valuationDetails?.landValuationType?.message}
+          >
+            <select
+              {...register('valuationDetails.landValuationType')}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            >
+              <option value="">Select valuation type</option>
+              <option value="Capital Gains">Capital Gains</option>
+              <option value="Market Assessment">Market Assessment</option>
+              <option value="Stamp Duty">Stamp Duty</option>
+              <option value="Transfer Duty">Transfer Duty</option>
+              <option value="Retrospective Capital Gains">Retrospective Capital Gains</option>
+            </select>
+          </FormField>
+        )}
+      </div>
+
+      <FormField
+        label="Valuation Notes"
+        error={errors.valuationDetails?.valuationNotes?.message}
+      >
+        <Textarea
+          {...register('valuationDetails.valuationNotes')}
+          placeholder="Additional notes, qualifications, or special considerations for this valuation"
+          rows={4}
+          error={errors.valuationDetails?.valuationNotes?.message}
+        />
+      </FormField>
+
+      <FormField
+        label="Direct Comparison Approach"
+        error={errors.valuationDetails?.directComparison?.message}
+      >
+        <div className="relative">
+          <Textarea
+            {...register('valuationDetails.directComparison')}
+            placeholder="Summarise comparable sales and adjustments supporting the valuation conclusion."
+            rows={6}
+            error={errors.valuationDetails?.directComparison?.message}
+          />
+          <button
+            type="button"
+            onClick={handleAutoFillDirectComparison}
+            className="absolute top-2 right-2 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+            title="Auto-fill from comparable sales evidence"
+          >
+            <Wand2 className="w-4 h-4" />
+          </button>
+        </div>
+      </FormField>
+    </div>
+  );
+};

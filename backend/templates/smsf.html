@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Evidence Report</title>
+    <style>
+        /* Global Styles */
+
+        body {
+            font-family: Avenir Next, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            /* Light gray background to distinguish page boundaries */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .page {
+            height: 297.35mm;
+            width: 211mm;
+            box-sizing: border-box;
+            position: relative;
+            page-break-after: always;
+            background-color: #ffffff;
+            /* White background for A4 pages */
+            margin: 0px;
+            padding: 80px 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .land-content {
+            font-size: 9pt !important;
+        }
+
+
+        .land-content .smaller {
+            font-size: 6.5pt !important;
+            text-align: justify;
+        }
+
+        .page-title {
+            height: 297.35mm;
+            width: 211mm;
+            box-sizing: border-box;
+            position: relative;
+            page-break-after: always;
+            background-color: #ffffff;
+            /* White background for A4 pages */
+            margin: 0px;
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            height: 70px;
+        }
+
+        .header img {
+            height: 84px;
+        }
+
+        .header-full {
+            position: absolute;
+            height: 100px;
+            top: 0;
+            left: 0;
+            right: 0;
+            font-size: 12px;
+            background-color: #f7f7f7;
+        }
+
+        .footer {
+            position: absolute;
+            height: 70px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        /* Page 1 Specific Styles */
+        .title {
+            text-align: left;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .card-container {
+            border-bottom: 1px solid #5f5c5c4b;
+            padding: 10px 10px 0 10px;
+            margin-bottom: 10px;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-8 {
+            flex: 8;
+        }
+
+        .flex-2 {
+            flex: 2;
+        }
+
+        .flex-5 {
+            flex: 5;
+        }
+
+        .flex-4 {
+            flex: 4;
+        }
+
+        .flex-7 {
+            flex: 7;
+        }
+
+        .flex-3 {
+            flex: 3;
+        }
+
+
+        .flex-6 {
+            flex: 6;
+        }
+
+        .flex-2-5 {
+            flex: 2.3;
+        }
+
+        .flex-7-5 {
+            flex: 7.7;
+        }
+
+        .fs-s {
+            font-size: 12px;
+        }
+
+        .fs-20 {
+            font-size: 20px;
+        }
+
+        .fs-l {
+            font-size: 26px;
+        }
+
+        .fs-header {
+            font-size: 28px;
+        }
+
+        .fs-14 {
+            font-size: 14px;
+        }
+
+        .ta-c {
+            text-align: center;
+        }
+
+        .ac-c {
+            align-content: center;
+        }
+
+        .testc {
+            height: 150px
+        }
+
+        .colour-grey {
+            color: rgba(83, 83, 83, 0.719);
+        }
+
+
+        .vert {
+            flex-direction: column;
+        }
+
+        .jc-sb {
+            justify-content: space-between;
+        }
+
+        .jc-c {
+            justify-content: center;
+        }
+
+        .ta-j {
+            text-align: justify;
+        }
+
+        .ac-sb {
+            align-content: space-between;
+        }
+
+        .icons-container {
+            gap: 10px;
+            margin-top: 2px;
+        }
+
+        .icon {
+            width: 16px;
+            /* Adjust the width */
+            height: 16px;
+            /* Adjust the height */
+            object-fit: contain;
+            /* Ensures the aspect ratio is preserved */
+            margin-left: 5px;
+            /* Optional: Add some spacing to the left of the icon */
+            vertical-align: middle;
+            /* Aligns the icon with the text */
+            display: block;
+        }
+
+        .icon-component {
+            gap: 5px;
+        }
+
+        .property-photo {
+            width: 200px;
+            object-fit: cover;
+        }
+
+        .fit-cover {
+            width: 100%;
+            /* Makes the image take up the full width of the container */
+            height: auto;
+            /* Maintains the aspect ratio */
+            object-fit: contain;
+            /* Ensures the entire image fits within the container */
+            max-width: 100%;
+            /* Prevents the image from exceeding its container's size */
+            display: block;
+        }
+
+        .gap-s {
+            gap: 5px;
+        }
+
+        .gap-m {
+            gap: 20px;
+        }
+
+        .gap-50 {
+            gap: 50px;
+        }
+
+        .gap-30 {
+            gap: 30px;
+        }
+
+        .width-full {
+            width: 100%;
+        }
+
+        .mb-s {
+            margin-bottom: 5px;
+        }
+
+        .mb-m {
+            margin-bottom: 20px;
+        }
+
+        .mb-l {
+            margin-bottom: 40px;
+        }
+
+        .ml-s {
+            margin-left: 10px;
+        }
+
+        .pl-18 {
+            padding-left: 18px;
+        }
+
+        .ml-50 {
+            margin-left: 50px;
+        }
+
+        .mr-70 {
+            margin-right: 70px;
+        }
+
+        .mr-s {
+            margin-right: 10px;
+        }
+
+        .mb-0 {
+            margin-bottom: 0px;
+        }
+
+        .cover {
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .mt-l {
+            margin-top: 60px;
+        }
+
+        .mt-m {
+            margin-top: 20px;
+        }
+
+        .mt-10 {
+            margin-top: 10px;
+        }
+
+        .mt-s {
+            margin-top: 5px;
+        }
+
+        .mt-comparables {
+            margin-top: 9px;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .mt-45 {
+            margin-top: 45px;
+        }
+
+        .fw-h {
+            font-weight: bolder;
+        }
+
+        .h-100 {
+            height: 350px;
+        }
+
+        .sub-title {
+            font-weight: bolder;
+            font-size: 25px;
+        }
+
+        .cover-img-container {
+            margin-top: 20px;
+            width: 100%;
+            /* Set the desired width of the container */
+            height: 85%;
+            /* Set the desired height of the container */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            /* Ensure no overflow from the container */
+            background-color: #f0f0f0;
+            /* Optional: background color */
+        }
+
+        .cover-details {
+            position: absolute;
+            /* Enables absolute positioning */
+            top: 850px;
+            /* Distance from the top of the parent */
+            left: 70px;
+            /* Distance from the left of the parent */
+            width: 651.69px;
+            /* Optional: Set size for the child div */
+            height: 100px;
+            /* Optional: Set size for the child div */
+            background-color: rgb(167, 191, 199);
+            /* Just for visibility */
+        }
+
+        p {
+            margin: 1px;
+        }
+
+        .cover-title {
+            font-size: 2rem;
+        }
+
+        .bold {
+            font-weight: 1000;
+        }
+
+        .report-overview-container {
+            width: 100%;
+            margin: 20px auto;
+            overflow-x: auto;
+            /* Ensures the table is scrollable on small screens */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            /* Removes space between table cells */
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            /* Adds border to table cells */
+            text-align: left;
+            /* Aligns text to the left */
+        }
+
+        thead th {
+            background-color: #f4f4f4;
+            /* Light gray background for the header */
+            font-weight: bold;
+        }
+
+        .p-s {
+            padding: 5px;
+        }
+
+        .logo-footer {
+            width: 100px;
+        }
+
+        .header-title {
+            font-size: 30px;
+            align-items: center;
+        }
+
+        .ta-l {
+            text-align: left;
+        }
+
+        .prop-img-container {
+            display: flex;
+            height: 300px;
+            width: 100%;
+            /* or a fixed width */
+            overflow: hidden;
+            /* ensures that if images are larger, the excess is hidden */
+        }
+
+        .prop-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .left-img-wrap {
+            flex: 2;
+            /* This gives about 66% width if the right is flex:1 */
+            display: flex;
+            /* flex-direction: column; */
+        }
+
+        .single-img {
+            flex: 1;
+            display: flex;
+        }
+
+        .single-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Ensures the image covers the container */
+        }
+
+        .right-img-wrap {
+            flex: 1;
+            /* about 33% width */
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            /* vertical gap between the two images on the right */
+        }
+
+        .right-img-wrap img {
+            flex: 1;
+            width: 100%;
+            height: 50%;
+            object-fit: cover;
+        }
+
+        .cert-container {
+            background-color: #f7f7f7;
+            padding: 10px 10px;
+            margin-top: 20px;
+        }
+
+        .dt-colour {
+            color: black;
+        }
+
+        .divider-oj {
+            width: 797px;
+            /* Match the full width of the .page */
+            height: 18px;
+            /* Fixed height for the divider */
+            background-color: #297BFF
+                /* Divider color */
+        }
+
+        .image-container {
+            width: 797px;
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 50px;
+        }
+
+
+        .title-image {
+            position: absolute;
+            width: 110%;
+            height: auto;
+            top: -10%;
+            left: -5%;
+            transform: scale(1.1);
+        }
+
+        .header-title {
+            margin: 120px 80px 0;
+        }
+
+        .fs-m {
+            font-size: 30px;
+        }
+
+        .mb-150 {
+            margin-bottom: 150px;
+        }
+
+        .logo-title {
+            width: 160px;
+        }
+
+        .pt-l {
+            padding-top: 20px;
+        }
+
+        .title-margin {
+            margin-left: 80px;
+            margin-right: 80px;
+        }
+
+        .assessment-photo-container {
+            display: grid;
+            grid-template-areas:
+                "photo-1 photo-2"
+                "photo-1 photo-3";
+            grid-template-columns: 2fr 1fr;
+            /* Photo 1 takes twice the width */
+            grid-template-rows: 1fr 1fr;
+            /* Two equal rows */
+            gap: 10px;
+            /* Space between grid items */
+            height: 300px;
+            width: 100%;
+            /* Adjust width as needed */
+            overflow: hidden;
+            /* Ensures no overflow */
+            box-sizing: border-box;
+            /* Consistent box-sizing */
+        }
+
+        .assessment-photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Ensures the images fill their areas without distortion */
+        }
+
+        .photo-1 {
+            grid-area: photo-1;
+        }
+
+        .photo-2 {
+            grid-area: photo-2;
+        }
+
+        .photo-3 {
+            grid-area: photo-3;
+        }
+
+        .spacer {
+            height: 25px;
+        }
+
+        .aligned-sup {
+            font-size: 0.75em;
+            position: relative;
+            top: -0.3em;
+        }
+
+        .display-none {
+            display: none;
+        }
+
+
+        .photo-grid-2x3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-auto-rows: 270px; /* Adjusted to fit taller logo */
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .photo-grid-item {
+            border: 2px solid black;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .photo-grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .section-header-grey {
+            background-color: #e6e6e6;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-left: 50px;
+            margin-right: 50px;
+            margin-top: 45px;
+            margin-bottom: 10px;
+            border: 1px solid black;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% if logo_type == 'CPV' %}
+    <style>.logo-title { height: 50px !important; width: auto; }</style>
+    {% else %}
+    <style>.logo-title { height: 65px !important; width: auto; }</style>
+    {% endif %}
+</head>
+
+<body>
+
+
+    <!-- Page 1: TITLE -->
+    <div class="page-title" id="page1">
+        <div class="flex vert">
+            <div class="flex jc-sb header-title">
+                <div class="dt-colour bold fs-20">Ref #{{ valuation_report["fileNumber"]|default('') }}</div>
+                <div>
+                    <img class="logo-title" src="{{ logo_url }}" alt="Logo">
+                </div>
+            </div>
+            <div class="image-container">
+                {% set cover_photo_url = valuation_report.photos|selectattr('isCover')|first %}
+                {% if cover_photo_url %}
+                <img class="title-image" src="{{ cover_photo_url['photoUrl'] }}" alt="Cover Photo">
+                {% else %}
+                <b>NO COVER PHOTO</b>
+                {% endif %}
+            </div>
+            <div class="divider-oj"></div>
+            <div class="flex vert">
+                <div class="fs-20 title-margin mt-m">
+                    {% if valuation_report["valuationDetails"]["valuationType"] == "Land Valuation" %}
+                    Land Valuation
+                    {% else %}
+                    SMSF Audit Short Form Report
+                    {% endif %}
+                </div>
+                <div class="dt-colour fs-m bold title-margin" style="margin-bottom: 75px;">{{
+                    valuation_report["address"]["fullAddress"]|default('N/A') }}</div>
+                <div class="title-margin" style="margin-bottom: 75px; font-size: 13p;">Instructed by <br> {{
+                    valuation_report["primaryContact"]["firstName"]|default('N/A') }} {{
+                    valuation_report["primaryContact"]["lastName"]|default('N/A') }}</div>
+
+                <div class="title-margin fs-20"
+                    style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo"
+                            style="width: 140px; height: auto; display: block;" />
+                        {% if logo_type == 'CPV' %}
+                        <div style="font-size: 10px; margin-top: 6px; line-height: 1; white-space: nowrap;">
+                            Alliance Australia Property Pty Ltd<br>
+                            Liability Limited by a scheme approved under Professional Standards’ Legislation
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div>Prepared by AAP Valuations</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Page 1: END -->
+
+
+    <!-- Page 1.5: ASSESSMENT -->
+    <div class="page" id="page2" style="padding-top: 120px;">
+        <div class="header-full">
+            <div class="ml-50 fs-header bold mt-45">Report Overview</div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="mt-m">
+            Property Address
+        </div>
+        <div class="bold mb-s fs-header">
+            {{ valuation_report["address"]["fullAddress"]|default('N/A') }}
+        </div>
+
+        <div class="flex icons-container mb-0 mt-10 jc-sb">
+            <div class="flex">
+                {% if valuation_report["propertyDetails"]["siteArea"] %}
+                <div class="flex icon-component mr-s ${this.displayAnyField(this.subjectProperty.siteArea)}">
+                    <img src="https://valai.duo.tax/assets/land-icon.svg" alt="Land Area"
+                        style="width: 22px; height: 22px; vertical-align: middle;">
+                    <div>{{ valuation_report["propertyDetails"]["siteArea"]|format_area_smart|default('N/A') }}</div>
+                </div>
+                {% endif %}
+                {% if valuation_report["propertyDetails"]["buildingArea"] %}
+                <div class="flex icon-component mr-s ${this.displayAnyField(this.subjectProperty.floorArea)}">
+                    <img src="https://valai.duo.tax/assets/floor-icon.svg" alt="Floor Area"
+                        style="width: 22px; height: 22px; vertical-align: middle;">
+                    <div>{{ valuation_report["propertyDetails"]["buildingArea"] }} sqm</div>
+                </div>
+                {% endif %}
+                {% if is_residential %}
+                {% if valuation_report["propertyDescriptors"]["bedrooms"] %}
+                <div class="flex icon-component mr-s ${this.displayAnyField(this.subjectProperty.bedrooms)}">
+                    <img src="https://valai.duo.tax/assets/bed-icon.svg" alt="Bedrooms"
+                        style="width: 22px; height: 22px; vertical-align: middle;">
+                    <div>{{ valuation_report["propertyDescriptors"]["bedrooms"] }}</div>
+                </div>
+                {% endif %}
+                {% if valuation_report["propertyDescriptors"]["bathrooms"] %}
+                <div class="flex icon-component mr-s ${this.displayAnyField(this.subjectProperty.bathrooms)}">
+                    <img src="https://valai.duo.tax/assets/bath-icon.svg" alt="Bathrooms"
+                        style="width: 22px; height: 22px; vertical-align: middle;">
+                    <div>{{ valuation_report["propertyDescriptors"]["bathrooms"] }}</div>
+                </div>
+                {% endif %}
+                {% if valuation_report["propertyDescriptors"]["carSpaces"] %}
+                <div class="flex icon-component mr-s ${this.displayAnyField(this.subjectProperty.carSpaces)}">
+                    <img src="https://valai.duo.tax/assets/car-icon.svg" alt="Car Spaces"
+                        style="width: 22px; height: 22px; vertical-align: middle;">
+                    <div>{{ valuation_report["propertyDescriptors"]["carSpaces"] }}</div>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+            <div>
+                <b>Issue Date</b>: {{ now() }}
+            </div>
+        </div>
+
+        <div class="sub-title mb-s">Property Details</div>
+        <div class="flex gap-m" style="margin-bottom: 20px;">
+            <div class="flex vert flex-6">
+                <div class="flex mb-s">
+                    <div class="fw-h flex-4 detail-label ac-c fs-14">Type</div>
+                    <div class="flex-6 detail-value ac-c fs-14">{{
+                        valuation_report["propertyDetails"]["propertyType"]|default('N/A')|title }}</div>
+                </div>
+                <div class="flex mb-s ${this.displayAnyField(this.subjectProperty.rpd)}">
+                    <div class="fw-h flex-4 detail-label ac-c fs-14">RPD</div>
+                    <div class="flex-6 detail-value ac-c fs-14">{{
+                        valuation_report["propertyDetails"]["titleReference"]|default('N/A') }}</div>
+                </div>
+
+                <!-- TEMP REMOVE
+
+                <div class="flex mb-s">
+                    <div class="fw-h flex-4 detail-label ac-c fs-14">Roof</div>
+                    <div class="flex-6 detail-value ac-c fs-14">${this.wordSplitter(this.propDetails.roofMaterial)}</div>
+                </div>
+                -->
+            </div>
+
+            <div class="flex vert flex-4 bc-g">
+                <div class="flex mb-s">
+                    <div class="fw-h flex-4 detail-label ac-c fs-14">LGA</div>
+                    <div class="flex-6 detail-value ac-c fs-14">{{
+                        valuation_report["propertyDetails"]["councilArea"]|default('N/A') }}</div>
+                </div>
+                {% if valuation_report["propertyDetails"]["buildYear"] %}
+                <div class="flex mb-s ${this.displayAnyField(this.subjectProperty.buildYear)}">
+                    <div class="fw-h flex-4 detail-label ac-c fs-14">Build Year</div>
+                    <div class="flex-6 detail-value ac-c fs-14">{{
+                        valuation_report["propertyDetails"]["buildYear"]|default('N/A') }}</div>
+                </div>
+                {% endif %}
+                <!-- TEMP REMOVAL:
+                <div class="flex mb-s">
+                    <div class="fw-h flex-4 detail-label ac-c fs-14">Zoning</div>
+                    <div class="flex-6 detail-value ac-c fs-14">${this.propDetails.developmentZone}</div>
+                </div>
+                <div class="flex mb-s">
+                    <div class="fw-h flex-4 detail-label ac-c fs-14">Walls</div>
+                    <div class="flex-6 detail-value ac-c fs-14">${this.wordSplitter(this.propDetails.wallMaterial)}</div>
+                </div>
+                -->
+            </div>
+        </div>
+        {% if valuation_report["generalComments"]["propertyDescription"] %}
+        <div class="mb-l">
+            <div class="flex jc-c ta-j" style="font-size: 14px;">
+                {{ valuation_report["generalComments"]["propertyDescription"] }}
+            </div>
+        </div>
+        {% endif %}
+        <div class="flex cert-container">
+            <div style="width: 100%;">
+                <p class="bold mb-s" style="font-size: 23px;">Valuation</p>
+                <p class="mb-m">Subject property: {{ valuation_report["address"]["fullAddress"]|default('N/A') }}.</p>
+                <p class="mb-m">We assess the subject property's Fair Market Value in its present condition to be:</p>
+
+                <div class="flex">
+                    {% if True %}
+                    <div class="flex vert flex-5">
+                        <p class="">Market Value:</p>
+                        <p class="bold mb-m dt-colour" style="font-size: 28px;">{{
+                            valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}</p>
+                    </div>
+                    {% else %}
+                    <div
+                        class="flex vert flex-5 ${this.displayRentalEstimate()} ${this.displayAnyField(this.rentalValue)}">
+                        <p class="">Rental value {% if record.is_residential %}per week{% else %}per annum{% endif %}:
+                        </p>
+                        <p class="bold fs-l mb-m dt-colour">{{
+                            record.property_valuation.rental_value|format_currency|default('N/A') }}</p>
+                    </div>
+                    {% endif %}
+                    {% if valuation_report["valuationDetails"]["valuationType"] == "Land Valuation" and
+                    valuation_report["valuationDetails"].get("landValuationType") %}
+                    <div class="flex vert flex-5">
+                        <p class="">Valuation Type:</p>
+                        <p class="bold mb-m dt-colour" style="font-size: 28px;">{{
+                            valuation_report["valuationDetails"]["landValuationType"]|default('N/A') }}</p>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- <p class="mb-m ${this.displayAdditionalRemarks()}">${this.formatAdditionalRemarks()}</p> -->
+                <div class="flex jc-sb">
+                    <p>Prepared By: AAP Valuations</p>
+                    <p>Date of Valuation: <b>{% if valuation_report["valuationDetails"]["valuationDate"] %}{{
+                            valuation_report["valuationDetails"]["valuationDate"]|format_date }}{% else %}{{ now() }}{%
+                            endif %}</b></p>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="flex cert-container" style="margin-top: 20px;">
+            <div style="width: 100%;">
+                <p class="bold mb-s" style="font-size: 23px;">Cost Calculation</p>
+                {% set nla = valuation_report["valuationDetails"].get("nla", 0) %}
+                {% set sq_meter_rate = valuation_report["valuationDetails"].get("squareMeterRate", 0) %}
+                {% set total_value = valuation_report["valuationDetails"].get("marketValue", 0) %}
+                <p class="mb-m"><strong>Direct Sales Comparison Approach:</strong> Based on the comparable sales
+                    evidence and considerations, we consider a value rate of <strong>{{
+                        sq_meter_rate|format_currency }} per
+                        sqm</strong> appropriate. <strong>NLA {{ nla }} Sqm @ {{ sq_meter_rate|format_currency }}
+                        p.sqm = {{ total_value|format_currency
+                        }}</strong>
+                </p>
+
+
+            </div>
+        </div>
+
+
+        <div class="footer flex jc-sb">
+            <p class="ml-50 mt-20 fs-s">Page <span class="page-num"></span> | #{{
+                valuation_report["fileNumber"]|default('') }} | {{
+                valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
+            <div class="mr-70">
+                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+            </div>
+        </div>
+    </div>
+    <!-- Page 1.5: END -->
+
+    <!-- Page 7: SALES EVIDENCE -->
+    {% if True %}
+    <div class="page ${this.displaySales()}" id="page7">
+        <div class="header-full">
+            <div class="ml-50 fs-header bold mt-45">Comparable Sales</div>
+        </div>
+        <div class="spacer"></div>
+        <!-- THIS IS AUTOMATED COMPARABLES-->
+        {% for comparable in valuation_report["comparables"]["sales"] %}
+
+        <div class="card-container flex vert mb-0 mt-comparables ${this.auotmaticComparablesClass()}">
+            <div class="flex jc-sb mb-s">
+                <div><strong>{{ comparable["fullAddress"]|default('') }}</strong></div>
+                <div>Sold Price: <strong>{{ comparable["saleLeasePrice"]|format_currency|default('') }}</strong></div>
+            </div>
+            <div class="flex">
+                <div class="flex-2">
+                    {% set comp_img = comparable["imageUrl"] or comparable["photoUrl"] %}
+                    <img class="property-photo"
+                        src="{{ comp_img or 'https://valai.duo.tax/assets/property-placeholder.jpg' }}"
+                        alt="Comparable Photo">
+                </div>
+                <div class="flex flex-8 vert ml-s">
+                    <div class="flex icons-container mb-s">
+                        {% if comparable["siteArea"] %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable[" siteArea"])}">
+                            <img class="icon" src="https://valai.duo.tax/assets/land-icon.svg" alt="Land Area">
+                            <div>{{ comparable["siteArea"]|format_area_smart|default('-') }}<span
+                                    class="aligned-sup">2</span></div>
+                        </div>
+                        {% endif %}
+                        {% if comparable["buildingArea"] %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable[" buildingArea"])}">
+                            <img class="icon" src="https://valai.duo.tax/assets/floor-icon.svg" alt="Floor Area">
+                            <div>{{ comparable["buildingArea"]|default('-') }}<span class="aligned-sup">2</span></div>
+                        </div>
+                        {% endif %}
+                        {% if is_residential %}
+                        {% if comparable["bedrooms"] %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable[" bedrooms"])}">
+                            <img class="icon" src="https://valai.duo.tax/assets/bed-icon.svg" alt="Bedrooms">
+                            <div>{{ comparable["bedrooms"]|default('-') }}</div>
+                        </div>
+                        {% endif %}
+                        {% if comparable["bathrooms"] %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable.bathrooms)}">
+                            <img class="icon" src="https://valai.duo.tax/assets/bath-icon.svg" alt="Bathrooms">
+                            <div>{{ comparable["bathrooms"]|default('-') }}</div>
+                        </div>
+                        {% endif %}
+                        {% if comparable["carSpaces"] %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable.car_spaces)}">
+                            <img class="icon" src="https://valai.duo.tax/assets/car-icon.svg" alt="Car Spaces">
+                            <div>{{ comparable["carSpaces"]|default('-') }}</div>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="flex gap-30 fs-s mb-s">
+                        {% if comparable["buildYear"] %}
+                        <div class="flex flex-5">
+                            <div class="flex-5 colour-grey">Year Built</div>
+                            <div class="flex-5">{{ comparable["buildYear"]|default('-') }}</div>
+                        </div>
+                        <div class="flex flex-5">
+                            <div class="flex-5 colour-grey">Sold Date</div>
+                            <div class="flex-5">{{ comparable["saleLeaseDate"]|format_date|default('') }}</div>
+                        </div>
+                        {% else %}
+                        <div class="flex flex-5">
+                            <div class="flex-5 colour-grey">Sold Date</div>
+                            <div class="flex-5">{{ comparable["saleLeaseDate"]|format_date|default('') }}</div>
+                        </div>
+                        <div class="flex flex-5"></div>
+                        {% endif %}
+                    </div>
+                    <div class="flex gap-30 fs-s mb-s">
+                        <div class="flex flex-5">
+                            <div class="flex-5 colour-grey">Distance</div>
+                            <div class="flex-5">{{ comparable["distance"]|default('-') }} km</div>
+                        </div>
+                        <div class="flex flex-5">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="fs-s ${this.displayAnyField(property.propertyComments)}" style="margin-bottom: 10px;">
+                {% if comparable["briefComments"] %}
+                <p class="mb-s"><span class="fw-h">Brief comments: </span>{{ comparable["briefComments"] }}
+                </p>
+                {% endif %}
+                {% if comparable["comparison"] %}
+                <p><span class="fw-h">In comparison to subject: </span> {{ comparable["comparison"] }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+
+        <div class="footer flex jc-sb">
+            <p class="ml-50 mt-20 fs-s">Page <span class="page-num"></span> | #{{
+                valuation_report["fileNumber"]|default('') }} | {{
+                valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
+            <div class="mr-70">
+                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+            </div>
+        </div>
+    </div>
+    <!-- End of Page 7 -->
+
+    {% else %}
+    <div class="page ${this.displaySales()}" id="page7">
+        <div class="header-full">
+            <div class="ml-50 fs-header bold mt-45">Comparable Rentals</div>
+        </div>
+        <div class="spacer"></div>
+        <!-- THIS IS AUTOMATED COMPARABLES-->
+        {% for comparable in valuation_report["comparables"]["rentals"] %}
+
+        <div class="card-container flex vert mb-0 mt-comparables ${this.auotmaticComparablesClass()}">
+            <div class="flex jc-sb mb-s">
+                <div><strong>{{ comparable.full_address|default('')|title_address }}</strong></div>
+                <div>Lease Price: <strong>{{ comparable.sale_lease_price|format_currency|default('') }} {{
+                        comparable.rental_frequency|format_rental_frequency }}</strong></div>
+            </div>
+            <div class="flex">
+                <div class="flex-2">
+                    <img class="property-photo"
+                        src="{{ comparable.image_url|default('https://127.0.0.1:5173/src/assets/property-placeholder.jpg') }}"
+                        alt="Property Photo">
+                </div>
+                <div class="flex flex-8 vert ml-s">
+                    <div class="flex icons-container mb-s">
+                        {% if comparable.site_area %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable.land_area)}">
+                            <img class="icon" src="https://valai.duo.tax/assets/land-icon.svg" alt="Land Area">
+                            <div>{{ comparable.site_area|format_area_smart|default('-') }}<span
+                                    class="aligned-sup">2</span></div>
+                        </div>
+                        {% endif %}
+                        {% if comparable.building_area %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable.floor_area)}">
+                            <img class="icon" src="https://valai.duo.tax/assets/floor-icon.svg" alt="Floor Area">
+                            <div>{{ comparable.building_area|default('-') }}m<span class="aligned-sup">2</span></div>
+                        </div>
+                        {% endif %}
+                        {% if record.is_residential or (record.property_details.property_type|default('')|lower ==
+                        'rural') %}
+                        {% if comparable.bedrooms %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable.bedrooms)}">
+                            <img class="icon" src="https://valai.duo.tax/assets/bed-icon.svg" alt="Bedrooms">
+                            <div>{{ comparable.bedrooms|default('-') }}</div>
+                        </div>
+                        {% endif %}
+                        {% if comparable.bathrooms %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable.bathrooms)}">
+                            <img class="icon" src="https://valai.duo.tax/assets/bath-icon.svg" alt="Bathrooms">
+                            <div>{{ comparable.bathrooms|default('-') }}</div>
+                        </div>
+                        {% endif %}
+                        {% if comparable.car_spaces %}
+                        <div class="flex icon-component ${this.displayAnyField(comparable.car_spaces)}">
+                            <img class="icon" src="https://valai.duo.tax/assets/car-icon.svg" alt="Car Spaces">
+                            <div>{{ comparable.car_spaces|default('-') }}</div>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="flex gap-30 fs-s mb-s">
+                        {% if comparable.build_year %}
+                        <div class="flex flex-5">
+                            <div class="flex-5 colour-grey">Year Built</div>
+                            <div class="flex-5">{{ comparable.build_year|default('-') }}</div>
+                        </div>
+                        {% endif %}
+                        <div class="flex flex-5">
+                            <div class="flex-5 colour-grey">Lease Date</div>
+                            <div class="flex-5">{{ comparable.sale_lease_date|format_date|default('-') }}</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-30 fs-s mb-s">
+                        <div class="flex flex-5">
+                            <div class="flex-5 colour-grey">Distance</div>
+                            <div class="flex-5">{{ comparable.distance|default('-') }} km</div>
+                        </div>
+                        <div class="flex flex-5">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="fs-s ${this.displayAnyField(property.propertyComments)}" style="margin-bottom: 10px;">
+                {% if comparable.brief_comments %}
+                <p class="mb-s"><span class="fw-h">Brief comments: </span>{{ comparable.brief_comments }}
+                </p>
+                {% endif %}
+                {% if comparable.comparison %}
+                <p><span class="fw-h">In comparison to subject: </span> {{ comparable.comparison }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+
+        <div class="footer flex jc-sb">
+            <p class="ml-50 mt-20 fs-s">Page <span class="page-num"></span> | #{{ sf_record.Job_Number__c|default('') }}
+                | {{ record.location_details.street|default('N/A') }}, {{ record.location_details.suburb|default('N/A')
+                }}, {{ record.location_details.state|default('N/A') }} {{
+                record.location_details.postcode|default('N/A') }}</p>
+            <div class="mr-70">
+                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <!-- End of listings -->
+    {% if valuation_report["valuationDetails"]["valuationType"] == "Land Valuation" %}
+    <div class="page land-page">
+        <div class="header-full">
+            <div class="ml-50 fs-m bold mt-45">Land Valuation</div>
+        </div>
+        <div class="land-content">
+            <table class="mt-l" style="width: 100%; border-collapse: collapse; border: none;">
+                <tr>
+                    <td style="width: 23%; padding: 10px; vertical-align: top; font-weight: bold; border: none;">
+                        Valuation Remarks</td>
+                    <td style="width: 77%; padding: 10px; vertical-align: top; border: none;">
+                        <strong style="text-decoration: underline;">Direct Comparison Approach:</strong><br><br>
+                        Sales evidence reflects appropriate land valuation would be {{
+                        valuation_report["valuationDetails"]["squareMeterRate"]|format_currency|default('N/A') }} PER
+                        SQM, adjusting with the Usable Land size, Aspect and Location. Therefore, Subject Property Land
+                        Valuation is – <br><br>
+                        {{ valuation_report["propertyDetails"]["siteArea"]|default('N/A') }} SQM @ {{
+                        valuation_report["valuationDetails"]["squareMeterRate"]|format_currency|default('N/A') }} = {{
+                        land_value|format_currency|default('N/A') }} or round off <strong>{{
+                            land_value_rounded|format_currency|default('N/A') }}</strong> <br><br>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Market Value (Vacant Land Value as is basis):</span>
+                            <strong>{{ land_value_rounded|format_currency|default('N/A') }}</strong>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 23%; padding: 10px; vertical-align: top; font-weight: bold; border: none;">
+                        Valuation:</td>
+                    <td style="width: 77%; padding: 10px; vertical-align: top; border: none;">
+                        Based on the Direct Comparison Approach On {{
+                        valuation_report["valuationDetails"]["valuationDate"]|format_date_v2|default('N/A') }}, we
+                        assessed the subject's market value 'as is' basis of the subject property at <strong>{{
+                            land_value_rounded|format_currency|default('N/A') }} ({{
+                            land_value_rounded|format_currency_words|default('N/A') }})</strong>.<br><br>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid black;">
+                            <span><strong>Market Value 'As Is' basis</strong></span>
+                            <strong>{{ land_value_rounded|format_currency|default('N/A') }}</strong>
+                        </div><br>
+                        Our valuation is on the basis the property is input taxed and free of GST. We are not privy of
+                        the financial circumstances of the current owner(s) nor previous transactions upon the property
+                        which may impact upon the status of the property in relation to GST. Should the property not
+                        quality as GST free, our assessment inclusive of GST.<br><br>
+                        <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="Signature"
+                            style="width: 3.84cm; height: 1.2cm;"><br>
+                        JUGAL SAHA (Property Valuer) AAPI CPV 101474
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 30%; padding: 10px; vertical-align: top; font-weight: bold; border: none;">
+                        Certification and Qualification:</td>
+                    <td style="width: 70%; padding: 10px; vertical-align: top; border: none;">
+                    </td>
+                </tr>
+
+            </table>
+            <p class="smaller" style="padding: 5px; padding-left: 15px;">
+                This report has been prepared for the private and confidential use of our client for the specified
+                purpose. It should not be reproduced in whole or part without the express written authority of AAP
+                Valuations or relied upon any other party for any purpose and the valuer shall not have any liability to
+                any party who does so. Our warning is registered here, that any party other than those specifically
+                named in this report should obtain their own valuation before acting in any way in respect of the
+                subject property. Where a digital copy of the report has been provided and has not been received
+                directly from us, the report contents, especially the valuation and critical assumption should be
+                verified by contacting the using office to ensure contents are appropriate. In particular if this report
+                appears to be suspicious - that the report is tampered or altered, we recommend to contact the office.
+                This valuation should be read in its entirety, inclusive of any summary and also its expiration date, 3
+                months from the date of valuation. The valuer and valuation firm does not accept any responsibility
+                where part of this report has been relied upon without reference to the full context of the valuation
+                report.
+            </p>
+
+            <!-- Additional certification/qualification paragraphs -->
+            <div class="smaller" style="padding: 5px; padding-left: 15px;">
+                <p>This valuation is to determine Market Value for specific purposes only. Please note this report does
+                    not meet practice standard for court proceeding and mortgage purposes. It is specifically for market
+                    assessment and not suitable for no other purpose. No responsibility is accepted to any third party
+                    that may use or rely on the whole or any part of the content of this valuation.</p>
+                <p>The Australian Property Institute has adopted the International Valuation Standards Committee
+                    definition of Market Value.</p>
+                <p>The estimated amount for which an asset should exchange on the date of valuation between a willing
+                    buyer and a willing seller in an arms’ length transaction after proper marketing wherein the parties
+                    had each acted knowledgeably, prudently, and without compulsion.</p>
+                <p>“Market value” in this report is the same as this definition.</p>
+                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+            </div>
+        </div>
+    </div>
+    </div>
+    {% endif %}
+    <!-- Page 9:  -->
+    {% if valuation_report["valuationDetails"]["valuationType"] != "Land Valuation" %}
+    <div class="page" id="page9">
+        <div class="header-full">
+            <div class="ml-50 fs-m bold mt-45">Declaration, Assumptions & Limitations</div>
+        </div>
+        <ol class="mt-l pl-18">
+            <li class="mb-m">
+
+                AAP Valuations hereby certifies that the assessments of the above property have been carried out as of
+                the valuation date stated in this report. Neither AAP Valuations nor, to the best of their knowledge,
+                any member of their firm has any conflict of interest, direct, indirect, or financial, in relation to
+                this property that has not been disclosed herein.
+            </li>
+            <li class="mb-m">
+                This report is intended solely for the use of the party or parties to whom it is addressed for the
+                purpose of a Self-Managed Super Fund Audit and is not to be utilised for any other purpose. Assuming the
+                property has a clear and marketable title, free from any onerous easements or encumbrances, AAP
+                Valuations is of the opinion that the {% if True %} market value of the entire property can be fairly
+                expressed as {{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
+                AUD. {% else %}
+                {% if is_residential %}
+                rental value of the entire property per week can be fairly expressed as {{
+                valuation_report["valuationDetails"]["rentalValue"]|format_currency|default('N/A') }} AUD.
+                {% else %}
+                annual rental value of the entire property can be fairly expressed as {{
+                valuation_report["valuationDetails"]["rentalValue"]|format_currency|default('N/A') }} AUD.
+                {% endif %}
+                {% endif %}
+            </li>
+            <li class="mb-m">
+                This report has been prepared for the private and confidential use of our client for the specified
+                purpose. It should not be reproduced in whole or
+                part without the express written authority of AAP Valuations or relied upon any other party for any
+                purpose and the valuer shall not have
+                any liability to any party who does so. Our warning is registered here, that any party other than those
+                specifically named in this report should obtain
+                their own valuation before acting in any way in respect of the subject property.
+            </li>
+            <li class="mb-m">
+                Where a digital copy of the report has been provided and has not
+                been received directly from us, the report contents, especially the valuation and critical assumption
+                should be verified by contacting the using office
+                to ensure contents are appropriate. In particular if this report appears to be suspicious - that the
+                report is tampered or altered, we recommend to
+                contact the office. This valuation should be read in its entirety, inclusive of any summary and also its
+                expiration date, 3 months from the date of
+                valuation. The valuer and valuation firm does not accept any responsibility where part of this report
+                has been relied upon without reference to the
+                full context of the valuation report.
+            </li>
+        </ol>
+        <div class="footer flex jc-sb">
+            <p class="ml-50 mt-20 fs-s">Page <span class="page-num"></span> | #{{
+                valuation_report["fileNumber"]|default('') }} | {{
+                valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
+            <div class="mr-70">
+                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <!-- Page 9: END -->
+
+
+    <script>
+        document.querySelectorAll(".page-num").forEach(function (element, index) {
+            element.innerHTML = index + 2;
+        });
+    </script>
+</body>
+
+</html>

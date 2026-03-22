@@ -1,0 +1,594 @@
+{
+  $jsonSchema: {
+    bsonType: 'object',
+    properties: {
+      propertyId: {
+        bsonType: 'objectId'
+      },
+      propertyDetails: {
+        bsonType: 'object',
+        properties: {
+          propertyType: {
+            bsonType: 'string'
+          },
+          titleReference: {
+            bsonType: 'string'
+          },
+          zoning: {
+            bsonType: 'string'
+          },
+          siteArea: {
+            bsonType: 'number'
+          },
+          buildingArea: {
+            bsonType: 'number'
+          },
+          landShape: {
+            bsonType: 'string'
+          },
+          councilArea: {
+            bsonType: 'string'
+          },
+          permissibleUses: {
+            bsonType: 'string'
+          },
+          heritageIssue: {
+            bsonType: 'string'
+          },
+          buildYear: {
+            bsonType: 'number'
+          },
+          accommodation: {
+            bsonType: 'string'
+          },
+          livingArea: {
+            bsonType: 'number'
+          },
+          externalArea: {
+            bsonType: 'number'
+          },
+          parkingArea: {
+            bsonType: 'number'
+          },
+          otherArea: {
+            bsonType: 'number'
+          }
+        }
+      },
+      locationDetails: {
+        bsonType: 'object',
+        properties: {
+          suburbDescription: {
+            bsonType: 'string'
+          },
+          includesGas: {
+            bsonType: 'bool'
+          },
+          map: {
+            bsonType: 'object',
+            properties: {
+              photo: {
+                bsonType: 'string'
+              },
+              source: {
+                bsonType: 'string'
+              }
+            }
+          },
+          latitude: {
+            bsonType: 'string'
+          },
+          longitude: {
+            bsonType: 'string'
+          },
+          nearestTransportation: {
+            bsonType: 'object',
+            properties: {
+              name: {
+                bsonType: 'string'
+              },
+              type: {
+                bsonType: 'string'
+              },
+              distance: {
+                bsonType: 'number'
+              },
+              unit: {
+                bsonType: 'string'
+              }
+            }
+          },
+          nearestShop: {
+            bsonType: 'object',
+            properties: {
+              name: {
+                bsonType: 'string'
+              },
+              type: {
+                bsonType: 'string'
+              },
+              distance: {
+                bsonType: 'number'
+              },
+              unit: {
+                bsonType: 'string'
+              }
+            }
+          },
+          nearestPrimarySchool: {
+            bsonType: 'object',
+            properties: {
+              name: {
+                bsonType: 'string'
+              },
+              type: {
+                bsonType: 'string'
+              },
+              distance: {
+                bsonType: 'number'
+              },
+              unit: {
+                bsonType: 'string'
+              }
+            }
+          },
+          nearestSecondarySchool: {
+            bsonType: 'object',
+            properties: {
+              name: {
+                bsonType: 'string'
+              },
+              type: {
+                bsonType: 'string'
+              },
+              distance: {
+                bsonType: 'number'
+              },
+              unit: {
+                bsonType: 'string'
+              }
+            }
+          },
+          nearestCBD: {
+            bsonType: 'object',
+            properties: {
+              name: {
+                bsonType: 'string'
+              },
+              type: {
+                bsonType: 'string'
+              },
+              distance: {
+                bsonType: 'number'
+              },
+              unit: {
+                bsonType: 'string'
+              }
+            }
+          },
+          nearestConnectingStreet: {
+            bsonType: 'object',
+            properties: {
+              name: {
+                bsonType: 'string'
+              },
+              type: {
+                bsonType: 'string'
+              },
+              distance: {
+                bsonType: 'number'
+              },
+              unit: {
+                bsonType: 'string'
+              }
+            }
+          },
+          situatedStreet: {
+            bsonType: 'string'
+          }
+        }
+      },
+      propertyDescriptors: {
+        bsonType: 'object',
+        properties: {
+          bedrooms: {
+            bsonType: 'number'
+          },
+          bathrooms: {
+            bsonType: 'number'
+          },
+          carSpaces: {
+            bsonType: 'number'
+          },
+          mainBuildingType: {
+            bsonType: 'string'
+          },
+          externalWalls: {
+            bsonType: 'string'
+          },
+          internalWalls: {
+            bsonType: 'string'
+          },
+          roofingType: {
+            bsonType: 'string'
+          },
+          parkingType: {
+            bsonType: 'string'
+          },
+          internalCondition: {
+            'enum': [
+              'Good',
+              'Fair',
+              'Average',
+              'Poor'
+            ]
+          },
+          externalCondition: {
+            'enum': [
+              'Good',
+              'Fair',
+              'Average',
+              'Poor'
+            ]
+          },
+          repairsRequirements: {
+            bsonType: 'string'
+          },
+          defects: {
+            bsonType: 'string'
+          }
+        }
+      },
+      ancillaryImprovements: {
+        bsonType: 'object',
+        properties: {
+          showSection: {
+            bsonType: 'bool'
+          },
+          driveway: {
+            bsonType: 'string'
+          },
+          fencing: {
+            bsonType: 'string'
+          },
+          otherItems: {
+            bsonType: 'array',
+            items: {
+              bsonType: 'string'
+            }
+          }
+        }
+      },
+      generalComments: {
+        bsonType: 'object',
+        properties: {
+          propertyDescription: {
+            bsonType: 'string'
+          },
+          marketOverview: {
+            bsonType: 'string'
+          },
+          propertyComments: {
+            bsonType: 'string'
+          }
+        }
+      },
+      address: {
+        bsonType: 'object',
+        properties: {
+          fullAddress: {
+            bsonType: 'string'
+          },
+          streetName: {
+            bsonType: 'string',
+            description: 'Street name is required'
+          },
+          streetNameOnly: {
+            bsonType: 'string',
+            description: 'Street name is required (e.g., \'George\')'
+          },
+          suburb: {
+            bsonType: 'string',
+            description: 'Suburb is required (e.g., \'Parramatta\')'
+          },
+          state: {
+            'enum': [
+              'NSW',
+              'VIC',
+              'QLD',
+              'SA',
+              'WA',
+              'TAS',
+              'ACT',
+              'NT'
+            ],
+            description: 'Must be a valid Australian state/territory abbreviation'
+          },
+          postcode: {
+            bsonType: 'string',
+            pattern: '^[0-9]{4}$',
+            description: 'Must be a 4-digit Australian postcode'
+          },
+          unitNumber: {
+            bsonType: 'string',
+            description: 'Optional unit/apartment number (e.g., \'5B\')'
+          }
+        }
+      },
+      primaryContact: {
+        bsonType: 'object',
+        properties: {
+          firstName: {
+            bsonType: 'string'
+          },
+          lastName: {
+            bsonType: 'string'
+          },
+          phone: {
+            bsonType: 'string'
+          },
+          phone2: {
+            bsonType: 'string'
+          },
+          email: {
+            bsonType: 'string'
+          },
+          email2: {
+            bsonType: 'string'
+          },
+          owners: {
+            bsonType: 'array',
+            items: {
+              bsonType: 'object',
+              properties: {
+                firstName: {
+                  bsonType: 'string'
+                },
+                lastName: {
+                  bsonType: 'string'
+                }
+              }
+            }
+          }
+        }
+      },
+      valuationDetails: {
+        bsonType: 'object',
+        properties: {
+          valuationType: {
+            bsonType: 'string'
+          },
+          valuationDate: {
+            bsonType: 'date'
+          },
+          inspectionDate: {
+            bsonType: 'date'
+          },
+          purposeOfReport: {
+            bsonType: 'string'
+          },
+          currentDayValuation: {
+            bsonType: 'bool'
+          },
+          externalDesktopValuation: {
+            bsonType: 'bool'
+          },
+          isUnit: {
+            bsonType: 'bool'
+          },
+          marketValue: {
+            bsonType: 'number'
+          },
+          valuationAmount: {
+            bsonType: 'number'
+          },
+          interestValued: {
+            bsonType: 'string'
+          },
+          showCurrencyOfValuation: {
+            bsonType: 'bool'
+          },
+          showLandValue: {
+            bsonType: 'bool'
+          },
+          landValue: {
+            bsonType: 'number'
+          },
+          showImprovements: {
+            bsonType: 'bool'
+          },
+          improvements: {
+            bsonType: 'number'
+          },
+          directComparison: {
+            bsonType: 'string'
+          }
+        }
+      },
+      referralDetails: {
+        bsonType: 'object',
+        properties: {
+          referrerName: {
+            bsonType: 'string'
+          },
+          referralFee: {
+            bsonType: 'number'
+          }
+        }
+      },
+      photos: {
+        bsonType: 'array',
+        items: {
+          bsonType: 'object',
+          properties: {
+            isCover: {
+              bsonType: 'bool'
+            },
+            isGallery: {
+              bsonType: 'bool'
+            },
+            isAnnexure: {
+              bsonType: 'bool'
+            },
+            annexureHeader: {
+              bsonType: 'string'
+            },
+            featuresFixtures: {
+              bsonType: 'array',
+              items: {
+                bsonType: 'string'
+              }
+            },
+            primeCostItems: {
+              bsonType: 'array',
+              items: {
+                bsonType: 'string'
+              }
+            },
+            internalCondition: {
+              bsonType: 'string'
+            },
+            externalCondition: {
+              bsonType: 'string'
+            },
+            externalWallsType: {
+              bsonType: 'string'
+            },
+            internalWallsType: {
+              bsonType: 'string'
+            },
+            photoUrl: {
+              bsonType: 'string'
+            },
+            flooring: {
+              bsonType: 'string'
+            },
+            category: {
+              bsonType: 'string'
+            }
+          }
+        }
+      },
+      additionalPhotosType: {
+        bsonType: 'string'
+      },
+      comparables: {
+        bsonType: 'object',
+        properties: {
+          sales: {
+            bsonType: 'array',
+            items: {
+              bsonType: 'object',
+              properties: {
+                fullAddress: {
+                  bsonType: 'string'
+                },
+                saleLeasePrice: {
+                  bsonType: 'number'
+                },
+                imageUrl: {
+                  bsonType: 'string'
+                },
+                bedrooms: {
+                  bsonType: 'number'
+                },
+                bathrooms: {
+                  bsonType: 'number'
+                },
+                carSpaces: {
+                  bsonType: 'number'
+                },
+                siteArea: {
+                  bsonType: 'number'
+                },
+                buildingArea: {
+                  bsonType: 'number'
+                },
+                buildYear: {
+                  bsonType: 'number'
+                },
+                daysOnMarket: {
+                  bsonType: 'number'
+                },
+                saleLeaseDate: {
+                  bsonType: 'date'
+                },
+                distance: {
+                  bsonType: 'number'
+                },
+                comparison: {
+                  bsonType: 'string'
+                },
+                rpId: {
+                  bsonType: 'string'
+                },
+                isComparable: {
+                  bsonType: 'bool'
+                }
+              }
+            }
+          },
+          rentals: {
+            bsonType: 'array',
+            items: {
+              bsonType: 'object',
+              properties: {
+                fullAddress: {
+                  bsonType: 'string'
+                },
+                saleLeasePrice: {
+                  bsonType: 'number'
+                },
+                imageUrl: {
+                  bsonType: 'string'
+                },
+                bedrooms: {
+                  bsonType: 'number'
+                },
+                bathrooms: {
+                  bsonType: 'number'
+                },
+                carSpaces: {
+                  bsonType: 'number'
+                },
+                siteArea: {
+                  bsonType: 'number'
+                },
+                buildingArea: {
+                  bsonType: 'number'
+                },
+                buildYear: {
+                  bsonType: 'number'
+                },
+                daysOnMarket: {
+                  bsonType: 'number'
+                },
+                saleLeaseDate: {
+                  bsonType: 'date'
+                },
+                distance: {
+                  bsonType: 'number'
+                },
+                comparison: {
+                  bsonType: 'string'
+                },
+                rpId: {
+                  bsonType: 'string'
+                },
+                isComparable: {
+                  bsonType: 'bool'
+                }
+              }
+            }
+          }
+        }
+      },
+      createdAt: {
+        bsonType: 'date'
+      },
+      updatedAt: {
+        bsonType: 'date'
+      }
+    }
+  }
+}

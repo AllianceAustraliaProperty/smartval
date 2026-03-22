@@ -1,0 +1,39 @@
+aapvaluations.com.au, www.aapvaluations.com.au {
+
+    encode gzip
+
+    # NextAuth routes
+    handle /api/auth/* {
+        reverse_proxy frontend:3000
+    }
+
+    # Backend API routes
+    handle /api/* {
+      reverse_proxy backend:5000 {
+        transport http {
+            response_header_timeout 5m
+            dial_timeout 5m
+        }
+    }
+
+    }
+
+    # Spam cleanup
+    @spam {
+        path_regexp spam (.*(Naturalizen|价格|鞋|包|购物|amz|amazon|product|B092P8VXXL).*)
+    }
+
+    handle @spam {
+        respond "Gone" 410
+    }
+
+    # Frontend
+    handle {
+        reverse_proxy frontend:3000
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}

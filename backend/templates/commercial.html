@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commercial Valuation Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            color: black;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            background: white;
+            page-break-after: always;
+            position: relative;
+            break-after: page;
+        }
+
+        .logo {
+            position: absolute;
+            top: 8mm;
+            right: 20mm;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: bold;
+            color: black;
+        }
+
+        h2 {
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            color: black;
+        }
+
+        h3 {
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 10px;
+            background-color: #e8e8e8;
+            padding: 6px 8px;
+            color: black;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        table td {
+            padding: 3px 6px;
+            vertical-align: top;
+            font-size: 9px;
+            color: black;
+        }
+
+        table td:first-child {
+            font-weight: bold;
+            width: 30%;
+        }
+
+        .comparable-box {
+            margin-bottom: 15px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .comparable-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 9px;
+        }
+
+        .comparable-image {
+            width: 140px;
+            height: 95px;
+            object-fit: cover;
+            float: right;
+            margin-left: 10px;
+        }
+
+        .comparable-details {
+            font-size: 8px;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 12mm;
+            left: 20mm;
+            right: 20mm;
+            font-size: 8px;
+            color: black;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .photo-grid img {
+            width: 100%;
+            height: 170px; /* Adjusted to fit taller logo */
+            object-fit: cover;
+        }
+
+        .floor-plan-container {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .floor-plan-container img {
+            max-width: 100%;
+            max-height: 220mm;
+        }
+
+        .signature {
+            margin-top: 15px;
+        }
+    </style>
+    {% if logo_type == 'CPV' %}
+    <style>.logo { height: 50px !important; }</style>
+    {% else %}
+    <style>.logo { height: 77px !important; }</style>
+    {% endif %}
+</head>
+
+<body>
+
+    <!-- Page 1: Certificate of Value -->
+    <div class="page">
+        <img src="{{ logo_url }}" alt="Logo" class="logo">
+
+        <h1>AAP VALUATIONS</h1>
+
+        <h2>Certificate of Value</h2>
+        <p style="margin-bottom: 12px; font-size: 9px;">In accordance with the Duties Act, 1997 (as amended). This is to
+            certify the Market Value of the interest and property described herein.</p>
+        {% set cover_photos = valuation_report.get("photos", [])|selectattr('isCover')|list %}
+        {% set cover_photo = cover_photos[0] if cover_photos else None %}
+
+        <div style="display: flex; gap: 10px;">
+            {% if cover_photo %}
+            <table style="width: 65%;">
+                {% else %}
+                <table style="width: 100%;">
+                    {% endif %}
+
+                    <tr>
+                        <td>Nature of interest:</td>
+                        <td>Fee simple in possession</td>
+                    </tr>
+                    <tr>
+                        <td>Classification:</td>
+                        <td>Transfer Duty Short Form Report</td>
+                    </tr>
+                    <tr>
+                        <td>Reported interest of:</td>
+                        <td>Further Education & Migration Services</td>
+                    </tr>
+                    <tr>
+                        <td>Address of property:</td>
+                        <td>{{ valuation_report["address"]["fullAddress"]|default('N/A') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Property description:</td>
+                        <td>{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property
+                            comprises an office, reception, kitchenette, toilet and car space.') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Title reference:</td>
+                        <td>{{ valuation_report["propertyDetails"]["titleReference"]|default('N/A') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Net Lettable area:</td>
+                        <td>{{ valuation_report["propertyDetails"]["buildingArea"]|default('N/A') }} Sqm</td>
+                    </tr>
+                    <tr>
+                        <td>Zoning:</td>
+                        <td>{{ valuation_report["propertyDetails"]["zoning"]|default('SP5: Metropolitan Centre') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Council area:</td>
+                        <td>{{ valuation_report["propertyDetails"]["councilArea"]|default('N/A') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Highest & Best Use:</td>
+                        <td>Existing Use</td>
+                    </tr>
+                    <tr>
+                        <td>Date of Valuation:</td>
+                        <td>{{ valuation_report["valuationDetails"]["valuationDate"]|format_date|default('N/A') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Issue Date:</td>
+                        <td>{{ now() }}</td>
+                    </tr>
+                    <tr>
+                        <td>Market Value:</td>
+                        <td><strong>{{
+                                valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
+                                ({{
+                                valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')
+                                }})</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Valuer:</td>
+                        <td>JUGAL SAHA, AAPI CPV (Property Valuer)</td>
+                    </tr>
+                </table>
+                {% if cover_photo %}
+                <div style="width: 33%;">
+                    <img src="{{ cover_photo['photoUrl'] }}" alt="Property"
+                        style="width: 100%; height: auto; max-height: 200px; object-fit: cover;">
+                </div>
+                {% endif %}
+        </div>
+        <h2>Declaration:</h2>
+        <p style="margin-bottom: 8px; font-size: 9px;">{{ valuation_report["generalComments"]["declaration"]|default('I
+            hereby certify that I have carried out the assessments of the above property as at that valuation on the
+            basis of valuation mentioned') }}</p>
+
+
+        <h2>Assumptions and Qualifications:</h2>
+        <p style="font-size: 9px;">{{ valuation_report["generalComments"]["assumptions"]|default('This report has been
+            prepared for the private and confidential use of our client for the specified purpose.') }}</p>
+
+
+        <div class="footer"> Alliance Australia Property Pty Ltd | ABN 35 641 373 702 |
+            info@allianceaustraliaproperty.com.au<br> {{ valuation_report["address"]["fullAddress"]|default('') }}
+        </div>
+    </div>
+    <!-- Page 2: Market Evidence (Sales Comparables) -->
+    {% if valuation_report.get("comparables", {}).get("sales") %}
+
+    <div class="page"> <img src="{{ logo_url }}" alt="Logo" class="logo">
+        <h3>Market Evidence</h3>
+        {% for comparable in valuation_report["comparables"]["sales"][:4] %}
+
+        <div class="comparable-box">
+            <div class="comparable-header">
+                <div> <strong>Address:</strong> {{ comparable["fullAddress"]|default('') }}
+                    <br> <strong>Sale Date:</strong> {{ comparable["saleLeaseDate"]|format_date|default('') }}
+                    <br> <strong>Sale Price:</strong> {{ comparable["saleLeasePrice"]|format_currency|default('') }}
+                </div> <img
+                    src="{{ comparable.get('imageUrl') or comparable.get('photoUrl') or 'https://via.placeholder.com/140x95' }}"
+                    alt="Property" class="comparable-image">
+            </div>
+            <table class="comparable-details">
+                <tr>
+                    <td width="50%"><strong>NLA:</strong> {{ comparable["buildingArea"]|default('-') }}</td>
+                    <td><strong>Site Area:</strong> {{ comparable["siteArea"]|default('-') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>NLA Rate:</strong> $ {{ comparable.get("nlaRate", "-") }}</td>
+                    <td><strong>Yield:</strong> {{ comparable.get("yield", "-") }} %</td>
+                </tr>
+            </table>
+            <p class="comparable-details"><strong>Description:</strong> {{
+                comparable["briefComments"]|default('Commercial strata building with NLA') }}</p>
+            <p class="comparable-details"><strong>Comparison to Subject:</strong> {{
+                comparable["comparison"]|default('Similar features. Overall similar.') }}</p>
+        </div>
+        {% endfor %}
+
+        <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
+            <span style="float: right;">2</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Page 3: Rental Schedule & Valuation Remarks -->
+    <div class="page"> <img src="{{ logo_url }}" alt="Logo" class="logo">
+        {% if valuation_report.get("comparables", {}).get("rentals") %}
+
+        <h3>Rental Schedule</h3>
+        {% for comparable in valuation_report["comparables"]["rentals"][:2] %}
+
+        <div class="comparable-box">
+            <div class="comparable-header">
+                <div> <strong>Address:</strong> {{ (comparable.get("full_address") or comparable.get("fullAddress") or '')|title_address
+                    }}
+                    <br> <strong>Lessor:</strong> {{ comparable.get("lessor", "The Proprietors") }}
+                    <br> <strong>Lease Date:</strong> {{ comparable.get("sale_lease_date") or
+                    comparable.get("saleLeaseDate") or '' |format_date }}
+                    <br> <strong>Outgoings:</strong> $ {{ comparable.get("outgoings", "-") }}
+                </div> <img
+                    src="{{ comparable.get('image_url') or comparable.get('imageUrl') or 'https://via.placeholder.com/140x95' }}"
+                    alt="Property" class="comparable-image">
+            </div>
+            <table class="comparable-details">
+                <tr>
+                    <td width="50%"><strong>NLA size:</strong> {{ comparable.get("building_area") or
+                        comparable.get("buildingArea") or '-' }}</td>
+                    <td><strong>Building Area:</strong> {{ comparable.get("building_area") or
+                        comparable.get("buildingArea") or '-' }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Est. Gross Rental:</strong> $ {{ comparable.get("sale_lease_price") or
+                        comparable.get("saleLeasePrice") or '-' }}</td>
+                    <td><strong>Gross Rental Rate:</strong> $ {{ comparable.get("rental_rate", "-") }}</td>
+                </tr>
+            </table>
+            <p class="comparable-details"><strong>Description:</strong> {{ comparable.get("brief_comments") or
+                comparable.get("briefComments") or 'Commercial strata building' }}</p>
+        </div>
+        {% endfor %}
+
+        {% endif %}
+
+        <h3>Valuation Remarks</h3>
+        <h2 style="font-size: 10px;">Method 1: Direct Comparison</h2>
+        <p style="font-size: 9px;">{{ valuation_report["valuationDetails"].get("directComparison") or 'Sales evidence
+            reflects a 10-462/sqm area up to $ 12, 500/sqm. Referring to these rates and adjusting for size, age,
+            condition, location, we consider an average rate of $ 12, 500/sqm area would be appropriate as well
+            reflecting the market.' }}</p>
+
+
+        <h2 style="font-size: 10px; margin-top: 12px;">Method 2: Capitalisation</h2>
+        <p style="font-size: 9px;">{{ valuation_report["valuationDetails"].get("capitalisation") or 'Income
+            Capitalisation Approach: As a secondary or check method, we have considered the income capitalisation
+            approach. Fair Market rent for the subject property is in the sum of $32, 000.00 pa which we have applied an
+            appropriate yield of 5%.' }}</p>
+
+
+        <p style="margin-top: 15px; font-size: 10px;"><strong>As at {{
+                valuation_report["valuationDetails"]["valuationDate"]|format_date|default('22 October 2025') }} (Date of
+                Valuation)</strong> &nbsp; &nbsp; &nbsp; &nbsp; <strong>Fair Market Value: {{
+                valuation_report["valuationDetails"]["marketValue"]|format_currency|default('$640,000.00') }}</strong>
+        </p>
+        <div class="signature">
+            <p style="font-size: 9px;"><strong>Prepared By: Jugal Saha (AAPI CPV 101474)</strong></p>
+            <p style="font-size: 9px;"><strong>Valuation Firm: AAP Property Valuers</strong></p> <img
+                src="https://valai.duo.tax/assets/jugal-signature.png" alt="Signature"
+                style="width: 130px; margin-top: 8px;">
+            <p style="font-size: 9px;"><strong>Issue Date: {{ now() }}</strong></p>
+        </div>
+        <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
+            <span style="float: right;">3</span>
+        </div>
+    </div>
+    <!-- Page 4: Photographs -->
+    {% set gallery_photos=valuation_report.get("photos", [])|selectattr('isGallery')|list %}
+
+    {% if gallery_photos %}
+
+    <div class="page"> <img src="{{ logo_url }}" alt="Logo" class="logo">
+        <h3>Photographs</h3>
+        <div class="photo-grid">
+            {% for photo in gallery_photos[:6] %}
+            <img src="{{ photo['photoUrl'] }}" alt="Property Photo">
+            {% endfor %}
+        </div>
+        <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
+            <span style="float: right;">4</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Page 5: Floor Plan -->
+    {% if valuation_report.get("floorPlans") and valuation_report["floorPlans"]|length > 0 %}
+
+    <div class="page"> <img src="{{ logo_url }}" alt="Logo" class="logo">
+        <h3>Floor Plan</h3>
+        <div class="floor-plan-container"> <img src="{{ valuation_report['floorPlans'][0]['photoUrl'] }}"
+                alt="Floor Plan"> </div>
+        <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
+            <span style="float: right;">5</span>
+        </div>
+    </div>
+    {% endif %}
+
+</body>
+
+</html>

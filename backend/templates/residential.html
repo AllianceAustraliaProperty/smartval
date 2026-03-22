@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="en" style="margin:0;padding:0;">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    body {
+      font-family: "Avenir Next", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+      /* Light gray background to distinguish page boundaries */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    @page {
+      margin: 0;
+    }
+
+    p {
+      text-align: justify !important;
+    }
+
+    .page {
+      height: 297.35mm;
+      width: 211mm;
+      box-sizing: border-box;
+      position: relative;
+      page-break-after: always;
+      background-color: #ffffff;
+      margin: 0px;
+      padding: 50px 40px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .banner {
+      background-color: lightgray;
+      padding: 10px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      padding-left: 10px;
+    }
+
+    .header-logo {
+      display: block;
+      /* prevent baseline gap */
+      width: auto !important;
+      /* allow width to scale to preserve aspect ratio */
+      max-width: 400px;
+      object-fit: contain !important;
+      print-color-adjust: exact;
+      image-rendering: -webkit-optimize-contrast;
+      margin-bottom: 0px;
+    }
+
+    .header-container {
+      display: flex;
+      align-items: center;
+      /* vertically center the logo */
+      justify-content: flex-end;
+      /* right align - broader support */
+      margin-bottom: 20px;
+    }
+
+    .footer-container {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      margin-top: auto;
+      /* Push footer to bottom */
+      padding-top: 20px;
+      /* Add some space before footer */
+      /*width: 100%;*/
+      position: absolute;
+      bottom: 50px;
+      /* Match the page padding */
+      left: 50px;
+      /* Match the page padding */
+      right: 50px;
+      /* Match the page padding */
+    }
+
+    /* Cover page footer stacks lines vertically */
+    .footer-container.vertical {
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 3px;
+    }
+
+    td:first-child {
+      width: 30%;
+      text-align: right;
+      vertical-align: top;
+      /* Align text to top for multi-line content */
+      padding-right: 15px;
+      /* Add more padding to separate from value */
+      color: #333;
+      /* Restore original color - no longer gray */
+    }
+
+    /* Second column (even) */
+    td:last-child {
+      width: 70%;
+      text-align: justify;
+      vertical-align: top;
+      /* Align text to top for multi-line content */
+    }
+
+    td {
+      font-size: 12px;
+      padding: 5px 5px;
+      /* Increased padding for better spacing */
+      line-height: 1.4;
+      /* Improved line height for readability */
+    }
+
+    table {
+      width: 100%;
+      border-spacing: 0;
+      /* Remove default cell spacing */
+      border-collapse: collapse;
+      /* Clean table appearance */
+    }
+
+    p {
+      font-size: 12px;
+    }
+
+    .no-display {
+      display: none;
+    }
+
+    .map-container {
+      display: flex;
+      justify-content: end;
+      position: relative;
+    }
+
+    .map {
+      width: 500px;
+      height: 250px;
+    }
+
+    .cover-container {
+      margin-top: 150px;
+      margin-bottom: 37px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cover-container * {
+      margin: 0;
+    }
+
+    .cover-container img {
+      height: 60px !important;
+      width: auto !important;
+      max-width: 240px;
+      object-fit: contain !important;
+    }
+
+    .cover-title {
+      font-size: 30px;
+    }
+
+    .table-boder,
+    .table-border td {
+      border: 1px solid lightgray;
+    }
+
+    /* Ensuring padding exists in table cells */
+    .table-border td {
+      padding: 15px 10px;
+    }
+
+    .space-between-xs {
+      margin: 5px;
+    }
+
+    .space-between-sm {
+      margin: 5px;
+    }
+
+    .space-between-md {
+      margin: 15px;
+    }
+
+    .space-between-lg {
+      margin: 20px;
+    }
+
+    .space-between-xl {
+      margin: 40px;
+    }
+
+    .photos-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin-bottom: 20px;
+      /* Add margin to ensure container doesn't get too close to footer */
+    }
+
+    .photos-container img {
+      width: calc(50% - 6px);
+      height: 245px;
+      /* Adjusted to fit taller header logo */
+      object-fit: cover;
+      /* Ensure images cover the area without distortion */
+      border-radius: 1px;
+      border: 2px solid black;
+    }
+
+    /* Floor Plan Container - Single large image per page */
+    .floor-plan-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin-bottom: 20px;
+      min-height: 400px;
+      width: 100%;
+    }
+
+    .floor-plan-container img {
+      width: 100%;
+      max-height: 500px;
+      object-fit: contain;
+      border: 2px solid black;
+      border-radius: 1px;
+    }
+
+    /* Market Evidence Styles */
+    .market-evidence-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0px;
+    }
+
+    .property-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ddd;
+      margin-bottom: 5px;
+      border-radius: 0px;
+    }
+
+    .property-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 5px;
+    }
+
+    .property-address {
+      font-weight: bold;
+      font-size: 12px;
+      color: #333;
+      display: flex;
+      align-items: center;
+    }
+
+    .map-pin {
+      position: relative;
+      display: inline-block;
+      margin-right: 8px;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .map-pin img {
+      width: 28px;
+      height: 28px;
+    }
+
+    .map-pin span {
+      position: absolute;
+      top: 5px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    .property-status {
+      display: flex;
+      align-items: center;
+      min-width: 150px;
+      background-color: #e0e0e0;
+      padding: 10px;
+    }
+
+    .status-label {
+      font-size: 11px;
+      font-weight: bold;
+      flex: 0 0 auto;
+      margin-right: 20px;
+    }
+
+    .status-price {
+      font-size: 13px;
+      font-weight: bold;
+      flex: 0 0 auto;
+    }
+
+    .property-content {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .property-image {
+      width: 170px;
+      height: 95px;
+      object-fit: cover;
+    }
+
+    .property-details {
+      display: flex;
+      flex-direction: column;
+      padding: 5px 8px;
+      flex: 1;
+    }
+
+    .property-specs {
+      display: flex;
+      justify-content: flex-start;
+      gap: 12px;
+      margin-bottom: 3px;
+    }
+
+    .spec-item {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      font-size: 11px;
+      color: #555;
+    }
+
+    .spec-item i {
+      font-size: 12px;
+      color: #555;
+    }
+
+    .property-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: repeat(3, auto);
+      gap: 2px 5px;
+      margin-bottom: 3px;
+    }
+
+    .info-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .info-label {
+      font-weight: bold;
+      font-size: 12px;
+      color: #999;
+      /* Changed from #666 to lighter gray */
+      min-width: 70px;
+      display: inline-block;
+    }
+
+    .info-value {
+      font-size: 12px;
+      color: #000;
+      display: inline-block;
+      flex: 1;
+      text-align: left;
+      margin-left: 0px;
+    }
+
+    .property-comparison {
+      font-size: 11px;
+      color: #333;
+      line-height: 1.2;
+      border-top: 1px solid #eee;
+      padding-top: 3px;
+    }
+
+    .no-border-bottom {
+      border-bottom: none !important;
+    }
+
+    .no-border-top {
+      border-top: none !important;
+    }
+
+    /* Make all odd rows in tables bold - except in Table of Contents */
+    table:not(.toc-table) tr td:nth-child(odd) {
+      font-weight: bold;
+    }
+
+    /* Table of Contents specific styling */
+    .toc-table td {
+      font-size: 10.44pt !important;
+    }
+
+    .toc-main-row {
+      height: 36px;
+    }
+
+    .toc-main-row>td,
+    .toc-subtitle-row>td:nth-child(2) {
+      font-family: "Avenir Next Demi Bold", Arial, sans-serif;
+      font-weight: bold;
+    }
+
+    .toc-subtitle-row {
+      height: 24px;
+    }
+
+    .toc-subtitle-row>td:nth-child(1) {
+      font-family: "Avenir Next", Arial, sans-serif;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+
+    .external-links-container {
+      display: flex;
+      justify-content: space-around;
+      margin: 0 20px;
+    }
+
+    .external-link-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 8px 15px;
+      text-decoration: none;
+      color: #333;
+      font-size: 12px;
+      font-weight: bold;
+      transition: background-color 0.2s;
+      width: 30%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .external-link-button:hover {
+      background-color: #ebebeb;
+    }
+
+    .external-link-button i {
+      margin-right: 8px;
+      font-size: 14px;
+    }
+
+    button[title="Close"] {
+      display: none !important;
+    }
+
+    .map-infobox {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      box-shadow: 0 2px 7px 1px rgba(0, 0, 0, 0.3);
+      font-size: 13px;
+      z-index: 10;
+      text-align: center;
+      min-width: 150px;
+      pointer-events: none;
+    }
+
+    .map-infobox::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid white;
+    }
+
+    .compact-table {
+      border-collapse: collapse;
+    }
+
+    .compact-table tr td {
+      padding: 2px 8px;
+      line-height: 1.4;
+    }
+
+    .annexure-content {
+      height: 800px;
+      /* Increased height to use more space */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+      margin-bottom: 10px;
+    }
+
+    .annexure-content img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .cover-description {
+      margin-top: 60px;
+    }
+
+    .cover-description p {
+      padding: 0;
+      margin: 5px;
+      font-size: 15px;
+    }
+  </style>
+  {% if logo_type == 'CPV' %}
+  <style>
+    .header-logo {
+      height: 90px !important;
+    }
+  </style>
+  {% else %}
+  <style>
+    .header-logo {
+      height: 115px !important;
+    }
+  </style>
+  {% endif %}
+</head>
+
+<body>
+  {% if logo_type == 'CPV' %}
+  <!-- CPV Cover Page -->
+  <div class="page" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <!-- CPV logo at top left -->
+    <div style="position: absolute; top: 50px; left: 50px;">
+      <img src="{{ logo_url }}" alt="CPV Logo" style="height: 90px; width: auto; object-fit: contain;" />
+    </div>
+    <!-- Title, address, ref centered on page -->
+    <div style="text-align: center;">
+      <p style="font-weight: bold; font-size: 28px; margin-bottom: 15px;">Valuation Report</p>
+      <p style="font-weight: bold; font-size: 15px; margin: 5px 0;">{{
+        valuation_report["address"]["unitNumber"]|default('') }} {{
+        valuation_report["address"]["streetName"]|default('') }}</p>
+      <p style="font-weight: bold; font-size: 15px; margin: 5px 0;">
+        {{ valuation_report["address"]["suburb"]|default('') }}
+        {{ valuation_report["address"]["state"]|default('') }}
+        {{ valuation_report["address"]["postcode"]|default('') }}
+      </p>
+      <p style="font-size: 14px; margin-top: 15px;">Ref #{{ valuation_report["fileNumber"]|default('') }}</p>
+    </div>
+    <!-- Contact info centered below -->
+    <div style="text-align: center; margin-top: 60px;">
+      <p style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">Certified Property Valuer</p>
+      <p style="font-size: 14px; margin: 4px 0;">0485 008 806</p>
+      <p style="font-size: 14px; margin: 4px 0;">
+        <a href="mailto:info@certifiedpropertyvaluer.com.au"
+          style="color: #2563eb;">info@certifiedpropertyvaluer.com.au</a>
+      </p>
+      <p style="font-size: 14px; margin: 4px 0;">
+        <a href="https://www.certifiedpropertyvaluer.com.au"
+          style="color: #2563eb;">www.certifiedpropertyvaluer.com.au</a>
+      </p>
+    </div>
+  </div>
+  {% else %}
+  <!-- AAP Cover Page (default) -->
+  <div class="page">
+    <div class="cover-container">
+      <div>
+        <h2>AAP Valuations</h2>
+        <p style="color: #c00000">Trusted property valuers</p>
+      </div>
+    </div>
+    <div class="cover-description">
+      <div style="display: grid; grid-template-columns: 1fr 1fr">
+        <div>
+          <p>Jugal Saha</p>
+          <p>Director (AAP Valuations)</p>
+          <p>
+            <a href="mailto:info@allianceaustraliaproperty.com.au">info@allianceaustraliaproperty.com.au</a>
+          </p>
+        </div>
+        <div>
+          <p>allianceaustraliaproperty.com.au</p>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr; margin-top: 100px">
+        <div style="margin-left: 150px">
+          <p style="font-weight: bold; font-size: 20px">Valuation Report</p>
+          <p>{{ valuation_report["address"]["unitNumber"]|default('') }} {{
+            valuation_report["address"]["streetName"]|default('') }}</p>
+          <p>
+            {{ valuation_report["address"]["suburb"]|default('') }} {{
+            valuation_report["address"]["state"]|default('') }} {{
+            valuation_report["address"]["postcode"]|default('') }}
+          </p>
+          <p>Ref #{{ valuation_report["fileNumber"]|default('') }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-container vertical">
+      <!-- Footer removed as per request for AAP cover page -->
+    </div>
+  </div>
+  {% endif %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner" style="display: flex; justify-content: space-between">
+      <span>Report Overview</span>
+      <span style="font-size: 14px">{{
+        valuation_report["valuationDetails"]["valuationDate"]|format_date|default('N/A')
+        }}</span>
+    </div>
+    <div class="space-between-sm"></div>
+    <div>
+      {% set cover_photo_url =
+      valuation_report.photos|selectattr('isCover')|first %} {% if
+      cover_photo_url %} <img src="{{ cover_photo_url["photoUrl"] }}" style="width: 100%; height: 311px;" alt=""> {%
+      else %}
+      <h1>NO COVER PHOTO</h1>
+      {% endif %}
+    </div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table class="table-border">
+        <tr>
+          <td>Property Address</td>
+          <td class="bold">
+            {{ valuation_report["address"]["fullAddress"]|default('') }}
+            <div style="display: flex; align-items: center; margin-top: 10px">
+              <div style="display: flex; align-items: center; margin-right: 20px">
+                <span>{{
+                  valuation_report["propertyDescriptors"]["bedrooms"]|default('-')
+                  }}</span>
+                <i class="fa-solid fa-bed" style="margin-left: 5px"></i>
+              </div>
+              <div style="display: flex; align-items: center; margin-right: 20px">
+                <span>{{
+                  valuation_report["propertyDescriptors"]["bathrooms"]|default('-')
+                  }}</span>
+                <i class="fa-solid fa-bath" style="margin-left: 5px"></i>
+              </div>
+              <div style="display: flex; align-items: center; margin-right: 60px">
+                <span>{{
+                  valuation_report["propertyDescriptors"]["carSpaces"]|default('-')
+                  }}</span>
+                <i class="fa-solid fa-car" style="margin-left: 5px"></i>
+              </div>
+              <div>
+                <span>{{
+                  valuation_report["propertyDetails"]["propertyType"]|default('N/A')|title
+                  }}</span>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="no-border-bottom">Instructed by & on behalf of</td>
+          <td class="no-border-bottom">
+            {% if valuation_report["primaryContact"]["firstName"] or valuation_report["primaryContact"]["lastName"] %}
+            {{ valuation_report["primaryContact"]["firstName"]|default('') }} {{
+            valuation_report["primaryContact"]["lastName"]|default('') }}
+            {% else %}
+            N/A
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td class="no-border-top">Purpose of Report</td>
+          <td class="no-border-top">
+            {% if valuation_report["valuationDetails"]["purposeOfReport"] %}
+            {{ valuation_report["valuationDetails"]["purposeOfReport"] }} {%
+            else %} To determine the {{ 'current' if
+            valuation_report["valuationDetails"]["currentDayValuation"] else
+            'retrospective' }} market value for {{
+            valuation_report["valuationDetails"]["valuationType"]|default('N/A')|title
+            }} purposes only. {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td class="no-border-bottom">Date of Valuation</td>
+          <td class="no-border-bottom">
+            {{
+            valuation_report["valuationDetails"]["valuationDate"]|format_date|default('')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td class="no-border-top">Date of Inspection</td>
+          <td class="no-border-top">
+            {% if
+            valuation_report["valuationDetails"].get("externalDesktopValuation")
+            %} External/Desktop Valuation {% elif
+            valuation_report["valuationDetails"].get("inspectionDate") %} {{
+            valuation_report["valuationDetails"]["inspectionDate"]|format_date|default('N/A')
+            }} {% else %} N/A {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Market Value</td>
+          <td style="font-weight: 700">
+            {{
+            valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A')
+            }} ({{
+            valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')
+            }})
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="space-between-md"></div>
+    <div style="display: flex; justify-content: end">
+      <img src="https://valai.duo.tax/assets/member-api-logo.png" alt=""
+        style="width: 177.25984252px; height: 92.976377953px" />
+    </div>
+    <div class="footer-container" style="flex-direction: column; align-items: center; text-align: center;">
+      {% if logo_type == 'CPV' %}
+      <span style="font-size: 10px;">Alliance Australia Property Pty Ltd</span>
+      <span style="font-size: 9px; font-style: italic;">Liability Limited by a scheme approved under Professional
+        Standards&rsquo; Legislation</span>
+      {% endif %}
+      <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 5px;">
+        <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+        <span class="page-num"></span>
+      </div>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner" style="background-color: #e5e5e5; text-align: left; padding-left: 10px">
+      Table of Contents
+    </div>
+    <div class="space-between-sm"></div>
+    <div style="padding: 0 50px">
+      <table class="toc-table" style="width: 100%; border-collapse: collapse">
+        <tr class="toc-main-row">
+          <td style="text-align: left; width: 90%; font-weight: bold">
+            Valuation Summary
+          </td>
+          <td style="text-align: right; width: 10%">4</td>
+        </tr>
+        <tr class="toc-subtitle-row">
+          <td style="text-align: left; padding-left: 30px">Instructions</td>
+          <td style="text-align: right">4</td>
+        </tr>
+        <tr class="toc-subtitle-row">
+          <td style="text-align: left; padding-left: 30px">
+            Property Details
+          </td>
+          <td style="text-align: right">4</td>
+        </tr>
+        <tr class="toc-subtitle-row">
+          <td style="text-align: left; padding-left: 30px">
+            Assumptions & Recommendations
+          </td>
+          <td style="text-align: right">4</td>
+        </tr>
+        <tr class="toc-subtitle-row">
+          <td style="text-align: left; padding-left: 30px">
+            Valuation Details
+          </td>
+          <td style="text-align: right">5</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Location & Neighbourhood</td>
+          <td style="text-align: right">6</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Zoning & Planning</td>
+          <td style="text-align: right">6</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Site</td>
+          <td style="text-align: right">7</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Services</td>
+          <td style="text-align: right">7</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Improvements</td>
+          <td style="text-align: right">7</td>
+        </tr>
+        <tr class="toc-subtitle-row">
+          <td style="text-align: left; padding-left: 30px">Main Building</td>
+          <td style="text-align: right">7</td>
+        </tr>
+        <tr class="toc-subtitle-row">
+          <td style="text-align: left; padding-left: 30px">
+            Conditions & Repairs
+          </td>
+          <td style="text-align: right">8</td>
+        </tr>
+        <tr class="toc-subtitle-row">
+          <td style="text-align: left; padding-left: 30px">Internal Area</td>
+          <td style="text-align: right">9</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Environmental Issues</td>
+          <td style="text-align: right">9</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">General Comments</td>
+          <td style="text-align: right">9</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Market Evidence</td>
+          <td style="text-align: right">10</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Valuation Methodology</td>
+          <td style="text-align: right">11</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Valuation Remarks</td>
+          <td style="text-align: right">11</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">
+            Assumptions, Conditions & Limitations
+          </td>
+          <td style="text-align: right">12</td>
+        </tr>
+        <tr class="toc-main-row">
+          <td style="text-align: left">Photos</td>
+          <td style="text-align: right">13</td>
+        </tr>
+        <!-- <tr class="toc-main-row">
+                    <td style="text-align: left;">Floor plan</td>
+                    <td style="text-align: right;">14</td>
+                </tr> -->
+      </table>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">1. Valuation Summary</div>
+    <div class="space-between-sm"></div>
+    <div class="subtitle">1.1 Instructions</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Instructing Party</td>
+          <td>
+            {% if valuation_report["primaryContact"]["firstName"] or valuation_report["primaryContact"]["lastName"] %}
+            {{ valuation_report["primaryContact"]["firstName"]|default('') }} {{
+            valuation_report["primaryContact"]["lastName"]|default('') }}
+            {% else %}
+            N/A
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Client Authorised Party</td>
+          <td>
+            {% if valuation_report["primaryContact"]["firstName"] or valuation_report["primaryContact"]["lastName"] %}
+            {{ valuation_report["primaryContact"]["firstName"]|default('') }} {{
+            valuation_report["primaryContact"]["lastName"]|default('') }}
+            {% else %}
+            N/A
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Valuation Purpose</td>
+          <td>
+            {% if valuation_report["valuationDetails"]["purposeOfReport"] %}
+            {{ valuation_report["valuationDetails"]["purposeOfReport"] }} {%
+            else %} To determine the {{ 'current' if
+            valuation_report["valuationDetails"]["currentDayValuation"] else
+            'retrospective' }} market value for {{
+            valuation_report["valuationDetails"]["valuationType"]|default('N/A')|title
+            }} purposes only.{% endif %} Please note this report does not meet
+            practice standard for mortgage purposes and is specifically not
+            suitable for that purpose.
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="subtitle">1.2 Property Details</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Property Address</td>
+          <td>
+            {{ valuation_report["address"]["fullAddress"]|default('N/A') }}
+          </td>
+        </tr>
+        <tr>
+          <td>Property Description</td>
+          <td>
+            {{
+            valuation_report["generalComments"]["propertyDescription"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Title Reference</td>
+          <td>
+            {{
+            valuation_report["propertyDetails"]["titleReference"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Tenure Type</td>
+          <td>{{ valuation_report["propertyDetails"]["tenureType"]|default('Freehold') }}</td>
+        </tr>
+        <tr>
+          <td>Highest & Best Use</td>
+          <td>Existing use</td>
+        </tr>
+        <tr>
+          <td>Encumbrances</td>
+          <td>None Apparent</td>
+        </tr>
+        <tr>
+          <td>Zoning</td>
+          <td>
+            {{ valuation_report["propertyDetails"]["zoning"]|default('N/A') }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="subtitle">1.3 Assumptions & Recommendations</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Key assumptions</td>
+          <td>
+            The instructions and the information supplied contain a full
+            disclosure of all information that is relevant
+          </td>
+        </tr>
+        <tr>
+          <td>Recommended documents</td>
+          <td>N/A</td>
+        </tr>
+        <tr>
+          <td>Expected selling period</td>
+          <td>
+            3 months - This is typical of locality and/or market segment
+            condition
+          </td>
+        </tr>
+        <tr>
+          <td>Building Area and Land Dimensions / Area</td>
+          <td>
+            In the event actual surveyed areas of the property are different
+            to the areas adopted in this valuation the survey should be
+            referred to the valuer for comment on any valuation implications.
+            We reserve the right to amend our valuation if a formal survey of
+            areas and/or dimensions differs from those detailed in this
+            Report.
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            This valuation has been based on information supplied which is
+            assumed to have been provided in good faith and contain a full and
+            frank disclosure of all information that is relevant to the
+            valuation of the property. The valuer has not undertaken due
+            diligence or verification of the information supplied.
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">1.4 Valuation Details</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Market Value</td>
+          <td>
+            {{
+            valuation_report["valuationDetails"]["marketValue"]|format_currency|default('')
+            }}
+          </td>
+        </tr>
+        {% if valuation_report["valuationDetails"].get("isUnit") %}
+        <tr>
+          <td>Valuation Amount</td>
+          <td>
+            {{
+            valuation_report["valuationDetails"]["valuationAmount"]|format_currency|default('N/A')
+            }} ({{
+            valuation_report["valuationDetails"]["valuationAmount"]|format_currency_words|default('N/A')
+            }})
+          </td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td>Interest Valued</td>
+          <td>
+            {{
+            valuation_report["valuationDetails"]["interestValued"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Date of Inspection</td>
+          <td>
+            {% if
+            valuation_report["valuationDetails"].get("externalDesktopValuation")
+            %} External/Desktop Valuation {% elif
+            valuation_report["valuationDetails"].get("inspectionDate") %} {{
+            valuation_report["valuationDetails"]["inspectionDate"]|format_date|default('N/A')
+            }} {% else %} N/A< {% endif %} </td>
+        </tr>
+        <tr>
+          <td>Date of Valuation</td>
+          <td>
+            {{
+            valuation_report["valuationDetails"]["valuationDate"]|format_date|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Date Issued</td>
+          <td>{{ now() }}</td>
+        </tr>
+        {% if valuation_report["valuationDetails"]["showCurrencyOfValuation"]
+        %}
+        <tr>
+          <td>Currency of Valuation</td>
+          <td>
+            90 days from the date of valuation or such earlier date if you
+            become aware of any factors that have any effects on the
+            valuation.
+          </td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td>Pecuniary Interest</td>
+          <td>
+            We confirm that the valuer does not have any pecuniary interest
+            that would conflict with the proper valuation of the property.
+          </td>
+        </tr>
+        <tr>
+          <td>Signature</td>
+          <td>
+            <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="" srcset="" />
+          </td>
+        </tr>
+        <tr>
+          <td>Valuer</td>
+          <td>
+            Jugal Saha, Property Valuer, AAPI, CPV.<br>
+            Certified Practicing Valuer 101474
+            {% if valuation_report["address"]["state"] == 'WA' %}<br>WA License Number - LV45321{% endif %}
+            {% if valuation_report["address"]["state"] == 'QLD' %}<br>QLD License no: 5429MR{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Important</td>
+          <td>
+            This executive summary must be read in conjunction with the
+            remainder of this report. Executive summary is only a synopsis
+            designed to provide a brief overview and must not be acted upon in
+            isolation to the content of the valuation report.
+          </td>
+        </tr>
+        <tr>
+          <td>Third Party Disclaimer</td>
+          <td>
+            This report has been prepared for the private and confidential use
+            of our client for the specified purpose. It should not be
+            reproduced in whole or part without the express written authority
+            of {% if logo_type == 'CPV' %}CPV Valuations{% else %}AAP Valuations{% endif %} or relied upon any other
+            party for any
+            purpose and the valuer shall not have any liability to any party
+            who does so. Our warning is registered here, that any party other
+            than those specifically named in this report should obtain their
+            own valuation before acting in any way in respect of the subject
+            property.
+          </td>
+        </tr>
+        <tr>
+          <td>Digital Copies Reports</td>
+          <td>
+            Where a digital copy of the report has been provided and has not
+            been received directly from us, the report contents, especially
+            the valuation and critical assumption should be verified by
+            contacting the using office to ensure contents are appropriate. In
+            particular if this report appears to be suspicious - that the
+            report is tampered or altered, we recommend to contact the office.
+          </td>
+        </tr>
+        <tr>
+          <td>Reliance on Whole Report</td>
+          <td>
+            This valuation should be read in its entirety, inclusive of any
+            summary. The valuer and valuation firm does not accept any
+            responsibility where part of this report has been relied upon
+            without reference to the full context of the valuation report.
+          </td>
+        </tr>
+        <tr>
+          <td>GST</td>
+          <td>
+            Valuations of residential property are undertaken on the basis
+            that GST is not applicable. This valuation is prepared on the
+            assumption that the subject property does not constitute a 'new
+            residential property' as defined under ATO Ruling GSTR 2003/3.
+            Further it is assumed that the subject property will transact as a
+            residential property between parties not registered (and not
+            required to be registered) for GST. The market valuation herein
+            reflects a market transaction to which GST is not applicable.
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">2. Location & Neighbourhood</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <p style="white-space: pre-line">
+        {{
+        valuation_report["locationDetails"]["suburbDescription"]|default('')
+        }}
+      </p>
+    </div>
+    <div>
+      <div>
+        <table>
+          <tr>
+            <td>Location Map</td>
+            <td>
+              {% if valuation_report["locationDetails"]["latitude"] and
+              valuation_report["locationDetails"]["longitude"] %}
+              <div style="position: relative">
+                <div class="map-infobox">
+                  {{ valuation_report["address"]["fullAddress"] }}
+                </div>
+                <img class="map" src="https://maps.googleapis.com/maps/api/staticmap?center={{
+                  valuation_report["locationDetails"]["latitude"] }},{{
+                  valuation_report["locationDetails"]["longitude"]
+                  }}&zoom=15&size=800x400&maptype=roadmap&markers=color:red%7C{{
+                  valuation_report["locationDetails"]["latitude"] }},{{ valuation_report["locationDetails"]["longitude"]
+                  }}&key={{ maps_api_key }}" alt="">
+              </div>
+              {% endif %}
+              <div style="margin-top: 5px; font-size: 10px">
+                Source: Google Maps
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Services</td>
+          {% if valuation_report["locationDetails"]["includesGas"] %}
+          <td>
+            Electricity, town water, sewerage, gas and telephone services are
+            all connected
+          </td>
+          {% else %}
+          <td>
+            Electricity, town water, sewerage and telephone services are all
+            connected
+          </td>
+          {% endif %}
+        </tr>
+      </table>
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="banner">3. Zoning & Planning</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Local Government Area</td>
+          <td>
+            {{
+            valuation_report["propertyDetails"]["councilArea"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Zoning</td>
+          <td>
+            {{ valuation_report["propertyDetails"]["zoning"]|default('N/A') }}
+          </td>
+        </tr>
+        <tr>
+          <td>Permissible Uses</td>
+          <td>
+            {{
+            valuation_report["propertyDetails"]["permissibleUses"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Existing Use</td>
+          <td>
+            Existing land use is a conforming land use with no adverse
+            effect/s.
+          </td>
+        </tr>
+        <tr>
+          <td>Zoning Effects</td>
+          <td>{{ valuation_report["propertyDetails"]["zoningEffects"]|default('Parramatta City Council Local Environment
+            Plan (LEP)') }}</td>
+        </tr>
+        <tr>
+          <td>Heritage Issue</td>
+          <td>
+            {{
+            valuation_report["propertyDetails"]["heritageIssue"]|default('N/A')
+            }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">4. Site</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Site Area</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["siteArea"]
+            %}Approximately {{
+            valuation_report["propertyDetails"]["siteArea"]|format_area_smart|default('N/A')
+            }}{% else %}N/A{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Site Description</td>
+          <td>
+            A{{ 'n' if valuation_report["propertyDetails"]["landShape"] and
+            valuation_report["propertyDetails"]["landShape"]|lower|default('N/A')|first
+            in 'aeiou' else '' }} {{
+            valuation_report["propertyDetails"]["landShape"]|lower|default('N/A')
+            }} shaped land parcel positioned at the road height position. The
+            pedestrian access provided along {{
+            valuation_report["address"]["streetNameOnly"]|default('N/A') }} is
+            good and the site appears to have satisfactory surface drainage.
+          </td>
+        </tr>
+        <tr>
+          <td>Access</td>
+          <td>
+            The subject property has good sealed roads with kerbs and improved
+            footpaths.
+          </td>
+        </tr>
+        <tr>
+          <td>Identification</td>
+          <td>Street number, online Cadastral plan, RP Data mapping.</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            {% if valuation_report["locationDetails"]["map"]["photo"] %} <img class="map" src="{{
+              valuation_report["locationDetails"]["map"]["photo"] }}" alt=""> {%
+            else %} <img class="map" src="https://maps.googleapis.com/maps/api/staticmap?center={{
+              valuation_report["locationDetails"]["latitude"] }},{{ valuation_report["locationDetails"]["longitude"]
+              }}&zoom=20&size=800x400&maptype=hybrid&markers=color:red%7Clabel:A%7C{{
+              valuation_report["locationDetails"]["latitude"] }},{{ valuation_report["locationDetails"]["longitude"]
+              }}&key={{ maps_api_key }}" alt=""> {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            Source: Google
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="space-between-md"></div>
+    <div class="banner">5. Improvements</div>
+    <div class="space-between-sm"></div>
+    <div class="subtitle">5.1 Main Building</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Main Building Type</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["mainBuildingType"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("mainBuildingType") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {%- set gf_label = gf -%}
+            {%- if 'granny flat' not in gf|lower -%}
+            {%- set gf_label = gf ~ ' (Granny Flat)' -%}
+            {%- endif -%}
+            {{ main }} (Main Building) / {{ gf_label }}
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Rough Build Date</td>
+          <td>
+            {%- set main = valuation_report["propertyDetails"]["buildYear"]|default('N/A') -%}
+            {%- set gf = valuation_report["propertyDetails"].get("buildYearGrannyFlat") -%}
+            {%- if valuation_report["propertyDetails"].get("includeGrannyFlatBuildYear") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>External Wall</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["externalWalls"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("externalWalls") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Internal Wall</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["internalWalls"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("internalWalls") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Roofing</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["roofingType"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("roofingType") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Parking</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["parkingType"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("parkingType") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Flooring</td>
+          <td>
+            {{ valuation_report["photosSummary"]["floorings"]|join(',
+            ')|default('N/A') }}
+          </td>
+        </tr>
+        <tr>
+          <td>Accommodation</td>
+          <td>
+            {{
+            valuation_report["propertyDetails"]["accommodation"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        {% if valuation_report["ancillaryImprovements"]["showSection"] %}
+        <tr>
+          <td>Ancillaries</td>
+          {% set parts = [] %}
+          {% if valuation_report["ancillaryImprovements"]["driveway"] %}
+          {% set parts = parts + ['Driveway - ' ~ valuation_report["ancillaryImprovements"]["driveway"]] %}
+          {% endif %}
+          {% if valuation_report["ancillaryImprovements"]["fencing"] %}
+          {% set parts = parts + ['Fencing - ' ~ valuation_report["ancillaryImprovements"]["fencing"]] %}
+          {% endif %}
+          {% if valuation_report["ancillaryImprovements"]["otherItems"] %}
+          {% set parts = parts + valuation_report["ancillaryImprovements"]["otherItems"] %}
+          {% endif %}
+          <td>{{ parts|join(', ') if parts else 'N/A' }}</td>
+        </tr>
+        {% endif %}
+      </table>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="subtitle">5.2 Conditions & Repairs</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table class="compact-table">
+        <tr>
+          <td>Internal Condition</td>
+          <td>
+            {{
+            valuation_report["propertyDescriptors"]["internalCondition"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>External Condition</td>
+          <td>
+            {{
+            valuation_report["propertyDescriptors"]["externalCondition"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Essential Repairs</td>
+          <td>
+            {{
+            valuation_report["propertyDescriptors"]["repairsRequirements"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Repair Comments</td>
+          <td>
+            {{
+            valuation_report["propertyDescriptors"]["defects"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Internal Layout</td>
+          <td>Functional floor plan</td>
+        </tr>
+        <tr>
+          <td style="text-decoration: underline">Prime Cost Items</td>
+          <td></td>
+        </tr>
+        {% for category in valuation_report["photosSummary"]["categories"] %}
+        {% if category["primeCostItems"] %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>
+            {{ category["primeCostItems"]|join(', ')|default('')|capitalize }}
+          </td>
+        </tr>
+        {% endif %} {% endfor %}
+        {% if valuation_report.get("additionalPhotosType") == "Granny Flat" %}
+        {% for category in valuation_report.get("additionalPhotosSummary", {}).get("categories", []) %}
+        {% if category["primeCostItems"] %}
+        <tr>
+          <td>{{ category["category"]|default('') }} (Granny Flat)</td>
+          <td>
+            {{ category["primeCostItems"]|join(', ')|default('')|capitalize }}
+          </td>
+        </tr>
+        {% endif %} {% endfor %}
+        {% endif %}
+        <tr>
+          <td style="text-decoration: underline">Features & Fixtures</td>
+          <td></td>
+        </tr>
+
+        {% for category in valuation_report["photosSummary"]["categories"] %}
+        {% if "featuresFixtures" in category %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>
+            {{ category["floorings"]|join(', ')|default('') }}{% if
+            category["floorings"] and category["featuresFixtures"] %}, {%
+            endif %}{{ category["featuresFixtures"]|join(', ')|default('') }}
+          </td>
+        </tr>
+        {% elif category["floorings"] %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>{{ category["floorings"]|join(', ')|default('') }}</td>
+        </tr>
+        {% endif %} {% endfor %}
+        {% if valuation_report.get("additionalPhotosType") == "Granny Flat" %}
+        <tr>
+          <td style="text-decoration: underline">Features & Fixtures (Granny Flat)</td>
+          <td></td>
+        </tr>
+        {% for category in valuation_report.get("additionalPhotosSummary", {}).get("categories", []) %}
+        {% if "featuresFixtures" in category %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>
+            {{ category["floorings"]|join(', ')|default('') }}{% if
+            category["floorings"] and category["featuresFixtures"] %}, {%
+            endif %}{{ category["featuresFixtures"]|join(', ')|default('') }}
+          </td>
+        </tr>
+        {% elif category["floorings"] %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>{{ category["floorings"]|join(', ')|default('') }}</td>
+        </tr>
+        {% endif %} {% endfor %}
+        {% endif %}
+      </table>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="subtitle">5.3 Building Area</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Living Area</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["livingArea"]
+            %}Approximately {{
+            valuation_report["propertyDetails"]["livingArea"] }} sqm{% else
+            %}N/A{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>External Area{% if valuation_report["propertyDetails"]["includeGrannyFlatExternalArea"] %} (Granny Flat){%
+            endif %}</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["includeGrannyFlatExternalArea"] and
+            valuation_report["propertyDetails"]["externalAreaGrannyFlat"] %}
+            Approximately {{ valuation_report["propertyDetails"]["externalAreaGrannyFlat"] }} sqm
+            {% elif valuation_report["propertyDetails"]["externalArea"] %}
+            Approximately {{ valuation_report["propertyDetails"]["externalArea"] }} sqm
+            {% else %}
+            N/A
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Parking Area</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["parkingArea"]
+            %}Approximately {{
+            valuation_report["propertyDetails"]["parkingArea"] }} sqm{% else
+            %}N/A{% endif %}
+          </td>
+        </tr>
+        {% if valuation_report["propertyDetails"]["otherArea"] %}
+        <tr>
+          <td>Other Areas</td>
+          <td>Approximately {{ valuation_report["propertyDetails"]["otherArea"] }} sqm</td>
+        </tr>
+        {% endif %}
+      </table>
+    </div>
+    <div class="space-between-md"></div>
+    <div class="banner">6. Environmental Issues</div>
+    <div class="space-between-xs"></div>
+    <div style="line-height: 13px">
+      <p>
+        The Subject property currently used for residential purposes which is
+        considered to be low environmental risk. The past uses of the subject
+        property are not known to the valuer. The property is considered to
+        have a low to medium environmental risk profile. This valuation is
+        subject to there being no surface or subsurface soil problems
+        including stability, toxic, or hazardous waste, toxic fibres, asbestos
+        or building material hazards in or on the property that would
+        adversely affect its existing or potential use or reduce its
+        value/marketability. We reserve the right to review/reconsider our
+        valuation should an environmental audit reveal that the subject
+        property is contaminated. The client acknowledges and recognises that
+        the valuer is not an expert in identifying environmental hazards and
+        compliance requirements affecting properties.
+      </p>
+    </div>
+    <div class="space-between-md"></div>
+    <div class="banner">7. General Comments</div>
+    <div class="space-between-sm"></div>
+    <div class="subtitle">General Market Overview</div>
+    <div class="space-between-sm"></div>
+    <div style="margin-bottom: 15px; line-height: 13px">
+      <p style="white-space: pre-line">
+        {{ valuation_report["generalComments"]["marketOverview"]|default('')
+        }}
+      </p>
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="subtitle">General Property Comments</div>
+    <div class="space-between-sm"></div>
+    <div style="margin-bottom: 15px; line-height: 13px">
+      <p style="white-space: pre-line">
+        {{ valuation_report["generalComments"]["propertyComments"]|default('')
+        }}
+      </p>
+    </div>
+
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">8. Market Evidence</div>
+    <div class="space-between-sm"></div>
+    <div id="market-evidence">
+      <div class="market-evidence-container">
+        {% if "comparables" in valuation_report and "sales" in
+        valuation_report["comparables"] %} {% for comparable in
+        valuation_report["comparables"]["sales"] %}
+        <div class="property-card">
+          <div class="property-header">
+            <div class="property-address">
+              <div class="map-pin">
+                <img src="https://valai.duo.tax/assets/map-icon.svg" alt="Map Pin" />
+                <span>{{ loop.index }}</span>
+              </div>
+              {{ comparable["fullAddress"]|default('')|title_address }}
+            </div>
+            <div class="property-status">
+              <span class="status-label">Sold</span>
+              <span class="status-price">{{ comparable["saleLeasePrice"]|format_currency|default('')
+                }}</span>
+            </div>
+          </div>
+          <div class="property-content">
+            <img class="property-image" src="{{ comparable['photoUrl'] }}" alt="Property Image" />
+            <div class="property-details">
+              <div class="property-specs">
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/bed-icon.svg" alt="Bed"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["bedrooms"]|default('') }}
+                </div>
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/bath-icon.svg" alt="Bath"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["bathrooms"]|default('') }}
+                </div>
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/car-icon.svg" alt="Car"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["carSpaces"]|default('') }}
+                </div>
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/land-icon.svg" alt="Site Area"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["siteArea"]|format_area_smart|default('') }}
+                </div>
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/floor-icon.svg" alt="Building Area"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["buildingArea"]|format_area|default('') }}
+                </div>
+              </div>
+
+              <div class="property-info-grid">
+                <div class="info-row">
+                  <div class="info-label">Year Built</div>
+                  <div class="info-value">
+                    {{ comparable["buildYear"]|default('-') }}
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">DOM</div>
+                  <div class="info-value">
+                    {{ comparable["daysOnMarket"]|default('-') }}
+                  </div>
+                </div>
+
+                <div class="info-row">
+                  <div class="info-label">Sale Date</div>
+                  <div class="info-value">
+                    {{ comparable["saleLeaseDate"]|format_date|default('-') }}
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Distance</div>
+                  <div class="info-value">
+                    {{ comparable["distance"]|default('-') }} km
+                  </div>
+                </div>
+              </div>
+
+              <div class="property-comparison">
+                In comparison to subject: {{ comparable["comparison"] |
+                default('') }}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %} {% endif %}
+      </div>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">9. Valuation Methodology</div>
+    <div class="space-between-md"></div>
+    <table>
+      <tr>
+        <td>Primary Methodology</td>
+        <td>Direct Comparison</td>
+      </tr>
+      <tr>
+        <td>Secondary Methodology</td>
+        <td>Summation</td>
+      </tr>
+    </table>
+    <div class="space-between-md"></div>
+    <div class="banner">10. Valuation Remarks</div>
+    <div class="space-between-xs"></div>
+    <div class="subtitle">Method 1: Direct Comparison</div>
+    <div class="space-between-xs"></div>
+    <div style="line-height: 13px">
+      <p style="white-space: pre-line">
+        {{
+        valuation_report["valuationDetails"]["directComparison"]|default('')
+        }}
+      </p>
+    </div>
+    <div class="space-between-md"></div>
+    <div class="subtitle">Method 2: Summation</div>
+    <div class="space-between-xs"></div>
+    <table>
+      {% if valuation_report["valuationDetails"]["showLandValue"] %}
+      <tr>
+        <td>Land Value</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["landValue"]|format_currency|default('N/A')
+          }}
+        </td>
+      </tr>
+      {% endif %} {% if
+      valuation_report["valuationDetails"]["showImprovements"] %}
+      <tr>
+        <td>Improvements</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["improvements"]|format_currency|default('N/A')
+          }}{% if valuation_report["propertyDescriptors"].get("isGrannyFlat") %} (Main House + Granny Flat){% endif %}
+        </td>
+      </tr>
+      {% endif %}
+      {% if valuation_report["valuationDetails"].get("squareMeterRate") %}
+      <tr>
+        <td>Square Meter Rate</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["squareMeterRate"]|format_currency|default('N/A')
+          }}
+        </td>
+      </tr>
+      {% endif %}
+      {% if valuation_report["valuationDetails"].get("isUnit") %}
+      <tr>
+        <td>Valuation Amount</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["valuationAmount"]|format_currency|default('N/A')
+          }}
+        </td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td>Market Value</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A')
+          }}
+        </td>
+      </tr>
+      <tr>
+        <td>Interest Valued</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["interestValued"]|default('N/A')
+          }}
+        </td>
+      </tr>
+    </table>
+    <div class="space-between-xs"></div>
+    <div style="display: flex; justify-content: center">
+      <p style="font-size: 14px">
+        {% if valuation_report["valuationDetails"]["currentDayValuation"] %}
+        Certificate of Property Valuation {% else %} Declaration {% endif %}
+      </p>
+    </div>
+    <div style="text-align: center; width: 60%; margin: 0 auto">
+      <hr />
+    </div>
+    {% if not valuation_report["valuationDetails"]["currentDayValuation"] %}
+    <div>
+      <p>
+        I hereby certify that I have carried out the assessments of the above
+        property as at that valuation on date of inspection. Neither I, nor to
+        the best of my knowledge, any member of this firm, has any conflict of
+        interest; direct, indirect or financial interest in relation to this
+        property that is not disclosed herein. This report is for the use only
+        of the party/s to which it is addressed for {{
+        valuation_report["valuationDetails"]["valuationType"]|default('N/A')|title
+        }} purposes only and is not to be used for any other purpose.
+      </p>
+    </div>
+    {% endif %}
+    <div>
+      <p>We certify the subject property:</p>
+      <p class="bold">
+        {{ valuation_report["address"]["fullAddress"]|default('') }}
+      </p>
+      <p>
+        We assess the subject property's Fair Market Value in its present
+        condition and on a vacant possession basis to be:
+      </p>
+      <p class="bold">
+        As at {{
+        valuation_report["valuationDetails"]["valuationDate"]|format_date|default('N/A')
+        }} (Date of Valuation)
+      </p>
+      <p class="bold">Fair Market Value -</p>
+      <p class="bold">
+        {{
+        valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A')
+        }} ({{
+        valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')
+        }})
+      </p>
+      <div class="space-between-md"></div>
+      <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="" srcset="" />
+      <p>
+        JUGAL SAHA, AAPI CPV (Certified Practising Valuer 101474)
+        {% if valuation_report["address"]["state"] == 'WA' %}<br>WA License Number - LV45321{% endif %}
+        {% if valuation_report["address"]["state"] == 'QLD' %}&nbsp;&nbsp;QLD License no: 5429MR{% endif %}
+      </p>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">11. Assumptions, Conditions & Limitations</div>
+    <div style="line-height: 15px">
+      <p>
+        The valuation is made on the basis of "Market Value" as adopted by the
+        International Valuation Standards Council definition. That is: "The
+        estimated amount for which an asset or liability should exchange on
+        the valuation date between a willing buyer and a willing seller in an
+        arm's length transaction, after proper marketing and where the parties
+        had each acted knowledgeably, prudently and without compulsion.".
+      </p>
+      <p>
+        This valuation is for the use of the party or parties to whom it is
+        addressed and is not to be used for any other purposes. The report is
+        subject to the definitions, qualifiers and disclaimers contained
+        herein and which form part of this report. No liability or
+        responsibility is accepted or undertaken to any third party or parties
+        which may use or rely on the whole or any part of this report or its
+        conclusion. No liability or responsibility is accepted or undertaken
+        in the event that the party or parties to which it is addressed use
+        this report for any other purpose apart from that expressly outlined.
+      </p>
+      <p>
+        No part of this valuation or any reference to it may be included in
+        any other document or reproduced or published in any way without
+        written approval of the form and context in which it is to appear.
+        Only a signed original of this valuation should be relied upon and no
+        responsibility will be accepted for photocopies of the report or
+        signatures to the report. The Valuer nor, to the best of my knowledge,
+        any member of this firm, has any conflict of interest; direct,
+        indirect or financial interest pecuniary or otherwise in the said
+        property that is not disclosed herein.
+      </p>
+      <p>
+        This valuation is current at the date of valuation only. The value
+        assessed herein may change significantly and unexpectedly over a
+        relatively short period including as a result of general market
+        movements or factors specific to the particular property. We do not
+        accept liability for losses arising from such subsequent changes in
+        value including consequential or economic loss. Without limiting the
+        generality of the above comment, we do not assume any responsibility
+        or accept any liability where this valuation is relied upon after the
+        expiration of three months from the date of the valuation, or such
+        earlier date if you become aware of any factors that have any effect
+        on the valuation.
+      </p>
+      <p>
+        Unless specifically stated, where the valuation relates to a Strata
+        Titled property, all parties should be aware that the market value is
+        assessed without knowledge of orders against the Strata Company and
+        without the benefit of a search of the Strata Company's records,
+        particularly relating to reserve funds. All parties should make their
+        own enquiries in relation to this matter.
+      </p>
+      <p>
+        Plant and equipment and other items have not been individually tested
+        or inspected to a standard other than that required by a prudent
+        valuer in making this assessment. Sufficient enquiry has been made to
+        enable the valuer to arrive at a fair assessment and the right to
+        amend any valuation should an unknown condition or impediment be
+        established by competent analysis is therefore reserved.
+      </p>
+      <p>
+        No soil tests or environmental studies have been made available for
+        the valuer's perusal. Therefore, it should be noted that the valuation
+        is subject to there being no surface or sub-surface soil problems
+        including instability, toxic/ hazardous wastes, toxic mould, asbestos
+        or building material hazards in or on the property that would
+        adversely affect, its existing or potential use or reduce its
+        marketability. Should a problem be known or arise the valuation should
+        be referred to the valuer for comment and review as deemed
+        appropriate. We are not experts in this regard and if more detailed
+        advice is required, an environmental consultant should be retained.
+        The client acknowledges and recognizes that the Valuer is not expert
+        in identifying environmental hazards and compliance requirements
+        affecting properties. The Valuer has endeavoured to identify all
+        matters of environmental concern and the effect they might have on the
+        value of the property. However, the Valuer will not be held liable nor
+        responsible for his/her failure to identify all such matters of
+        environmental concern and the impact which any environmental related
+        issue has on the property and its value.
+      </p>
+      <p>
+        Unless stated as otherwise in this report we advise that a copy of the
+        current Certificate of Title has not been provided or searched. This
+        valuation assumes clear title. Should any encumbrances, easements,
+        leases or other restrictions not mentioned in this report be known or
+        discovered then the valuation should be referred to the Valuer for
+        comment.
+      </p>
+      <p>
+        For retrospective valuations where the valuer does not have access to
+        conduct an internal inspection, we will proceed on the basis of a
+        desktop assessment. The information and photographs of the subject
+        property including condition and presentation will be sourced from a
+        combination but not limited to our internal database, online property
+        searches, local agent and government resources. Should the information
+        noted in our report be revealed inaccurate/incorrect at a future date,
+        we reserve the right to amend our valuation report.
+      </p>
+      <p>
+        It is noted that our Valuation Report is not suitable for Court
+        Purposes. This report should not be used for litigation proceedings
+        and does not meet the criteria of Property Disputes, Expert Witness
+        and/or Family Court Matters.
+      </p>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% for photos_group in valuation_report["gallery_photos_groups"] %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">
+      12. Photographs {{ "(cont'd)" if loop.index > 1 else "" }}
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="photos-container">
+      {% for photo in photos_group %}
+      <img src="{{ photo['photoUrl'] }}" alt="" />
+      {% endfor %}
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endfor %}
+
+  {# Dynamic section numbering for Additional Photos and Floor Plan #}
+  {% set has_additional_photos = valuation_report.get("additionalPhotos") and
+  valuation_report["additionalPhotos"]|length > 0 %}
+  {% set has_floor_plans = valuation_report.get("floorPlans") and valuation_report["floorPlans"]|length > 0 %}
+  {% set additional_photos_section_num = 13 %}
+  {% set floor_plan_section_num = 13 if not has_additional_photos else 14 %}
+
+  {# Additional Photos Section - 6 photos per page, 2 per row #}
+  {% if has_additional_photos %}
+  {% set additional_photos_groups = valuation_report["additionalPhotos"]|batch(6) %}
+  {% set additional_photos_type = valuation_report.get("additionalPhotosType", "") %}
+  {% set type_suffix = " (" + additional_photos_type + ")" if additional_photos_type else "" %}
+  {% for photos_group in additional_photos_groups %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">
+      {{ additional_photos_section_num }}. Additional Photos{{ type_suffix }} {{ "(cont'd)" if loop.index > 1 else "" }}
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="photos-container">
+      {% for photo in photos_group %}
+      <img src="{{ photo['photoUrl'] }}" alt="Additional Photo" />
+      {% endfor %}
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {# Floor Plan Section - 1 large photo per page #}
+  {% if has_floor_plans %}
+  {% for floor_plan in valuation_report["floorPlans"] %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">
+      {{ floor_plan_section_num }}. Floor Plan {{ "(cont'd)" if loop.index > 1 else "" }}
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="floor-plan-container">
+      <img src="{{ floor_plan['photoUrl'] }}" alt="Floor Plan" />
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% for photo in valuation_report["photos"] %} {% if
+  photo["isAnnexure"] %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ logo_data_url or logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">{{ photo['annexureHeader'] }}</div>
+    <div class="space-between-sm"></div>
+    <div class="annexure-content">
+      <img src="{{ photo['photoUrl'] }}" alt="Annexure Document" />
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report['address']['fullAddress']|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endif %} {% endfor %}
+  <script>
+    const pageNums = document.querySelectorAll(".page-num");
+    pageNums.forEach((v, k) => {
+      v.textContent = k + 2;
+    });
+  </script>
+</body>
+
+</html>
