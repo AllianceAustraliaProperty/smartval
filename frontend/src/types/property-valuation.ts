@@ -175,7 +175,7 @@ export interface LocationDetailsData {
   };
 }
 
-export type ConditionRating = 'Good' | 'Fair' | 'Average' | 'Poor';
+export type ConditionRating = 'Very Good' | 'Good' | 'Fair' | 'Average' | 'Poor';
 
 export interface PropertyDescriptorsData {
   bedrooms?: number;
@@ -249,6 +249,7 @@ export interface ValuationDetailsData {
   valuationDate?: DateISOString;
   valuationDate2?: string;
   inspectionDate?: DateISOString;
+  dateIssued?: DateISOString;
   currentDayValuation?: boolean;
   externalDesktopValuation?: boolean;
   isUnit?: boolean;
@@ -260,6 +261,8 @@ export interface ValuationDetailsData {
   landValue?: number;
   showImprovements?: boolean;
   improvements?: number;
+  lowestValueSqm?: number;
+  highestValueSqm?: number;
   squareMeterRate?: number;
   directComparison?: string;
   purposeOfReport?: string;
@@ -415,6 +418,7 @@ export const RISK_RATING_OPTIONS = [
 export type WorkflowStatus = 'draft' | 'in_progress' | 'completed' | 'archived';
 
 export const CONDITION_OPTIONS: { value: ConditionRating; label: string }[] = [
+  { value: 'Very Good', label: 'Very Good' },
   { value: 'Good', label: 'Good' },
   { value: 'Fair', label: 'Fair' },
   { value: 'Average', label: 'Average' },
@@ -536,6 +540,7 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
     landValuationType: '',
     valuationDate: '',
     inspectionDate: '',
+    dateIssued: '',
     currentDayValuation: false,
     externalDesktopValuation: false,
     marketValue: 3000000,
@@ -545,6 +550,8 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
     landValue: undefined,
     showImprovements: false,
     improvements: undefined,
+    lowestValueSqm: undefined,
+    highestValueSqm: undefined,
     squareMeterRate: undefined,
     directComparison: '',
     purposeOfReport: '',

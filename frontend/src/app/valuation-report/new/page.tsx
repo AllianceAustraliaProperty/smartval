@@ -103,6 +103,8 @@ export default function NewValuationReportPage() {
                     <option value="Commercial Short Report">Commercial Short Report</option>
                     <option value="Commercial">Commercial</option>
                     <option value="Retrospective Capital Gains">Retrospective Capital Gains</option>
+                    <option value="Rural">Rural</option>
+                    <option value="Probate Valuation">Probate Valuation</option>
                   </select>
                 </div>
 

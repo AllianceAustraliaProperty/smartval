@@ -275,7 +275,7 @@ def create_valuation_report():
             return jsonify({'error': 'Address is required'}), 400
         
         # Convert date strings to datetime objects FIRST (empty strings -> None)
-        date_fields = ['valuationDate', 'inspectionDate', 'reportDate', 'conversionDate', 'deadlineDate']
+        date_fields = ['valuationDate', 'inspectionDate', 'reportDate', 'conversionDate', 'deadlineDate', 'dateIssued']
         convert_date_strings_to_datetime(data, date_fields)
         
         # Convert dates in valuationDetails if present
@@ -354,7 +354,7 @@ def update_valuation_report(report_id):
             return jsonify({'error': 'No data provided'}), 400
         
         # Convert date strings to datetime objects FIRST (empty strings -> None)
-        date_fields = ['valuationDate', 'inspectionDate', 'reportDate', 'conversionDate', 'deadlineDate']
+        date_fields = ['valuationDate', 'inspectionDate', 'reportDate', 'conversionDate', 'deadlineDate', 'dateIssued']
         data = convert_date_strings_to_datetime(data, date_fields)
         
         # Convert dates in valuationDetails if present
@@ -495,6 +495,14 @@ def generate_html_report(report_id, template_name='residential.html'):
             logo_data_url = None
             effective_logo_url = logo_remote_url
 
+        # Load cover house image as base64
+        try:
+            house_img_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'house-cover.png')
+            with open(house_img_path, 'rb') as hf:
+                house_cover_b64 = f"data:image/png;base64,{base64.b64encode(hf.read()).decode('ascii')}"
+        except Exception:
+            house_cover_b64 = ""
+
         # Prepare data for template rendering
         template_data = {
             'property': property_data,
@@ -505,6 +513,7 @@ def generate_html_report(report_id, template_name='residential.html'):
             'base_url': Config.BASE_URL,
             'logo_url': effective_logo_url,
             'logo_data_url': logo_data_url,
+            'house_cover_url': house_cover_b64,
             'logo_type': logo_type,
             'now': now,
         }
@@ -570,6 +579,7 @@ def generate_html_report(report_id, template_name='residential.html'):
             _unit = report.get("address", {}).get("unitNumber") or ""
             _street_name = report.get("address", {}).get("streetName") or ""
             _street = f"{_unit} {_street_name}".strip() or None
+            val_details = report.get("valuationDetails", {})
 
             record = {
                 "location_details": {
@@ -583,6 +593,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "suburb_description_2": ""
                 },
                 "valuation_date": report.get("valuationDetails", {}).get("valuationDate"),
+                "date_issued": report.get("valuationDetails", {}).get("dateIssued"),
                 "cover_photo": {
                     "large": cover_photo.get("photoUrl") if cover_photo else None,
                     "base": cover_photo.get("photoUrl") if cover_photo else None
@@ -590,7 +601,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                 "property_valuation": {
                     "interest_valued": report.get("valuationDetails", {}).get("interestValued"),
                     "current_day_valuation": report.get("valuationDetails", {}).get("currentDayValuation"),
-                    "occupancy_status": "Tenanted" if report.get("tenancyDetails") else "Vacant",
+                    "occupancy_status": report.get("valuationDetails", {}).get("occupancy") or ("Tenanted" if report.get("tenancyDetails") else "Vacant"),
                     "nla_value_rate": report.get("valuationDetails", {}).get("squareMeterRate"),
                     "assessed_net_rental": report.get("valuationDetails", {}).get("assessedNetRental"),
                     "capitalisation_rate": report.get("valuationDetails", {}).get("capitalisationRate"),
@@ -609,7 +620,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "title_reference": report.get("propertyDetails", {}).get("titleReference"),
                     "frontage": report.get("landDetails", {}).get("frontage"),
                     "depth": report.get("landDetails", {}).get("depth"),
-                    "build_year": report.get("propertyDetails", {}).get("yearBuilt"),
+                    "build_year": report.get("propertyDetails", {}).get("buildYear") or report.get("propertyDetails", {}).get("yearBuilt"),
                 },
                 "property_descriptors": {
                     "parking_type": "On-site",
@@ -638,13 +649,15 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "description": report.get("locationDetails", {}).get("siteDescription"),
                     "access": report.get("locationDetails", {}).get("access"),
                     "identification": report.get("locationDetails", {}).get("identification"),
-                    "map_source": "Google Maps",
+                    "map_photo": {"base": report.get("locationDetails", {}).get("map", {}).get("photo")} if report.get("locationDetails", {}).get("map", {}).get("photo") else None,
+                    "map_source": report.get("locationDetails", {}).get("map", {}).get("source", "Google Maps"),
                 },
                 "photos_summary": {
                     "floorings": ["Concrete", "Carpet"],
                 },
                 "general_comments": {
                     "valuation_comments": report.get("generalComments", {}).get("valuationCommentsPara"),
+                    "valuation_comments_image": report.get("generalComments", {}).get("valuationCommentsImage"),
                 },
                 "ancillary_improvements": {
                     "accommodation": report.get("ancillaryImprovements", {}).get("accommodation"),
@@ -652,17 +665,21 @@ def generate_html_report(report_id, template_name='residential.html'):
                 "estimated_outgoings": report.get("valuationDetails", {}).get("outgoings"),
                 "listing_comparables": listing_comparables,
                 "sales_comparables": sales_comparables,
-                "direct_comparison_min": 0,
-                "direct_comparison_max": 0,
-                "direct_comparison_summation": 0,
-                "capitalised_value": 0,
-                "lowest_rental_rate": 0,
-                "highest_rental_rate": 0,
-                "lowest_building_area": 0,
-                "highest_building_area": 0,
+                "direct_comparison_min": float(val_details.get("lowestValueSqm") or 0),
+                "direct_comparison_max": float(val_details.get("highestValueSqm") or 0),
+                "direct_comparison_summation": float(val_details.get("nla") or 0) * float(val_details.get("squareMeterRate") or 0),
+                "capitalised_value": (float(val_details.get("assessedNetRental") or 0) / float(val_details.get("capitalisationRate") or 1) * 100) if float(val_details.get("capitalisationRate") or 0) > 0 else 0,
+                "lowest_rental_rate": float(val_details.get("lowestRentalRate") or 0),
+                "highest_rental_rate": float(val_details.get("highestRentalRate") or 0),
+                "lowest_building_area": float(val_details.get("lowestBuildingArea") or 0),
+                "highest_building_area": float(val_details.get("highestBuildingArea") or 0),
+                "subject_nla": float(val_details.get("subjectNla") or 0),
+                "subject_rental_rate": float(val_details.get("subjectRentalRate") or 0),
+                "net_market_rent": float(val_details.get("netMarketRent") or 0),
                 "gallery_photos_groups": comm_gallery_groups,
                 "annexures": comm_annexures,
                 "title_search": (report.get("titleSearch", [{}])[0].get("photoUrl") if report.get("titleSearch") else None),
+                "title_search_list": [p.get("photoUrl") for p in report.get("titleSearch", []) if p.get("photoUrl")],
                 "blank_pages_count": report.get("valuationDetails", {}).get("blankPagesCount", 0) or 0,
                 "blank_pages_heading": report.get("valuationDetails", {}).get("blankPagesHeading", ""),
             }
@@ -708,7 +725,10 @@ def generate_html_report(report_id, template_name='residential.html'):
             # Map to 'sf_record' structure (Salesforce placeholder)
             sf_record = {
                 "Job_Number__c": report.get("fileNumber", ""),
-                "Owners__c": report.get("valuationDetails", {}).get("registeredProprietor") or report.get("propertyDetails", {}).get("owner", ""),
+                "Owners__c": " ".join(filter(None, [
+                    report.get("primaryContact", {}).get("firstName", ""),
+                    report.get("primaryContact", {}).get("lastName", ""),
+                ])) or report.get("valuationDetails", {}).get("registeredProprietor") or report.get("propertyDetails", {}).get("owner", ""),
                 "InspectionDate__c": report.get("valuationDetails", {}).get("inspectionDate"),
                 "PropertyValuer__r": {
                     "Name": "Jugal Saha" # Default valuer
@@ -889,8 +909,8 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "encumbrances": report.get("propertyDetails", {}).get("encumbrances"),
                     "access": report.get("locationDetails", {}).get("access"),
                     "services": report.get("locationDetails", {}).get("services"),
-                    "map_photo": {"base": report.get("locationDetails", {}).get("mapPhotoUrl")} if report.get("locationDetails", {}).get("mapPhotoUrl") else None,
-                    "map_source": report.get("locationDetails", {}).get("mapSource", "Google Maps"),
+                    "map_photo": {"base": report.get("locationDetails", {}).get("map", {}).get("photo")} if report.get("locationDetails", {}).get("map", {}).get("photo") else None,
+                    "map_source": report.get("locationDetails", {}).get("map", {}).get("source", "Google Maps"),
                 },
                 "general_comments": {
                     "property_description": report.get("generalComments", {}).get("propertyDescription"),

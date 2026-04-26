@@ -249,12 +249,6 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-gray-900">Granny Flat</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField label="Main Building Type">
-              <Select
-                {...register('propertyDescriptors.grannyFlat.mainBuildingType')}
-                options={availableBuildingTypes.map(type => ({ value: type, label: type }))}
-              />
-            </FormField>
             <FormField label="Roofing Type">
               <Select
                 {...register('propertyDescriptors.grannyFlat.roofingType')}

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FormField, Textarea, Checkbox, Input, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { Wand2 } from 'lucide-react';
+import { Wand2, Upload } from 'lucide-react';
 import { autofillLocationDetailsFromGoogle, buildFullAddress, geocodeAddress } from '@/utils/locationUtils';
 import { getWikiSuburbDescription } from '@/utils/wikiUtils';
 import { GoogleMapDisplay } from '../GoogleMap';
 import { apiRepository } from '@/lib/api-repository';
+import { API_BASE_URL } from '@/lib/api-config';
 
 const LocationItem: React.FC<{
   title: string;
@@ -95,6 +96,44 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
   const [isAutomating, setIsAutomating] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [showMap, setShowMap] = useState(true);
+  const [isUploadingSiteMap, setIsUploadingSiteMap] = useState(false);
+  const siteMapInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSiteMapUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !reportId) return;
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+      alert('Please upload an image file (JPG, PNG, GIF, WEBP)');
+      return;
+    }
+
+    setIsUploadingSiteMap(true);
+    try {
+      const presignRes = await fetch(`${API_BASE_URL}/api/photos/presigned-url/${reportId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileExtension: ext, contentType: file.type }),
+      });
+      const presign = await presignRes.json();
+
+      await fetch(presign.presignedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+
+      setValue('locationDetails.map.photo', presign.s3Url, { shouldDirty: true });
+      setValue('locationDetails.map.source', 'RP Data', { shouldDirty: true });
+    } catch (err) {
+      console.error('Site map upload failed:', err);
+      alert('Failed to upload site map. Please try again.');
+    } finally {
+      setIsUploadingSiteMap(false);
+      if (siteMapInputRef.current) siteMapInputRef.current.value = '';
+    }
+  };
   
   const handleAutoFillEverything = async () => {
     // Check if there's existing data and show warning
@@ -355,26 +394,59 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
       </FormField>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Map Information</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Site Map</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
-            label="Map Photo URL"
+            label="Site Map Image"
             error={errors.locationDetails?.map?.photo?.message as string}
           >
-            <Input
-              {...register('locationDetails.map.photo')}
-              placeholder="https://maps.google.com/..."
-              error={errors.locationDetails?.map?.photo?.message as string}
-            />
+            <div className="flex gap-2">
+              <Input
+                {...register('locationDetails.map.photo')}
+                placeholder="Upload or paste URL..."
+                error={errors.locationDetails?.map?.photo?.message as string}
+                className="flex-1"
+              />
+              <input
+                ref={siteMapInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleSiteMapUpload}
+              />
+              <button
+                type="button"
+                onClick={() => siteMapInputRef.current?.click()}
+                disabled={isUploadingSiteMap || !reportId}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 whitespace-nowrap"
+              >
+                <Upload size={16} />
+                {isUploadingSiteMap ? 'Uploading...' : 'Upload'}
+              </button>
+            </div>
+            {watch('locationDetails.map.photo') && (
+              <div className="mt-2">
+                <img
+                  src={watch('locationDetails.map.photo')}
+                  alt="Site map preview"
+                  className="max-h-48 rounded border"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              </div>
+            )}
           </FormField>
 
           <FormField
             label="Map Source"
             error={errors.locationDetails?.map?.source?.message as string}
           >
-            <Input
+            <Select
               {...register('locationDetails.map.source')}
-              placeholder="e.g., Google Maps, Bing Maps, etc."
+              options={[
+                { value: '', label: 'Select source' },
+                { value: 'RP Data', label: 'RP Data' },
+                { value: 'Google', label: 'Google' },
+              ]}
               error={errors.locationDetails?.map?.source?.message as string}
             />
           </FormField>

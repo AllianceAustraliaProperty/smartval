@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FormField, Textarea } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { Wand2 } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { apiRepository } from '@/lib/api-repository';
 import { summarizePhotos } from '@/lib/photo-utils';
+import { uploadFileToS3 } from '@/lib/s3-upload';
 
 export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue, reportId }) => {
   const [isAutomating, setIsAutomating] = useState(false);
@@ -12,6 +13,29 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isGeneratingOverview, setIsGeneratingOverview] = useState(false);
   const [isGeneratingComments, setIsGeneratingComments] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const existingImageUrl = watch('generalComments.valuationCommentsImage' as any) as string | undefined;
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !reportId) return;
+    setIsUploadingImage(true);
+    try {
+      const result = await uploadFileToS3(String(reportId), file, '/api/photos');
+      if (result.success && result.s3Url) {
+        setValue('generalComments.valuationCommentsImage' as any, result.s3Url, { shouldDirty: true });
+      } else {
+        alert('Image upload failed: ' + (result.error || 'Unknown error'));
+      }
+    } catch (err: any) {
+      alert('Image upload failed: ' + err?.message);
+    } finally {
+      setIsUploadingImage(false);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  };
 
   const formatGeneralItems = (): string => {
     const photos = watch('photos') || [];
@@ -583,6 +607,45 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
           rows={4}
           error={(errors as any).generalComments?.valuationCommentsPara?.message}
         />
+      </FormField>
+
+      <FormField label="Valuation Comments Image" error={undefined}>
+        <div className="space-y-3">
+          {existingImageUrl ? (
+            <div className="flex items-start gap-3">
+              <img src={existingImageUrl} alt="Valuation comments chart" className="max-w-xs max-h-40 object-contain border rounded" />
+              <button
+                type="button"
+                onClick={() => setValue('generalComments.valuationCommentsImage' as any, '', { shouldDirty: true })}
+                className="text-sm text-red-600 hover:text-red-800 underline"
+              >
+                Remove
+              </button>
+            </div>
+          ) : null}
+          <div>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            <button
+              type="button"
+              onClick={() => imageInputRef.current?.click()}
+              disabled={isUploadingImage}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUploadingImage ? (
+                <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div> Uploading...</>
+              ) : (
+                existingImageUrl ? 'Replace Image' : 'Upload Image'
+              )}
+            </button>
+            <p className="mt-1 text-xs text-gray-500">This image will appear below the Valuation Comments in the report.</p>
+          </div>
+        </div>
       </FormField>
     </div>
   );

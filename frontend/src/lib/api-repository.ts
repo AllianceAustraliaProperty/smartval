@@ -59,14 +59,17 @@ interface PropertyCardData {
 function transformValuationReport(backendReport: any): ValuationReportData {
   // Convert date fields to YYYY-MM-DD format for date inputs
   const valuationDetails = backendReport.valuationDetails || {};
-  if (valuationDetails.valuationDate) {
-    try {
-      const date = new Date(valuationDetails.valuationDate);
-      valuationDetails.valuationDate = date.toISOString().split('T')[0];
-    } catch (e) {
-      console.error('Failed to convert valuationDate:', e);
+  const dateFields = ['valuationDate', 'inspectionDate', 'conversionDate', 'deadlineDate', 'dateIssued'];
+  dateFields.forEach(field => {
+    if (valuationDetails[field]) {
+      try {
+        const date = new Date(valuationDetails[field]);
+        valuationDetails[field] = date.toISOString().split('T')[0];
+      } catch (e) {
+        console.error(`Failed to convert ${field}:`, e);
+      }
     }
-  }
+  });
 
   // Convert dates in comparables
   const convertComparableDate = (comparable: any) => {

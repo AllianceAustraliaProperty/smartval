@@ -8,6 +8,8 @@ export const ResidentialMainBuildingTypes = [
   "Semi-detached three-storey dwelling",
   "Freestanding granny flat",
   "Semi-detached granny flat",
+  "Freestanding single-storey dwelling with granny flat",
+  "Freestanding double-storey dwelling with granny flat",
   "Freestanding single storey duplex",
   "Freestanding two storey duplex",
   "Semi-detached single storey duplex",
@@ -24,6 +26,7 @@ export const CommercialMainBuildingTypes = [
   "Office",
   "Warehouse",
   "Retail",
+  "Retail Shop",
   "Retail/Residential",
 ] as const;
 

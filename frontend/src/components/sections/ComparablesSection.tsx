@@ -1201,6 +1201,7 @@ const ComparableCard: React.FC<{
     'Internal area',
     'External area',
     'Condition',
+    'Net Lettable Area',
   ];
   const OVERALL_DETAIL_OPTIONS = ['Similar', 'Inferior', 'Superior'];
   // NO DEFAULT VALUES - dropdowns start empty until loaded from database
@@ -3016,6 +3017,93 @@ export const ComparablesSection: React.FC<SectionProps> = (props) => {
 
       <ComparableGroup {...props} type="sales" title="Sales Comparables" />
       <ComparableGroup {...props} type="rentals" title="Rental Comparables" />
+
+      {/* Rental Assessment */}
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
+        <div>
+          <h3 className="text-xl font-semibold text-gray-900">Rental Assessment</h3>
+          <p className="text-sm text-gray-500 mt-1">These values populate the Rental Assessment paragraph in the commercial report.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Lowest Rental Rate ($/sqm)</label>
+            <input
+              type="number"
+              step="0.01"
+              {...props.register('valuationDetails.lowestRentalRate' as any, { valueAsNumber: true })}
+              placeholder="0.00"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Highest Rental Rate ($/sqm)</label>
+            <input
+              type="number"
+              step="0.01"
+              {...props.register('valuationDetails.highestRentalRate' as any, { valueAsNumber: true })}
+              placeholder="0.00"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Lowest Building Area (sqm)</label>
+            <input
+              type="number"
+              step="1"
+              {...props.register('valuationDetails.lowestBuildingArea' as any, { valueAsNumber: true })}
+              placeholder="0"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Highest Building Area (sqm)</label>
+            <input
+              type="number"
+              step="1"
+              {...props.register('valuationDetails.highestBuildingArea' as any, { valueAsNumber: true })}
+              placeholder="0"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Subject Property NLA (sqm)</label>
+            <input
+              type="number"
+              step="1"
+              {...props.register('valuationDetails.subjectNla' as any, { valueAsNumber: true })}
+              placeholder="0"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Subject Property Rate ($/sqm)</label>
+            <input
+              type="number"
+              step="0.01"
+              {...props.register('valuationDetails.subjectRentalRate' as any, { valueAsNumber: true })}
+              placeholder="0.00"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Net Market Rent ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              {...props.register('valuationDetails.netMarketRent' as any, { valueAsNumber: true })}
+              placeholder="0.00"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        {/* Live preview */}
+        <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 space-y-1">
+          <p className="font-medium text-gray-900">Preview (as it will appear in the report):</p>
+          <p>The rentals identified above reflect a broad rate range in the order of ${props.watch('valuationDetails.lowestRentalRate' as any) || '0.00'} to ${props.watch('valuationDetails.highestRentalRate' as any) || '0.00'} per square metre per annum net plus GST with relevant floor sizes ranging from {props.watch('valuationDetails.lowestBuildingArea' as any) || 0} to {props.watch('valuationDetails.highestBuildingArea' as any) || 0} square metres.</p>
+          <p>Subject Property NLA {props.watch('valuationDetails.subjectNla' as any) || 0} sqm @${props.watch('valuationDetails.subjectRentalRate' as any) || '0.00'}/sqm = ${props.watch('valuationDetails.netMarketRent' as any) || '0.00'} (Net Market Rent)</p>
+        </div>
+      </div>
     </div>
+
   );
 };

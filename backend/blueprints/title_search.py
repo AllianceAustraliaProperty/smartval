@@ -62,7 +62,7 @@ def get_presigned_urls_batch(report_id):
             return jsonify({'error': 'files array is required'}), 400
 
         items = []
-        for f in files[:1]:  # Limit to 1 file
+        for f in files[:2]:  # Limit to 2 files
             file_extension = (f.get('fileExtension') or '').lower()
             content_type = f.get('contentType')
             if not file_extension:
@@ -105,7 +105,7 @@ def confirm_upload(report_id):
             'photoUrl': s3_url,
         }
 
-        valuation_report_model.set_title_search(report_id, photo_obj)
+        valuation_report_model.add_title_search(report_id, photo_obj)
 
         updated_report = valuation_report_model.get_by_id(report_id)
         report_data = valuation_report_model.serialize(updated_report)
@@ -148,7 +148,7 @@ def delete_title_search(report_id):
         if not report:
             return jsonify({'error': 'Valuation report not found'}), 404
 
-        valuation_report_model.update(report_id, {'titleSearch': []})
+        valuation_report_model.remove_title_search(report_id, photo_url)
 
         try:
             if photo_url.startswith('https://') and 's3' in photo_url:

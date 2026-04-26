@@ -7,11 +7,11 @@ import { uploadMultipleFilesToS3 } from '@/lib/s3-upload';
 
 // Import the constants
 const ROOM_CATEGORIES = [
-  'Alfresco', 'Balcony', 'Bathroom', 'Bedroom', 'Bedroom 1', 'Bedroom 2', 'Bedroom 3', 'Bedroom 4', 'Bedroom 5', 'Bedroom 6',
+  'Alfresco', 'Backyard', 'Balcony', 'Bathroom', 'Bedroom', 'Bedroom 1', 'Bedroom 2', 'Bedroom 3', 'Bedroom 4', 'Bedroom 5', 'Bedroom 6',
   'Deck', 'Dining', 'Ensuite', 'Ensuite 2', 'Entertainment Area', 'Family', 'Family And Meals', 'Formal Dining', 'General',
   'Kitchen', 'Kitchen 1', 'Kitchen 2', 'Kitchen And Dining', 'Kitchen And Meals', 'Laundry', 'Living', 'Living And Dining',
   'Lounge', 'Media Room', 'Patio', 'Porch', 'Powder Room', 'Retreat', 'Rumpus', 'Storage', 'Study', 'Sunroom',
-  'Theatre Room', 'Toilet', 'Workshop'
+  'Swimming Pool', 'Theatre Room', 'Toilet', 'Workshop'
 ];
 
 const FLOORING_OPTIONS = [
@@ -132,6 +132,8 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
   const fileInputRef = useRef<HTMLInputElement>(null);
   const individualFileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
   const [customItemInputs, setCustomItemInputs] = useState<{ [key: number]: string }>({});
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   // Fetch photos when component mounts
   useEffect(() => {
@@ -283,6 +285,55 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
     }
   };
 
+  const handleDragStart = (index: number, e: React.DragEvent<HTMLDivElement>) => {
+    setDragIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, overIndex: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(overIndex);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = async (dropIndex: number, e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (dragIndex === null || dragIndex === dropIndex) {
+      handleDragEnd();
+      return;
+    }
+
+    const reordered = [...photos];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(dropIndex, 0, moved);
+
+    setPhotos(reordered);
+    onPhotosUpdate(reordered);
+    handleDragEnd();
+
+    try {
+      await fetch(`${API_BASE_URL}/api/photos/update/${reportId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photos: reordered }),
+      });
+    } catch (error) {
+      console.error('Error saving reordered photos:', error);
+      setUploadError('Failed to save new photo order');
+    }
+  };
+
   const handleIndividualFileUpload = async (photoIndex: number, files: FileList | null) => {
     if (!files || files.length === 0) return;
 
@@ -420,7 +471,22 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
           {photos.length > 0 && (
       <div className="space-y-6">
                           {photos.map((photo, index) => (
-                            <div key={`photo_${photo.id || photo.photoUrl || index}_${index}`} className="border-2 border-gray-300 rounded-lg p-6 bg-white shadow-sm">
+                            <div
+                              key={`photo_${photo.id || photo.photoUrl || index}_${index}`}
+                              draggable
+                              onDragStart={(e) => handleDragStart(index, e)}
+                              onDragOver={(e) => handleDragOver(e, index)}
+                              onDragLeave={handleDragLeave}
+                              onDrop={(e) => handleDrop(index, e)}
+                              onDragEnd={handleDragEnd}
+                              style={{ cursor: dragIndex === index ? 'grabbing' : 'grab' }}
+                              className={`border-2 rounded-lg p-6 bg-white shadow-sm transition-all duration-200 ${
+                                dragIndex === index
+                                  ? 'opacity-50 border-blue-400'
+                                  : dragOverIndex === index && dragIndex !== null && dragIndex !== index
+                                    ? 'border-blue-500 ring-2 ring-blue-200'
+                                    : 'border-gray-300'
+                              }`}>
                               <div className="flex gap-6">
                                 {/* Photo - Left Side - Full Image */}
                                 <div className="relative group flex-shrink-0 w-1/2">
@@ -1649,14 +1715,14 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
 
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    if (photos.length >= 1) {
-      setUploadError('Only 1 title search image allowed. Delete the existing one first.');
+    if (photos.length >= 2) {
+      setUploadError('Maximum 2 title search images allowed. Delete one first.');
       return;
     }
     setUploading(true);
     setUploadError(null);
     try {
-      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 1, maxFiles: 1 }, '/api/title-search');
+      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 2, maxFiles: 2 }, '/api/title-search');
       if (failed.length > 0) {
         setUploadError(`Failed to upload: ${failed.map(f => f.error).join(', ')}`);
       }
@@ -1693,7 +1759,7 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
           <p className="text-red-600 text-sm">{uploadError}</p>
         </div>
       )}
-      {photos.length === 0 && (
+      {photos.length < 2 && (
         <div className="flex items-center justify-center w-full">
           <label htmlFor="file-upload-title-search" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -1701,7 +1767,7 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
               <p className="mb-2 text-sm text-gray-500">
                 <span className="font-semibold">Click to upload</span> or drag and drop
               </p>
-              <p className="text-xs text-gray-500">PNG, JPG, PDF up to 16MB - 1 file only</p>
+              <p className="text-xs text-gray-500">PNG, JPG, PDF up to 16MB • Up to 2 files</p>
             </div>
             <input id="file-upload-title-search" ref={fileInputRef} type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e.target.files)} disabled={uploading} />
           </label>
@@ -1885,7 +1951,7 @@ export const PhotosSection: React.FC<SectionProps> = ({ register, errors, watch,
       {/* Title Search Section */}
       <div className="border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Title Search</h3>
-        <p className="text-gray-600 mb-4">Upload a single title search image for the report.</p>
+        <p className="text-gray-600 mb-4">Upload up to 2 title search images for the report.</p>
         <TitleSearchUploader
           reportId={actualReportId}
           onPhotosUpdate={handleTitleSearchUpdate}

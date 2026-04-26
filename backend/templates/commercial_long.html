@@ -17,7 +17,7 @@
             justify-content: center;
             align-items: flex-start;
             flex-wrap: wrap;
-            font-size: 12px;
+            font-size: 11.5px;
         }
 
         p {
@@ -32,7 +32,7 @@
             page-break-after: always;
             background-color: #ffffff;
             margin: 0px;
-            padding: 80px 50px;
+            padding: 80px 50px 100px 50px;
             display: flex;
             flex-direction: column;
         }
@@ -40,12 +40,12 @@
         .banner {
             background-color: lightgray;
             padding: 10px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
         }
 
         .subtitle {
-            font-size: 15px;
+            font-size: 14px;
             padding-left: 10px;
         }
 
@@ -511,13 +511,13 @@
 
 
         .comparable {
-            margin-top: 18px;
-            margin-bottom: 18px;
+            margin-top: 28px;
+            margin-bottom: 28px;
         }
 
         .comparable td {
             text-align: left;
-            line-height: 0.5;
+            line-height: 1.6;
             width: unset;
             padding-right: 0;
             vertical-align: top;
@@ -542,7 +542,8 @@
 <body>
     {% if logo_type == 'CPV' %}
     <!-- CPV Cover Page -->
-    <div class="page" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <div class="page"
+        style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <!-- CPV logo at top left -->
         <div style="position: absolute; top: 50px; left: 50px;">
             <img src="{{ logo_url }}" alt="CPV Logo" style="height: 90px; width: auto; object-fit: contain;" />
@@ -582,37 +583,37 @@
     </div>
     {% else %}
     <!-- AAP Cover Page -->
-    <div class="page">
-        <div class="cover-container">
-            <div>
-                <h2>AAP Valuations</h2>
-                <p style="color: #c00000">Trusted property valuers</p>
+    <div class="page" style="position: relative; padding: 60px 70px 30px 70px; font-family: Arial, Helvetica, sans-serif;">
+        <div>
+            <h2 style="font-family: Arial, Helvetica, sans-serif; font-size: 26px; font-weight: 900; letter-spacing: 1px; margin: 0; color: #000;">AAP VALUATIONS.</h2>
+            <p style="color: #c00000; font-size: 11px; font-style: italic; font-weight: 600; margin: 2px 0 0 8px;">Trusted property valuers</p>
+        </div>
+        <div style="margin-top: 140px; display: flex; font-size: 10px;">
+            <div style="width: 45%; line-height: 1.5;">
+                <p style="margin: 0;">Jugal Saha</p>
+                <p style="margin: 0;">Director</p>
+                <p style="margin: 0;"><a href="mailto:info@aapvaluations.com.au" style="color: #2563eb; text-decoration: none;">info@aapvaluations.com.au</a></p>
+            </div>
+            <div style="width: 55%;">
+                <p style="margin: 0;">allianceaustraliaproperty.com.au</p>
             </div>
         </div>
-        <div class="cover-description">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; font-weight: normal;">
-                <div>
-                    <p>Jugal Saha</p>
-                    <p>Director (AAP Valuations)</p>
-                    <p><a href="mailto:info@allianceaustraliaproperty.com.au">info@allianceaustraliaproperty.com.au</a>
-                    </p>
-                </div>
-                <div>
-                    <p>allianceaustraliaproperty.com.au</p>
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr; margin-top: 100px;">
-                <div style="margin-left: 150px;">
-                    <p style="font-weight: bold; font-size: 20px;">Valuation Report</p>
-                    <p>{{ record.location_details.street|default('') }}</p>
-                    <p>{{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }}
-                        {{ record.location_details.postcode|default('') }}</p>
-                    <p>Ref #{{ sf_record.Job_Number__c|default('') }}</p>
-                </div>
-            </div>
+        <div style="margin-top: 90px; padding-left: 200px;">
+            <p style="font-weight: bold; font-size: 26px; margin: 0 0 10px 0; color: #000;">Valuation Report</p>
+            <p style="font-size: 16px; margin: 2px 0;">{{ record.location_details.street|default('') }}</p>
+            <p style="font-size: 16px; margin: 2px 0;">{{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</p>
         </div>
-        <div class="footer-container vertical">
-            <!-- Footer removed as per request for AAP cover page -->
+        {% if house_cover_url %}
+        <div style="text-align: center; margin-top: 40px;">
+            <img src="{{ house_cover_url }}" alt="House" style="width: 500px; height: auto;" />
+        </div>
+        {% endif %}
+        <div style="padding-left: 200px; margin-top: 20px;">
+            <p style="font-size: 12px; margin: 0;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
+        </div>
+        <div style="position: absolute; bottom: 30px; left: 70px; right: 70px; text-align: center;">
+            <p style="font-size: 9.5pt; margin: 0 0 3px 0; padding-bottom: 3px; border-bottom: 1.5px solid #2563eb; display: inline-block;">Alliance Australia Property Pty Ltd | ABN 35 641 373 702 | Phone: 043 1300 800 | PO Box 195 Campsie NSW 2194</p>
+            <p style="font-size: 8pt; font-style: italic; margin: 0;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</p>
         </div>
     </div>
     {% endif %}
@@ -633,18 +634,18 @@
             </div>
             <div style="padding-top: 10px;">
                 <div class="subtitle-lg" style="margin-bottom: 10px;">Instructions</div>
-                <div class="subtitle-xs">Commercial Property</div>
+                <div class="subtitle-xs" style="font-size: 13px;">Commercial Property</div>
                 <p>{{ record.location_details.street|default('N/A') }}, {{ record.location_details.suburb|default('N/A')
                     }}, {{ record.location_details.state|default('N/A') }} {{
                     record.location_details.postcode|default('N/A') }}</p>
-                <div class="subtitle-xs">Instructed by / For and On Behalf of (Client):</div>
+                <div class="subtitle-xs" style="font-size: 13px;">Instructed by / For and On Behalf of (Client):</div>
                 <p>{{ sf_record.Owners__c|default('N/A') }}</p>
-                <div class="subtitle-xs">Interest Valued:</div>
+                <div class="subtitle-xs" style="font-size: 13px;">Interest Valued:</div>
                 <p>{{ record.property_valuation.interest_valued|default('N/A') }}</p>
-                <div class="subtitle-xs">Valuation Purpose:</div>
+                <div class="subtitle-xs" style="font-size: 13px;">Valuation Purpose:</div>
                 <p>{% if record.purpose_of_report %} {{ record.purpose_of_report }} {% else %} To determine the {{
                     'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market value
-                    for {{ record.valuation_type|default('N/A')|title }} purposes only. {% endif %}</p>
+                    for {{ record.valuation_type|default('N/A')|title|replace('Capital Gains', 'Capital Gains Tax') }} purposes only. {% endif %}</p>
             </div>
         </div>
         <div>
@@ -733,13 +734,13 @@
                 {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
                 <tr>
                     <td>Prepared By</td>
-                    <td>JUGAL SAHA, AAPI CPV (Certified Practising Valuer 101474) {% if record.location_details.state ==
+                    <td>JUGAL SAHA (Property Valuer) AAPI CPV {% if record.location_details.state ==
                         'WA' %}WA Licence Number - LV45321 {% elif record.location_details.state == 'QLD' %}QVRB No:
                         5429MR{% endif %}</td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td> Certified Practising Valuer 101474 </td>
+                    <td>Certified Practising Valuer 101474</td>
                 </tr>
 
                 {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
@@ -766,6 +767,9 @@
 
 
             </table>
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+            <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Logo" style="width: 177px; height: 93px;">
         </div>
     </div>
     <div class="page">
@@ -882,21 +886,20 @@
                     <td style="padding: 3px;">Purpose of Report:</td>
                     <td>{% if record.purpose_of_report %} {{ record.purpose_of_report }} {% else %} To determine the {{
                         'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market
-                        value for {{ record.valuation_type|default('N/A')|title }} purposes only. {% endif %}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 3px;">Date of Valuation:</td>
-                    <td>{{ record.valuation_date|format_date|default('N/A') }}</td>
+                        value for {{ record.valuation_type|default('N/A')|title|replace('Capital Gains', 'Capital Gains Tax') }} purposes only. {% endif %}</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px;">Date of Inspection:</td>
                     <td>{{ 'External/Desktop Valuation' if record.property_valuation.external_desktop_valuation else
                         sf_record.InspectionDate__c|format_date|default('N/A') }}</td>
                 </tr>
-
                 <tr>
-                    <td style="padding: 3px;">Date of Issue:</td>
-                    <td>{{ ''|now }}</td>
+                    <td style="padding: 3px;">Date of Valuation:</td>
+                    <td>{{ record.valuation_date|format_date|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px;">Date Issued:</td>
+                    <td>{% if record.date_issued %}{{ record.date_issued|format_date }}{% else %}{{ ''|now }}{% endif %}</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px;">Interest Valued:</td>
@@ -1006,13 +1009,15 @@
                 </tr> -->
             </table>
             {% if record.statutory_details.show %}
-            <div class="space-between-md"></div>
-            <div class="banner">Statutory Details</div>
-            <div class="space-between-sm"></div>
-            <p>{{ record.statutory_details.site_value|format_currency|default('N/A') }} effective from {{
-                record.statutory_details.relevant_date|format_date|default('N/A') }} for local authority rating and land
-                tax purposes. We note the statutory asessment also includes the land value for {{
-                record.property_details.title_reference|default('N/A') }}.</p>
+            <div style="page-break-inside: avoid; margin-bottom: 30px;">
+                <div class="space-between-md"></div>
+                <div class="banner">Statutory Details</div>
+                <div class="space-between-sm"></div>
+                <p style="font-size: 11px;">{{ record.statutory_details.site_value|format_currency|default('N/A') }} effective from {{
+                    record.statutory_details.relevant_date|format_date|default('N/A') }} for local authority rating and land
+                    tax purposes. We note the statutory assessment also includes the land value for {{
+                    record.property_details.title_reference|default('N/A') }}.</p>
+            </div>
             {% endif %}
         </div>
 
@@ -1080,10 +1085,10 @@
                     record.location_details.suburb|default('N/A') }} locality.</li>
             </ul>
             <p style="white-space: pre-line;">{{ record.general_comments.valuation_comments|default('N/A') }}</p>
-            {% if record.general_comments.valuation_comments_photo_id %}
-            <div style="display: flex; justify-content: center;">
-                <img class="valuation-comments-photo" src="{{ record.general_comments.valuation_comments_photo.base }}"
-                    alt="">
+            {% if record.general_comments.valuation_comments_image %}
+            <div style="display: flex; justify-content: center; margin-top: 15px;">
+                <img style="max-height: 270px; width: auto; display: block; margin: 0 auto;"
+                    src="{{ record.general_comments.valuation_comments_image }}" alt="">
             </div>
             {% endif %}
         </div>
@@ -1122,7 +1127,7 @@
                                     src="https://maps.googleapis.com/maps/api/staticmap?center={{ record.location_details.latitude }},{{ record.location_details.longitude }}&zoom=15&size=800x400&maptype=roadmap&markers=color:red%7C{{ record.location_details.latitude }},{{ record.location_details.longitude }}&key={{ maps_api_key }}"
                                     alt="">
                             </div>
-                            <div style="margin-top: 5px; font-size: 10px;">Source: Google Maps</div>
+                            <div style="margin-top: 5px; font-size: 10px;">Source: {{ record.location_details.map_source|default('Google Maps') }}</div>
                         </td>
                     </tr>
                 </table>
@@ -1313,7 +1318,7 @@
                     valuation may be affected, and it should be referred to us for comment and possible amendment. The
                     premises are currently {{ record.property_valuation.occupancy_status }}. Estimated Outgoings
                     (Council rates, Water rates, Othes outgoings) {{
-                    record.estimated_outgoings|format_currency|default('N/A') }} pa approx. this is an acceptable range
+                    record.estimated_outgoings|format_currency if record.estimated_outgoings else '20%' }} pa approx of Annual Rental Income. this is an acceptable range
                     of this size, and in line with industry average.</p>
             </div>
         </div>
@@ -1442,6 +1447,9 @@
             record.highest_rental_rate|format_currency|default('N/A') }} per square metre per annum net plus GST with
             relevant floor sizes ranging from {{ record.lowest_building_area|default('N/A') }} to {{
             record.highest_building_area|default('N/A') }} square metres.</p>
+        {% if record.subject_nla %}
+        <p>Subject Property NLA {{ record.subject_nla|int }} sqm @${{ "%.2f"|format(record.subject_rental_rate) }}/sqm = ${{ "{:,.2f}".format(record.net_market_rent) }} (Net Market Rent)</p>
+        {% endif %}
         {% endif %}
         <div class="footer-container">
             <div>
@@ -1548,8 +1556,8 @@
                     </table>
                     {% if comparable.image_url %}
                     <div style="flex-shrink: 0;">
-                        <img src="{{ comparable.image_url }}" width="110" height="110"
-                            style="object-fit: cover; width: 110px; height: 110px;" alt="">
+                        <img src="{{ comparable.image_url }}" width="130" height="130"
+                            style="object-fit: cover; width: 130px; height: 130px;" alt="">
                     </div>
                     {% endif %}
                 </div>
@@ -1560,11 +1568,11 @@
                 </div>
                 {% endif %}
                 <div>
-                    <p style="margin-top: 2px; margin-bottom: 2px;">Comparison to Subject: <i>{{
+                    <p style="margin-top: 6px; margin-bottom: 6px;">Comparison to Subject: <i>{{
                             comparable.comparison|default('', true) }}</i></p>
                 </div>
                 {% if not loop.last %}
-                <hr style="margin: 2px 0;">
+                <hr style="margin: 8px 0;">
                 {% endif %}
             </div>
             {% endfor %}
@@ -1615,7 +1623,7 @@
                 well reflecting the market. Based on the above comparable sales evidence and considerations, we consider
                 a value rate of {{ record.property_valuation.nla_value_rate|format_currency|default('N/A') }} p.sqm to
                 be appropriate, which when applied to the NET LETTABLE AREA, equates to value as follows: NLA {{
-                record.property_details.lettable_area|default('N/A') }} Sqm @ {{
+                record.capitalisation_method.nla|default('N/A') }} Sqm @ {{
                 record.property_valuation.nla_value_rate|format_currency|default('N/A') }} p.sqm = {{
                 record.direct_comparison_summation|format_currency|default('N/A') }}</p>
         </div>
@@ -1640,7 +1648,7 @@
 
             <tr>
                 <td>Market Value</td>
-                <td>{{ record.market_value|format_currency|default('N/A') }}</td>
+                <td>{{ record.property_valuation.market_value|format_currency|default('N/A') }}</td>
             </tr>
         </table>
         <div class="space-between-xs"></div>
@@ -1879,15 +1887,15 @@
         </div>
     </div>
     {% endfor %}
-    {% if record.title_search %}
+    {% for ts_url in record.title_search_list %}
     <div class="page">
         <div class="header-container">
             <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
         </div>
-        <div class="banner">Title Search</div>
+        <div class="banner">Annexures</div>
         <div class="space-between-sm"></div>
-        <div style="text-align: center;">
-            <img style="max-width: 100%; max-height: 800px;" src="{{ record.title_search }}" alt="Title Search">
+        <div style="text-align: center; margin-top: 80px;">
+            <img style="max-width: 100%; max-height: 700px;" src="{{ ts_url }}" alt="Title Search">
         </div>
         <div class="footer-container">
             <div>
@@ -1900,7 +1908,7 @@
             <span class="page-num"></span>
         </div>
     </div>
-    {% endif %}
+    {% endfor %}
     {% for annexure in record.annexures %}
     <div class="page">
         <div class="header-container">
@@ -1943,178 +1951,36 @@
         </div>
     </div>
     {% endfor %}
-    {% if record.capitalisation_method and record.capitalisation_method.nla %}
+
+    {% if logo_type != 'CPV' %}
     <div class="page">
-        <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+        <div class="section-header">
+            <h1>Annexure</h1>
+            <img src="{{ logo_url }}" class="header-logo" alt="Logo" />
         </div>
-        <div class="banner">Capitalisation Method</div>
-        <div class="space-between-sm"></div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <colgroup>
-                <col style="width: 40%;">
-                <col style="width: 20%;">
-                <col style="width: 20%;">
-                <col style="width: 20%;">
-            </colgroup>
-            <tr>
-                <td style="text-align: left; width: 40%; font-weight: bold; padding: 6px 8px;">Total Market Gross Rental
-                </td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">{{
-                    "%.2f"|format(record.capitalisation_method.nla) }} m²</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">@ ${{
-                    "%.2f"|format(record.capitalisation_method.gross_rental_rate) }}/m² p.a.</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; font-weight: bold;">${{
-                    "{:,.0f}".format(record.capitalisation_method.total_gross_rental) }} p.a.</td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Vacancy Allowance</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
-                    "%.2f"|format(record.capitalisation_method.vacancy_pct) }}%</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
-                    "{:,.0f}".format(record.capitalisation_method.vacancy_amount) }}) p.a.</td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Adopted Market Outgoings</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">{{
-                    "%.2f"|format(record.capitalisation_method.nla) }} m²</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">@ ${{
-                    "%.2f"|format(record.capitalisation_method.outgoings_rate) }}/m² p.a.</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
-                    "{:,.0f}".format(record.capitalisation_method.outgoings_amount) }}) p.a.</td>
-            </tr>
-            <tr style="border-top: 2px solid #333;">
-                <td style="text-align: left; width: 40%; font-weight: bold; padding: 8px 8px;">Estimated Market Net
-                    Rental</td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px;">{{
-                    "%.2f"|format(record.capitalisation_method.nla) }} m²</td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px;">@ ${{
-                    "%.2f"|format(record.capitalisation_method.net_rental_rate) }}/m² p.a.</td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px; font-weight: bold;">${{
-                    "{:,.0f}".format(record.capitalisation_method.net_rental) }} p.a.</td>
-            </tr>
-            <tr>
-                <td colspan="4" style="padding: 4px;"></td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Capitalised @</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
-                    "%.2f"|format(record.capitalisation_method.cap_rate_low) }}%</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">${{
-                    "{:,.0f}".format(record.capitalisation_method.cap_value_low) }}</td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Capitalised @</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
-                    "%.2f"|format(record.capitalisation_method.cap_rate_mid) }}%</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">${{
-                    "{:,.0f}".format(record.capitalisation_method.cap_value_mid) }}</td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Capitalised @</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
-                    "%.2f"|format(record.capitalisation_method.cap_rate_high) }}%</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">${{
-                    "{:,.0f}".format(record.capitalisation_method.cap_value_high) }}</td>
-            </tr>
-            <tr style="border-top: 1px solid #999;">
-                <td style="text-align: left; width: 40%; font-weight: bold; padding: 8px 8px;">Adopt</td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px; font-weight: bold;">${{
-                    "{:,.0f}".format(record.capitalisation_method.adopted_cap_value) }}</td>
-            </tr>
-            <tr>
-                <td colspan="4" style="padding: 4px;"></td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Capital Expenditure</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">{{
-                    "%.2f"|format(record.capitalisation_method.nla) }} m²</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">@ ${{
-                    "%.2f"|format(record.capitalisation_method.cap_exp_rate) }}/m²</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
-                    "{:,.0f}".format(record.capitalisation_method.cap_expenditure) }})</td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Incentive for Vacant Space</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
-                    "%.2f"|format(record.capitalisation_method.incentive_months) }} months</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
-                    "{:,.0f}".format(record.capitalisation_method.incentive_cost) }})</td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Letting Up of Vacant Space</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
-                    "%.2f"|format(record.capitalisation_method.letting_up_months) }} months</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
-                    "{:,.0f}".format(record.capitalisation_method.letting_up_cost) }})</td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Agent's Commission</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
-                    "%.2f"|format(record.capitalisation_method.agents_commission_pct) }}%</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
-                    "{:,.0f}".format(record.capitalisation_method.agents_commission) }})</td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: PV of Reversion Rent</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px; color: #2563eb;">{{
-                    "%.2f"|format(record.capitalisation_method.pv_discount_rate) }}%</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
-                    "{:,.0f}".format(record.capitalisation_method.pv_reversion) }})</td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Less: Miscellaneous</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">(${{
-                    "{:,.0f}".format(record.capitalisation_method.misc_amount) }})</td>
-            </tr>
-            <tr style="border-top: 1px solid #999;">
-                <td style="text-align: left; width: 40%; font-weight: bold; padding: 8px 8px;">Sub-total</td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px; font-weight: bold;">${{
-                    "{:,.0f}".format(record.capitalisation_method.subtotal_after_deductions) }}</td>
-            </tr>
-            <tr>
-                <td colspan="4" style="padding: 4px;"></td>
-            </tr>
-            <tr>
-                <td style="text-align: left; width: 40%; padding: 6px 8px;">Add: PV of Overage Rent</td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 6px 8px;">${{
-                    "{:,.0f}".format(record.capitalisation_method.pv_overage_rent) }}</td>
-            </tr>
-            <tr style="border-top: 1px solid #999;">
-                <td style="text-align: left; width: 40%; font-weight: bold; padding: 8px 8px;">Sub-total</td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 8px 8px; font-weight: bold;">${{
-                    "{:,.0f}".format(record.capitalisation_method.subtotal_after_overage) }}</td>
-            </tr>
-            <tr>
-                <td colspan="4" style="padding: 4px;"></td>
-            </tr>
-            <tr style="border-top: 2px solid #333; border-bottom: 2px solid #333;">
-                <td style="text-align: left; width: 40%; font-weight: bold; padding: 10px 8px; font-size: 14px;">Current
-                    Market Value</td>
-                <td style="text-align: right; width: 20%; padding: 10px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 10px 8px;"></td>
-                <td style="text-align: right; width: 20%; padding: 10px 8px; font-weight: bold; font-size: 14px;">${{
-                    "{:,.0f}".format(record.capitalisation_method.market_value) }}</td>
-            </tr>
-        </table>
+        <hr />
+
+        {% if record.floor_plans and record.floor_plans|length > 0 %}
+        <div style="font-size: 13px;">
+            <p style="font-weight: bold; font-size: 14px; margin: 10px 0;">Appendix A: Floor plan</p>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="{{ record.floor_plans[0].url }}" alt="Floor Plan" style="max-width: 100%; max-height: 380px; object-fit: contain;" />
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="font-size: 13px;">
+            <p style="font-weight: bold; font-size: 14px; margin: 10px 0;">Appendix B: Sources of Information</p>
+            <p style="margin-bottom: 10px;">The valuation was based on a range of reliable information sources, including:</p>
+            <ul style="list-style-type: disc; padding-left: 25px; line-height: 1.8;">
+                <li>A physical inspection of the property.</li>
+                <li>Title searches and local planning authority records.</li>
+                <li>Records from the RP Data and Pricefinder.</li>
+                <li>Real estate databases and recent sales evidence.</li>
+                <li>Building and construction cost reference guides.</li>
+                <li>Relevant economic indicators and market reports.</li>
+            </ul>
+        </div>
         <div class="footer-container">
             <div>
                 <span>{{ record.location_details.street|default('N/A') }}</span>
@@ -2127,6 +1993,7 @@
         </div>
     </div>
     {% endif %}
+
     <script>
         const pageNums = document.querySelectorAll('.page-num');
         pageNums.forEach((v, k) => {

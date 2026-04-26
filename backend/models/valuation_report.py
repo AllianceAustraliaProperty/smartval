@@ -123,18 +123,34 @@ class ValuationReport:
             print(f"Error adding floor plan to valuation report {report_id}: {str(e)}")
             raise e
     
-    def set_title_search(self, report_id: str, photo_obj: Dict[str, Any]) -> bool:
-        """Set the titleSearch array to a single photo (replaces any existing)"""
+    def add_title_search(self, report_id: str, photo_obj: Dict[str, Any]) -> bool:
+        """Atomically add a photo to the titleSearch array"""
         try:
             result = self.collection.update_one(
                 {'_id': ObjectId(report_id)},
                 {
-                    '$set': {'titleSearch': [photo_obj], 'updatedAt': datetime.utcnow()}
+                    '$push': {'titleSearch': photo_obj},
+                    '$set': {'updatedAt': datetime.utcnow()}
                 }
             )
             return result.modified_count > 0 or result.matched_count > 0
         except Exception as e:
-            print(f"Error setting title search for valuation report {report_id}: {str(e)}")
+            print(f"Error adding title search for valuation report {report_id}: {str(e)}")
+            raise e
+
+    def remove_title_search(self, report_id: str, photo_url: str) -> bool:
+        """Atomically remove a photo from the titleSearch array"""
+        try:
+            result = self.collection.update_one(
+                {'_id': ObjectId(report_id)},
+                {
+                    '$pull': {'titleSearch': {'photoUrl': photo_url}},
+                    '$set': {'updatedAt': datetime.utcnow()}
+                }
+            )
+            return result.modified_count > 0 or result.matched_count > 0
+        except Exception as e:
+            print(f"Error removing title search from valuation report {report_id}: {str(e)}")
             raise e
     
     def delete(self, report_id: str) -> bool:

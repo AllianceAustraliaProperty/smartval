@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormField, Input, Checkbox, Textarea } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { Wand2 } from 'lucide-react';
 
 export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue }) => {
+  const [showCapMethod, setShowCapMethod] = useState(false);
   const landValue = watch('valuationDetails.landValue');
   const improvements = watch('valuationDetails.improvements');
   const marketValue = watch('valuationDetails.marketValue');
@@ -115,6 +116,7 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
             <option value="Commercial">Commercial</option>
             <option value="Rural">Rural</option>
             <option value="Rural (2 Hectare Exemption)">Rural (2 Hectare Exemption)</option>
+            <option value="Probate Valuation">Probate Valuation</option>
           </select>
         </FormField>
 
@@ -208,6 +210,20 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
             <option value="External/Desktop Valuation">External/Desktop Valuation</option>
             <option value="Kerbside Valuation">Kerbside Valuation</option>
           </select>
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Date Issued"
+          error={errors.valuationDetails?.dateIssued?.message}
+        >
+          <Input
+            type="date"
+            max="2100-12-31"
+            {...register('valuationDetails.dateIssued')}
+            error={errors.valuationDetails?.dateIssued?.message}
+          />
         </FormField>
       </div>
 
@@ -384,6 +400,32 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
+          label="Lowest Value SQM"
+          error={(errors as any).valuationDetails?.lowestValueSqm?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.lowestValueSqm', { valueAsNumber: true })}
+            placeholder="e.g., 8500"
+            error={(errors as any).valuationDetails?.lowestValueSqm?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Highest Value SQM"
+          error={(errors as any).valuationDetails?.highestValueSqm?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.highestValueSqm', { valueAsNumber: true })}
+            placeholder="e.g., 9000"
+            error={(errors as any).valuationDetails?.highestValueSqm?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
           label="Square Meter Rate"
           error={errors.valuationDetails?.squareMeterRate?.message}
         >
@@ -500,10 +542,43 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
             error={(errors as any).valuationDetails?.registeredProprietor?.message}
           />
         </FormField>
+
+        <FormField
+          label="Occupancy"
+          error={(errors as any).valuationDetails?.occupancy?.message}
+        >
+          <select
+            {...register('valuationDetails.occupancy' as any)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+          >
+            <option value="">Select occupancy status</option>
+            <option value="Vacant">Vacant</option>
+            <option value="Tenant Occupied">Tenant Occupied</option>
+            <option value="Owner Occupied">Owner Occupied</option>
+          </select>
+        </FormField>
       </div>
 
       {/* Capitalisation Method Fields */}
-      <h3 className="text-lg font-semibold text-gray-800 mt-4">Capitalisation Method</h3>
+      <div className="flex items-center gap-3 mt-4">
+        <h3 className="text-lg font-semibold text-gray-800">Capitalisation Method</h3>
+        <button
+          type="button"
+          onClick={() => setShowCapMethod(prev => !prev)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+            showCapMethod ? 'bg-blue-600' : 'bg-gray-300'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+              showCapMethod ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+        <span className="text-sm text-gray-500">{showCapMethod ? 'Shown' : 'Hidden'}</span>
+      </div>
+      {showCapMethod && (
+      <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <FormField
           label="Gross Rental Rate ($/m² p.a.)"
@@ -695,6 +770,8 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
           />
         </FormField>
       </div>
+      </>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 

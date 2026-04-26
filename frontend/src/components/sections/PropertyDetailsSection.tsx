@@ -257,9 +257,12 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
           label="Tenure Type"
           error={errors.propertyDetails?.tenureType?.message}
         >
-          <Input
+          <Select
             {...register('propertyDetails.tenureType')}
-            placeholder="e.g., Freehold, Leasehold, Strata"
+            options={[
+              { value: 'Freehold', label: 'Freehold' },
+              { value: 'Crown Leasehold', label: 'Crown Leasehold' },
+            ]}
             error={errors.propertyDetails?.tenureType?.message}
           />
         </FormField>

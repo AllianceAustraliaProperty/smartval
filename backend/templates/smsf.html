@@ -516,7 +516,7 @@
         }
 
         .header-title {
-            margin: 120px 80px 0;
+            margin: 100px 80px 0;
         }
 
         .fs-m {
@@ -627,10 +627,33 @@
             margin-bottom: 10px;
             border: 1px solid black;
         }
+
+        /* SMSF Specific Compact Comparables to fit 5 on a page */
+        #page7 .card-container {
+            padding: 5px 10px 0 10px !important;
+            margin-bottom: 5px !important;
+        }
+        #page7 .property-photo {
+            width: 140px !important;
+            height: 95px !important;
+        }
+        #page7 .gap-30 {
+            gap: 15px !important;
+        }
+        #page7 .mb-s {
+            margin-bottom: 3px !important;
+        }
+        #page7 .fs-s {
+            font-size: 10.5px !important;
+        }
+        #page7 .icon {
+            width: 13px !important;
+            height: 13px !important;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     {% if logo_type == 'CPV' %}
-    <style>.logo-title { height: 50px !important; width: auto; }</style>
+    <style>.logo-title { height: 80px !important; width: auto; }</style>
     {% else %}
     <style>.logo-title { height: 65px !important; width: auto; }</style>
     {% endif %}
@@ -665,9 +688,9 @@
                     SMSF Audit Short Form Report
                     {% endif %}
                 </div>
-                <div class="dt-colour fs-m bold title-margin" style="margin-bottom: 75px;">{{
+                <div class="dt-colour fs-m bold title-margin" style="margin-bottom: 55px;">{{
                     valuation_report["address"]["fullAddress"]|default('N/A') }}</div>
-                <div class="title-margin" style="margin-bottom: 75px; font-size: 13p;">Instructed by <br> {{
+                <div class="title-margin" style="margin-bottom: 55px; font-size: 13p;">Instructed by <br> {{
                     valuation_report["primaryContact"]["firstName"]|default('N/A') }} {{
                     valuation_report["primaryContact"]["lastName"]|default('N/A') }}</div>
 
@@ -683,7 +706,7 @@
                         </div>
                         {% endif %}
                     </div>
-                    <div>Prepared by AAP Valuations</div>
+                    <div></div>
                 </div>
             </div>
         </div>
@@ -747,7 +770,7 @@
                 {% endif %}
             </div>
             <div>
-                <b>Issue Date</b>: {{ now() }}
+                <b>Issue Date</b>: {% if valuation_report["valuationDetails"].get("dateIssued") %}{{ valuation_report["valuationDetails"]["dateIssued"]|format_date }}{% else %}{{ now() }}{% endif %}
             </div>
         </div>
 
@@ -840,33 +863,35 @@
                 </div>
 
                 <!-- <p class="mb-m ${this.displayAdditionalRemarks()}">${this.formatAdditionalRemarks()}</p> -->
-                <div class="flex jc-sb">
-                    <p>Prepared By: AAP Valuations</p>
-                    <p>Date of Valuation: <b>{% if valuation_report["valuationDetails"]["valuationDate"] %}{{
+                <div class="flex jc-sb align-items-fs" style="align-items: flex-start;">
+                    <div style="display: flex;">
+                        <span style="font-weight: bold; margin-right: 15px; font-size: 14px;">Prepared By</span>
+                        <div style="display: flex; flex-direction: column; font-size: 14px;">
+                            <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="Jugal Signature" style="max-width: 150px; height: auto; margin-bottom: 5px;">
+                            <span>JUGAL SAHA, (Property Valuer) AAPI CPV</span>
+                            <span>(Certified Practising Valuer 101474)</span>
+                            {% if valuation_report.get('address', {}).get('state') == 'QLD' %}
+                            <span>QLD License no: 5429MR</span>
+                            {% elif valuation_report.get('address', {}).get('state') == 'WA' %}
+                            <span>WA Licence Number: LV45321</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p style="font-size: 14px; margin-top: 0;">Date of Valuation: <b>{% if valuation_report["valuationDetails"]["valuationDate"] %}{{
                             valuation_report["valuationDetails"]["valuationDate"]|format_date }}{% else %}{{ now() }}{%
                             endif %}</b></p>
-
                 </div>
             </div>
         </div>
 
+        {% if valuation_report["valuationDetails"].get("nla") and valuation_report["valuationDetails"].get("squareMeterRate") %}
         <div class="flex cert-container" style="margin-top: 20px;">
             <div style="width: 100%;">
                 <p class="bold mb-s" style="font-size: 23px;">Cost Calculation</p>
-                {% set nla = valuation_report["valuationDetails"].get("nla", 0) %}
-                {% set sq_meter_rate = valuation_report["valuationDetails"].get("squareMeterRate", 0) %}
-                {% set total_value = valuation_report["valuationDetails"].get("marketValue", 0) %}
-                <p class="mb-m"><strong>Direct Sales Comparison Approach:</strong> Based on the comparable sales
-                    evidence and considerations, we consider a value rate of <strong>{{
-                        sq_meter_rate|format_currency }} per
-                        sqm</strong> appropriate. <strong>NLA {{ nla }} Sqm @ {{ sq_meter_rate|format_currency }}
-                        p.sqm = {{ total_value|format_currency
-                        }}</strong>
-                </p>
-
-
+                <p class="mb-s"><strong>Direct Sales Comparison Approach:</strong> Based on the comparable sales evidence and considerations, we consider a value rate of <strong>{{ valuation_report["valuationDetails"]["squareMeterRate"]|format_currency|default('N/A') }} per sqm</strong> appropriate. <strong>NLA {{ valuation_report["valuationDetails"]["nla"]|default('') }} Sqm @ {{ valuation_report["valuationDetails"]["squareMeterRate"]|format_currency|default('') }} p.sqm = {{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('') }}</strong></p>
             </div>
         </div>
+        {% endif %}
 
 
         <div class="footer flex jc-sb">
@@ -897,7 +922,7 @@
             </div>
             <div class="flex">
                 <div class="flex-2">
-                    {% set comp_img = comparable["imageUrl"] or comparable["photoUrl"] %}
+                    {% set comp_img = comparable.get("photoUrl") or comparable.get("imageUrl") %}
                     <img class="property-photo"
                         src="{{ comp_img or 'https://valai.duo.tax/assets/property-placeholder.jpg' }}"
                         alt="Comparable Photo">
@@ -946,12 +971,12 @@
                         </div>
                         <div class="flex flex-5">
                             <div class="flex-5 colour-grey">Sold Date</div>
-                            <div class="flex-5">{{ comparable["saleLeaseDate"]|format_date|default('') }}</div>
+                            <div class="flex-5">{{ comparable.get("saleLeaseDate")|format_date|default('') }}</div>
                         </div>
                         {% else %}
                         <div class="flex flex-5">
                             <div class="flex-5 colour-grey">Sold Date</div>
-                            <div class="flex-5">{{ comparable["saleLeaseDate"]|format_date|default('') }}</div>
+                            <div class="flex-5">{{ comparable.get("saleLeaseDate")|format_date|default('') }}</div>
                         </div>
                         <div class="flex flex-5"></div>
                         {% endif %}
@@ -1007,8 +1032,9 @@
             </div>
             <div class="flex">
                 <div class="flex-2">
+                    {% set comp_img = comparable.get("photoUrl") or comparable.get("photo_url") or comparable.get("imageUrl") or comparable.get("image_url") %}
                     <img class="property-photo"
-                        src="{{ comparable.image_url|default('https://127.0.0.1:5173/src/assets/property-placeholder.jpg') }}"
+                        src="{{ comp_img or 'https://valai.duo.tax/assets/property-placeholder.jpg' }}"
                         alt="Property Photo">
                 </div>
                 <div class="flex flex-8 vert ml-s">
@@ -1194,16 +1220,16 @@
         <ol class="mt-l pl-18">
             <li class="mb-m">
 
-                AAP Valuations hereby certifies that the assessments of the above property have been carried out as of
-                the valuation date stated in this report. Neither AAP Valuations nor, to the best of their knowledge,
+                {% if logo_type == 'CPV' %}CPV Valuers{% else %}AAP Valuations{% endif %} hereby certifies that the assessments of the above property have been carried out as of
+                the valuation date stated in this report. Neither {% if logo_type == 'CPV' %}CPV Valuers{% else %}AAP Valuations{% endif %} nor, to the best of their knowledge,
                 any member of their firm has any conflict of interest, direct, indirect, or financial, in relation to
                 this property that has not been disclosed herein.
             </li>
             <li class="mb-m">
                 This report is intended solely for the use of the party or parties to whom it is addressed for the
                 purpose of a Self-Managed Super Fund Audit and is not to be utilised for any other purpose. Assuming the
-                property has a clear and marketable title, free from any onerous easements or encumbrances, AAP
-                Valuations is of the opinion that the {% if True %} market value of the entire property can be fairly
+                property has a clear and marketable title, free from any onerous easements or encumbrances, {% if logo_type == 'CPV' %}CPV Valuers{% else %}AAP Valuations{% endif %}
+                is of the opinion that the {% if True %} market value of the entire property can be fairly
                 expressed as {{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
                 AUD. {% else %}
                 {% if is_residential %}
@@ -1218,7 +1244,7 @@
             <li class="mb-m">
                 This report has been prepared for the private and confidential use of our client for the specified
                 purpose. It should not be reproduced in whole or
-                part without the express written authority of AAP Valuations or relied upon any other party for any
+                part without the express written authority of {% if logo_type == 'CPV' %}CPV Valuers{% else %}AAP Valuations{% endif %} or relied upon any other party for any
                 purpose and the valuer shall not have
                 any liability to any party who does so. Our warning is registered here, that any party other than those
                 specifically named in this report should obtain
@@ -1249,6 +1275,122 @@
     {% endif %}
     <!-- Page 9: END -->
 
+    <!-- Photographs Pages -->
+    {% if valuation_report.get("gallery_photos_groups") and valuation_report["gallery_photos_groups"]|length > 0 %}
+    {% for photos_group in valuation_report["gallery_photos_groups"] %}
+    <div class="page">
+        <div class="header-full">
+            <div class="ml-50 fs-m bold mt-45">Photographs{{ " (cont'd)" if loop.index > 1 else "" }}</div>
+        </div>
+        <div style="margin: 20px 50px 0 50px;">
+            <div class="photo-grid-2x3">
+                {% for photo in photos_group %}
+                <div class="photo-grid-item">
+                    <img src="{{ photo['photoUrl'] }}" alt="">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="footer flex jc-sb">
+            <p class="ml-50 mt-20 fs-s">Page <span class="page-num"></span> | #{{
+                valuation_report["fileNumber"]|default('') }} | {{
+                valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
+            <div class="mr-70">
+                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <!-- End Photographs Pages -->
+
+    <!-- Floor Plan Pages - CPV only (AAP uses Annexure) -->
+    {% if logo_type == 'CPV' and valuation_report.get("floorPlans") %}
+    {% for fp in valuation_report["floorPlans"] %}
+    <div class="page page-floor-plan">
+        <div class="header-full">
+            <div class="ml-50 fs-header bold mt-45">Floor Plan</div>
+        </div>
+        <div class="spacer"></div>
+        <div style="flex: 1; display: flex; justify-content: center; align-items: center; margin-top: 50px; margin-bottom: 50px; overflow: hidden; height: 100%;">
+            <img src="{{ fp.get('photoUrl', '') }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+        <div class="footer flex jc-sb">
+            <p class="ml-50 mt-20 fs-s">Page <span class="page-num"></span> | #{{
+                valuation_report["fileNumber"]|default('') }} | {{
+                valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
+            <div class="mr-70">
+                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <!-- End Floor Plan Pages -->
+
+    {% if logo_type != 'CPV' %}
+    <div class="page" id="annexure">
+        <div class="header-full">
+            <div class="ml-50 fs-header bold mt-45">Annexure</div>
+        </div>
+        <div class="spacer"></div>
+
+        {% if valuation_report.get("floorPlans") and valuation_report["floorPlans"]|length > 0 %}
+        <div class="ml-50 mr-50" style="font-size: 14px;">
+            <p style="font-weight: bold; font-size: 15px; margin: 10px 0;">Appendix A: Floor plan</p>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="{{ valuation_report['floorPlans'][0].get('photoUrl', '') }}" alt="Floor Plan" style="max-width: 100%; max-height: 380px; object-fit: contain;" />
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="ml-50 mr-50" style="font-size: 14px;">
+            <p style="font-weight: bold; font-size: 15px; margin: 10px 0;">Appendix B: Sources of Information</p>
+            <p style="margin-bottom: 10px;">The valuation was based on a range of reliable information sources, including:</p>
+            <ul style="list-style-type: disc; padding-left: 25px; line-height: 1.8;">
+                <li>A physical inspection of the property.</li>
+                <li>Title searches and local planning authority records.</li>
+                <li>Records from the RP Data and Pricefinder.</li>
+                <li>Real estate databases and recent sales evidence.</li>
+                <li>Building and construction cost reference guides.</li>
+                <li>Relevant economic indicators and market reports.</li>
+            </ul>
+        </div>
+        <div class="footer flex jc-sb">
+            <p class="ml-50 mt-20 fs-s">Page <span class="page-num"></span> | #{{
+                valuation_report["fileNumber"]|default('') }} | {{
+                valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
+            <div class="mr-70">
+                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+            </div>
+        </div>
+    </div>
+
+    {# Additional floor plans as continuation pages #}
+    {% if valuation_report.get("floorPlans") and valuation_report["floorPlans"]|length > 1 %}
+    {% for fp in valuation_report["floorPlans"] %}
+    {% if loop.index > 1 %}
+    <div class="page page-floor-plan">
+        <div class="header-full">
+            <div class="ml-50 fs-header bold mt-45">Appendix A: Floor plan (cont'd)</div>
+        </div>
+        <div class="spacer"></div>
+        <div style="flex: 1; display: flex; justify-content: center; align-items: center; margin-top: 50px; margin-bottom: 50px; overflow: hidden; height: 100%;">
+            <img src="{{ fp.get('photoUrl', '') }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+        <div class="footer flex jc-sb">
+            <p class="ml-50 mt-20 fs-s">Page <span class="page-num"></span> | #{{
+                valuation_report["fileNumber"]|default('') }} | {{
+                valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
+            <div class="mr-70">
+                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endif %}
 
     <script>
         document.querySelectorAll(".page-num").forEach(function (element, index) {
