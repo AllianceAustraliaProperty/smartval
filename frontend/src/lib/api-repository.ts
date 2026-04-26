@@ -193,7 +193,7 @@ export const apiRepository = {
    */
   async listPropertyBundles(): Promise<PropertyBundle[]> {
     try {
-      const response = await apiClient.get<ApiValuationReportsResponse>('/api/valuation-reports/');
+      const response = await apiClient.get<ApiValuationReportsResponse>('/valuation-reports/');
 
       return response.reports.map(report => ({
         property: transformValuationReport(report),
@@ -210,7 +210,7 @@ export const apiRepository = {
    */
   async getPropertyBundle(propertyId: string): Promise<PropertyBundle | null> {
     try {
-      const response = await apiClient.get<ApiValuationReportResponse>(`/api/valuation-reports/${propertyId}`);
+      const response = await apiClient.get<ApiValuationReportResponse>(`/valuation-reports/${propertyId}`);
 
       return {
         property: transformValuationReport(response),
@@ -232,7 +232,7 @@ export const apiRepository = {
     hasValuationReport: boolean;
   } | null> {
     try {
-      const response = await apiClient.get<ApiValuationReportResponse>(`/api/valuation-reports/${propertyId}`);
+      const response = await apiClient.get<ApiValuationReportResponse>(`/valuation-reports/${propertyId}`);
 
       const property = transformValuationReport(response);
       const hasValuationReport = true; // Always true since we're getting a valuation report
@@ -256,7 +256,7 @@ export const apiRepository = {
    */
   async getValuationReport(reportId: string): Promise<ValuationReportData | null> {
     try {
-      const response = await apiClient.get<{ report: any }>(`/api/valuation-reports/${reportId}`);
+      const response = await apiClient.get<{ report: any }>(`/valuation-reports/${reportId}`);
       return transformValuationReport(response.report);
     } catch (error) {
       console.error('Failed to get valuation report:', error);
@@ -272,7 +272,7 @@ export const apiRepository = {
       const dataToSend = propertyData
         ? transformValuationReportToBackend(propertyData)
         : transformValuationReportToBackend(DEFAULT_PROPERTY_FORM);
-      const response = await apiClient.post<ApiCreateReportResponse>('/api/valuation-reports/', dataToSend);
+      const response = await apiClient.post<ApiCreateReportResponse>('/valuation-reports/', dataToSend);
       return { propertyId: response.reportId };
     } catch (error) {
       console.error('Failed to create property:', error);
@@ -286,7 +286,7 @@ export const apiRepository = {
   async updateProperty(propertyId: string, propertyData: ValuationReportData): Promise<void> {
     try {
       const backendData = transformValuationReportToBackend(propertyData);
-      await apiClient.put(`/api/valuation-reports/${propertyId}`, backendData);
+      await apiClient.put(`/valuation-reports/${propertyId}`, backendData);
     } catch (error) {
       console.error('Failed to update valuation report:', error);
       throw error;
@@ -298,7 +298,7 @@ export const apiRepository = {
    */
   async deleteProperty(propertyId: string): Promise<void> {
     try {
-      await apiClient.delete(`/api/valuation-reports/${propertyId}`);
+      await apiClient.delete(`/valuation-reports/${propertyId}`);
     } catch (error) {
       console.error('Failed to delete valuation report:', error);
       throw error;
@@ -328,7 +328,7 @@ export const apiRepository = {
       }
 
       const response = await apiClient.post<ApiCreateReportResponse>(
-        `/api/valuation-reports/`,
+        `/valuation-reports/`,
         payload
       );
       return { reportId: response.reportId };
@@ -344,7 +344,7 @@ export const apiRepository = {
   async updateValuationReport(reportId: string, data: ValuationReportData): Promise<void> {
     try {
       const backendData = transformValuationReportToBackend(data);
-      await apiClient.put(`/api/valuation-reports/${reportId}`, backendData);
+      await apiClient.put(`/valuation-reports/${reportId}`, backendData);
     } catch (error) {
       console.error('Failed to update valuation report:', error);
       throw error;
@@ -356,7 +356,7 @@ export const apiRepository = {
    */
   async deleteValuationReport(reportId: string): Promise<void> {
     try {
-      await apiClient.delete(`/api/valuation-reports/${reportId}`);
+      await apiClient.delete(`/valuation-reports/${reportId}`);
     } catch (error) {
       console.error('Failed to delete valuation report:', error);
       throw error;
@@ -369,7 +369,7 @@ export const apiRepository = {
   async duplicateProperty(reportId: string, copies: number = 1): Promise<{ message: string; reportIds: string[] }> {
     try {
       const response = await apiClient.post<{ message: string; reportIds: string[] }>(
-        `/api/valuation-reports/${reportId}/duplicate`,
+        `/valuation-reports/${reportId}/duplicate`,
         { copies }
       );
       return response;
@@ -431,7 +431,7 @@ export const apiRepository = {
 
   async deletePhoto(reportId: string, photoUrl: string, photoType: string): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/photos/delete/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/photos/delete/${reportId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -451,7 +451,7 @@ export const apiRepository = {
 
   async getPhotos(reportId: string): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/photos/list/${reportId}`);
+      const response = await fetch(`${API_BASE_URL}/photos/list/${reportId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch photos');
       }
@@ -467,7 +467,7 @@ export const apiRepository = {
    */
   async generateReportPreview(reportId: string): Promise<string> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/valuation-reports/${reportId}/preview`, {
+      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/preview`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -492,7 +492,7 @@ export const apiRepository = {
    */
   async generateReport(reportId: string): Promise<Blob> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/valuation-reports/${reportId}/generate`, {
+      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -515,7 +515,7 @@ export const apiRepository = {
   // Alliance API methods
   async getAllianceJobs(page: number = 1, perPage: number = 10): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/alliance/jobs?page=${page}&per_page=${perPage}`, {
+      const response = await fetch(`${API_BASE_URL}/alliance/jobs?page=${page}&per_page=${perPage}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -536,7 +536,7 @@ export const apiRepository = {
 
   async getAllianceJob(jobId: number): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/alliance/jobs/${jobId}`, {
+      const response = await fetch(`${API_BASE_URL}/alliance/jobs/${jobId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -557,7 +557,7 @@ export const apiRepository = {
 
   async transformAllianceJob(jobId: number): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/alliance/jobs/transform/${jobId}`, {
+      const response = await fetch(`${API_BASE_URL}/alliance/jobs/transform/${jobId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -578,7 +578,7 @@ export const apiRepository = {
 
   async getAllAllianceJobs(maxPages: number = 10): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/alliance/jobs/all?max_pages=${maxPages}`, {
+      const response = await fetch(`${API_BASE_URL}/alliance/jobs/all?max_pages=${maxPages}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -599,7 +599,7 @@ export const apiRepository = {
 
   async checkAllianceHealth(): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/alliance/health`, {
+      const response = await fetch(`${API_BASE_URL}/alliance/health`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -620,7 +620,7 @@ export const apiRepository = {
 
   async importAllianceJob(jobId: number): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/alliance/jobs/import/${jobId}`, {
+      const response = await fetch(`${API_BASE_URL}/alliance/jobs/import/${jobId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -642,7 +642,7 @@ export const apiRepository = {
   // Inspection Reports API methods
   async getInspectionReports(page: number = 1, perPage: number = 20): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/inspection-reports/reports?page=${page}&per_page=${perPage}`, {
+      const response = await fetch(`${API_BASE_URL}/inspection-reports/reports?page=${page}&per_page=${perPage}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -663,7 +663,7 @@ export const apiRepository = {
 
   async deleteInspectionReport(reportId: string): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/inspection-reports/reports/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/inspection-reports/reports/${reportId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

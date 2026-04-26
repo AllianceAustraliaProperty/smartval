@@ -181,7 +181,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
 
   const fetchPhotos = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/photos/list/${reportId}`);
+      const response = await fetch(`${API_BASE_URL}/photos/list/${reportId}`);
       if (response.ok) {
         const data = await response.json();
         const allPhotos = data.photos || [];
@@ -195,7 +195,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
 
   const deletePhoto = async (photoUrl: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/photos/delete/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/photos/delete/${reportId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -258,7 +258,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       };
 
       // Save to database
-      const response = await fetch(`${API_BASE_URL}/api/photos/create/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/photos/create/${reportId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -323,7 +323,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
     handleDragEnd();
 
     try {
-      await fetch(`${API_BASE_URL}/api/photos/update/${reportId}`, {
+      await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photos: reordered }),
@@ -354,7 +354,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       }
 
       // Get presigned URL
-      const response = await fetch(`${API_BASE_URL}/api/photos/presigned-url/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/photos/presigned-url/${reportId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -390,7 +390,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       };
 
       // Save updated photos to database
-      const updateResponse = await fetch(`${API_BASE_URL}/api/photos/update/${reportId}`, {
+      const updateResponse = await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photos: updatedPhotos }),
@@ -540,7 +540,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                                             const updatedPhotos = photos.filter((_, i) => i !== index);
 
                                             // Update database
-                                            const response = await fetch(`${API_BASE_URL}/api/photos/update/${reportId}`, {
+                                            const response = await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
                                               method: 'PUT',
                                               headers: { 'Content-Type': 'application/json' },
                                               body: JSON.stringify({ photos: updatedPhotos }),
@@ -942,7 +942,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
 
   const fetchPhotos = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/additional-photos/list/${reportId}`);
+      const res = await fetch(`${API_BASE_URL}/additional-photos/list/${reportId}`);
       if (res.ok) {
         const data = await res.json();
         const list = data.photos || [];
@@ -963,7 +963,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
     setUploading(true);
     setUploadError(null);
     try {
-      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 15, maxFiles: 15 }, '/api/additional-photos');
+      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 15, maxFiles: 15 }, '/additional-photos');
       if (successful.length > 0) {
         await fetchPhotos();
       }
@@ -980,7 +980,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
 
   const deletePhoto = async (photoUrl: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/additional-photos/delete/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/additional-photos/delete/${reportId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photoUrl })
@@ -1013,7 +1013,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
 
     // Save to database
     try {
-      const response = await fetch(`${API_BASE_URL}/api/additional-photos/update/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photos: updatedPhotos })
@@ -1048,7 +1048,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
       // Add to local state and save to database
       const updatedPhotos = [...photos, newPhoto];
       
-      const response = await fetch(`${API_BASE_URL}/api/additional-photos/update/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photos: updatedPhotos })
@@ -1086,7 +1086,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
       }
 
       // Get presigned URL
-      const response = await fetch(`${API_BASE_URL}/api/additional-photos/presigned-url/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/additional-photos/presigned-url/${reportId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1120,7 +1120,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
       };
 
       // Save updated photos to database
-      const updateResponse = await fetch(`${API_BASE_URL}/api/additional-photos/update/${reportId}`, {
+      const updateResponse = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photos: updatedPhotos }),
@@ -1234,7 +1234,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                           // Empty photo - remove from array
                           try {
                             const updatedPhotos = photos.filter((_, i) => i !== index);
-                            const response = await fetch(`${API_BASE_URL}/api/additional-photos/update/${reportId}`, {
+                            const response = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
                               method: 'PUT',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ photos: updatedPhotos }),
@@ -1586,7 +1586,7 @@ const FloorPlanUploader: React.FC<FloorPlanUploadProps> = ({ reportId, onPhotosU
 
   const fetchPhotos = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/floor-plans/list/${reportId}`);
+      const res = await fetch(`${API_BASE_URL}/floor-plans/list/${reportId}`);
       if (res.ok) {
         const data = await res.json();
         const list = data.photos || [];
@@ -1607,7 +1607,7 @@ const FloorPlanUploader: React.FC<FloorPlanUploadProps> = ({ reportId, onPhotosU
     setUploading(true);
     setUploadError(null);
     try {
-      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 12, maxFiles: 12 }, '/api/floor-plans');
+      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 12, maxFiles: 12 }, '/floor-plans');
       if (successful.length > 0) {
         await fetchPhotos();
       }
@@ -1624,7 +1624,7 @@ const FloorPlanUploader: React.FC<FloorPlanUploadProps> = ({ reportId, onPhotosU
 
   const deletePhoto = async (photoUrl: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/floor-plans/delete/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/floor-plans/delete/${reportId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photoUrl })
@@ -1702,7 +1702,7 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
 
   const fetchPhotos = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/title-search/list/${reportId}`);
+      const res = await fetch(`${API_BASE_URL}/title-search/list/${reportId}`);
       if (res.ok) {
         const data = await res.json();
         setPhotos(data.photos || []);
@@ -1722,7 +1722,7 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
     setUploading(true);
     setUploadError(null);
     try {
-      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 2, maxFiles: 2 }, '/api/title-search');
+      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 2, maxFiles: 2 }, '/title-search');
       if (failed.length > 0) {
         setUploadError(`Failed to upload: ${failed.map(f => f.error).join(', ')}`);
       }
@@ -1737,7 +1737,7 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
 
   const deletePhoto = async (photoUrl: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/title-search/delete/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/title-search/delete/${reportId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photoUrl })

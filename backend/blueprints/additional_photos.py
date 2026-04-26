@@ -4,18 +4,14 @@ such as granny flat, studio, etc. Stored under the `additionalPhotos`
 array on the valuation report document.
 """
 from flask import Blueprint, request, jsonify, current_app
-from pymongo import MongoClient
-from config import Config
+from database import get_database
 from models.valuation_report import ValuationReport
 from utils.s3_service import s3_service
 
 
 additional_photos_bp = Blueprint('additional_photos', __name__)
 
-# DB
-client = MongoClient(Config.MONGODB_URI)
-db = client.get_default_database()
-valuation_report_model = ValuationReport(db)
+valuation_report_model = ValuationReport(get_database())
 
 
 @additional_photos_bp.route('/presigned-url/<report_id>', methods=['POST'])

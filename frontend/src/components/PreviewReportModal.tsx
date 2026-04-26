@@ -49,7 +49,7 @@ export function PreviewReportModal({
       const { API_BASE_URL } = await import('@/lib/api-config');
       
       // Call the PDF generation endpoint
-      const response = await fetch(`${API_BASE_URL}/api/valuation-reports/${reportId}/generate`, {
+      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

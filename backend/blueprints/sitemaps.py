@@ -1,16 +1,12 @@
 from flask import Blueprint, request, jsonify, current_app
-from pymongo import MongoClient
-from config import Config
+from database import get_database
 from models.valuation_report import ValuationReport
 from utils.s3_service import s3_service
 
 
 sitemaps_bp = Blueprint("sitemaps", __name__)
 
-# DB setup
-client = MongoClient(Config.MONGODB_URI)
-db = client.get_default_database()
-valuation_report_model = ValuationReport(db)
+valuation_report_model = ValuationReport(get_database())
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "bmp", "tiff"}
 

@@ -8,7 +8,7 @@ export async function getWikiSuburbDescription(suburb: string | null, state: str
       state: state
     });
     
-    const response = await fetch(`${API_BASE_URL}/api/wikipedia/suburb-description?${params}`);
+    const response = await fetch(`${API_BASE_URL}/wikipedia/suburb-description?${params}`);
     
     if (response.ok) {
       const data = await response.json();

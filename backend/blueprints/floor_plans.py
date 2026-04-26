@@ -3,18 +3,14 @@ Floor Plans blueprint for uploading and managing floor plan images.
 Stored under the `floorPlans` array on the valuation report document.
 """
 from flask import Blueprint, request, jsonify, current_app
-from pymongo import MongoClient
-from config import Config
+from database import get_database
 from models.valuation_report import ValuationReport
 from utils.s3_service import s3_service
 
 
 floor_plans_bp = Blueprint('floor_plans', __name__)
 
-# DB
-client = MongoClient(Config.MONGODB_URI)
-db = client.get_default_database()
-valuation_report_model = ValuationReport(db)
+valuation_report_model = ValuationReport(get_database())
 
 
 @floor_plans_bp.route('/presigned-url/<report_id>', methods=['POST'])

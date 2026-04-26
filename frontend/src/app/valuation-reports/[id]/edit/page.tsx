@@ -276,7 +276,7 @@ export default function ValuationReportEditPage() {
       setIsGeneratingReport(true);
       
       // Generate the PDF report using the correct endpoint
-      const response = await fetch(`${API_BASE_URL}/api/valuation-reports/${reportId}/generate`, {
+      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

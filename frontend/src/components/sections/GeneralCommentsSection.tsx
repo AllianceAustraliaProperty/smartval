@@ -23,7 +23,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
     if (!file || !reportId) return;
     setIsUploadingImage(true);
     try {
-      const result = await uploadFileToS3(String(reportId), file, '/api/photos');
+      const result = await uploadFileToS3(String(reportId), file, '/photos');
       if (result.success && result.s3Url) {
         setValue('generalComments.valuationCommentsImage' as any, result.s3Url, { shouldDirty: true });
       } else {
@@ -237,7 +237,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
     setIsGeneratingOverview(true);
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/rpdata/market-trends?locality_id=${localityId}&property_type_id=1`
+        `${API_BASE_URL}/rpdata/market-trends?locality_id=${localityId}&property_type_id=1`
       );
 
       if (!response.ok) {
@@ -338,7 +338,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
     setIsAutomating(true);
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/rpdata/market-trends?locality_id=${localityId}&property_type_id=1`
+        `${API_BASE_URL}/rpdata/market-trends?locality_id=${localityId}&property_type_id=1`
       );
 
       if (!response.ok) {

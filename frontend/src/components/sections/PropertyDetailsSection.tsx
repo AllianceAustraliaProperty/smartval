@@ -95,7 +95,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
     setIsAutomatingFromRP(true);
     try {
-      const resp = await fetch(`${API_BASE_URL}/api/rpdata/commons/${encodeURIComponent(String(rpDataId))}`);
+      const resp = await fetch(`${API_BASE_URL}/rpdata/commons/${encodeURIComponent(String(rpDataId))}`);
       if (!resp.ok) throw new Error(`Failed to fetch RP Data commons (${resp.status})`);
       const payload = await resp.json();
       const data = payload?.data || payload; // support both wrapped and direct
@@ -134,7 +134,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
       // Fetch additional information and map extra fields
       try {
-        const addResp = await fetch(`${API_BASE_URL}/api/rpdata/additional-information/${encodeURIComponent(String(rpDataId))}`);
+        const addResp = await fetch(`${API_BASE_URL}/rpdata/additional-information/${encodeURIComponent(String(rpDataId))}`);
         if (addResp.ok) {
           const addPayload = await addResp.json();
           const addData = addPayload?.data || addPayload;

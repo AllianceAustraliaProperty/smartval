@@ -111,7 +111,7 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
 
     setIsUploadingSiteMap(true);
     try {
-      const presignRes = await fetch(`${API_BASE_URL}/api/photos/presigned-url/${reportId}`, {
+      const presignRes = await fetch(`${API_BASE_URL}/photos/presigned-url/${reportId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileExtension: ext, contentType: file.type }),

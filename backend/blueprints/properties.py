@@ -5,15 +5,10 @@ from flask import Blueprint, jsonify, request
 # CORS is handled globally in app.py
 from database import get_database
 from models.valuation_report import ValuationReport
-from pymongo import MongoClient
-from config import Config
 
 properties_bp = Blueprint('properties', __name__)
 
-# Initialize MongoDB connection
-client = MongoClient(Config.MONGODB_URI)
-db = client.get_default_database()
-valuation_report_model = ValuationReport(db)
+valuation_report_model = ValuationReport(get_database())
 
 
 @properties_bp.route('/', methods=['GET'])

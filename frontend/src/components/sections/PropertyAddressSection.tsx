@@ -53,7 +53,7 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
     }
     try {
       setIsLinking(true);
-      const resp = await fetch(`${API_BASE_URL}/api/rpdata/search-address?address=${encodeURIComponent(fullAddress)}`);
+      const resp = await fetch(`${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(fullAddress)}`);
       if (!resp.ok) {
         throw new Error(`Request failed with status ${resp.status}`);
       }
@@ -99,7 +99,7 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
     setLinkError(null);
     setRpSuggestions([]);
     try {
-      const resp = await fetch(`${API_BASE_URL}/api/rpdata/search-address?address=${encodeURIComponent(term)}`);
+      const resp = await fetch(`${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(term)}`);
       if (!resp.ok) {
         throw new Error(`Request failed with status ${resp.status}`);
       }

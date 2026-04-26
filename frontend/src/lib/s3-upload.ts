@@ -3,7 +3,9 @@
  * Handles direct uploads to S3 using presigned URLs
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { resizeImageIfNeeded, resizeAll } from './image-resize';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export interface PresignedUrlResponse {
   presignedUrl: string;
@@ -26,7 +28,7 @@ export async function getPresignedUrl(
   reportId: string,
   fileExtension: string,
   contentType?: string,
-  endpointBase: string = '/api/photos'
+  endpointBase: string = '/photos'
 ): Promise<PresignedUrlResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}${endpointBase}/presigned-url/${reportId}`, {
@@ -58,7 +60,7 @@ export async function getPresignedUrl(
 export async function getPresignedUrlsBatch(
   reportId: string,
   files: { fileExtension: string; contentType?: string }[],
-  endpointBase: string = '/api/photos'
+  endpointBase: string = '/photos'
 ): Promise<PresignedUrlResponse[]> {
   try {
     const response = await fetch(`${API_BASE_URL}${endpointBase}/presigned-batch/${reportId}`, {
@@ -114,7 +116,7 @@ export async function confirmUpload(
   reportId: string,
   s3Url: string,
   fileKey: string,
-  endpointBase: string = '/api/photos'
+  endpointBase: string = '/photos'
 ): Promise<any> {
   try {
     const response = await fetch(`${API_BASE_URL}${endpointBase}/confirm-upload/${reportId}`, {
@@ -146,20 +148,24 @@ export async function confirmUpload(
 export async function uploadFileToS3(
   reportId: string,
   file: File,
-  endpointBase: string = '/api/photos'
+  endpointBase: string = '/photos'
 ): Promise<UploadResult> {
   try {
+    // Resize oversized photos client-side. No-op for already-small images,
+    // PDFs, and formats canvas can't decode (e.g. HEIC).
+    const { file: uploadFile } = await resizeImageIfNeeded(file);
+
     // Get file extension
-    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const fileExtension = uploadFile.name.split('.').pop()?.toLowerCase();
     if (!fileExtension) {
       throw new Error('Invalid file: no extension found');
     }
 
     // Get presigned URL
-    const presignedData = await getPresignedUrl(reportId, fileExtension, file.type, endpointBase);
+    const presignedData = await getPresignedUrl(reportId, fileExtension, uploadFile.type, endpointBase);
 
     // Upload to S3
-    await uploadToS3(file, presignedData.presignedUrl);
+    await uploadToS3(uploadFile, presignedData.presignedUrl);
 
     // Confirm upload with backend
     const confirmResult = await confirmUpload(reportId, presignedData.s3Url, presignedData.fileKey, endpointBase);
@@ -182,7 +188,7 @@ export async function uploadWithPresigned(
   reportId: string,
   file: File,
   presigned: PresignedUrlResponse,
-  endpointBase: string = '/api/photos'
+  endpointBase: string = '/photos'
 ): Promise<UploadResult> {
   try {
     await uploadToS3(file, presigned.presignedUrl);
@@ -200,13 +206,19 @@ export async function uploadMultipleFilesToS3(
   reportId: string,
   files: FileList,
   options: { maxConcurrent?: number; maxFiles?: number } = {},
-  endpointBase: string = '/api/photos'
+  endpointBase: string = '/photos'
 ): Promise<{ successful: UploadResult[]; failed: UploadResult[] }> {
   const maxConcurrent = Math.max(1, options.maxConcurrent ?? 1);
   const maxFiles = options.maxFiles ?? undefined;
 
   const fileArray = Array.from(files);
-  const queue = typeof maxFiles === 'number' ? fileArray.slice(0, maxFiles) : fileArray;
+  const sliced = typeof maxFiles === 'number' ? fileArray.slice(0, maxFiles) : fileArray;
+
+  // Resize oversized photos before requesting presigned URLs — the URLs are
+  // keyed off file extension and content type, both of which can change after
+  // resize (e.g. PNG/WebP/HEIC -> JPEG). Bounded concurrency so we don't spawn
+  // 50 simultaneous decodes on a big drop.
+  const queue = await resizeAll(sliced, { concurrency: 4 });
 
   const successful: UploadResult[] = [];
   const failed: UploadResult[] = [];

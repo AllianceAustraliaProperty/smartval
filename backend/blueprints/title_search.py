@@ -3,17 +3,14 @@ Title Search blueprint for uploading and managing a single title search image.
 Stored under the `titleSearch` array (max 1 item) on the valuation report document.
 """
 from flask import Blueprint, request, jsonify, current_app
-from pymongo import MongoClient
-from config import Config
+from database import get_database
 from models.valuation_report import ValuationReport
 from utils.s3_service import s3_service
 
 
 title_search_bp = Blueprint('title_search', __name__)
 
-client = MongoClient(Config.MONGODB_URI)
-db = client.get_default_database()
-valuation_report_model = ValuationReport(db)
+valuation_report_model = ValuationReport(get_database())
 
 
 @title_search_bp.route('/presigned-url/<report_id>', methods=['POST'])

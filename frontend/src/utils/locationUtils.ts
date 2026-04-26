@@ -185,7 +185,7 @@ export const getCBDTravelTime = async (lat: number, lng: number, state: string):
     // Calculate travel time using Distance Matrix API
     const origins = `${lat},${lng}`;
     const destinations = `${cbdData.lat},${cbdData.lng}`;
-    const url = getApiUrl(`/api/google-maps/distance-matrix?origins=${encodeURIComponent(origins)}&destinations=${encodeURIComponent(destinations)}&mode=driving`);
+    const url = getApiUrl(`/google-maps/distance-matrix?origins=${encodeURIComponent(origins)}&destinations=${encodeURIComponent(destinations)}&mode=driving`);
     
     const data = await makeApiRequest(url);
     
@@ -331,7 +331,7 @@ export const searchNearbyPlaces = async (lat: number, lng: number, type: string,
   try {
     console.log(`Searching for ${type} near ${lat}, ${lng}${keyword ? ` with keyword: ${keyword}` : ''}`);
     
-    let url = getApiUrl(`/api/google-maps/places?lat=${lat}&lng=${lng}&type=${type}`);
+    let url = getApiUrl(`/google-maps/places?lat=${lat}&lng=${lng}&type=${type}`);
     if (keyword) {
       url += `&keyword=${encodeURIComponent(keyword)}`;
     }
@@ -368,7 +368,7 @@ export const searchNearbyPlaces = async (lat: number, lng: number, type: string,
       
       for (const altType of alternativeTypes) {
         try {
-          const altUrl = getApiUrl(`/api/google-maps/places?lat=${lat}&lng=${lng}&type=${altType}`);
+          const altUrl = getApiUrl(`/google-maps/places?lat=${lat}&lng=${lng}&type=${altType}`);
           const altData = await makeApiRequest(altUrl);
           const altResults = (altData.results || []).filter((place: any) => 
             place.geometry && place.geometry.location && place.name && place.place_id
@@ -408,7 +408,7 @@ export const searchNearbyPlaces = async (lat: number, lng: number, type: string,
 export const geocodeAddress = async (address: string): Promise<any> => {
   try {
     console.log('Geocoding address:', address);
-    const url = getApiUrl(`/api/google-maps/geocode?address=${encodeURIComponent(address)}`);
+    const url = getApiUrl(`/google-maps/geocode?address=${encodeURIComponent(address)}`);
     const data = await makeApiRequest(url);
     
     if (data.status !== 'OK') {
@@ -560,7 +560,7 @@ export const autofillLocationDetailsFromGoogle = async (
   const lng = best.geometry.location.lng;
 
   // 2) Map image URL via server-side custom map endpoint (no API key leakage)
-  const mapPhotoUrl = getApiUrl(`/api/google-maps/custom-map?address=${encodeURIComponent(fullAddress)}`);
+  const mapPhotoUrl = getApiUrl(`/google-maps/custom-map?address=${encodeURIComponent(fullAddress)}`);
 
   // Prepare parallel requests for nearby items
   const transportPromise = searchNearbyPlaces(lat, lng, 'train_station');
@@ -571,7 +571,7 @@ export const autofillLocationDetailsFromGoogle = async (
 
   // Reverse geocode for nearest connecting street
   const reverseGeocodePromise = makeApiRequest(
-    getApiUrl(`/api/google-maps/reverse-geocode?lat=${lat}&lng=${lng}`)
+    getApiUrl(`/google-maps/reverse-geocode?lat=${lat}&lng=${lng}`)
   );
 
   const [

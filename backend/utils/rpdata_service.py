@@ -1,28 +1,58 @@
+import logging
 import requests
+import urllib3
 from config import Config
 from urllib.parse import quote_plus, urlencode
 
+# Every request below sets verify=False because the upstream CoreLogic services
+# present certs we don't trust through this proxy. Suppress the per-request
+# urllib3 warning to keep logs readable.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 RPDATA_API_URL = Config.RPDATA_API_URL
+
+logger = logging.getLogger(__name__)
+
 
 class RpDataAPI:
     def __init__(self):
         self.rpp_cookies = ""
         self.signature_cookies = ""
-        self.refresh_cookies()
+        # Cookies are fetched lazily on first use, not at construction.
+        # Doing it at __init__ blocked Flask startup for up to 10s waiting on
+        # the cookie service.
+        self._cookies_fetched = False
+
+    def _ensure_cookies(self):
+        if not self._cookies_fetched:
+            self.refresh_cookies()
+            self._cookies_fetched = True
 
     def refresh_cookies(self):
         """Fetch fresh cookies from the rpdata cookie service."""
+        url = RPDATA_API_URL + "/get-cookies"
         try:
-            response = requests.get(RPDATA_API_URL + "/get-cookies", timeout=10)
+            response = requests.get(url, timeout=5)
             if response.ok:
                 data = response.json()
                 self.rpp_cookies = data.get("rpp_cookies", "")
                 self.signature_cookies = data.get("signature_cookies", "")
+                if not self.rpp_cookies and not self.signature_cookies:
+                    logger.warning(
+                        "Cookie service %s returned 200 but both cookie strings were empty",
+                        url,
+                    )
+            else:
+                logger.error(
+                    "Cookie service %s returned %s: %s",
+                    url, response.status_code, response.text[:200],
+                )
         except Exception as e:
-            print(f"Failed to fetch cookies from rpdata service: {e}")
+            logger.exception("Failed to fetch cookies from %s: %s", url, e)
 
     def _get_cookies_for_url(self, url: str) -> str:
         """Return the appropriate cookie string based on the URL domain."""
+        self._ensure_cookies()
         if "signature.corelogic.asia" in url:
             return self.signature_cookies
         return self.rpp_cookies

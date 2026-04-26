@@ -2,17 +2,12 @@
 Valuation blueprint for valuation report endpoints
 """
 from flask import Blueprint, jsonify, request
-from database import get_valuation_reports_collection
+from database import get_database, get_valuation_reports_collection
 from models.valuation_report import ValuationReport, Location
-from pymongo import MongoClient
-from config import Config
 
 valuation_bp = Blueprint('valuation', __name__)
 
-# Initialize MongoDB connection
-client = MongoClient(Config.MONGODB_URI)
-db = client.get_default_database()
-valuation_model = ValuationReport(db)
+valuation_model = ValuationReport(get_database())
 
 
 @valuation_bp.route('/reports', methods=['GET'])

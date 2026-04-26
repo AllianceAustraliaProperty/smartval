@@ -6,17 +6,13 @@ import uuid
 from flask import Blueprint, request, jsonify, current_app
 # CORS is handled globally in app.py
 from werkzeug.utils import secure_filename
+from database import get_database
 from models.valuation_report import ValuationReport
-from pymongo import MongoClient
-from config import Config
 from utils.s3_service import s3_service
 
 photos_bp = Blueprint('photos', __name__)
 
-# Initialize MongoDB connection
-client = MongoClient(Config.MONGODB_URI)
-db = client.get_default_database()
-valuation_report_model = ValuationReport(db)
+valuation_report_model = ValuationReport(get_database())
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'tiff'}
