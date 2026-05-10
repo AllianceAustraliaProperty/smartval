@@ -23,6 +23,23 @@ export const ReferralDetailsSection: React.FC<SectionProps> = ({ register, error
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
+            label="Report Fee (Invoice Amount)"
+            error={errors.invoiceDetails?.reportFee?.message}
+          >
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                type="number"
+                step="0.01"
+                {...register('invoiceDetails.reportFee', { valueAsNumber: true })}
+                placeholder="Enter report fee for invoice"
+                error={errors.invoiceDetails?.reportFee?.message}
+                className="pl-10"
+              />
+            </div>
+          </FormField>
+
+          <FormField
             label="Referrer Name"
             error={errors.referralDetails?.referrerName?.message}
           >

@@ -19,7 +19,7 @@ import {
   PhotosSection,
   ComparablesSection,
 } from '@/components/sections';
-import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch, Download, AlertTriangle } from 'lucide-react';
+import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch, Download, AlertTriangle, Receipt, ChevronDown } from 'lucide-react';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
 
 const sectionComponents = {
@@ -38,6 +38,7 @@ const sectionComponents = {
 const sections = [
   { id: 'propertyAddress', title: 'Property Address', icon: 'Navigation' },
   { id: 'valuationDetails', title: 'Valuation Details', icon: 'DollarSign' },
+  { id: 'referralDetails', title: 'Financial & Referral', icon: 'DollarSign' },
   { id: 'propertyDetails', title: 'Property Details', icon: 'Building' },
   { id: 'locationDetails', title: 'Location Details', icon: 'MapPin' },
   { id: 'propertyDescriptors', title: 'Property Descriptors', icon: 'ClipboardList' },
@@ -61,7 +62,11 @@ export default function ValuationReportEditPage() {
   const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
   const [sectionsWithErrors, setSectionsWithErrors] = useState<Set<string>>(new Set());
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showInvoicePreviewModal, setShowInvoicePreviewModal] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
+  const [isInvoiceMenuOpen, setIsInvoiceMenuOpen] = useState(false);
+  const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [missingRequirements, setMissingRequirements] = useState<string[]>([]);
 
@@ -97,6 +102,32 @@ export default function ValuationReportEditPage() {
       loadProperty();
     }
   }, [reportId, reset]);
+
+  // Close invoice dropdown on outside click
+  useEffect(() => {
+    if (!isInvoiceMenuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-invoice-menu]')) {
+        setIsInvoiceMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [isInvoiceMenuOpen]);
+
+  // Close report dropdown on outside click
+  useEffect(() => {
+    if (!isReportMenuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-report-menu]')) {
+        setIsReportMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [isReportMenuOpen]);
 
   // Check for completed sections
   useEffect(() => {
@@ -307,6 +338,42 @@ export default function ValuationReportEditPage() {
     }
   };
 
+  const handlePreviewInvoice = () => {
+    const reportFee = watch('invoiceDetails.reportFee');
+    if (reportFee === undefined || reportFee === null || isNaN(Number(reportFee)) || Number(reportFee) <= 0) {
+      alert('Please enter a Report Fee in the Financial & Referral Details section before previewing an invoice.');
+      return;
+    }
+    setShowInvoicePreviewModal(true);
+  };
+
+  const handleGenerateInvoice = async () => {
+    const reportFee = watch('invoiceDetails.reportFee');
+    if (reportFee === undefined || reportFee === null || isNaN(Number(reportFee)) || Number(reportFee) <= 0) {
+      alert('Please enter a Report Fee in the Financial & Referral Details section before generating an invoice.');
+      return;
+    }
+
+    try {
+      setIsGeneratingInvoice(true);
+
+      const blob = await apiRepository.generateInvoice(reportId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `invoice-${reportId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to generate invoice:', err);
+      alert('Failed to generate invoice. Please try again.');
+    } finally {
+      setIsGeneratingInvoice(false);
+    }
+  };
+
   const handleCancel = () => {
     if (isDirty) {
       if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
@@ -463,32 +530,100 @@ export default function ValuationReportEditPage() {
                 </div>
 
                 <div className="flex items-center space-x-4">
-                  <button
-                    onClick={handlePreview}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-gray-700 bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-300"
-                  >
-                    <FileSearch className="w-4 h-4 mr-2" />
-                    Preview
-                  </button>
-                  
-                  <button
-                    onClick={handleGenerateReport}
-                    disabled={isGeneratingReport}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-green-700 bg-green-50 border-2 border-green-200 hover:border-green-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isGeneratingReport ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-600 border-t-transparent mr-2"></div>
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-4 h-4 mr-2" />
-                        Generate Report
-                      </>
+                  <div className="relative" data-report-menu>
+                    <button
+                      onClick={() => setIsReportMenuOpen((open) => !open)}
+                      disabled={isGeneratingReport}
+                      className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-green-700 bg-green-50 border-2 border-green-200 hover:border-green-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingReport ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-600 border-t-transparent mr-2"></div>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Report
+                          <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${isReportMenuOpen ? 'rotate-180' : ''}`} />
+                        </>
+                      )}
+                    </button>
+
+                    {isReportMenuOpen && !isGeneratingReport && (
+                      <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-xl shadow-xl border border-green-100 z-30 overflow-hidden">
+                        <button
+                          onClick={() => {
+                            setIsReportMenuOpen(false);
+                            handlePreview();
+                          }}
+                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors"
+                        >
+                          <FileSearch className="w-4 h-4 mr-3 text-green-600" />
+                          Preview Report
+                        </button>
+                        <div className="h-px bg-green-100" />
+                        <button
+                          onClick={() => {
+                            setIsReportMenuOpen(false);
+                            handleGenerateReport();
+                          }}
+                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors"
+                        >
+                          <Download className="w-4 h-4 mr-3 text-green-600" />
+                          Generate PDF
+                        </button>
+                      </div>
                     )}
-                  </button>
-                  
+                  </div>
+
+                  <div className="relative" data-invoice-menu>
+                    <button
+                      onClick={() => setIsInvoiceMenuOpen((open) => !open)}
+                      disabled={isGeneratingInvoice}
+                      className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-amber-700 bg-amber-50 border-2 border-amber-200 hover:border-amber-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingInvoice ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-amber-600 border-t-transparent mr-2"></div>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Receipt className="w-4 h-4 mr-2" />
+                          Invoice
+                          <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${isInvoiceMenuOpen ? 'rotate-180' : ''}`} />
+                        </>
+                      )}
+                    </button>
+
+                    {isInvoiceMenuOpen && !isGeneratingInvoice && (
+                      <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-xl shadow-xl border border-amber-100 z-30 overflow-hidden">
+                        <button
+                          onClick={() => {
+                            setIsInvoiceMenuOpen(false);
+                            handlePreviewInvoice();
+                          }}
+                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 transition-colors"
+                        >
+                          <FileSearch className="w-4 h-4 mr-3 text-amber-600" />
+                          Preview Invoice
+                        </button>
+                        <div className="h-px bg-amber-100" />
+                        <button
+                          onClick={() => {
+                            setIsInvoiceMenuOpen(false);
+                            handleGenerateInvoice();
+                          }}
+                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 transition-colors"
+                        >
+                          <Download className="w-4 h-4 mr-3 text-amber-600" />
+                          Generate PDF
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   <button
                     onClick={handleSubmit(onSubmit)}
                     disabled={isSaving}
@@ -576,6 +711,15 @@ export default function ValuationReportEditPage() {
         onClose={handleClosePreview}
         reportId={reportId}
         propertyAddress={property.address?.fullAddress}
+      />
+
+      {/* Invoice Preview Modal */}
+      <PreviewReportModal
+        isOpen={showInvoicePreviewModal}
+        onClose={() => setShowInvoicePreviewModal(false)}
+        reportId={reportId}
+        propertyAddress={property.address?.fullAddress}
+        mode="invoice"
       />
 
       {/* Validation Warning Modal */}

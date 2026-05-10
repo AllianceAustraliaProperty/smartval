@@ -228,6 +228,10 @@ export interface ReferralDetailsData {
   invoiceStatus?: string;
 }
 
+export interface InvoiceDetailsData {
+  reportFee?: number;
+}
+
 export interface OwnerData {
   firstName?: string;
   lastName?: string;
@@ -370,6 +374,7 @@ export interface ValuationReportData {
   generalComments?: GeneralCommentsData;
   valuationDetails?: ValuationDetailsData;
   referralDetails?: ReferralDetailsData;
+  invoiceDetails?: InvoiceDetailsData;
   photos?: PhotoData[];
   additionalPhotos?: PhotoData[];
   additionalPhotosType?: string;
@@ -594,6 +599,9 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
   referralDetails: {
     referrerName: '',
     referralFee: undefined
+  },
+  invoiceDetails: {
+    reportFee: undefined
   },
   photos: [],
   additionalPhotos: [],

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice {{ invoice_number }}</title>
+<style>
+  @page { size: A4; margin: 0; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    color: #2b2b2b;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    position: relative;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 22mm 18mm 22mm 18mm;
+    box-sizing: border-box;
+    margin: 0 auto;
+    background: #ffffff;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .company-name {
+    font-weight: 700;
+    font-size: 12pt;
+    color: #1f1f1f;
+    margin-bottom: 2px;
+  }
+  .company-block {
+    line-height: 1.5;
+    color: #333;
+    font-size: 10pt;
+  }
+  .invoice-title {
+    text-align: right;
+  }
+  .invoice-title h1 {
+    margin: 0;
+    font-weight: 300;
+    font-size: 38pt;
+    letter-spacing: 1px;
+    color: #2f2f2f;
+    line-height: 1;
+  }
+  .invoice-number {
+    margin-top: 6px;
+    font-weight: 700;
+    font-size: 11pt;
+    color: #1f1f1f;
+  }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 38mm;
+  }
+  .meta-left {
+    font-size: 10.5pt;
+    line-height: 1.7;
+  }
+  .meta-left .label { color: #555; }
+  .meta-left .name {
+    font-weight: 700;
+    color: #1f1f1f;
+    margin-top: 4px;
+  }
+  .meta-right {
+    font-size: 10.5pt;
+    color: #555;
+    text-align: right;
+    line-height: 1.9;
+    min-width: 70mm;
+  }
+  .meta-right .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 30mm;
+  }
+  .meta-right .value { color: #2b2b2b; }
+
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 14mm;
+    font-size: 10pt;
+  }
+  table.items thead th {
+    background: #444a54;
+    color: #ffffff;
+    font-weight: 400;
+    text-align: right;
+    padding: 10px 12px;
+  }
+  table.items thead th:first-child {
+    text-align: left;
+    padding-left: 18px;
+  }
+  table.items thead th:last-child {
+    padding-right: 18px;
+  }
+  table.items tbody td {
+    padding: 14px 12px;
+    vertical-align: top;
+    text-align: right;
+    color: #2b2b2b;
+  }
+  table.items tbody td:first-child {
+    text-align: left;
+    padding-left: 18px;
+  }
+  table.items tbody td:last-child {
+    padding-right: 18px;
+  }
+  .item-desc-secondary {
+    display: block;
+    font-weight: 700;
+    color: #1f1f1f;
+    margin-top: 2px;
+  }
+
+  .totals {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+    font-size: 10.5pt;
+  }
+  .totals td {
+    padding: 10px 18px;
+    text-align: right;
+  }
+  .totals .label-cell {
+    width: 40%;
+    color: #444;
+  }
+  .totals .amount-cell {
+    width: 18%;
+  }
+  .totals .spacer {
+    width: 42%;
+    border-top: 1px solid #e5e5e5;
+  }
+  .totals .row-subtotal td {
+    border-top: 1px solid #e5e5e5;
+  }
+  .totals .row-total .label-cell,
+  .totals .row-total .amount-cell {
+    font-weight: 700;
+    color: #1f1f1f;
+  }
+  .totals .row-balance td {
+    background: #f3f3f3;
+    font-weight: 700;
+    color: #1f1f1f;
+  }
+
+  .notes {
+    margin-top: 10mm;
+    font-size: 10pt;
+    line-height: 1.7;
+    color: #2b2b2b;
+  }
+  .notes .heading {
+    color: #2b2b2b;
+    font-size: 11pt;
+    margin-bottom: 6px;
+  }
+  .notes .gst-line { margin-bottom: 8px; }
+
+  .terms {
+    margin-top: 12mm;
+    font-size: 10pt;
+    line-height: 1.7;
+    color: #2b2b2b;
+  }
+  .terms .heading {
+    color: #2b2b2b;
+    font-size: 11pt;
+    margin-bottom: 6px;
+  }
+
+  .footer-logo {
+    position: absolute;
+    left: 18mm;
+    bottom: 14mm;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6b6b6b;
+    font-size: 10pt;
+  }
+  .footer-logo .badge {
+    width: 22px;
+    height: 22px;
+    border: 1px solid #c9c9c9;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #5a8edc;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .footer-logo .brand {
+    color: #5a5a5a;
+  }
+  .footer-logo .brand .invoice {
+    font-weight: 700;
+    color: #1f1f1f;
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="company-block">
+        <div class="company-name">Alliance Australia Property Pty Ltd</div>
+        <div>PO Box 195 Campsie</div>
+        <div>New South Wales 2194</div>
+        <div>ABN 35 641 373 702</div>
+      </div>
+      <div class="invoice-title">
+        <h1>INVOICE</h1>
+        <div class="invoice-number"># {{ invoice_number }}</div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="meta-left">
+        <div class="label">Tax Invoice To:</div>
+        <div class="name">{{ client_name }}</div>
+      </div>
+      <div class="meta-right">
+        <div class="row"><span>Invoice Date :</span><span class="value">{{ invoice_date }}</span></div>
+        <div class="row"><span>Due Date :</span><span class="value">{{ due_date }}</span></div>
+      </div>
+    </div>
+
+    <table class="items">
+      <thead>
+        <tr>
+          <th style="width:58%">Item &amp; Description</th>
+          <th style="width:10%">Qty</th>
+          <th style="width:14%">Rate</th>
+          <th style="width:18%">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            {{ item_description }}
+            <span class="item-desc-secondary">{{ item_address }}</span>
+          </td>
+          <td>{{ '%.2f'|format(qty) }}</td>
+          <td>{{ '%.2f'|format(rate) }}</td>
+          <td>{{ '%.2f'|format(amount) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="totals">
+      <tr class="row-subtotal">
+        <td class="spacer"></td>
+        <td class="label-cell">Sub Total</td>
+        <td class="amount-cell">{{ '%.2f'|format(subtotal) }}</td>
+      </tr>
+      <tr class="row-total">
+        <td></td>
+        <td class="label-cell">Total</td>
+        <td class="amount-cell">${{ '%.2f'|format(total) }}</td>
+      </tr>
+      <tr class="row-balance">
+        <td></td>
+        <td class="label-cell">Balance Due</td>
+        <td class="amount-cell">${{ '%.2f'|format(balance_due) }}</td>
+      </tr>
+    </table>
+
+    <div class="notes">
+      <div class="heading">Notes</div>
+      <div class="gst-line">GST (excluded)</div>
+      <div>Thanks for your business.</div>
+    </div>
+
+    <div class="terms">
+      <div class="heading">Terms &amp; Conditions</div>
+      <div>TERMS AND CONDITIONS OF PAYMENTS - (Alliance Australia Property PTY LTD - ABN NO. 35 641 373 702)</div>
+      <div>Bank Account details: Alliance Australia Property; BSB 082356; Account Number 328969165.</div>
+      <div>Please use your last name/property address/company name for a reference.</div>
+    </div>
+
+
+  </div>
+</body>
+</html>

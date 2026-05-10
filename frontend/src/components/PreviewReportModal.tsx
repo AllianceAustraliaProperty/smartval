@@ -3,19 +3,29 @@
 import React, { useState } from 'react';
 import { X, Download, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
 
+type PreviewMode = 'report' | 'invoice';
+
 interface PreviewReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   reportId: string;
   propertyAddress?: string;
+  mode?: PreviewMode;
 }
 
-export function PreviewReportModal({ 
-  isOpen, 
-  onClose, 
-  reportId, 
-  propertyAddress 
+export function PreviewReportModal({
+  isOpen,
+  onClose,
+  reportId,
+  propertyAddress,
+  mode = 'report',
 }: PreviewReportModalProps) {
+  const isInvoice = mode === 'invoice';
+  const heading = isInvoice ? 'Invoice Preview' : 'Report Preview';
+  const downloadFilename = isInvoice ? `invoice-${reportId}.pdf` : `valuation-report-${reportId}.pdf`;
+  const pdfPath = isInvoice
+    ? `/valuation-reports/${reportId}/invoice`
+    : `/valuation-reports/${reportId}/generate`;
   const [htmlContent, setHtmlContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +39,9 @@ export function PreviewReportModal({
       
       // Import the API repository dynamically to avoid circular dependencies
       const { apiRepository } = await import('@/lib/api-repository');
-      const html = await apiRepository.generateReportPreview(reportId);
+      const html = isInvoice
+        ? await apiRepository.generateInvoicePreview(reportId)
+        : await apiRepository.generateReportPreview(reportId);
       setHtmlContent(html);
     } catch (err) {
       console.error('Failed to generate report:', err);
@@ -49,7 +61,7 @@ export function PreviewReportModal({
       const { API_BASE_URL } = await import('@/lib/api-config');
       
       // Call the PDF generation endpoint
-      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/generate`, {
+      const response = await fetch(`${API_BASE_URL}${pdfPath}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,17 +69,17 @@ export function PreviewReportModal({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate PDF report');
+        throw new Error('Failed to generate PDF');
       }
 
       // Get the PDF blob
       const blob = await response.blob();
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `valuation-report-${reportId}.pdf`;
+      a.download = downloadFilename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -122,7 +134,7 @@ export function PreviewReportModal({
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
-                Report Preview
+                {heading}
               </h2>
               {propertyAddress && (
                 <p className="text-sm text-gray-600 mt-1">

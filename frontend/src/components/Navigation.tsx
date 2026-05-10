@@ -40,7 +40,7 @@ const sections: Section[] = [
   { id: 'propertyDescriptors', title: 'Property Descriptors', icon: ClipboardList },
   { id: 'ancillaryImprovements', title: 'Ancillary Improvements', icon: Hammer },
   { id: 'generalComments', title: 'General Comments', icon: MessageCircle },
-  // { id: 'referralDetails', title: 'Referral Details', icon: User },
+  { id: 'referralDetails', title: 'Financial & Referral', icon: DollarSign },
   { id: 'comparables', title: 'Comparables', icon: Scale },
   { id: 'photos', title: 'Photos', icon: Camera }
 ];

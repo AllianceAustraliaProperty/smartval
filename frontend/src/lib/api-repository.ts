@@ -120,6 +120,7 @@ function transformValuationReport(backendReport: any): ValuationReportData {
     generalComments: backendReport.generalComments || {},
     valuationDetails,
     referralDetails: backendReport.referralDetails || {},
+    invoiceDetails: backendReport.invoiceDetails || {},
     photos: backendReport.photos || [],
     additionalPhotos: backendReport.additionalPhotos || [],
     additionalPhotosType: backendReport.additionalPhotosType || '',
@@ -177,6 +178,7 @@ function transformValuationReportToBackend(report: ValuationReportData): any {
     generalComments: report.generalComments,
     valuationDetails: report.valuationDetails,
     referralDetails: report.referralDetails,
+    invoiceDetails: report.invoiceDetails,
     photos: report.photos,
     additionalPhotos: report.additionalPhotos,
     additionalPhotosType: report.additionalPhotosType,
@@ -508,6 +510,54 @@ export const apiRepository = {
       return await response.blob();
     } catch (error) {
       console.error('Failed to generate PDF report:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Generate invoice HTML preview for a valuation report
+   */
+  async generateInvoicePreview(reportId: string): Promise<string> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/invoice/preview`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to generate invoice preview' }));
+        throw new Error(errorData.error || 'Failed to generate invoice preview');
+      }
+
+      return await response.text();
+    } catch (error) {
+      console.error('Failed to generate invoice preview:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Generate invoice PDF for a valuation report
+   */
+  async generateInvoice(reportId: string): Promise<Blob> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/invoice`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to generate invoice PDF' }));
+        throw new Error(errorData.error || 'Failed to generate invoice PDF');
+      }
+
+      return await response.blob();
+    } catch (error) {
+      console.error('Failed to generate invoice PDF:', error);
       throw error;
     }
   },

@@ -1090,3 +1090,129 @@ def generate_report_pdf(report_id):
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Failed to generate PDF report: {str(e)}'}), 500
+
+
+def _build_invoice_context(report):
+    """Build the Jinja context for invoice.html from a report document."""
+    from datetime import datetime, timedelta
+
+    primary = report.get('primaryContact', {}) or {}
+    first = (primary.get('firstName') or '').strip()
+    last = (primary.get('lastName') or '').strip()
+    client_name = (f"{first} {last}").strip() or 'N/A'
+
+    address = report.get('address', {}) or {}
+    full_address = address.get('fullAddress') or ' '.join(
+        filter(None, [
+            address.get('unitNumber'),
+            address.get('streetName'),
+            address.get('suburb'),
+            address.get('state'),
+            address.get('postcode'),
+        ])
+    ).strip() or 'N/A'
+
+    valuation_details = report.get('valuationDetails', {}) or {}
+    valuation_type = (valuation_details.get('valuationType') or '').strip()
+    purpose = (valuation_details.get('purposeOfReport') or '').strip()
+
+    if valuation_type and purpose:
+        item_description = f"{valuation_type} Property Valuation for {purpose} purpose"
+    elif valuation_type:
+        item_description = f"{valuation_type} Property Valuation"
+    else:
+        item_description = "Property Valuation"
+
+    invoice_details = report.get('invoiceDetails', {}) or {}
+    try:
+        report_fee = float(invoice_details.get('reportFee') or 0)
+    except (TypeError, ValueError):
+        report_fee = 0.0
+
+    file_number = (report.get('fileNumber') or '').strip()
+    report_id = str(report.get('_id') or report.get('id') or '')
+    if file_number:
+        invoice_number = f"INV-{file_number}"
+    elif report_id:
+        invoice_number = f"INV-{report_id[-8:].upper()}"
+    else:
+        invoice_number = "INV-DRAFT"
+
+    today = datetime.now()
+    due = today + timedelta(days=1)
+
+    return {
+        'invoice_number': invoice_number,
+        'client_name': client_name,
+        'invoice_date': today.strftime('%d/%m/%Y'),
+        'due_date': due.strftime('%d/%m/%Y'),
+        'item_description': item_description,
+        'item_address': full_address,
+        'qty': 1.0,
+        'rate': report_fee,
+        'amount': report_fee,
+        'subtotal': report_fee,
+        'total': report_fee,
+        'balance_due': report_fee,
+    }
+
+
+def _render_invoice_html(report_id):
+    """Render invoice HTML for a report. Returns (html, context, error_or_None, status_code)."""
+    report = valuation_report_model.get_by_id(report_id)
+    if not report:
+        return None, None, 'Valuation report not found', 404
+
+    template_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'invoice.html')
+    with open(template_path, 'r', encoding='utf-8') as f:
+        template_content = f.read()
+
+    context = _build_invoice_context(report)
+
+    jinja_env.loader.template_content = template_content
+    template = jinja_env.from_string(template_content)
+    html_content = template.render(**context)
+    return html_content, context, None, 200
+
+
+@valuation_reports_bp.route('/<report_id>/invoice/preview', methods=['POST'])
+def generate_invoice_preview(report_id):
+    """Return rendered invoice HTML for in-browser preview."""
+    try:
+        html_content, _context, error, status = _render_invoice_html(report_id)
+        if error:
+            return jsonify({'error': error}), status
+        return html_content, 200, {'Content-Type': 'text/html'}
+    except Exception as e:
+        print(f"Error generating invoice preview: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to generate invoice preview: {str(e)}'}), 500
+
+
+@valuation_reports_bp.route('/<report_id>/invoice', methods=['POST'])
+def generate_invoice_pdf(report_id):
+    """Generate an invoice PDF for a valuation report using invoice.html."""
+    try:
+        html_content, context, error, status = _render_invoice_html(report_id)
+        if error:
+            return jsonify({'error': error}), status
+
+        pdf_content = generate_pdf_from_html(html_content)
+
+        from flask import Response
+        filename = f"{context['invoice_number']}.pdf"
+        return Response(
+            pdf_content,
+            mimetype='application/pdf',
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"',
+                'Content-Type': 'application/pdf',
+            },
+        )
+
+    except Exception as e:
+        print(f"Error generating invoice PDF: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to generate invoice PDF: {str(e)}'}), 500
