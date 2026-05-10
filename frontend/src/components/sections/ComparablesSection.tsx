@@ -2012,6 +2012,22 @@ const ComparableCard: React.FC<{
                         ))}
                       </select>
                     </div>
+
+                    {/* Land Value (Land Valuation reports only) */}
+                    {watch('valuationDetails.valuationType') === 'Land Valuation' && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 flex-shrink-0">
+                          <span className="text-xs font-medium text-gray-700">Land Value</span>
+                        </div>
+                        <input
+                          type="number"
+                          step="0.01"
+                          {...register(`comparables.${type}.${index}.landValue` as const, { valueAsNumber: true })}
+                          placeholder="e.g., 165000"
+                          className="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-gray-900"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

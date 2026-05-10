@@ -529,11 +529,53 @@
         .header-logo {
             height: 90px !important;
         }
+        /* CPV styled page footer bar (solid orange) */
+        .footer-container {
+            background: #f97316 !important;
+            color: white !important;
+            padding: 10px 30px !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            font-size: 10px !important;
+            font-weight: bold !important;
+            letter-spacing: 0.5px !important;
+            align-items: center;
+        }
+        .footer-container > span:first-child {
+            color: white;
+            flex: 1;
+            letter-spacing: 0.5px;
+        }
+        .footer-container .page-num {
+            color: white;
+        }
     </style>
     {% else %}
     <style>
         .header-logo {
             height: 115px !important;
+        }
+        /* AAP styled page footer bar (solid blue) */
+        .footer-container {
+            background: #2563eb !important;
+            color: white !important;
+            padding: 10px 30px !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            font-size: 10px !important;
+            font-weight: bold !important;
+            letter-spacing: 0.5px !important;
+            align-items: center;
+        }
+        .footer-container > span:first-child {
+            color: white;
+            flex: 1;
+            letter-spacing: 0.5px;
+        }
+        .footer-container .page-num {
+            color: white;
         }
     </style>
     {% endif %}
@@ -543,25 +585,13 @@
     {% if logo_type == 'CPV' %}
     <!-- CPV Cover Page -->
     <div class="page"
-        style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        style="position: relative; display: flex; flex-direction: column; align-items: center;">
         <!-- CPV logo at top left -->
         <div style="position: absolute; top: 50px; left: 50px;">
             <img src="{{ logo_url }}" alt="CPV Logo" style="height: 90px; width: auto; object-fit: contain;" />
         </div>
-        <!-- Title, address, ref centered on page -->
-        <div style="text-align: center;">
-            <p style="font-weight: bold; font-size: 28px; margin-bottom: 15px;">Valuation Report</p>
-            <p style="font-weight: bold; font-size: 15px; margin: 5px 0;">{{ record.location_details.street|default('')
-                }}</p>
-            <p style="font-weight: bold; font-size: 15px; margin: 5px 0;">
-                {{ record.location_details.suburb|default('') }}
-                {{ record.location_details.state|default('') }}
-                {{ record.location_details.postcode|default('') }}
-            </p>
-            <p style="font-size: 14px; margin-top: 15px;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
-        </div>
-        <!-- Contact info centered below -->
-        <div style="text-align: center; margin-top: 60px;">
+        <!-- Contact info centered (above the orange divider) -->
+        <div style="text-align: center; margin-top: 220px;">
             <p style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">Certified Property Valuer</p>
             <p style="font-size: 14px; margin: 4px 0;">0485 008 806</p>
             <p style="font-size: 14px; margin: 4px 0;">
@@ -573,12 +603,19 @@
                     style="color: #2563eb;">www.certifiedpropertyvaluer.com.au</a>
             </p>
         </div>
-        <div class="footer-container vertical">
-            <span
-                style="font-size: 9.5pt; display: inline-block; padding-bottom: 2px; border-bottom: 2px solid #2563eb;">Alliance
-                Australia Property Pty Ltd</span>
-            <span style="font-family: Calibri, Arial, sans-serif; font-size: 8.5pt; font-style: italic;">Liability
-                Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>
+        <!-- Orange divider line -->
+        <div style="width: 70%; height: 2px; background-color: #f97316; margin: 50px auto;"></div>
+        <!-- Title, address, ref centered (below the divider) -->
+        <div style="text-align: center;">
+            <p style="font-weight: bold; font-size: 32px; margin-bottom: 15px;">Valuation Report</p>
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">{{ record.location_details.street|default('')
+                }}</p>
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">
+                {{ record.location_details.suburb|default('') }}
+                {{ record.location_details.state|default('') }}
+                {{ record.location_details.postcode|default('') }}
+            </p>
+            <p style="font-size: 14px; margin-top: 15px;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
         </div>
     </div>
     {% else %}
@@ -588,32 +625,29 @@
             <h2 style="font-family: Arial, Helvetica, sans-serif; font-size: 26px; font-weight: 900; letter-spacing: 1px; margin: 0; color: #000;">AAP VALUATIONS.</h2>
             <p style="color: #c00000; font-size: 11px; font-style: italic; font-weight: 600; margin: 2px 0 0 8px;">Trusted property valuers</p>
         </div>
-        <div style="margin-top: 140px; display: flex; font-size: 10px;">
-            <div style="width: 45%; line-height: 1.5;">
-                <p style="margin: 0;">Jugal Saha</p>
-                <p style="margin: 0;">Director</p>
-                <p style="margin: 0;"><a href="mailto:info@aapvaluations.com.au" style="color: #2563eb; text-decoration: none;">info@aapvaluations.com.au</a></p>
+        <div style="margin-top: 140px; display: flex; font-size: 12px; font-weight: bold;">
+            <div style="width: 45%; line-height: 1.6;">
+                <p style="margin: 0;"><a href="mailto:info@allianceaustraliaproperty.com.au" style="color: #2563eb; text-decoration: none;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span style="vertical-align: middle;">info@allianceaustraliaproperty.com.au</span></a></p>
             </div>
-            <div style="width: 55%;">
-                <p style="margin: 0;">allianceaustraliaproperty.com.au</p>
+            <div style="width: 55%; padding-left: 50px; line-height: 1.6;">
+                <p style="margin: 0;"><a href="https://allianceaustraliaproperty.com.au" style="color: #000; text-decoration: none;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span style="vertical-align: middle;">allianceaustraliaproperty.com.au</span></a></p>
             </div>
         </div>
-        <div style="margin-top: 90px; padding-left: 200px;">
-            <p style="font-weight: bold; font-size: 26px; margin: 0 0 10px 0; color: #000;">Valuation Report</p>
-            <p style="font-size: 16px; margin: 2px 0;">{{ record.location_details.street|default('') }}</p>
-            <p style="font-size: 16px; margin: 2px 0;">{{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</p>
+        <div style="margin-top: 180px; text-align: center !important;">
+            <p style="font-weight: bold; font-size: 38px; margin: 0 0 15px 0; color: #000; text-align: center !important;">Valuation Report</p>
+            <p style="font-size: 22px; margin: 4px 0; text-align: center !important;">{{ record.location_details.street|default('') }}</p>
+            <p style="font-size: 22px; margin: 4px 0; text-align: center !important;">{{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</p>
         </div>
-        {% if house_cover_url %}
-        <div style="text-align: center; margin-top: 40px;">
-            <img src="{{ house_cover_url }}" alt="House" style="width: 500px; height: auto;" />
+        {% if aap_cover_design_url %}
+        <div style="position: absolute; bottom: 110px; left: 0; right: 0; text-align: center !important;">
+            <img src="{{ aap_cover_design_url }}" alt="" style="display: inline-block; width: 620px; height: auto;" />
         </div>
         {% endif %}
-        <div style="padding-left: 200px; margin-top: 20px;">
-            <p style="font-size: 12px; margin: 0;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
-        </div>
-        <div style="position: absolute; bottom: 30px; left: 70px; right: 70px; text-align: center;">
-            <p style="font-size: 9.5pt; margin: 0 0 3px 0; padding-bottom: 3px; border-bottom: 1.5px solid #2563eb; display: inline-block;">Alliance Australia Property Pty Ltd | ABN 35 641 373 702 | Phone: 043 1300 800 | PO Box 195 Campsie NSW 2194</p>
-            <p style="font-size: 8pt; font-style: italic; margin: 0;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</p>
+        <div style="position: absolute; bottom: 30px; left: 0; right: 0; text-align: center !important;">
+            <div style="display: inline-block; text-align: center;">
+                <p style="font-size: 9.5pt; margin: 0 0 3px 0; padding-bottom: 3px; border-bottom: 1.5px solid #2563eb;">Alliance Australia Property Pty Ltd &nbsp;&nbsp;ABN 35 641 373 702&nbsp;&nbsp; Phone: 043 1300 800&nbsp;&nbsp; PO Box 195 NSW 2194</p>
+                <p style="font-size: 8pt; font-style: italic; margin: 0;">Liability limited by a scheme approved under Professional Standards Legislation</p>
+            </div>
         </div>
     </div>
     {% endif %}

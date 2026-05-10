@@ -416,9 +416,27 @@ export default function ValuationReportsPage() {
   };
 
   const filteredReports = valuationReports.filter((report) => {
-    const searchable = `${report.address} ${report.rpDataId ?? ''}`.toLowerCase();
-    const matchesSearch = searchable.includes(searchTerm.toLowerCase());
-    return matchesSearch;
+    if (!searchTerm.trim()) return true;
+    const dateStr = report.updatedAt ? new Date(report.updatedAt) : null;
+    const dateFormatted = dateStr
+      ? [
+          dateStr.toLocaleDateString('en-AU'),                                             // 08/05/2026
+          dateStr.toLocaleDateString('en-AU', { day: '2-digit', month: '2-digit', year: '2-digit' }), // 08/05/26
+          dateStr.toLocaleDateString('en-GB'),                                             // 08/05/2026
+          dateStr.toISOString().slice(0, 10),                                              // 2026-05-08
+        ].join(' ')
+      : '';
+    const searchable = [
+      report.address,
+      report.rpDataId,
+      report.fileNumber,
+      report.propertyType,
+      dateFormatted,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    return searchable.includes(searchTerm.toLowerCase());
   });
 
   if (isLoading) {

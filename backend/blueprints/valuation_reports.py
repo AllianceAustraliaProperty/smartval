@@ -10,6 +10,7 @@ import base64
 from datetime import datetime
 import os
 from utils.template import summarize_photos, format_currency_words, format_owners, format_rental_frequency, format_date_v2
+from utils.image_compress import compress_report_images
 from jinja2 import Environment, BaseLoader
 from playwright.sync_api import sync_playwright
 import atexit
@@ -526,6 +527,10 @@ def generate_html_report(report_id, template_name='residential.html'):
         with open(template_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
         
+        # Compress all report images (gallery, cover, annexure, granny flat, comparables)
+        # before template rendering. Floor plans and title searches are preserved at full quality.
+        compress_report_images(report)
+
         # Process photos data
         report["photosSummary"] = summarize_photos(report.get("photos", []))
         gallery_photos = [photo for photo in report.get("photos", []) if photo.get("isGallery")]
@@ -584,6 +589,14 @@ def generate_html_report(report_id, template_name='residential.html'):
         except Exception:
             house_cover_b64 = ""
 
+        # Load AAP cover design image (cityscape) as base64
+        try:
+            aap_design_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'design_v001_cropped.jpg-removebg-preview.png')
+            with open(aap_design_path, 'rb') as df:
+                aap_cover_design_b64 = f"data:image/png;base64,{base64.b64encode(df.read()).decode('ascii')}"
+        except Exception:
+            aap_cover_design_b64 = ""
+
         # Prepare data for template rendering
         template_data = {
             'property': property_data,
@@ -595,6 +608,7 @@ def generate_html_report(report_id, template_name='residential.html'):
             'logo_url': effective_logo_url,
             'logo_data_url': logo_data_url,
             'house_cover_url': house_cover_b64,
+            'aap_cover_design_url': aap_cover_design_b64,
             'logo_type': logo_type,
             'now': now,
         }
