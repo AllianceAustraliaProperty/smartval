@@ -260,7 +260,7 @@ const searchComparablesAPI = async (params: {
     }
 
     // Make the API call
-    const response = await fetch(`${API_BASE_URL}/rpdata/sales-comparables`, {
+    const response = await fetch(`${API_BASE_URL}/api/rpdata/sales-comparables`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1331,7 +1331,7 @@ const ComparableCard: React.FC<{
       try {
         const comparablesAll = watch('comparables') ?? {};
         console.log('Autosaving comparables to backend:', comparablesAll);
-        const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/valuation-reports/${reportId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ comparables: comparablesAll }),
@@ -1369,7 +1369,7 @@ const ComparableCard: React.FC<{
       if (isUpdate) {
         // Use update endpoint for existing photos
         console.log('Updating existing comparable photo', { comparableId: comparable.id || comparable._id, oldPhotoUrl: comparable.photoUrl });
-        presignRes = await fetch(`${API_BASE_URL}/comparables-photos/update-photo/${reportId}/${type}`, {
+        presignRes = await fetch(`${API_BASE_URL}/api/comparables-photos/update-photo/${reportId}/${type}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1381,7 +1381,7 @@ const ComparableCard: React.FC<{
         });
       } else {
         // Use presigned URL endpoint for new photos
-        presignRes = await fetch(`${API_BASE_URL}/comparables-photos/presigned-url/${reportId}/${type}`, {
+        presignRes = await fetch(`${API_BASE_URL}/api/comparables-photos/presigned-url/${reportId}/${type}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fileExtension, contentType: file.type }),
@@ -1433,7 +1433,7 @@ const ComparableCard: React.FC<{
           confirmBody.comparableId = comparable.id || comparable._id;
         }
 
-        const confirmRes = await fetch(`${API_BASE_URL}/comparables-photos/confirm-upload/${reportId}/${type}/${index}`, {
+        const confirmRes = await fetch(`${API_BASE_URL}/api/comparables-photos/confirm-upload/${reportId}/${type}/${index}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(confirmBody),
@@ -1488,7 +1488,7 @@ const ComparableCard: React.FC<{
     // If an existing server photo exists, delete immediately
     if (!comparable.photoUrl) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/comparables-photos/delete/${reportId}/${type}`, {
+      const response = await fetch(`${API_BASE_URL}/api/comparables-photos/delete/${reportId}/${type}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -2092,7 +2092,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
     if (comparableToRemove?.photoUrl) {
       try {
         console.log('Deleting comparable photo from S3:', comparableToRemove.photoUrl);
-        const deleteRes = await fetch(`${API_BASE_URL}/comparables-photos/delete/${reportId}/${type}`, {
+        const deleteRes = await fetch(`${API_BASE_URL}/api/comparables-photos/delete/${reportId}/${type}`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ photoUrl: comparableToRemove.photoUrl }),
@@ -2156,7 +2156,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
     setAddressSearchResults([]);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(addressSearch)}`, {
+      const response = await fetch(`${API_BASE_URL}/api/rpdata/search-address?address=${encodeURIComponent(addressSearch)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -2418,7 +2418,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                           return;
                         }
 
-                        const response = await fetch(`${API_BASE_URL}/rpdata/sales-comparables-by-id/${propertyId}`, {
+                        const response = await fetch(`${API_BASE_URL}/api/rpdata/sales-comparables-by-id/${propertyId}`, {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',
@@ -2817,7 +2817,7 @@ export const ComparablesSection: React.FC<SectionProps> = (props) => {
       console.log('Update data:', updateData);
 
       // Call the API to save to database
-      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/valuation-reports/${reportId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

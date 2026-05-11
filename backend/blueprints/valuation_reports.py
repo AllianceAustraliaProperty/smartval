@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request, render_template_string
 # CORS is handled globally in app.py
 from database import get_database
 from models.valuation_report import ValuationReport
+from pymongo import MongoClient
 from config import Config
 import base64
 from datetime import datetime
@@ -13,10 +14,8 @@ from utils.template import summarize_photos, format_currency_words, format_owner
 from utils.image_compress import compress_report_images
 from jinja2 import Environment, BaseLoader
 from playwright.sync_api import sync_playwright
-import atexit
-import threading
-import queue
 
+import time
 valuation_reports_bp = Blueprint('valuation_reports', __name__)
 
 # Residential property types constant
@@ -36,7 +35,10 @@ RESIDENTIAL_PROPERTY_TYPES = [
     "Unit"
 ]
 
-valuation_report_model = ValuationReport(get_database())
+# Initialize MongoDB connection
+client = MongoClient(Config.MONGODB_URI)
+db = client.get_default_database()
+valuation_report_model = ValuationReport(db)
 
 # Template filter functions
 def format_currency(value):
@@ -192,106 +194,23 @@ def convert_date_strings_to_datetime(data, date_fields):
     return data
 
 
-# Sync Playwright is bound to the thread that calls sync_playwright().start();
-# any other thread that touches the browser handle crashes with
-# "cannot switch to a different thread (which happens to have exited)".
-# Flask's dev server (werkzeug) and gunicorn's `gthread` worker hand each
-# request to a different thread, so we can't just stash the browser at
-# module scope and call it from request threads.
-#
-# Pattern: a single long-lived worker thread owns Playwright + Chromium for
-# the lifetime of the process. Request threads submit (html, result_queue)
-# to a job queue and block on the result. The worker renders one PDF at a
-# time. This keeps the warm-browser optimisation while being safe across
-# any caller thread.
-
-_pdf_jobs: "queue.Queue" = queue.Queue()
-_pdf_worker_started = False
-_pdf_worker_lock = threading.Lock()
-
-_CHROMIUM_LAUNCH_ARGS = [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',   # critical for Docker: prevents /dev/shm exhaustion
-    '--disable-gpu',             # no GPU in Docker
-    '--no-zygote',               # avoids sandbox crashes in Docker
-]
-
-
-def _render_one(browser, html: str) -> bytes:
-    context = browser.new_context()
-    try:
-        page = context.new_page()
-        # 'load' waits for stylesheets, images, and scripts (vs. 'domcontentloaded'
-        # which fires before any of that). Then network-idle catches images and
-        # iframes that finish fetching after the load event.
-        page.set_content(html, wait_until='load', timeout=30000)
-        try:
-            page.wait_for_load_state('networkidle', timeout=15000)
-        except Exception:
-            # Maps tiles or S3 may keep dribbling — better to render with what
-            # we have than to fail the whole report.
-            pass
+def generate_pdf_from_html(html: str):
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(args=[
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',   # critical for Docker: prevents /dev/shm exhaustion
+            '--disable-gpu',             # no GPU in Docker
+            '--no-zygote',               # avoids sandbox crashes in Docker
+        ])
+        page = browser.new_page()
+        page.set_content(html, wait_until='domcontentloaded')
+        time.sleep(3)
         return page.pdf(
             format="A4",
             print_background=True,
             margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
         )
-    finally:
-        context.close()
-
-
-def _pdf_worker_loop():
-    pw = sync_playwright().start()
-    browser = pw.chromium.launch(args=_CHROMIUM_LAUNCH_ARGS)
-    try:
-        while True:
-            item = _pdf_jobs.get()
-            if item is None:
-                return  # shutdown
-            html, result_q = item
-            try:
-                if not browser.is_connected():
-                    browser = pw.chromium.launch(args=_CHROMIUM_LAUNCH_ARGS)
-                pdf_bytes = _render_one(browser, html)
-                result_q.put(('ok', pdf_bytes))
-            except Exception as e:
-                result_q.put(('err', e))
-    finally:
-        try:
-            browser.close()
-        except Exception:
-            pass
-        try:
-            pw.stop()
-        except Exception:
-            pass
-
-
-def _ensure_pdf_worker():
-    global _pdf_worker_started
-    with _pdf_worker_lock:
-        if _pdf_worker_started:
-            return
-        t = threading.Thread(target=_pdf_worker_loop, daemon=True, name='pdf-worker')
-        t.start()
-        _pdf_worker_started = True
-
-
-@atexit.register
-def _shutdown_pdf_worker():
-    if _pdf_worker_started:
-        _pdf_jobs.put(None)
-
-
-def generate_pdf_from_html(html: str) -> bytes:
-    _ensure_pdf_worker()
-    result_q: "queue.Queue" = queue.Queue(maxsize=1)
-    _pdf_jobs.put((html, result_q))
-    status, payload = result_q.get()  # blocks until the worker finishes this job
-    if status == 'err':
-        raise payload
-    return payload
 
 @valuation_reports_bp.route('/', methods=['GET'])
 def get_all_valuation_reports():
@@ -1104,129 +1023,3 @@ def generate_report_pdf(report_id):
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Failed to generate PDF report: {str(e)}'}), 500
-
-
-def _build_invoice_context(report):
-    """Build the Jinja context for invoice.html from a report document."""
-    from datetime import datetime, timedelta
-
-    primary = report.get('primaryContact', {}) or {}
-    first = (primary.get('firstName') or '').strip()
-    last = (primary.get('lastName') or '').strip()
-    client_name = (f"{first} {last}").strip() or 'N/A'
-
-    address = report.get('address', {}) or {}
-    full_address = address.get('fullAddress') or ' '.join(
-        filter(None, [
-            address.get('unitNumber'),
-            address.get('streetName'),
-            address.get('suburb'),
-            address.get('state'),
-            address.get('postcode'),
-        ])
-    ).strip() or 'N/A'
-
-    valuation_details = report.get('valuationDetails', {}) or {}
-    valuation_type = (valuation_details.get('valuationType') or '').strip()
-    purpose = (valuation_details.get('purposeOfReport') or '').strip()
-
-    if valuation_type and purpose:
-        item_description = f"{valuation_type} Property Valuation for {purpose} purpose"
-    elif valuation_type:
-        item_description = f"{valuation_type} Property Valuation"
-    else:
-        item_description = "Property Valuation"
-
-    invoice_details = report.get('invoiceDetails', {}) or {}
-    try:
-        report_fee = float(invoice_details.get('reportFee') or 0)
-    except (TypeError, ValueError):
-        report_fee = 0.0
-
-    file_number = (report.get('fileNumber') or '').strip()
-    report_id = str(report.get('_id') or report.get('id') or '')
-    if file_number:
-        invoice_number = f"INV-{file_number}"
-    elif report_id:
-        invoice_number = f"INV-{report_id[-8:].upper()}"
-    else:
-        invoice_number = "INV-DRAFT"
-
-    today = datetime.now()
-    due = today + timedelta(days=1)
-
-    return {
-        'invoice_number': invoice_number,
-        'client_name': client_name,
-        'invoice_date': today.strftime('%d/%m/%Y'),
-        'due_date': due.strftime('%d/%m/%Y'),
-        'item_description': item_description,
-        'item_address': full_address,
-        'qty': 1.0,
-        'rate': report_fee,
-        'amount': report_fee,
-        'subtotal': report_fee,
-        'total': report_fee,
-        'balance_due': report_fee,
-    }
-
-
-def _render_invoice_html(report_id):
-    """Render invoice HTML for a report. Returns (html, context, error_or_None, status_code)."""
-    report = valuation_report_model.get_by_id(report_id)
-    if not report:
-        return None, None, 'Valuation report not found', 404
-
-    template_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'invoice.html')
-    with open(template_path, 'r', encoding='utf-8') as f:
-        template_content = f.read()
-
-    context = _build_invoice_context(report)
-
-    jinja_env.loader.template_content = template_content
-    template = jinja_env.from_string(template_content)
-    html_content = template.render(**context)
-    return html_content, context, None, 200
-
-
-@valuation_reports_bp.route('/<report_id>/invoice/preview', methods=['POST'])
-def generate_invoice_preview(report_id):
-    """Return rendered invoice HTML for in-browser preview."""
-    try:
-        html_content, _context, error, status = _render_invoice_html(report_id)
-        if error:
-            return jsonify({'error': error}), status
-        return html_content, 200, {'Content-Type': 'text/html'}
-    except Exception as e:
-        print(f"Error generating invoice preview: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'Failed to generate invoice preview: {str(e)}'}), 500
-
-
-@valuation_reports_bp.route('/<report_id>/invoice', methods=['POST'])
-def generate_invoice_pdf(report_id):
-    """Generate an invoice PDF for a valuation report using invoice.html."""
-    try:
-        html_content, context, error, status = _render_invoice_html(report_id)
-        if error:
-            return jsonify({'error': error}), status
-
-        pdf_content = generate_pdf_from_html(html_content)
-
-        from flask import Response
-        filename = f"{context['invoice_number']}.pdf"
-        return Response(
-            pdf_content,
-            mimetype='application/pdf',
-            headers={
-                'Content-Disposition': f'attachment; filename="{filename}"',
-                'Content-Type': 'application/pdf',
-            },
-        )
-
-    except Exception as e:
-        print(f"Error generating invoice PDF: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'Failed to generate invoice PDF: {str(e)}'}), 500
