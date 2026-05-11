@@ -12,7 +12,7 @@ from datetime import datetime
 import os
 from utils.template import summarize_photos, format_currency_words, format_owners, format_rental_frequency, format_date_v2
 from utils.image_compress import compress_report_images
-from jinja2 import Environment, BaseLoader
+from jinja2 import Environment, BaseLoader, Undefined
 from playwright.sync_api import sync_playwright
 
 import time
@@ -41,8 +41,12 @@ db = client.get_default_database()
 valuation_report_model = ValuationReport(db)
 
 # Template filter functions
+def _is_missing(value):
+    """Treat both Python None and Jinja Undefined as missing."""
+    return value is None or isinstance(value, Undefined)
+
 def format_currency(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         return f"${value:,.2f}"
@@ -50,7 +54,7 @@ def format_currency(value):
         return 'N/A'
 
 def format_date(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         if isinstance(value, str):
@@ -65,7 +69,7 @@ def format_date(value):
         return 'N/A'
 
 def format_area(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         return f"{value} sqm"
@@ -73,7 +77,7 @@ def format_area(value):
         return 'N/A'
 
 def format_area_sqm(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         return f"{value} sqm"
@@ -81,7 +85,7 @@ def format_area_sqm(value):
         return 'N/A'
 
 def format_area_smart(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         if value >= 10000:

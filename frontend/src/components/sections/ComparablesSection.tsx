@@ -260,7 +260,7 @@ const searchComparablesAPI = async (params: {
     }
 
     // Make the API call
-    const response = await fetch(`${API_BASE_URL}/api/rpdata/sales-comparables`, {
+    const response = await fetch(`${API_BASE_URL}/rpdata/sales-comparables`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2156,7 +2156,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
     setAddressSearchResults([]);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rpdata/search-address?address=${encodeURIComponent(addressSearch)}`, {
+      const response = await fetch(`${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(addressSearch)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -2418,7 +2418,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                           return;
                         }
 
-                        const response = await fetch(`${API_BASE_URL}/api/rpdata/sales-comparables-by-id/${propertyId}`, {
+                        const response = await fetch(`${API_BASE_URL}/rpdata/sales-comparables-by-id/${propertyId}`, {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',
