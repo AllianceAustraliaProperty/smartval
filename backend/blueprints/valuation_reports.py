@@ -12,7 +12,7 @@ from datetime import datetime
 import os
 from utils.template import summarize_photos, format_currency_words, format_owners, format_rental_frequency, format_date_v2
 from utils.image_compress import compress_report_images
-from jinja2 import Environment, BaseLoader
+from jinja2 import Environment, BaseLoader, Undefined
 from playwright.sync_api import sync_playwright
 
 import time
@@ -41,8 +41,12 @@ db = client.get_default_database()
 valuation_report_model = ValuationReport(db)
 
 # Template filter functions
+def _is_missing(value):
+    """Treat both Python None and Jinja Undefined as missing."""
+    return value is None or isinstance(value, Undefined)
+
 def format_currency(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         return f"${value:,.2f}"
@@ -50,7 +54,7 @@ def format_currency(value):
         return 'N/A'
 
 def format_date(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         if isinstance(value, str):
@@ -65,7 +69,7 @@ def format_date(value):
         return 'N/A'
 
 def format_area(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         return f"{value} sqm"
@@ -73,7 +77,7 @@ def format_area(value):
         return 'N/A'
 
 def format_area_sqm(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         return f"{value} sqm"
@@ -81,7 +85,7 @@ def format_area_sqm(value):
         return 'N/A'
 
 def format_area_smart(value):
-    if value is None:
+    if _is_missing(value):
         return 'N/A'
     try:
         if value >= 10000:
@@ -604,7 +608,10 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "latitude": report.get("locationDetails", {}).get("latitude") or report.get("address", {}).get("latitude", "-33.8688"),
                     "longitude": report.get("locationDetails", {}).get("longitude") or report.get("address", {}).get("longitude", "151.2093"),
                     "suburb_description": report.get("locationDetails", {}).get("suburbDescription"),
-                    "suburb_description_2": ""
+                    "suburb_description_2": "",
+                    "surrounding_development": report.get("locationDetails", {}).get("surroundingDevelopment"),
+                    "services": report.get("locationDetails", {}).get("services"),
+                    "access": report.get("locationDetails", {}).get("access"),
                 },
                 "valuation_date": report.get("valuationDetails", {}).get("valuationDate"),
                 "date_issued": report.get("valuationDetails", {}).get("dateIssued"),
@@ -619,9 +626,15 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "nla_value_rate": report.get("valuationDetails", {}).get("squareMeterRate"),
                     "assessed_net_rental": report.get("valuationDetails", {}).get("assessedNetRental"),
                     "capitalisation_rate": report.get("valuationDetails", {}).get("capitalisationRate"),
+                    "market_rent": report.get("valuationDetails", {}).get("marketRent"),
                     "market_value": report.get("valuationDetails", {}).get("marketValue"),
                     "external_desktop_valuation": report.get("valuationDetails", {}).get("externalDesktopValuation"),
                     "letting_up_expenses": report.get("valuationDetails", {}).get("lettingUpExpenses"),
+                    "instructing_party": report.get("valuationDetails", {}).get("instructingParty"),
+                    "date_of_instruction": report.get("valuationDetails", {}).get("dateOfInstruction"),
+                    "primary_method": report.get("valuationDetails", {}).get("primaryMethod"),
+                    "secondary_method": report.get("valuationDetails", {}).get("secondaryMethod"),
+                    "commercial_subtype": report.get("valuationDetails", {}).get("commercialSubType"),
                 },
                 "purpose_of_report": report.get("valuationDetails", {}).get("purposeOfReport"),
                 "valuation_type": report.get("valuationDetails", {}).get("valuationType"),
@@ -638,6 +651,9 @@ def generate_html_report(report_id, template_name='residential.html'):
                 },
                 "property_descriptors": {
                     "parking_type": "On-site",
+                    "car_spaces": report.get("propertyDescriptors", {}).get("carSpaces"),
+                    "onsite_parking": report.get("propertyDescriptors", {}).get("onsiteParking"),
+                    "visitors_parking": report.get("propertyDescriptors", {}).get("visitorsParking"),
                     "general_description": report.get("generalComments", {}).get("propertyDescription"),
                     "external_walls": report.get("propertyDescriptors", {}).get("externalWalls"),
                     "internal_walls": report.get("propertyDescriptors", {}).get("internalWalls"),
@@ -658,6 +674,9 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "show": True,
                     "site_value": report.get("propertyDetails", {}).get("statutoryValue"),
                     "relevant_date": report.get("propertyDetails", {}).get("statutoryDate"),
+                    "capital_improved_value": report.get("propertyDetails", {}).get("capitalImprovedValue"),
+                    "net_annual_value": report.get("propertyDetails", {}).get("netAnnualValue"),
+                    "rating_authority": report.get("propertyDetails", {}).get("councilArea"),
                 },
                 "site_details": {
                     "description": report.get("locationDetails", {}).get("siteDescription"),
@@ -1023,3 +1042,128 @@ def generate_report_pdf(report_id):
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Failed to generate PDF report: {str(e)}'}), 500
+
+
+def _build_invoice_context(report):
+    """Build the Jinja context for invoice.html from a report document."""
+    from datetime import datetime, timedelta
+
+    primary = report.get('primaryContact', {}) or {}
+    first = (primary.get('firstName') or '').strip()
+    last = (primary.get('lastName') or '').strip()
+    client_name = (f"{first} {last}").strip() or 'N/A'
+
+    address = report.get('address', {}) or {}
+    full_address = address.get('fullAddress') or ' '.join(
+        filter(None, [
+            address.get('unitNumber'),
+            address.get('streetName'),
+            address.get('suburb'),
+            address.get('state'),
+            address.get('postcode'),
+        ])
+    ).strip() or 'N/A'
+
+    valuation_details = report.get('valuationDetails', {}) or {}
+    valuation_type = (valuation_details.get('valuationType') or '').strip()
+    purpose = (valuation_details.get('purposeOfReport') or '').strip()
+
+    if valuation_type and purpose:
+        item_description = f"{valuation_type} Property Valuation for {purpose} purpose"
+    elif valuation_type:
+        item_description = f"{valuation_type} Property Valuation"
+    else:
+        item_description = "Property Valuation"
+
+    invoice_details = report.get('invoiceDetails', {}) or {}
+    try:
+        report_fee = float(invoice_details.get('reportFee') or 0)
+    except (TypeError, ValueError):
+        report_fee = 0.0
+
+    file_number = (report.get('fileNumber') or '').strip()
+    report_id = str(report.get('_id') or report.get('id') or '')
+    if file_number:
+        invoice_number = f"INV-{file_number}"
+    elif report_id:
+        invoice_number = f"INV-{report_id[-8:].upper()}"
+    else:
+        invoice_number = "INV-DRAFT"
+
+    today = datetime.now()
+    due = today + timedelta(days=1)
+
+    return {
+        'invoice_number': invoice_number,
+        'client_name': client_name,
+        'invoice_date': today.strftime('%d/%m/%Y'),
+        'due_date': due.strftime('%d/%m/%Y'),
+        'item_description': item_description,
+        'item_address': full_address,
+        'qty': 1.0,
+        'rate': report_fee,
+        'amount': report_fee,
+        'subtotal': report_fee,
+        'total': report_fee,
+        'balance_due': report_fee,
+    }
+
+
+def _render_invoice_html(report_id):
+    """Render invoice HTML for a report. Returns (html, context, error_or_None, status_code)."""
+    report = valuation_report_model.get_by_id(report_id)
+    if not report:
+        return None, None, 'Valuation report not found', 404
+
+    template_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'invoice.html')
+    with open(template_path, 'r', encoding='utf-8') as f:
+        template_content = f.read()
+
+    context = _build_invoice_context(report)
+
+    template = jinja_env.from_string(template_content)
+    html_content = template.render(**context)
+    return html_content, context, None, 200
+
+
+@valuation_reports_bp.route('/<report_id>/invoice/preview', methods=['POST'])
+def generate_invoice_preview(report_id):
+    """Return rendered invoice HTML for in-browser preview."""
+    try:
+        html_content, _context, error, status = _render_invoice_html(report_id)
+        if error:
+            return jsonify({'error': error}), status
+        return html_content, 200, {'Content-Type': 'text/html'}
+    except Exception as e:
+        print(f"Error generating invoice preview: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to generate invoice preview: {str(e)}'}), 500
+
+
+@valuation_reports_bp.route('/<report_id>/invoice', methods=['POST'])
+def generate_invoice_pdf(report_id):
+    """Generate an invoice PDF for a valuation report using invoice.html."""
+    try:
+        html_content, context, error, status = _render_invoice_html(report_id)
+        if error:
+            return jsonify({'error': error}), status
+
+        pdf_content = generate_pdf_from_html(html_content)
+
+        from flask import Response
+        filename = f"{context['invoice_number']}.pdf"
+        return Response(
+            pdf_content,
+            mimetype='application/pdf',
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"',
+                'Content-Type': 'application/pdf',
+            },
+        )
+
+    except Exception as e:
+        print(f"Error generating invoice PDF: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to generate invoice PDF: {str(e)}'}), 500

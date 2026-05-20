@@ -337,6 +337,18 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
       </FormField>
 
       <FormField
+        label="Surrounding Development"
+        error={(errors as any).locationDetails?.surroundingDevelopment?.message}
+      >
+        <Textarea
+          {...register('locationDetails.surroundingDevelopment')}
+          placeholder="e.g., Mixed use nature, comprising multi level office buildings..."
+          rows={3}
+          error={(errors as any).locationDetails?.surroundingDevelopment?.message}
+        />
+      </FormField>
+
+      <FormField
         label="Site Description"
         error={errors.locationDetails?.siteDescription?.message as string}
       >

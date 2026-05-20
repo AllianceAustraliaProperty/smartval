@@ -348,7 +348,7 @@ def _is_our_s3_url(url):
         return False
     
     # Check if it's an S3 URL and contains our bucket name
-    bucket_name = Config.S3_BUCKET_NAME
+    bucket_name = s3_service.bucket_name
     return (url.startswith('https://') and 
             's3' in url and 
             bucket_name in url and

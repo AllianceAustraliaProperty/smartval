@@ -439,6 +439,30 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         </FormField>
 
         <FormField
+          label="Capital Improved Value ($)"
+          error={(errors as any).propertyDetails?.capitalImprovedValue?.message}
+        >
+          <Input
+            type="number"
+            {...register('propertyDetails.capitalImprovedValue', { valueAsNumber: true })}
+            placeholder="e.g., 280000"
+            error={(errors as any).propertyDetails?.capitalImprovedValue?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Net Annual Value ($)"
+          error={(errors as any).propertyDetails?.netAnnualValue?.message}
+        >
+          <Input
+            type="number"
+            {...register('propertyDetails.netAnnualValue', { valueAsNumber: true })}
+            placeholder="e.g., 20500"
+            error={(errors as any).propertyDetails?.netAnnualValue?.message}
+          />
+        </FormField>
+
+        <FormField
           label="Year Built"
           error={errors.propertyDetails?.buildYear?.message}
           className="md:col-span-2"

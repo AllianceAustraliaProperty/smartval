@@ -142,6 +142,29 @@ export const valuationDetailsSchema = z.object({
     .max(200, 'Interest valued too long')
     .transform(sanitizeString)
     .optional(),
+  instructingParty: z
+    .string()
+    .max(300, 'Instructing party too long')
+    .transform(sanitizeString)
+    .optional(),
+  dateOfInstruction: z
+    .string()
+    .optional(),
+  primaryMethod: z
+    .string()
+    .max(100, 'Primary method too long')
+    .transform(sanitizeString)
+    .optional(),
+  secondaryMethod: z
+    .string()
+    .max(100, 'Secondary method too long')
+    .transform(sanitizeString)
+    .optional(),
+  commercialSubType: z
+    .string()
+    .max(100, 'Commercial subtype too long')
+    .transform(sanitizeString)
+    .optional(),
   purposeOfReport: z
     .string()
     .max(1000, 'Purpose of report too long')
