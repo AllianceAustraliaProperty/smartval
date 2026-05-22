@@ -120,6 +120,40 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
           </select>
         </FormField>
 
+        {valuationType === 'Land Valuation' && (
+          <FormField
+            label="Valuation SubType"
+            error={(errors as any).valuationDetails?.landValuationType?.message}
+          >
+            <select
+              {...register('valuationDetails.landValuationType')}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            >
+              <option value="">Select subtype</option>
+              <option value="Stamp Duty">Stamp Duty</option>
+              <option value="Capital Gains Tax">Capital Gains Tax</option>
+              <option value="Transfer Duty">Transfer Duty</option>
+              <option value="Market Assessment">Market Assessment</option>
+              <option value="Probate">Probate</option>
+              <option value="Pre Purchase/Pre Sale">Pre Purchase/Pre Sale</option>
+              <option value="Family Law Matter">Family Law Matter</option>
+            </select>
+          </FormField>
+        )}
+
+        {valuationType === 'Commercial' && (
+          <FormField
+            label="Valuation SubType"
+            error={(errors as any).valuationDetails?.commercialSubType?.message}
+          >
+            <Input
+              {...register('valuationDetails.commercialSubType')}
+              placeholder="e.g., Probate / Pre Purchase/Pre Sale / Family Law Matter"
+              error={(errors as any).valuationDetails?.commercialSubType?.message}
+            />
+          </FormField>
+        )}
+
         <FormField
           label="Valuation Date"
           error={errors.valuationDetails?.valuationDate?.message}
@@ -225,6 +259,18 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
             error={errors.valuationDetails?.dateIssued?.message}
           />
         </FormField>
+
+        <FormField
+          label="Date of Instruction"
+          error={(errors as any).valuationDetails?.dateOfInstruction?.message}
+        >
+          <Input
+            type="date"
+            max="2100-12-31"
+            {...register('valuationDetails.dateOfInstruction')}
+            error={(errors as any).valuationDetails?.dateOfInstruction?.message}
+          />
+        </FormField>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -309,6 +355,59 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
             placeholder="e.g., Fee Simple"
             error={errors.valuationDetails?.interestValued?.message}
           />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Instructing Party"
+          error={(errors as any).valuationDetails?.instructingParty?.message}
+        >
+          <Input
+            {...register('valuationDetails.instructingParty')}
+            placeholder="e.g., Septimus Jones & Lee and Kilger Partners"
+            error={(errors as any).valuationDetails?.instructingParty?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          label="Primary Method"
+          error={(errors as any).valuationDetails?.primaryMethod?.message}
+        >
+          <select
+            {...register('valuationDetails.primaryMethod')}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+          >
+            <option value="">Select primary method</option>
+            <option value="Direct Sales Comparison">Direct Sales Comparison</option>
+            <option value="Income Capitalisation">Income Capitalisation</option>
+            <option value="Discounted Cash Flow">Discounted Cash Flow</option>
+            <option value="Summation Approach">Summation Approach</option>
+            <option value="Residual Method">Residual Method</option>
+            <option value="Profits Method">Profits Method</option>
+            <option value="Cost Approach">Cost Approach</option>
+          </select>
+        </FormField>
+
+        <FormField
+          label="Secondary Method"
+          error={(errors as any).valuationDetails?.secondaryMethod?.message}
+        >
+          <select
+            {...register('valuationDetails.secondaryMethod')}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+          >
+            <option value="">Select secondary method</option>
+            <option value="Direct Sales Comparison">Direct Sales Comparison</option>
+            <option value="Income Capitalisation">Income Capitalisation</option>
+            <option value="Discounted Cash Flow">Discounted Cash Flow</option>
+            <option value="Summation Approach">Summation Approach</option>
+            <option value="Residual Method">Residual Method</option>
+            <option value="Profits Method">Profits Method</option>
+            <option value="Cost Approach">Cost Approach</option>
+          </select>
         </FormField>
       </div>
 
@@ -471,6 +570,18 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
             {...register('valuationDetails.capitalisationRate', { valueAsNumber: true })}
             placeholder="e.g., 5.5"
             error={(errors as any).valuationDetails?.capitalisationRate?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Market Rent ($ p.a.)"
+          error={(errors as any).valuationDetails?.marketRent?.message}
+        >
+          <Input
+            type="number"
+            {...register('valuationDetails.marketRent', { valueAsNumber: true })}
+            placeholder="e.g., 23500"
+            error={(errors as any).valuationDetails?.marketRent?.message}
           />
         </FormField>
 
@@ -772,28 +883,6 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
       </div>
       </>
       )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        {valuationType === 'Land Valuation' && (
-          <FormField
-            label="Land Valuation Type"
-            error={(errors as any).valuationDetails?.landValuationType?.message}
-          >
-            <select
-              {...register('valuationDetails.landValuationType')}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-            >
-              <option value="">Select valuation type</option>
-              <option value="Capital Gains">Capital Gains</option>
-              <option value="Market Assessment">Market Assessment</option>
-              <option value="Stamp Duty">Stamp Duty</option>
-              <option value="Transfer Duty">Transfer Duty</option>
-              <option value="Retrospective Capital Gains">Retrospective Capital Gains</option>
-            </select>
-          </FormField>
-        )}
-      </div>
 
       <FormField
         label="Valuation Notes"

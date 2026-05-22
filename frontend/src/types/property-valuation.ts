@@ -121,10 +121,13 @@ export interface PropertyDetailsData {
   depth?: number;
   statutoryValue?: number;
   statutoryDate?: string;
+  capitalImprovedValue?: number;
+  netAnnualValue?: number;
 }
 
 export interface LocationDetailsData {
   suburbDescription?: string;
+  surroundingDevelopment?: string;
   siteDescription?: string;
   access?: string;
   identification?: string;
@@ -181,6 +184,8 @@ export interface PropertyDescriptorsData {
   bedrooms?: number;
   bathrooms?: number;
   carSpaces?: number;
+  onsiteParking?: number;
+  visitorsParking?: number;
   mainBuildingType?: string;
   externalWalls?: string;
   internalWalls?: string;
@@ -260,6 +265,11 @@ export interface ValuationDetailsData {
   marketValue?: number;
   valuationAmount?: number;
   interestValued?: string;
+  instructingParty?: string;
+  dateOfInstruction?: DateISOString;
+  primaryMethod?: string;
+  secondaryMethod?: string;
+  commercialSubType?: string;
   showCurrencyOfValuation?: boolean;
   showLandValue?: boolean;
   landValue?: number;
@@ -282,6 +292,7 @@ export interface ValuationDetailsData {
   nla?: number;
   assessedNetRental?: number;
   capitalisationRate?: number;
+  marketRent?: number;
   lettingUpExpenses?: number;
   planningScheme?: string;
   planningApproval?: string;

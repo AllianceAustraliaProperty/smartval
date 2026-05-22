@@ -1715,14 +1715,14 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
 
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    if (photos.length >= 2) {
-      setUploadError('Maximum 2 title search images allowed. Delete one first.');
+    if (photos.length >= 3) {
+      setUploadError('Maximum 3 title search images allowed. Delete one first.');
       return;
     }
     setUploading(true);
     setUploadError(null);
     try {
-      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 2, maxFiles: 2 }, '/title-search');
+      const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 3, maxFiles: 3 }, '/title-search');
       if (failed.length > 0) {
         setUploadError(`Failed to upload: ${failed.map(f => f.error).join(', ')}`);
       }
@@ -1759,7 +1759,7 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
           <p className="text-red-600 text-sm">{uploadError}</p>
         </div>
       )}
-      {photos.length < 2 && (
+      {photos.length < 3 && (
         <div className="flex items-center justify-center w-full">
           <label htmlFor="file-upload-title-search" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -1767,7 +1767,7 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
               <p className="mb-2 text-sm text-gray-500">
                 <span className="font-semibold">Click to upload</span> or drag and drop
               </p>
-              <p className="text-xs text-gray-500">PNG, JPG, PDF up to 16MB • Up to 2 files</p>
+              <p className="text-xs text-gray-500">PNG, JPG, PDF up to 16MB • Up to 3 files</p>
             </div>
             <input id="file-upload-title-search" ref={fileInputRef} type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e.target.files)} disabled={uploading} />
           </label>

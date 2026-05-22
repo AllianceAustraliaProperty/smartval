@@ -58,6 +58,11 @@ const RiskAnalysisSchema = z.object({
 const ValuationSummarySchema = z.object({
   marketValue: z.number().min(0, 'Market value must be positive'),
   interestValued: z.string().optional(),
+  instructingParty: z.string().optional(),
+  dateOfInstruction: z.string().optional(),
+  primaryMethod: z.string().optional(),
+  secondaryMethod: z.string().optional(),
+  commercialSubType: z.string().optional(),
   valueComponent: z.object({
     land: z.number().optional(),
     improvements: z.number().optional()

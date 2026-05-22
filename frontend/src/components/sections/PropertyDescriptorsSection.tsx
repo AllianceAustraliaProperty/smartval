@@ -80,6 +80,34 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
+          label="Onsite Parking"
+          error={(errors as any).propertyDescriptors?.onsiteParking?.message}
+        >
+          <Input
+            type="number"
+            min={0}
+            {...register('propertyDescriptors.onsiteParking', { valueAsNumber: true })}
+            placeholder="e.g., 4"
+            error={(errors as any).propertyDescriptors?.onsiteParking?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Visitor's Parking"
+          error={(errors as any).propertyDescriptors?.visitorsParking?.message}
+        >
+          <Input
+            type="number"
+            min={0}
+            {...register('propertyDescriptors.visitorsParking', { valueAsNumber: true })}
+            placeholder="e.g., 2"
+            error={(errors as any).propertyDescriptors?.visitorsParking?.message}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
           label="Main Building Type"
           error={errors.propertyDescriptors?.mainBuildingType?.message}
         >
