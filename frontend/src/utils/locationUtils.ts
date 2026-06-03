@@ -37,11 +37,11 @@ export const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2
   const R = 6371; // Radius of the Earth in kilometers
   const dLat = toRadians(lat2 - lat1);
   const dLng = toRadians(lng2 - lng1);
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * 
-    Math.sin(dLng/2) * Math.sin(dLng/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c; // Distance in kilometers
   return distance;
 };
@@ -61,65 +61,65 @@ export const getOptimalUnit = (distanceKm: number): { distance: number; unit: st
 // Enhanced transport type detection with better Australian context
 export const detectTransportType = (place: any): string => {
   if (!place) return 'train_station';
-  
+
   const name = place.name?.toLowerCase() || '';
   const types = place.types || [];
-  
+
   console.log(`🔍 Detecting transport type for: ${place.name}`);
   console.log(`🔍 Types: ${types.join(', ')}`);
   console.log(`🔍 Name: ${name}`);
-  
+
   // Bus detection - most specific first
-  if (types.includes('bus_station') || 
-      name.includes('bus stop') || 
-      name.includes('bus station') ||
-      name.includes('bus interchange')) {
+  if (types.includes('bus_station') ||
+    name.includes('bus stop') ||
+    name.includes('bus station') ||
+    name.includes('bus interchange')) {
     console.log(`🚌 Detected as: bus_stop`);
     return 'bus_stop';
   }
-  
+
   // Metro/Subway detection
-  if (types.includes('subway_station') || 
-      name.includes('metro') || 
-      name.includes('subway')) {
+  if (types.includes('subway_station') ||
+    name.includes('metro') ||
+    name.includes('subway')) {
     console.log(`🚇 Detected as: metro_station`);
     return 'metro_station';
   }
-  
+
   // Light rail detection
-  if (types.includes('light_rail_station') || 
-      name.includes('light rail') ||
-      name.includes('tram')) {
+  if (types.includes('light_rail_station') ||
+    name.includes('light rail') ||
+    name.includes('tram')) {
     console.log(`🚋 Detected as: tram_stop`);
     return 'tram_stop';
   }
-  
+
   // Ferry detection
-  if (name.includes('ferry') || 
-      name.includes('wharf') ||
-      name.includes('pier')) {
+  if (name.includes('ferry') ||
+    name.includes('wharf') ||
+    name.includes('pier')) {
     console.log(`⛴️ Detected as: ferry_terminal`);
     return 'ferry_terminal';
   }
-  
+
   // Airport detection
-  if (types.includes('airport') || 
-      name.includes('airport') ||
-      name.includes('airfield')) {
+  if (types.includes('airport') ||
+    name.includes('airport') ||
+    name.includes('airfield')) {
     console.log(`✈️ Detected as: airport`);
     return 'airport';
   }
-  
+
   // Train station (default for railway/train)
-  if (types.includes('train_station') || 
-      types.includes('transit_station') ||
-      name.includes('train') || 
-      name.includes('railway') ||
-      name.includes('station')) {
+  if (types.includes('train_station') ||
+    types.includes('transit_station') ||
+    name.includes('train') ||
+    name.includes('railway') ||
+    name.includes('station')) {
     console.log(`🚆 Detected as: train_station`);
     return 'train_station';
   }
-  
+
   // Default fallback
   console.log(`❓ Defaulting to: train_station`);
   return 'train_station';
@@ -133,28 +133,28 @@ export const detectShopType = (place: any): string => {
       return SHOP_TYPE_MAPPING[type];
     }
   }
-  
+
   // Enhanced name-based detection for Australian retail
   const name = place.name?.toLowerCase() || '';
-  
+
   // Shopping centers (Australian terms)
-  if (name.includes('mall') || name.includes('center') || name.includes('centre') || 
-      name.includes('plaza') || name.includes('westfield')) return 'shopping_center';
-  
+  if (name.includes('mall') || name.includes('center') || name.includes('centre') ||
+    name.includes('plaza') || name.includes('westfield')) return 'shopping_center';
+
   // Supermarkets (Australian chains)
-  if (name.includes('supermarket') || name.includes('grocery') || 
-      name.includes('coles') || name.includes('woolworths') || 
-      name.includes('iga') || name.includes('aldi')) return 'supermarket';
-  
+  if (name.includes('supermarket') || name.includes('grocery') ||
+    name.includes('coles') || name.includes('woolworths') ||
+    name.includes('iga') || name.includes('aldi')) return 'supermarket';
+
   // Convenience stores
-  if (name.includes('convenience') || name.includes('7-eleven') || 
-      name.includes('night owl')) return 'convenience_store';
-  
+  if (name.includes('convenience') || name.includes('7-eleven') ||
+    name.includes('night owl')) return 'convenience_store';
+
   // Department stores
-  if (name.includes('department') || name.includes('myer') || 
-      name.includes('david jones') || name.includes('target') || 
-      name.includes('kmart') || name.includes('big w')) return 'department_store';
-  
+  if (name.includes('department') || name.includes('myer') ||
+    name.includes('david jones') || name.includes('target') ||
+    name.includes('kmart') || name.includes('big w')) return 'department_store';
+
   return 'shopping_center'; // Default fallback
 };
 
@@ -162,10 +162,10 @@ export const detectShopType = (place: any): string => {
 export const getCBDDistance = (lat: number, lng: number, state: string): { distance: number; unit: string; name: string } => {
   const stateUpper = state?.toUpperCase();
   const cbdData = CBD_COORDINATES[stateUpper] || CBD_COORDINATES.NSW; // Default to Sydney
-  
+
   const distance = calculateDistance(lat, lng, cbdData.lat, cbdData.lng);
   const unitData = getOptimalUnit(distance);
-  
+
   return {
     distance: unitData.distance,
     unit: unitData.unit,
@@ -177,18 +177,18 @@ export const getCBDDistance = (lat: number, lng: number, state: string): { dista
 export const getCBDTravelTime = async (lat: number, lng: number, state: string): Promise<{ distance: number; unit: string; name: string; travelTime: string }> => {
   const stateUpper = state?.toUpperCase();
   const cbdData = CBD_COORDINATES[stateUpper] || CBD_COORDINATES.NSW; // Default to Sydney
-  
+
   const distance = calculateDistance(lat, lng, cbdData.lat, cbdData.lng);
   const unitData = getOptimalUnit(distance);
-  
+
   try {
     // Calculate travel time using Distance Matrix API
     const origins = `${lat},${lng}`;
     const destinations = `${cbdData.lat},${cbdData.lng}`;
     const url = getApiUrl(`/google-maps/distance-matrix?origins=${encodeURIComponent(origins)}&destinations=${encodeURIComponent(destinations)}&mode=driving`);
-    
+
     const data = await makeApiRequest(url);
-    
+
     let travelTime = 'N/A';
     if (data.status === 'OK' && data.rows?.[0]?.elements?.[0]?.status === 'OK') {
       travelTime = data.rows[0].elements[0].duration.text;
@@ -198,7 +198,7 @@ export const getCBDTravelTime = async (lat: number, lng: number, state: string):
       const estimatedMinutes = Math.round(unitData.distance * (unitData.unit === 'km' ? 1.5 : 0.0015));
       travelTime = `~${estimatedMinutes} mins (estimated)`;
     }
-    
+
     return {
       distance: unitData.distance,
       unit: unitData.unit,
@@ -224,30 +224,30 @@ export const makeApiRequest = async (url: string, retries = 3): Promise<any> => 
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-      
+
       console.log(`🌐 Making API request (attempt ${i + 1}/${retries}):`, url);
-      
+
       // Check if we're in a browser environment
       if (typeof window === 'undefined') {
         throw new Error('API requests must be made from the browser');
       }
-      
+
       // Check network connectivity
       if (!navigator.onLine) {
         throw new Error('No internet connection detected');
       }
-      
+
       const response = await fetch(url, {
         signal: controller.signal,
         method: 'GET',
         // Avoid custom headers on simple GETs to prevent CORS preflight failures
         credentials: 'same-origin'
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       console.log(`🌐 Response received: status ${response.status} ${response.statusText}`);
-      
+
       if (!response.ok) {
         let errorDetails = '';
         try {
@@ -257,10 +257,10 @@ export const makeApiRequest = async (url: string, retries = 3): Promise<any> => 
         } catch (parseErr) {
           console.warn('🌐 Could not read error response body');
         }
-        
+
         throw new Error(`HTTP ${response.status}: ${response.statusText}${errorDetails}`);
       }
-      
+
       let data;
       try {
         data = await response.json();
@@ -268,32 +268,32 @@ export const makeApiRequest = async (url: string, retries = 3): Promise<any> => 
         console.error('🌐 Failed to parse JSON response:', parseErr);
         throw new Error('Invalid JSON response from server');
       }
-      
+
       console.log(`🌐 API response status:`, data.status || 'no status field');
-      
+
       if (data.error) {
         console.error('🌐 API returned error:', data.error);
         throw new Error(data.error);
       }
-      
+
       // Handle Google API specific error statuses
       if (data.status === 'OVER_QUERY_LIMIT') {
         throw new Error('Google API quota exceeded. Please try again later.');
       }
-      
+
       if (data.status === 'REQUEST_DENIED') {
         console.error('🌐 Google API request denied - check API key configuration');
         throw new Error('Google API request denied. Please check your API key.');
       }
-      
+
       if (data.status === 'ZERO_RESULTS') {
         console.warn('🌐 No results found for request:', url);
         return { results: [], status: 'ZERO_RESULTS' };
       }
-      
+
       console.log('🌐 API request successful');
       return data;
-      
+
     } catch (err: any) {
       console.error(`🌐 API request attempt ${i + 1} failed:`, {
         error: err.message,
@@ -301,7 +301,7 @@ export const makeApiRequest = async (url: string, retries = 3): Promise<any> => 
         stack: err.stack?.substring(0, 200),
         url: url
       });
-      
+
       // Specific error handling
       if (err.name === 'AbortError') {
         console.error('🌐 Request timed out after 30 seconds');
@@ -317,7 +317,7 @@ export const makeApiRequest = async (url: string, retries = 3): Promise<any> => 
         // For other errors, fail immediately on last retry
         if (i === retries - 1) throw err;
       }
-      
+
       // Progressive backoff: wait longer between retries
       const waitTime = Math.min(Math.pow(2, i) * 1000, 10000); // Max 10 seconds
       console.log(`🌐 Waiting ${waitTime}ms before retry...`);
@@ -330,32 +330,32 @@ export const makeApiRequest = async (url: string, retries = 3): Promise<any> => 
 export const searchNearbyPlaces = async (lat: number, lng: number, type: string, keyword?: string): Promise<any[]> => {
   try {
     console.log(`Searching for ${type} near ${lat}, ${lng}${keyword ? ` with keyword: ${keyword}` : ''}`);
-    
+
     let url = getApiUrl(`/google-maps/places?lat=${lat}&lng=${lng}&type=${type}`);
     if (keyword) {
       url += `&keyword=${encodeURIComponent(keyword)}`;
     }
-    
+
     const data = await makeApiRequest(url);
-    
+
     let results = data.results || [];
     console.log(`Found ${results.length} results for ${type}`);
-    
+
     // Filter out any invalid results
-    results = results.filter((place: any) => 
-      place.geometry && 
-      place.geometry.location && 
+    results = results.filter((place: any) =>
+      place.geometry &&
+      place.geometry.location &&
       place.name &&
       place.place_id
     );
-    
+
     // If we have very few results, try a broader search
     if (results.length < 2 && !keyword) {
       console.log(`Few results found for ${type}, trying broader search...`);
-      
+
       // Try alternative type searches for better coverage
       let alternativeTypes: string[] = [];
-      
+
       if (type === 'train_station') {
         alternativeTypes = ['transit_station', 'subway_station'];
       } else if (type === 'school') {
@@ -365,27 +365,27 @@ export const searchNearbyPlaces = async (lat: number, lng: number, type: string,
       } else if (type === 'shopping_mall') {
         alternativeTypes = ['shopping_mall', 'store'];
       }
-      
+
       for (const altType of alternativeTypes) {
         try {
           const altUrl = getApiUrl(`/google-maps/places?lat=${lat}&lng=${lng}&type=${altType}`);
           const altData = await makeApiRequest(altUrl);
-          const altResults = (altData.results || []).filter((place: any) => 
+          const altResults = (altData.results || []).filter((place: any) =>
             place.geometry && place.geometry.location && place.name && place.place_id
           );
-          
+
           // Merge results, avoiding duplicates
           const existingIds = new Set(results.map((r: any) => r.place_id));
           const newResults = altResults.filter((r: any) => !existingIds.has(r.place_id));
           results = [...results, ...newResults];
-          
+
           console.log(`Alternative search for ${altType} found ${altResults.length} additional results`);
         } catch (err) {
           console.warn(`Alternative search for ${altType} failed:`, err);
         }
       }
     }
-    
+
     // Sort by actual distance and return top 5
     const sortedResults = results
       .map((place: any) => ({
@@ -394,10 +394,10 @@ export const searchNearbyPlaces = async (lat: number, lng: number, type: string,
       }))
       .sort((a: any, b: any) => a.calculatedDistance - b.calculatedDistance)
       .slice(0, 5);
-    
+
     console.log(`Returning ${sortedResults.length} sorted results for ${type}`);
     return sortedResults;
-    
+
   } catch (err) {
     console.error(`Failed to search ${type}:`, err);
     return [];
@@ -410,7 +410,7 @@ export const geocodeAddress = async (address: string): Promise<any> => {
     console.log('Geocoding address:', address);
     const url = getApiUrl(`/google-maps/geocode?address=${encodeURIComponent(address)}`);
     const data = await makeApiRequest(url);
-    
+
     if (data.status !== 'OK') {
       console.warn('Geocoding failed with status:', data.status);
       if (data.status === 'ZERO_RESULTS') {
@@ -418,7 +418,7 @@ export const geocodeAddress = async (address: string): Promise<any> => {
       }
       throw new Error(`Geocoding failed: ${data.status}`);
     }
-    
+
     console.log('Geocoding successful');
     return data;
   } catch (err) {
@@ -435,9 +435,9 @@ export const isValidCoordinate = (lat: number, lng: number): boolean => {
 // Helper function to format place name for display
 export const formatPlaceName = (place: any): string => {
   if (!place || !place.name) return 'Unknown';
-  
+
   let name = place.name.trim();
-  
+
   // Handle specific patterns for transport stations
   const transportPatterns = [
     / Station$/i,
@@ -449,25 +449,25 @@ export const formatPlaceName = (place: any): string => {
     / Interchange$/i,
     / Terminal$/i
   ];
-  
+
   // For transport-related places, keep important identifiers but clean up redundancy
-  const isTransport = place.types?.some((type: string) => 
-    type.includes('station') || 
-    type.includes('transit') || 
+  const isTransport = place.types?.some((type: string) =>
+    type.includes('station') ||
+    type.includes('transit') ||
     type.includes('bus') ||
     type.includes('train')
   );
-  
+
   if (isTransport) {
     // Remove common redundant suffixes but keep the type if it's important
     for (const pattern of transportPatterns) {
       if (pattern.test(name)) {
         // Only remove "Station" if the name already clearly indicates it's a station
-        if (pattern.source.includes('Station') && 
-            (name.toLowerCase().includes('railway') || 
-             name.toLowerCase().includes('train') ||
-             name.toLowerCase().includes('metro') ||
-             name.toLowerCase().includes('bus'))) {
+        if (pattern.source.includes('Station') &&
+          (name.toLowerCase().includes('railway') ||
+            name.toLowerCase().includes('train') ||
+            name.toLowerCase().includes('metro') ||
+            name.toLowerCase().includes('bus'))) {
           name = name.replace(pattern, '').trim();
         }
         break;
@@ -485,7 +485,7 @@ export const formatPlaceName = (place: any): string => {
       / Supermarket$/i,
       / Store$/i
     ];
-    
+
     for (const suffix of suffixesToRemove) {
       if (suffix.test(name)) {
         name = name.replace(suffix, '').trim();
@@ -493,17 +493,17 @@ export const formatPlaceName = (place: any): string => {
       }
     }
   }
-  
+
   // Clean up any remaining double spaces
   name = name.replace(/\s+/g, ' ').trim();
-  
+
   // Ensure we don't return an empty string
   if (!name || name.length === 0) {
     return place.name; // Return original name if cleaning resulted in empty string
   }
-  
+
   return name;
-}; 
+};
 
 // High-level helper to build a single string address for geocoding
 export const buildFullAddress = (address: {
@@ -559,6 +559,12 @@ export const autofillLocationDetailsFromGoogle = async (
   const lat = best.geometry.location.lat;
   const lng = best.geometry.location.lng;
 
+  // Extract the property's own street name to exclude from connecting street results
+  const propertyStreetComp = best.address_components?.find(
+    (c: any) => (c.types || []).includes('route')
+  );
+  const propertyStreetName = propertyStreetComp?.long_name || '';
+
   // 2) Map image URL via server-side custom map endpoint (no API key leakage)
   const mapPhotoUrl = getApiUrl(`/google-maps/custom-map?address=${encodeURIComponent(fullAddress)}`);
 
@@ -594,22 +600,22 @@ export const autofillLocationDetailsFromGoogle = async (
   const transport = transportResults?.[0];
   const nearestTransportation: NearestItemResult | undefined = transport
     ? (() => {
-        const km = calculateDistance(lat, lng, transport.geometry.location.lat, transport.geometry.location.lng);
-        const { distance, unit } = getOptimalUnit(km);
-        // Get raw types from Google Places API
-        const rawTypes = transport.types || [];
-        // For transport: take first type and replace underscores with spaces
-        const transportType = rawTypes.length > 0 
-          ? rawTypes[0].replace(/_/g, ' ')
-          : detectTransportType(transport);
-        
-        return {
-          name: formatPlaceName(transport),
-          type: transportType,
-          distance,
-          unit
-        };
-      })()
+      const km = calculateDistance(lat, lng, transport.geometry.location.lat, transport.geometry.location.lng);
+      const { distance, unit } = getOptimalUnit(km);
+      // Get raw types from Google Places API
+      const rawTypes = transport.types || [];
+      // For transport: take first type and replace underscores with spaces
+      const transportType = rawTypes.length > 0
+        ? rawTypes[0].replace(/_/g, ' ')
+        : detectTransportType(transport);
+
+      return {
+        name: formatPlaceName(transport),
+        type: transportType,
+        distance,
+        unit
+      };
+    })()
     : undefined;
 
   // Pick nearest shop from both lists
@@ -623,53 +629,53 @@ export const autofillLocationDetailsFromGoogle = async (
 
   const nearestShop: NearestItemResult | undefined = nearestShopPlace
     ? (() => {
-        const km = calculateDistance(lat, lng, nearestShopPlace.geometry.location.lat, nearestShopPlace.geometry.location.lng);
-        const { distance, unit } = getOptimalUnit(km);
-        // Get raw types from Google Places API and use first item
-        const rawTypes = nearestShopPlace.types || [];
-        const shopType = rawTypes.length > 0
-          ? rawTypes[0]
-          : detectShopType(nearestShopPlace);
-        
-        return {
-          name: formatPlaceName(nearestShopPlace),
-          type: shopType,
-          distance,
-          unit
-        };
-      })()
+      const km = calculateDistance(lat, lng, nearestShopPlace.geometry.location.lat, nearestShopPlace.geometry.location.lng);
+      const { distance, unit } = getOptimalUnit(km);
+      // Get raw types from Google Places API and use first item
+      const rawTypes = nearestShopPlace.types || [];
+      const shopType = rawTypes.length > 0
+        ? rawTypes[0].replace(/_/g, ' ')
+        : detectShopType(nearestShopPlace);
+
+      return {
+        name: formatPlaceName(nearestShopPlace),
+        type: shopType,
+        distance,
+        unit
+      };
+    })()
     : undefined;
 
   // Primary school
   const primary = primarySchoolResults?.[0];
   const nearestPrimarySchool: NearestItemResult | undefined = primary
     ? (() => {
-        const km = calculateDistance(lat, lng, primary.geometry.location.lat, primary.geometry.location.lng);
-        const { distance, unit } = getOptimalUnit(km);
-        // Get raw types from Google Places API and join with comma
-        const rawTypes = primary.types || [];
-        const primaryType = rawTypes.length > 0
-          ? rawTypes.join(', ')
-          : 'primary_school';
-        
-        return { name: formatPlaceName(primary), type: primaryType, distance, unit };
-      })()
+      const km = calculateDistance(lat, lng, primary.geometry.location.lat, primary.geometry.location.lng);
+      const { distance, unit } = getOptimalUnit(km);
+      // Get raw types from Google Places API and join with comma
+      const rawTypes = primary.types || [];
+      const primaryType = rawTypes.length > 0
+        ? rawTypes.join(', ')
+        : 'primary_school';
+
+      return { name: formatPlaceName(primary), type: primaryType, distance, unit };
+    })()
     : undefined;
 
   // Secondary school
   const secondary = secondarySchoolResults?.[0];
   const nearestSecondarySchool: NearestItemResult | undefined = secondary
     ? (() => {
-        const km = calculateDistance(lat, lng, secondary.geometry.location.lat, secondary.geometry.location.lng);
-        const { distance, unit } = getOptimalUnit(km);
-        // Get raw types from Google Places API and join with comma
-        const rawTypes = secondary.types || [];
-        const secondaryType = rawTypes.length > 0
-          ? rawTypes.join(', ')
-          : 'secondary_school';
-        
-        return { name: formatPlaceName(secondary), type: secondaryType, distance, unit };
-      })()
+      const km = calculateDistance(lat, lng, secondary.geometry.location.lat, secondary.geometry.location.lng);
+      const { distance, unit } = getOptimalUnit(km);
+      // Get raw types from Google Places API and join with comma
+      const rawTypes = secondary.types || [];
+      const secondaryType = rawTypes.length > 0
+        ? rawTypes.join(', ')
+        : 'secondary_school';
+
+      return { name: formatPlaceName(secondary), type: secondaryType, distance, unit };
+    })()
     : undefined;
 
   // CBD distance
@@ -677,9 +683,54 @@ export const autofillLocationDetailsFromGoogle = async (
   const nearestCBD: NearestItemResult = { name: cbd.name, distance: cbd.distance, unit: cbd.unit, type: 'cbd' };
 
   // Connecting street via reverse geocode (result_type=route)
+  // Must exclude the property's own street and find the nearest DIFFERENT/adjacent street
   let nearestConnectingStreet: NearestItemResult | undefined;
   try {
-    const routeResult = (reverseGeocodeData.results || []).find((r: any) => (r.types || []).includes('route')) || reverseGeocodeData.results?.[0];
+    // Helper: find a route result whose street name differs from the property's street
+    const findDifferentStreet = (results: any[]): any | undefined => {
+      const routeResults = (results || []).filter(
+        (r: any) => (r.types || []).includes('route')
+      );
+      return routeResults.find((r: any) => {
+        const routeComp = r.address_components?.find(
+          (c: any) => (c.types || []).includes('route')
+        );
+        const streetName = routeComp?.long_name || '';
+        return streetName && streetName !== propertyStreetName;
+      });
+    };
+
+    let routeResult = findDifferentStreet(reverseGeocodeData.results);
+
+    // If no different street found in standard results, try offset points (~111m away)
+    if (!routeResult && propertyStreetName) {
+      console.log(`🔍 No different street found at property location. Trying offset points to find connecting street (excluding "${propertyStreetName}")...`);
+      const OFFSET = 0.001; // ~111m at Australian latitudes
+      const offsets = [
+        { lat: lat + OFFSET, lng },                       // North
+        { lat: lat - OFFSET, lng },                       // South
+        { lat, lng: lng + OFFSET },                       // East
+        { lat, lng: lng - OFFSET },                       // West
+        { lat: lat + OFFSET, lng: lng + OFFSET },         // NE
+        { lat: lat - OFFSET, lng: lng - OFFSET },         // SW
+      ];
+
+      for (const offset of offsets) {
+        try {
+          const offsetData = await makeApiRequest(
+            getApiUrl(`/google-maps/reverse-geocode?lat=${offset.lat}&lng=${offset.lng}`)
+          );
+          routeResult = findDifferentStreet(offsetData.results);
+          if (routeResult) {
+            console.log(`✅ Found connecting street at offset (${offset.lat}, ${offset.lng})`);
+            break;
+          }
+        } catch {
+          continue;
+        }
+      }
+    }
+
     if (routeResult) {
       const routeNameComp = routeResult.address_components?.find((c: any) => (c.types || []).includes('route'));
       const name = routeNameComp?.long_name || routeResult.formatted_address || 'Nearby Street';
@@ -688,9 +739,10 @@ export const autofillLocationDetailsFromGoogle = async (
       const km = calculateDistance(lat, lng, rlat, rlng);
       const { distance, unit } = getOptimalUnit(km);
       nearestConnectingStreet = { name, type: 'street', distance, unit };
+      console.log(`📍 Nearest connecting street: ${name} (${distance} ${unit})`);
     }
   } catch (e) {
-    // ignore
+    console.warn('Failed to find connecting street:', e);
   }
 
   return {

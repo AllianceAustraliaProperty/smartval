@@ -36,16 +36,33 @@ def summarize_photos(photos: list[dict]):
             "floorings": list(v["floorings"])
         })
 
-    # Sort categories with custom sorting for bedrooms
-    def get_bedroom_number(category):
-        import re
-        if category.lower().startswith('bedroom '):
-            match = re.search(r'bedroom (\d+)', category.lower())
-            if match:
-                return int(match.group(1))
-        return float('inf')  # Non-bedroom categories go to the end
+    CATEGORY_ORDER = [
+        'Bedroom', 'Bathroom', 'Ensuite', 'Ensuite 2',
+        'Living', 'Living And Dining',
+        'Dining', 'Formal Dining',
+        'Kitchen', 'Kitchen 1', 'Kitchen 2', 'Kitchen And Dining', 'Kitchen And Meals',
+        'Lounge',
+        'Family', 'Family And Meals',
+        'Alfresco', 'Porch', 'Balcony', 'Patio', 'Deck',
+        'Laundry',
+        'Study', 'Media Room', 'Theatre Room', 'Rumpus', 'Retreat',
+        'Entertainment Area', 'Sunroom', 'Storage', 'Workshop',
+        'Swimming Pool', 'Powder Room', 'Toilet', 'General', 'Backyard',
+    ]
 
-    categories.sort(key=lambda x: (get_bedroom_number(x['category']), x['category']))
+    def get_category_sort_key(category):
+        import re
+        lower = category.lower()
+        if lower.startswith('bedroom '):
+            match = re.search(r'bedroom (\d+)', lower)
+            if match:
+                return (0, int(match.group(1)), category)
+        idx = CATEGORY_ORDER.index(category) if category in CATEGORY_ORDER else -1
+        if idx != -1:
+            return (1, idx, category)
+        return (2, 0, category)
+
+    categories.sort(key=lambda x: get_category_sort_key(x['category']))
 
     internal_conditions = [p["internalCondition"] for p in photos if p["internalCondition"]]
     external_conditions = [p["externalCondition"] for p in photos if p["externalCondition"]]

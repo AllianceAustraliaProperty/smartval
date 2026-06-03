@@ -81,7 +81,8 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
       };
 
       const formattedAddress = toTitleCase(evidence.fullAddress || '');
-      const autoText = `Sales evidence at ${formattedAddress} comprises of ${evidence.bedrooms || 'N/A'} bedroom(s) and ${evidence.bathrooms || 'N/A'} bathroom(s). In comparison to subject: ${evidence.comparison || 'N/A'}. On balance, the considered indicative market value of the subject property is ${evidence.saleLeasePrice ? formatCurrency(evidence.saleLeasePrice) : 'N/A'}`;
+      const comparisonText = String(evidence.comparison || 'N/A').trim().replace(/\.+$/, '');
+      const autoText = `Sales evidence at ${formattedAddress} comprises of ${evidence.bedrooms || 'N/A'} bedroom(s) and ${evidence.bathrooms || 'N/A'} bathroom(s). In comparison to subject: ${comparisonText}. On balance, the considered indicative market value of the subject property is ${evidence.saleLeasePrice ? formatCurrency(evidence.saleLeasePrice) : 'N/A'}.`;
 
       setValue('valuationDetails.directComparison', autoText, { shouldDirty: true });
     } else {

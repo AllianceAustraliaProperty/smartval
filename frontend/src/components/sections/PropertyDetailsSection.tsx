@@ -61,21 +61,22 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
     // Granny Flat bedroom/bathroom count from additional photos if selected (no leading label)
     let gfText = '';
     if (hasGrannyFlat) {
-      const lowerCat = (p: any) => (p.category || '').toLowerCase();
-      const gfBedrooms = addPhotos.filter(p => lowerCat(p).startsWith('bedroom')).length || 0;
-      const gfBathrooms = addPhotos.filter(p => {
-        const c = (p.category || '').toLowerCase();
-        return c.startsWith('bathroom') || c.startsWith('ensuite');
-      }).length || 0;
-      const hasKitchen = addPhotos.some(p => lowerCat(p).startsWith('kitchen'));
-      const hasLiving = addPhotos.some(p => lowerCat(p).startsWith('living'));
-      // Build list with commas and final 'and'
+      const gfSummary = summarizePhotos(addPhotos);
+      const gfBedrooms = gfSummary.categories.filter(c => c.category.toLowerCase().startsWith('bedroom')).length;
+      const gfBathrooms = gfSummary.categories.filter(c => {
+        const lower = c.category.toLowerCase();
+        return lower.startsWith('bathroom') || lower.startsWith('ensuite');
+      }).length;
+      const otherCats = gfSummary.categories
+        .filter(c => {
+          const lower = c.category.toLowerCase();
+          return !lower.startsWith('bedroom') && !lower.startsWith('bathroom') && !lower.startsWith('ensuite');
+        })
+        .map(c => c.category.toLowerCase());
       const gfParts: string[] = [];
       if (gfBedrooms) gfParts.push(`${gfBedrooms} bedrooms`);
       if (gfBathrooms) gfParts.push(`${gfBathrooms} bathrooms`);
-      if (hasKitchen) gfParts.push('kitchen');
-      if (hasLiving) gfParts.push('living');
-      // Always include car space reference as requested
+      gfParts.push(...otherCats);
       gfParts.push('car space');
       if (gfParts.length) {
         const last = gfParts.pop();

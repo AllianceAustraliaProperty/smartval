@@ -1,9 +1,9 @@
 import React from 'react';
-import { FormField, Textarea, Checkbox, Input, Select } from '../ui/FormField';
+import { FormField, Textarea, Checkbox, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { DRIVEWAY_TYPES, FENCING_TYPES } from '@/constants/ancillary-types';
+import { DRIVEWAY_TYPES, FENCING_TYPES, OTHER_ITEM_TYPES } from '@/constants/ancillary-types';
 
-export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register, errors, watch }) => {
+export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue }) => {
   const otherItems = watch('ancillaryImprovements.otherItems') ?? [];
 
   return (
@@ -45,6 +45,18 @@ export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register,
             error={errors.ancillaryImprovements?.fencing?.message}
           />
         </FormField>
+
+        <FormField
+          label="Other Items"
+          error={errors.ancillaryImprovements?.otherItems?.message as string}
+        >
+          <Select
+            {...register('ancillaryImprovements.otherItems' as const)}
+            onChange={(e) => setValue('ancillaryImprovements.otherItems' as any, e.target.value ? [e.target.value] : [], { shouldDirty: true })}
+            options={OTHER_ITEM_TYPES.map(type => ({ value: type, label: type }))}
+            error={errors.ancillaryImprovements?.otherItems?.message as string}
+          />
+        </FormField>
       </div>
 
       <FormField
@@ -57,20 +69,6 @@ export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register,
           rows={3}
           error={(errors as any).ancillaryImprovements?.accommodation?.message}
         />
-      </FormField>
-
-      <FormField
-        label="Other Items (one per line)"
-        error={errors.ancillaryImprovements?.otherItems?.message as string}
-      >
-        <Textarea
-          {...register('ancillaryImprovements.otherItemsText' as const)}
-          placeholder={"Pergola (timber, good condition)\nIn-ground pool with paved surrounds\nGarden shed (metal, average condition)"}
-          rows={6}
-        />
-        <p className="text-xs text-gray-500 mt-2">
-          Each line will be saved as a separate ancillary improvement item.
-        </p>
       </FormField>
 
       {Array.isArray(otherItems) && otherItems.length > 0 && (

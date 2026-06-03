@@ -40,18 +40,32 @@ function getMostCommon(items: string[]): string | null {
   return mostCommon;
 }
 
+const CATEGORY_ORDER: string[] = [
+  'Bedroom', 'Bathroom', 'Ensuite', 'Ensuite 2',
+  'Living', 'Living And Dining',
+  'Dining', 'Formal Dining',
+  'Kitchen', 'Kitchen 1', 'Kitchen 2', 'Kitchen And Dining', 'Kitchen And Meals',
+  'Lounge',
+  'Family', 'Family And Meals',
+  'Alfresco', 'Porch', 'Balcony', 'Patio', 'Deck',
+  'Laundry',
+  'Study', 'Media Room', 'Theatre Room', 'Rumpus', 'Retreat',
+  'Entertainment Area', 'Sunroom', 'Storage', 'Workshop',
+  'Swimming Pool', 'Powder Room', 'Toilet', 'General', 'Backyard',
+];
+
 /**
- * Extract bedroom number from category string for sorting
+ * Get sort key for a category: numbered bedrooms first, then defined order, then alphabetical
  */
-function getBedroomNumber(category: string): number {
+function getCategorySortKey(category: string): [number, number, string] {
   const lower = category.toLowerCase();
   if (lower.startsWith('bedroom ')) {
     const match = lower.match(/bedroom (\d+)/);
-    if (match) {
-      return parseInt(match[1], 10);
-    }
+    if (match) return [0, parseInt(match[1], 10), category];
   }
-  return Infinity; // Non-bedroom categories go to the end
+  const idx = CATEGORY_ORDER.indexOf(category);
+  if (idx !== -1) return [1, idx, category];
+  return [2, 0, category];
 }
 
 /**
@@ -117,16 +131,12 @@ export function summarizePhotos(photos: PhotoData[]): PhotosSummary {
     });
   }
 
-  // Sort categories with custom sorting for bedrooms
   categories.sort((a, b) => {
-    const aNum = getBedroomNumber(a.category);
-    const bNum = getBedroomNumber(b.category);
-
-    if (aNum !== bNum) {
-      return aNum - bNum;
-    }
-
-    return a.category.localeCompare(b.category);
+    const [aGroup, aIdx, aName] = getCategorySortKey(a.category);
+    const [bGroup, bIdx, bName] = getCategorySortKey(b.category);
+    if (aGroup !== bGroup) return aGroup - bGroup;
+    if (aIdx !== bIdx) return aIdx - bIdx;
+    return aName.localeCompare(bName);
   });
 
   // Collect conditions and wall types

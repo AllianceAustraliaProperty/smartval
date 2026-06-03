@@ -1196,11 +1196,11 @@ const ComparableCard: React.FC<{
     'Features',
     'Improvements',
     'Land size',
+    'Land shape',
     'Location',
     'View profile',
     'Internal area',
-    'External area',
-    'Condition',
+    'Building condition',
     'Net Lettable Area',
   ];
   const OVERALL_DETAIL_OPTIONS = ['Similar', 'Inferior', 'Superior'];
@@ -1300,10 +1300,10 @@ const ComparableCard: React.FC<{
       isUpdatingFromDropdowns.current = true;
       setValue(`comparables.${type}.${index}.comparison`, comparisonText, { shouldDirty: true });
       lastComparisonValue.current = comparisonText;
-      
+
       // schedule autosave of updated comparables
       queueAutosaveComparables();
-      
+
       setTimeout(() => {
         isUpdatingFromDropdowns.current = false;
       }, 100);
@@ -2055,6 +2055,16 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
   const [showAddressResults, setShowAddressResults] = useState(false);
   const [isFetchingComparable, setIsFetchingComparable] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   // Reorder animation (FLIP)
@@ -2335,9 +2345,39 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                 type="text"
                 value={addressSearch}
                 onChange={(e) => {
-                  setAddressSearch(e.target.value);
-                  // Clear results when user starts typing a new search
-                  if (showAddressResults) {
+                  const value = e.target.value;
+                  setAddressSearch(value);
+
+                  // Debounced auto-suggest: trigger search as user types (min 3 chars)
+                  if (debounceTimerRef.current) {
+                    clearTimeout(debounceTimerRef.current);
+                  }
+
+                  if (value.trim().length >= 3) {
+                    debounceTimerRef.current = setTimeout(async () => {
+                      try {
+                        setIsSearchingAddress(true);
+                        const response = await fetch(
+                          `${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(value)}`,
+                          { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+                        );
+                        if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+                        const data = await response.json();
+                        if (data.success && data.data) {
+                          setAddressSearchResults(data.data);
+                          setShowAddressResults(true);
+                        } else {
+                          setAddressSearchResults([]);
+                          setShowAddressResults(false);
+                        }
+                      } catch (err) {
+                        console.error('Auto-suggest error:', err);
+                      } finally {
+                        setIsSearchingAddress(false);
+                      }
+                    }, 400);
+                  } else {
+                    // Too short — hide suggestions
                     setShowAddressResults(false);
                     setAddressSearchResults([]);
                   }
@@ -2393,6 +2433,8 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                     onClick={async () => {
                       console.log('Selected address:', result);
                       setShowAddressResults(false);
+                      setAddressSearch('');
+                      setAddressSearchResults([]);
 
                       // Get property ID from the result
                       const propertyId = result.propertyId || result.id;
@@ -2569,10 +2611,10 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                 onDragEnd={handleDragEnd}
                 ref={(el) => { itemRefs.current[keyVal] = el; }}
                 className={`rounded-lg transition-all duration-200 ${dragIndex === index
-                    ? 'opacity-50 scale-95'
-                    : dragOverIndex === index && dragIndex !== null && dragIndex !== index
-                      ? 'border-2 border-blue-500 shadow-lg'
-                      : ''
+                  ? 'opacity-50 scale-95'
+                  : dragOverIndex === index && dragIndex !== null && dragIndex !== index
+                    ? 'border-2 border-blue-500 shadow-lg'
+                    : ''
                   }`}
                 style={{ cursor: dragIndex === index ? 'grabbing' : 'grab' }}
               >

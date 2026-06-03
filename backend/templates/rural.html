@@ -2886,7 +2886,11 @@
                 <p style="font-weight: bold; font-size: 14px; margin: 10px 0;">Appendix B: Sources of Information</p>
                 <p style="margin-bottom: 10px;">The valuation was based on a range of reliable information sources, including:</p>
                 <ul style="list-style-type: disc; padding-left: 25px; line-height: 1.8;">
+                    {% if valuation_report["valuationDetails"]["surveyType"] in ["External/Desktop Valuation", "Kerbside Valuation"] %}
+                    <li>A kerbside inspection of the property.</li>
+                    {% else %}
                     <li>A physical inspection of the property.</li>
+                    {% endif %}
                     <li>Title searches and local planning authority records.</li>
                     <li>Records from the RP Data and Pricefinder.</li>
                     <li>Real estate databases and recent sales evidence.</li>

@@ -134,13 +134,27 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
     const addPhotos = (watch('additionalPhotos') as any[]) || [];
     let grannyFlatLine = '';
     if (addType === 'Granny Flat' && addPhotos.length) {
-      const gfBedrooms = addPhotos.filter(p => (p.category || '').toLowerCase().startsWith('bedroom')).length || 0;
-      const gfBathrooms = addPhotos.filter(p => {
-        const c = (p.category || '').toLowerCase();
-        return c.startsWith('bathroom') || c.startsWith('ensuite');
-      }).length || 0;
-      if (gfBedrooms || gfBathrooms) {
-        grannyFlatLine = ` For Granny Flat: ${gfBedrooms} bedrooms, ${gfBathrooms} bathrooms.`;
+      const gfSummary = summarizePhotos(addPhotos);
+      const gfBedrooms = gfSummary.categories.filter(c => c.category.toLowerCase().startsWith('bedroom')).length;
+      const gfBathrooms = gfSummary.categories.filter(c => {
+        const lower = c.category.toLowerCase();
+        return lower.startsWith('bathroom') || lower.startsWith('ensuite');
+      }).length;
+      const otherCats = gfSummary.categories
+        .filter(c => {
+          const lower = c.category.toLowerCase();
+          return !lower.startsWith('bedroom') && !lower.startsWith('bathroom') && !lower.startsWith('ensuite');
+        })
+        .map(c => c.category.toLowerCase());
+      const gfParts: string[] = [];
+      if (gfBedrooms) gfParts.push(`${gfBedrooms} bedrooms`);
+      if (gfBathrooms) gfParts.push(`${gfBathrooms} bathrooms`);
+      gfParts.push(...otherCats);
+      gfParts.push('car space');
+      if (gfParts.length) {
+        const last = gfParts.pop();
+        const gfDesc = gfParts.length ? `${gfParts.join(', ')} and ${last}` : String(last);
+        grannyFlatLine = ` For Granny Flat: ${gfDesc}.`;
       }
     }
 
