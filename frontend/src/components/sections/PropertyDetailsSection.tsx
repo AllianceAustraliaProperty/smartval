@@ -32,7 +32,11 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
     // Format categories as comma-separated string
     const categories = photosSummary.categories
-      .map(cat => cat.category)
+      .map(cat => cat.category.toLowerCase())
+      .filter(cat => {
+        const lower = cat.category.toLowerCase();
+        return !lower.startsWith('bedroom') && !lower.startsWith('bathroom') && !lower.startsWith('ensuite');
+      })
       .join(', ')
       .trim();
 
@@ -161,7 +165,11 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       const photos = watch('photos') || [];
       const photosSummary = summarizePhotos(photos);
       const categories = photosSummary.categories
-        .map(cat => cat.category)
+        .map(cat => cat.category.toLowerCase())
+        .filter(cat => {
+        const lower = cat.category.toLowerCase();
+        return !lower.startsWith('bedroom') && !lower.startsWith('bathroom') && !lower.startsWith('ensuite');
+      })
         .join(', ')
         .trim();
 
