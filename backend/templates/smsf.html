@@ -672,7 +672,7 @@
         .divider-oj { background-color: #f97316 !important; }
     </style>
     {% elif logo_type == 'TAMN' %}
-    <style>.logo-title { height: 100px !important; width: auto; }</style>
+    <style>.logo-title { height: 105px !important; width: auto; }</style>
     {% else %}
     <style>.logo-title { height: 130px !important; width: auto; }</style>
     {% endif %}
@@ -689,16 +689,16 @@
             <img src="{{ logo_url }}" alt="TAMN Logo" style="height: 130px; width: auto; object-fit: contain; display: block; margin: 0 auto 20px auto;" />
         </div>
         <div style="text-align: center; margin-top: 80px;">
-            <p style="font-weight: bold; font-size: 26px; margin-bottom: 15px;">Valuation Report</p>
-            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">{{
+            <p style="font-weight: bold; font-size: 26px; margin-bottom: 15px; text-align: center !important;">Valuation Report</p>
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0; text-align: center !important;">{{
                 valuation_report["address"]["unitNumber"]|default('') }} {{
                 valuation_report["address"]["streetName"]|default('') }}</p>
-            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0; text-align: center !important;">
                 {{ valuation_report["address"]["suburb"]|default('') }}
                 {{ valuation_report["address"]["state"]|default('') }}
                 {{ valuation_report["address"]["postcode"]|default('') }}
             </p>
-            <p style="font-size: 14px; margin-top: 15px;">Ref #{{ valuation_report["fileNumber"]|default('') }}</p>
+            <p style="font-size: 14px; margin-top: 15px; text-align: center !important;">Ref #{{ valuation_report["fileNumber"]|default('') }}</p>
         </div>
         <div style="position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center;">
             <span style="font-size: 8.5pt; font-style: italic;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>

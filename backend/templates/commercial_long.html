@@ -590,14 +590,14 @@
             <img src="{{ logo_url }}" alt="TAMN Logo" style="height: 130px; width: auto; object-fit: contain; display: block; margin: 0 auto 20px auto;" />
         </div>
         <div style="text-align: center; margin-top: 80px;">
-            <p style="font-weight: bold; font-size: 26px; margin-bottom: 15px;">Valuation Report</p>
-            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">{{ record.location_details.street|default('') }}</p>
-            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">
+            <p style="font-weight: bold; font-size: 26px; margin-bottom: 15px; text-align: center !important;">Valuation Report</p>
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0; text-align: center !important;">{{ record.location_details.street|default('') }}</p>
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0; text-align: center !important;">
                 {{ record.location_details.suburb|default('') }}
                 {{ record.location_details.state|default('') }}
                 {{ record.location_details.postcode|default('') }}
             </p>
-            <p style="font-size: 14px; margin-top: 15px;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
+            <p style="font-size: 14px; margin-top: 15px; text-align: center !important;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
         </div>
         <div style="position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center;">
             <span style="font-size: 8.5pt; font-style: italic;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>
