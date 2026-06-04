@@ -946,10 +946,12 @@
                             {% if si and not is_cpv %}13{% elif si %}13{% else %}11{% endif %}
                         </td>
                     </tr>
-                    <!-- <tr class="toc-main-row">
-                    <td style="text-align: left;">Floor plan</td>
-                    <td style="text-align: right;">14</td>
-                </tr> -->
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Annexure</td>
+                        <td style="text-align: right">
+                            {% if si and not is_cpv %}14{% elif si %}15{% else %}12{% endif %}
+                        </td>
+                    </tr>
                 </table>
             </div>
             <div class="footer-container">
@@ -1745,6 +1747,7 @@
         </div>
         <div class="page">
             <div class="section-header">
+                <span></span>
                 <img src="{{ logo_url }}" class="header-logo" alt="" />
             </div>
             <div class="gap-section-content"></div>
