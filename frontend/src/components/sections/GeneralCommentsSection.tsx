@@ -94,10 +94,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
     // Get category names and convert to lowercase
     const categoryNames = categories
       .map(cat => cat.category.toLowerCase())
-      .filter(cat => {
-        const lower = cat.category.toLowerCase();
-        return !lower.startsWith('bedroom') && !lower.startsWith('bathroom') && !lower.startsWith('ensuite');
-      })
+      .filter(cat => !cat.startsWith('bedroom') && !cat.startsWith('bathroom') && !cat.startsWith('ensuite'))
       .filter(name => name && name.trim().length > 0);
 
     if (categoryNames.length === 0) return 'N/A';
