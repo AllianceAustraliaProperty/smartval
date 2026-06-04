@@ -900,39 +900,36 @@
                         <td style="text-align: right">8</td>
                     </tr>
                     {% endif %}
+                    {% set si = record.property_valuation.show_improvements %}
+                    {% set is_cpv = (logo_type == 'CPV') %}
                     <tr class="toc-main-row">
                         <td style="text-align: left">Environmental Issues</td>
                         <td style="text-align: right">
-                            {% if record.property_valuation.show_improvements
-                            %}9{% else %}7{% endif %}
+                            {% if si %}9{% else %}7{% endif %}
                         </td>
                     </tr>
                     <tr class="toc-main-row">
                         <td style="text-align: left">General Comments</td>
                         <td style="text-align: right">
-                            {% if record.property_valuation.show_improvements
-                            %}9{% else %}7{% endif %}
+                            {% if si %}9{% else %}7{% endif %}
                         </td>
                     </tr>
                     <tr class="toc-main-row">
                         <td style="text-align: left">Market Evidence</td>
                         <td style="text-align: right">
-                            {% if record.property_valuation.show_improvements
-                            %}10{% else %}8{% endif %}
+                            {% if si and not is_cpv %}10{% elif si %}10{% else %}8{% endif %}
                         </td>
                     </tr>
                     <tr class="toc-main-row">
                         <td style="text-align: left">Valuation Methodology</td>
                         <td style="text-align: right">
-                            {% if record.property_valuation.show_improvements
-                            %}11{% else %}9{% endif %}
+                            {% if si and not is_cpv %}11{% elif si %}11{% else %}9{% endif %}
                         </td>
                     </tr>
                     <tr class="toc-main-row">
                         <td style="text-align: left">Valuation Remarks</td>
                         <td style="text-align: right">
-                            {% if record.property_valuation.show_improvements
-                            %}11{% else %}9{% endif %}
+                            {% if si and not is_cpv %}11{% elif si %}11{% else %}9{% endif %}
                         </td>
                     </tr>
                     <tr class="toc-main-row">
@@ -940,15 +937,13 @@
                             Assumptions, Conditions & Limitations
                         </td>
                         <td style="text-align: right">
-                            {% if record.property_valuation.show_improvements
-                            %}12{% else %}10{% endif %}
+                            {% if si and not is_cpv %}12{% elif si %}12{% else %}10{% endif %}
                         </td>
                     </tr>
                     <tr class="toc-main-row">
                         <td style="text-align: left">Photos</td>
                         <td style="text-align: right">
-                            {% if record.property_valuation.show_improvements
-                            %}13{% else %}11{% endif %}
+                            {% if si and not is_cpv %}13{% elif si %}13{% else %}11{% endif %}
                         </td>
                     </tr>
                     <!-- <tr class="toc-main-row">
@@ -2452,7 +2447,7 @@
         <div class="page">
             <div class="section-header">
                 <h1>
-                    {% if record.property_valuation.show_improvements %}11{% else
+                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}11{% else
                     %}10{% endif %}. Valuation Methodology
                 </h1>
                 <img
@@ -2486,7 +2481,7 @@
                     margin: 0 0 0 0;
                 "
             >
-                {% if record.property_valuation.show_improvements %}12{% else
+                {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}12{% else
                 %}11{% endif %}. Valuation Remarks
             </h1>
             <div class="gap-section-content"></div>
@@ -2684,7 +2679,7 @@
         <div class="page">
             <div class="section-header">
                 <h1>
-                    {% if record.property_valuation.show_improvements %}13{%
+                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}13{%
                     else %}12{% endif %}. Assumptions, Conditions & Limitations
                 </h1>
                 <img
@@ -2734,7 +2729,7 @@
         <div class="page">
             <div class="section-header">
                 <h1>
-                    {% if record.property_valuation.show_improvements %}13{%
+                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}13{%
                     else %}12{% endif %}. Assumptions, Conditions & Limitations
                     (cont'd)
                 </h1>
@@ -2775,7 +2770,7 @@
         <div class="page">
             <div class="section-header">
                 <h1>
-                    {% if record.property_valuation.show_improvements %}14{%
+                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}14{%
                     else %}13{% endif %}. Photographs {{ "(cont'd)" if
                     loop.index > 1 else "" }}
                 </h1>
@@ -2802,7 +2797,7 @@
             </div>
         </div>
         {% endfor %}
-        {% set current_section = 14 if record.property_valuation.show_improvements else 13 %}
+        {% set current_section = 14 if (record.property_valuation.show_improvements and logo_type != 'CPV') else 13 %}
 
         {# Floor plans are now shown in Annexure section for AAP #}
         {% if logo_type == 'CPV' and record.floor_plans and record.floor_plans|length > 0 %}
