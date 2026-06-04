@@ -33,9 +33,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
     // Format categories as comma-separated string
     const categories = photosSummary.categories
       .map(cat => cat.category.toLowerCase())
-      .filter(cat => {
-        return !cat.startsWith('bedroom') && !cat.startsWith('bathroom') && !cat.startsWith('ensuite');
-      })
+      .filter(cat => !cat.startsWith('bedroom') && !cat.startsWith('bathroom') && !cat.startsWith('ensuite'))
       .join(', ')
       .trim();
 
@@ -55,10 +53,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       `${bathrooms} bathrooms`,
       parkingType
     ];
-    if (categories) {
-      mainParts.push(categories);
-    }
-    const mainBaseText = mainParts.join(', ');
+    const mainBaseText = mainParts.join(', ') + (categories ? ` with ${categories}` : '');
     const mainText = hasGrannyFlat ? `${mainBaseText} in the main house.` : mainBaseText;
 
     // Granny Flat bedroom/bathroom count from additional photos if selected (no leading label)
@@ -70,22 +65,16 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         const lower = c.category.toLowerCase();
         return lower.startsWith('bathroom') || lower.startsWith('ensuite');
       }).length;
-      const otherCats = gfSummary.categories
-        .filter(c => {
-          const lower = c.category.toLowerCase();
-          return !lower.startsWith('bedroom') && !lower.startsWith('bathroom') && !lower.startsWith('ensuite');
-        })
-        .map(c => c.category.toLowerCase());
-      const gfParts: string[] = [];
-      if (gfBedrooms) gfParts.push(`${gfBedrooms} bedrooms`);
-      if (gfBathrooms) gfParts.push(`${gfBathrooms} bathrooms`);
-      gfParts.push(...otherCats);
-      gfParts.push('car space');
-      if (gfParts.length) {
-        const last = gfParts.pop();
-        const prefix = gfParts.length ? `${gfParts.join(', ')} and ${last}` : String(last);
-        gfText = ` ${prefix} in the granny flat`;
-      }
+      const gfCategories = gfSummary.categories
+        .map(c => c.category.toLowerCase())
+        .filter(c => !c.startsWith('bedroom') && !c.startsWith('bathroom') && !c.startsWith('ensuite'));
+      const gfStructural: string[] = [];
+      if (gfBedrooms) gfStructural.push(`${gfBedrooms} bedrooms`);
+      if (gfBathrooms) gfStructural.push(`${gfBathrooms} bathrooms`);
+      gfStructural.push('car space');
+      const gfBase = gfStructural.join(', ');
+      const gfRooms = gfCategories.length > 0 ? ` with ${gfCategories.join(', ')}` : '';
+      gfText = ` ${gfBase}${gfRooms} in the granny flat`;
     }
 
     const accommodation = `${mainText}${gfText}`.trim();
@@ -179,11 +168,34 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         parkingTypeVal
       ];
 
-      if (categories) {
-        accommodationParts.push(categories);
+      const addType = watch('additionalPhotosType');
+      const addPhotos = (watch('additionalPhotos') as any[]) || [];
+      const hasGrannyFlat = addType === 'Granny Flat' && addPhotos.length > 0;
+
+      const mainBaseText = accommodationParts.join(', ') + (categories ? ` with ${categories}` : '');
+      const mainText = hasGrannyFlat ? `${mainBaseText} in the main house.` : mainBaseText;
+
+      let gfText = '';
+      if (hasGrannyFlat) {
+        const gfSummary = summarizePhotos(addPhotos);
+        const gfBedrooms = gfSummary.categories.filter(c => c.category.toLowerCase().startsWith('bedroom')).length;
+        const gfBathrooms = gfSummary.categories.filter(c => {
+          const lower = c.category.toLowerCase();
+          return lower.startsWith('bathroom') || lower.startsWith('ensuite');
+        }).length;
+        const gfCategories = gfSummary.categories
+          .map(c => c.category.toLowerCase())
+          .filter(c => !c.startsWith('bedroom') && !c.startsWith('bathroom') && !c.startsWith('ensuite'));
+        const gfStructural: string[] = [];
+        if (gfBedrooms) gfStructural.push(`${gfBedrooms} bedrooms`);
+        if (gfBathrooms) gfStructural.push(`${gfBathrooms} bathrooms`);
+        gfStructural.push('car space');
+        const gfBase = gfStructural.join(', ');
+        const gfRooms = gfCategories.length > 0 ? ` with ${gfCategories.join(', ')}` : '';
+        gfText = ` ${gfBase}${gfRooms} in the granny flat`;
       }
 
-      const accommodationText = accommodationParts.join(', ');
+      const accommodationText = `${mainText}${gfText}`.trim();
       setValue('propertyDetails.accommodation', accommodationText, { shouldDirty: true });
 
       // After populating values, auto-save the full form
