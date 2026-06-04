@@ -141,22 +141,16 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
         const lower = c.category.toLowerCase();
         return lower.startsWith('bathroom') || lower.startsWith('ensuite');
       }).length;
-      const otherCats = gfSummary.categories
-        .filter(c => {
-          const lower = c.category.toLowerCase();
-          return !lower.startsWith('bedroom') && !lower.startsWith('bathroom') && !lower.startsWith('ensuite');
-        })
-        .map(c => c.category.toLowerCase());
-      const gfParts: string[] = [];
-      if (gfBedrooms) gfParts.push(`${gfBedrooms} bedrooms`);
-      if (gfBathrooms) gfParts.push(`${gfBathrooms} bathrooms`);
-      gfParts.push(...otherCats);
-      gfParts.push('car space');
-      if (gfParts.length) {
-        const last = gfParts.pop();
-        const gfDesc = gfParts.length ? `${gfParts.join(', ')} and ${last}` : String(last);
-        grannyFlatLine = ` For Granny Flat: ${gfDesc}.`;
-      }
+      const gfCategories = gfSummary.categories
+        .map(c => c.category.toLowerCase())
+        .filter(c => !c.startsWith('bedroom') && !c.startsWith('bathroom') && !c.startsWith('ensuite'));
+      const gfStructural: string[] = [];
+      if (gfBedrooms) gfStructural.push(`${gfBedrooms} bedrooms`);
+      if (gfBathrooms) gfStructural.push(`${gfBathrooms} bathrooms`);
+      gfStructural.push('car space');
+      const gfBase = gfStructural.join(', ');
+      const gfRooms = gfCategories.length > 0 ? ` with ${gfCategories.join(', ')}` : '';
+      grannyFlatLine = ` For Granny Flat: ${gfBase}${gfRooms}.`;
     }
 
     // Generate property comments
