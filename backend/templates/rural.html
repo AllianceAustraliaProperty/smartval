@@ -2935,6 +2935,66 @@
             pageNums.forEach((v, k) => {
                 v.textContent = k + 1;
             });
-        </script>
+        
+    // TOC Dynamic Page Numbers (Text-based matching)
+    try {
+        const tocTables = document.querySelectorAll('.toc-table');
+        tocTables.forEach(table => {
+            const rows = table.querySelectorAll('tr.toc-main-row, tr.toc-subtitle-row');
+            rows.forEach(row => {
+                const nameTd = row.querySelector('td:nth-child(1)');
+                const numTd = row.querySelector('td:nth-child(2)');
+                if (!nameTd || !numTd) return;
+                
+                let rawName = nameTd.textContent.trim();
+                // Remove numbering like "1. ", "1.1 ", etc.
+                let cleanName = rawName.replace(/^[0-9.]+\s*/, '').trim().toLowerCase();
+                // Remove any leftover liquid tags if they were not rendered (just in case)
+                cleanName = cleanName.replace(/\{\{.*?\}\}/g, '').trim();
+                
+                if (!cleanName) return;
+
+                // Custom mappings where TOC text doesn't explicitly match banner text
+                if (cleanName === "general market overview") cleanName = "valuation comments";
+                if (cleanName === "income assessment") cleanName = "income statement";
+                if (cleanName.includes("assumptions, conditions & limitations")) cleanName = "assumptions & recommendations";
+                if (cleanName === "environmental issues") cleanName = "environmental statement";
+                if (cleanName === "annexure") cleanName = "annexures";
+
+                // Find all possible headings/banners in the document
+                const candidates = document.querySelectorAll('.banner, h1, h2, h3, h4, .subtitle, .subtitle-lg');
+                
+                let targetElement = null;
+                for (let el of candidates) {
+                    // Skip elements inside the TOC itself
+                    if (el.closest('.toc-table')) continue;
+                    
+                    let elText = el.textContent.trim().replace(/^[0-9.]+\s*/, '').trim().toLowerCase();
+                    elText = elText.replace(/\{\{.*?\}\}/g, '').trim();
+                    
+                    // Allow partial match for long enough strings
+                    if (elText === cleanName || 
+                       (elText.includes(cleanName) && cleanName.length > 5) || 
+                       (cleanName.includes(elText) && elText.length > 5)) {
+                        targetElement = el;
+                        break;
+                    }
+                }
+                
+                if (targetElement) {
+                    const parentPage = targetElement.closest('.page');
+                    if (parentPage) {
+                        const pageNumElement = parentPage.querySelector('.page-num');
+                        if (pageNumElement && pageNumElement.textContent.trim() !== '') {
+                            numTd.textContent = pageNumElement.textContent;
+                        }
+                    }
+                }
+            });
+        });
+    } catch (e) {
+        console.error("Error setting TOC page numbers:", e);
+    }
+</script>
     </body>
 </html>
