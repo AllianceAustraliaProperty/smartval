@@ -582,7 +582,28 @@
 </head>
 
 <body>
-    {% if logo_type == 'CPV' %}
+    {% set page_logo_url = tamn_page_logo_url if logo_type == 'TAMN' else logo_url %}
+    {% if logo_type == 'TAMN' %}
+    <!-- TAMN Cover Page -->
+    <div class="page" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="text-align: center; margin-top: 60px;">
+            <img src="{{ logo_url }}" alt="TAMN Logo" style="height: 130px; width: auto; object-fit: contain; display: block; margin: 0 auto 20px auto;" />
+        </div>
+        <div style="text-align: center; margin-top: 80px;">
+            <p style="font-weight: bold; font-size: 26px; margin-bottom: 15px;">Valuation Report</p>
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">{{ record.location_details.street|default('') }}</p>
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">
+                {{ record.location_details.suburb|default('') }}
+                {{ record.location_details.state|default('') }}
+                {{ record.location_details.postcode|default('') }}
+            </p>
+            <p style="font-size: 14px; margin-top: 15px;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
+        </div>
+        <div style="position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center;">
+            <span style="font-size: 8.5pt; font-style: italic;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>
+        </div>
+    </div>
+    {% elif logo_type == 'CPV' %}
     <!-- CPV Cover Page -->
     <div class="page"
         style="position: relative; display: flex; flex-direction: column; align-items: center;">
@@ -663,7 +684,7 @@
     {% set _nla_rate = (_mv / _nla) if (_mv and _nla) else None %}
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner" style="background-color: #2563eb; color: white; padding: 14px 18px;">
             <div style="font-size: 18px; font-weight: bold; margin-bottom: 3px;">Valuation Executive Summary</div>
@@ -814,8 +835,14 @@
                 </table>
             </div>
         </div>
-        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+        <div style="display: flex; justify-content: flex-end; flex-direction: column; align-items: flex-end; margin-top: 10px;">
             <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Logo" style="width: 177px; height: 93px;">
+            {% if logo_type == 'TAMN' %}
+            <div style="font-size: 9px; margin-top: 6px; text-align: right; line-height: 1.5;">
+                Tamn Property Valuers | ABN 92 605 356 983 | info@tamn.com.au | 1300 226 482 | www.tamn.com.au<br>
+                <em>Liability Limited by a scheme approved under Professional Standards' Legislation</em>
+            </div>
+            {% endif %}
         </div>
         <div style="margin-top: 10px; font-size: 10px;">
             <p style="margin: 0; font-style: italic;">Liability limited by a scheme approved under Professional Standards Legislation.</p>
@@ -833,7 +860,7 @@
     </div>
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner" style="background-color: #E5E5E5; text-align: left; padding-left: 10px;">Table of Contents
         </div>
@@ -931,7 +958,7 @@
     </div>
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner" style="display: flex; justify-content: space-between;">Instructions</div>
         <div class="space-between-sm"></div>
@@ -1082,7 +1109,7 @@
     </div>
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">Environmental Statement</div>
         <div class="space-between-sm"></div>
@@ -1153,7 +1180,7 @@
     </div>
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
 
         <!-- Statutory Details (compact) -->
@@ -1243,7 +1270,7 @@
     </div>
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">Site</div>
         <div class="space-between-sm"></div>
@@ -1345,7 +1372,7 @@
     </div>
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">Building Services</div>
         <div class="space-between-sm"></div>
@@ -1437,7 +1464,7 @@
     {% for listing_comparables in record.listing_comparables %}
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">Rental Schedule {{ "(cont’d)" if loop.index > 1 else "" }}</div>
         <div class="space-between-sm"></div>
@@ -1550,7 +1577,7 @@
     {% for sales_comparables in record.sales_comparables %}
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">Market Evidence {{ "(cont’d)" if loop.index > 1 else "" }}</div>
         <div class="space-between-sm"></div>
@@ -1677,7 +1704,7 @@
 
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">9. Valuation Methodology</div>
         <div class="space-between-sm"></div>
@@ -1807,7 +1834,7 @@
     </div>
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">Assumptions and Qualifications</div>
         <div style="line-height: 15px;">
@@ -1878,7 +1905,7 @@
     </div>
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">Assumptions and Qualifications (cont’d)</div>
         <div style="line-height: 15px;">
@@ -1950,7 +1977,7 @@
     {% for photos_group in record.gallery_photos_groups %}
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">Photographs {{ "(cont’d)" if loop.index > 1 else "" }}</div>
         <div class="space-between-sm"></div>
@@ -1974,7 +2001,7 @@
     {% for ts_url in record.title_search_list %}
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">Annexures</div>
         <div class="space-between-sm"></div>
@@ -1996,7 +2023,7 @@
     {% for annexure in record.annexures %}
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         <div class="banner">{{ annexure.annexure_header }}</div>
         <div class="space-between-sm"></div>
@@ -2018,7 +2045,7 @@
     {% for i in range(record.blank_pages_count|default(0)|int) %}
     <div class="page">
         <div class="header-container">
-            <img src="{{ logo_url }}" class="header-logo" alt="" srcset="">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
         {% if record.blank_pages_heading %}
         <div class="banner">{{ record.blank_pages_heading }}</div>

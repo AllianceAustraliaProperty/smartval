@@ -484,11 +484,14 @@ def generate_html_report(report_id, template_name='residential.html'):
             except Exception:
                 land_value_rounded = land_value
 
-        # Determine which logo to use (AAP default, CPV optional)
+        # Determine which logo to use (AAP default, CPV optional, TAMN optional)
         logo_type = (report.get('valuationDetails') or {}).get('logoType', 'AAP') or 'AAP'
         if logo_type == 'CPV':
             logo_filename = 'CPV-logo.png'
             logo_remote_url = f"https://{Config.S3_BUCKET_NAME}.s3.{Config.AWS_REGION}.amazonaws.com/photos/CPV-logo.png"
+        elif logo_type == 'TAMN':
+            logo_filename = 'tamn_logo.png'
+            logo_remote_url = Config.REPORT_LOGO_URL
         else:
             logo_filename = 'aap-logo-final.png'
             logo_remote_url = Config.REPORT_LOGO_URL
@@ -503,6 +506,14 @@ def generate_html_report(report_id, template_name='residential.html'):
         except Exception:
             logo_data_url = None
             effective_logo_url = logo_remote_url
+
+        # Load TAMN per-page logo (tamn_logo_1.png) as base64
+        try:
+            tamn_page_logo_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'tamn_logo_1.png')
+            with open(tamn_page_logo_path, 'rb') as tf:
+                tamn_page_logo_b64 = f"data:image/png;base64,{base64.b64encode(tf.read()).decode('ascii')}"
+        except Exception:
+            tamn_page_logo_b64 = ""
 
         # Load cover house image as base64
         try:
@@ -532,6 +543,7 @@ def generate_html_report(report_id, template_name='residential.html'):
             'logo_data_url': logo_data_url,
             'house_cover_url': house_cover_b64,
             'aap_cover_design_url': aap_cover_design_b64,
+            'tamn_page_logo_url': tamn_page_logo_b64,
             'logo_type': logo_type,
             'now': now,
         }

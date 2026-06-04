@@ -144,16 +144,19 @@
     </style>
     {% if logo_type == 'CPV' %}
     <style>.logo { height: 50px !important; }</style>
+    {% elif logo_type == 'TAMN' %}
+    <style>.logo { height: 60px !important; }</style>
     {% else %}
     <style>.logo { height: 77px !important; }</style>
     {% endif %}
 </head>
 
 <body>
+    {% set page_logo_url = tamn_page_logo_url if logo_type == 'TAMN' else logo_url %}
 
     <!-- Page 1: Certificate of Value -->
     <div class="page">
-        <img src="{{ logo_url }}" alt="Logo" class="logo">
+        <img src="{{ page_logo_url }}" alt="Logo" class="logo">
 
         <h1>AAP VALUATIONS</h1>
 
@@ -257,7 +260,7 @@
     <!-- Page 2: Market Evidence (Sales Comparables) -->
     {% if valuation_report.get("comparables", {}).get("sales") %}
 
-    <div class="page"> <img src="{{ logo_url }}" alt="Logo" class="logo">
+    <div class="page"> <img src="{{ page_logo_url }}" alt="Logo" class="logo">
         <h3>Market Evidence</h3>
         {% for comparable in valuation_report["comparables"]["sales"][:4] %}
 
@@ -294,7 +297,7 @@
     {% endif %}
 
     <!-- Page 3: Rental Schedule & Valuation Remarks -->
-    <div class="page"> <img src="{{ logo_url }}" alt="Logo" class="logo">
+    <div class="page"> <img src="{{ page_logo_url }}" alt="Logo" class="logo">
         {% if valuation_report.get("comparables", {}).get("rentals") %}
 
         <h3>Rental Schedule</h3>
@@ -368,7 +371,7 @@
 
     {% if gallery_photos %}
 
-    <div class="page"> <img src="{{ logo_url }}" alt="Logo" class="logo">
+    <div class="page"> <img src="{{ page_logo_url }}" alt="Logo" class="logo">
         <h3>Photographs</h3>
         <div class="photo-grid">
             {% for photo in gallery_photos[:6] %}
@@ -384,7 +387,7 @@
     <!-- Page 5: Floor Plan -->
     {% if valuation_report.get("floorPlans") and valuation_report["floorPlans"]|length > 0 %}
 
-    <div class="page"> <img src="{{ logo_url }}" alt="Logo" class="logo">
+    <div class="page"> <img src="{{ page_logo_url }}" alt="Logo" class="logo">
         <h3>Floor Plan</h3>
         <div class="floor-plan-container"> <img src="{{ valuation_report['floorPlans'][0]['photoUrl'] }}"
                 alt="Floor Plan"> </div>

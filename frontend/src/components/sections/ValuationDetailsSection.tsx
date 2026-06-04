@@ -189,6 +189,7 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
           >
             <option value="AAP">AAP</option>
             <option value="CPV">CPV</option>
+            <option value="TAMN">TAMN</option>
           </select>
         </FormField>
       </div>

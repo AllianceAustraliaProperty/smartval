@@ -671,14 +671,40 @@
         .logo-title { height: 80px !important; width: auto; }
         .divider-oj { background-color: #f97316 !important; }
     </style>
+    {% elif logo_type == 'TAMN' %}
+    <style>.logo-title { height: 100px !important; width: auto; }</style>
     {% else %}
     <style>.logo-title { height: 130px !important; width: auto; }</style>
     {% endif %}
 </head>
 
 <body>
+    {% set page_logo_url = tamn_page_logo_url if logo_type == 'TAMN' else logo_url %}
 
 
+    {% if logo_type == 'TAMN' %}
+    <!-- TAMN Cover Page -->
+    <div class="page" id="page1" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="text-align: center; margin-top: 60px;">
+            <img src="{{ logo_url }}" alt="TAMN Logo" style="height: 130px; width: auto; object-fit: contain; display: block; margin: 0 auto 20px auto;" />
+        </div>
+        <div style="text-align: center; margin-top: 80px;">
+            <p style="font-weight: bold; font-size: 26px; margin-bottom: 15px;">Valuation Report</p>
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">{{
+                valuation_report["address"]["unitNumber"]|default('') }} {{
+                valuation_report["address"]["streetName"]|default('') }}</p>
+            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">
+                {{ valuation_report["address"]["suburb"]|default('') }}
+                {{ valuation_report["address"]["state"]|default('') }}
+                {{ valuation_report["address"]["postcode"]|default('') }}
+            </p>
+            <p style="font-size: 14px; margin-top: 15px;">Ref #{{ valuation_report["fileNumber"]|default('') }}</p>
+        </div>
+        <div style="position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center;">
+            <span style="font-size: 8.5pt; font-style: italic;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>
+        </div>
+    </div>
+    {% else %}
     <!-- Page 1: TITLE -->
     <div class="page-title" id="page1">
         <div class="flex vert">
@@ -716,14 +742,19 @@
                     <div>
                         <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo"
                             style="width: 140px; height: auto; display: block;" />
-                        {% if logo_type == 'CPV' %}
+                        {% if logo_type == ‘CPV’ %}
                         <div style="font-size: 10px; margin-top: 6px; line-height: 1; white-space: nowrap;">
                             Alliance Australia Property Pty Ltd<br>
                             Liability Limited by a scheme approved under Professional Standards’ Legislation
                         </div>
+                        {% elif logo_type == ‘TAMN’ %}
+                        <div style="font-size: 9px; margin-top: 6px; line-height: 1.5; white-space: nowrap;">
+                            Tamn Property Valuers | ABN 92 605 356 983 | info@tamn.com.au | 1300 226 482 | www.tamn.com.au<br>
+                            <em>Liability Limited by a scheme approved under Professional Standards’ Legislation</em>
+                        </div>
                         {% endif %}
                     </div>
-                    {% if logo_type != 'CPV' %}
+                    {% if logo_type != ‘CPV’ and logo_type != ‘TAMN’ %}
                     <div style="text-align: right; font-size: 11px; line-height: 1.5;">
                         <p style="font-weight: bold; margin: 0;">Alliance Australia Property Pty Ltd</p>
                         <p style="margin: 0;">ABN 35 641 373 702</p>
@@ -736,6 +767,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
     <!-- Page 1: END -->
 
 
@@ -928,7 +960,7 @@
                 valuation_report["fileNumber"]|default('') }} | {{
                 valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
             <div class="mr-70">
-                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+                <img class="logo-footer" src="{{ page_logo_url }}" alt="Logo">
             </div>
         </div>
     </div>
@@ -1041,7 +1073,7 @@
                 valuation_report["fileNumber"]|default('') }} | {{
                 valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
             <div class="mr-70">
-                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+                <img class="logo-footer" src="{{ page_logo_url }}" alt="Logo">
             </div>
         </div>
     </div>
@@ -1147,7 +1179,7 @@
                 }}, {{ record.location_details.state|default('N/A') }} {{
                 record.location_details.postcode|default('N/A') }}</p>
             <div class="mr-70">
-                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+                <img class="logo-footer" src="{{ page_logo_url }}" alt="Logo">
             </div>
         </div>
     </div>
@@ -1253,7 +1285,7 @@
                 valuation_report["fileNumber"]|default('') }} | {{
                 valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
             <div class="mr-70">
-                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+                <img class="logo-footer" src="{{ page_logo_url }}" alt="Logo">
             </div>
         </div>
     </div>
@@ -1315,7 +1347,7 @@
                 valuation_report["fileNumber"]|default('') }} | {{
                 valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
             <div class="mr-70">
-                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+                <img class="logo-footer" src="{{ page_logo_url }}" alt="Logo">
             </div>
         </div>
     </div>
@@ -1343,7 +1375,7 @@
                 valuation_report["fileNumber"]|default('') }} | {{
                 valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
             <div class="mr-70">
-                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+                <img class="logo-footer" src="{{ page_logo_url }}" alt="Logo">
             </div>
         </div>
     </div>
@@ -1367,7 +1399,7 @@
                 valuation_report["fileNumber"]|default('') }} | {{
                 valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
             <div class="mr-70">
-                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+                <img class="logo-footer" src="{{ page_logo_url }}" alt="Logo">
             </div>
         </div>
     </div>
@@ -1407,7 +1439,7 @@
                 valuation_report["fileNumber"]|default('') }} | {{
                 valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
             <div class="mr-70">
-                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+                <img class="logo-footer" src="{{ page_logo_url }}" alt="Logo">
             </div>
         </div>
     </div>
@@ -1429,7 +1461,7 @@
                 valuation_report["fileNumber"]|default('') }} | {{
                 valuation_report["address"]["fullAddress"]|default('N/A') }}</p>
             <div class="mr-70">
-                <img class="logo-footer" src="{{ logo_url }}" alt="Logo">
+                <img class="logo-footer" src="{{ page_logo_url }}" alt="Logo">
             </div>
         </div>
     </div>

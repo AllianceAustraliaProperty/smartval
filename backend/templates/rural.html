@@ -530,6 +530,34 @@
                 color: white;
             }
         </style>
+        {% elif logo_type == 'TAMN' %}
+        <style>
+            .header-logo {
+                height: 70px !important;
+                width: auto;
+            }
+            /* TAMN styled page footer bar (solid dark) */
+            .footer-container {
+                background: #1a1a1a !important;
+                color: white !important;
+                padding: 10px 30px !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                font-size: 10px !important;
+                font-weight: bold !important;
+                letter-spacing: 0.5px !important;
+                align-items: center;
+            }
+            .footer-container > span:first-child {
+                color: white;
+                flex: 1;
+                letter-spacing: 0.5px;
+            }
+            .footer-container .page-num {
+                color: white;
+            }
+        </style>
         {% else %}
         <style>
             .header-logo {
@@ -561,7 +589,28 @@
         {% endif %}
     </head>
     <body>
-        {% if logo_type == 'CPV' %}
+        {% set page_logo_url = tamn_page_logo_url if logo_type == 'TAMN' else logo_url %}
+        {% if logo_type == 'TAMN' %}
+        <!-- TAMN Cover Page -->
+        <div class="page no-accent" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="text-align: center; margin-top: 60px;">
+                <img src="{{ logo_url }}" alt="TAMN Logo" style="height: 130px; width: auto; object-fit: contain; display: block; margin: 0 auto 20px auto;" />
+            </div>
+            <div style="text-align: center; margin-top: 80px;">
+                <p style="font-weight: bold; font-size: 26px; margin-bottom: 15px;">Valuation Report</p>
+                <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">{{ record.location_details.street|default('') }}</p>
+                <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">
+                    {{ record.location_details.suburb|default('') }}
+                    {{ record.location_details.state|default('') }}
+                    {{ record.location_details.postcode|default('') }}
+                </p>
+                <p style="font-size: 14px; margin-top: 15px;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
+            </div>
+            <div style="position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center;">
+                <span style="font-size: 8.5pt; font-style: italic;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>
+            </div>
+        </div>
+        {% elif logo_type == 'CPV' %}
         <!-- CPV Cover Page -->
         <div class="page no-accent" style="position: relative; display: flex; flex-direction: column; align-items: center;">
             <!-- CPV logo at top left -->
@@ -637,7 +686,7 @@
             <div class="section-header">
                 <h1>Report Overview</h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -789,12 +838,18 @@
 
             <div class="gap-before-subsection"></div>
             {% if sf_record.PropertyValuer__r.Name != 'Edward Aoun' %}
-            <div style="display: flex; justify-content: end">
+            <div style="display: flex; justify-content: flex-end; flex-direction: column; align-items: flex-end;">
                 <img
                     src="https://valai.duo.tax/assets/member-api-logo.png"
                     alt=""
                     style="width: 177.25984252px; height: 92.976377953px"
                 />
+                {% if logo_type == 'TAMN' %}
+                <div style="font-size: 9px; margin-top: 6px; text-align: right; line-height: 1.5;">
+                    Tamn Property Valuers | ABN 92 605 356 983 | info@tamn.com.au | 1300 226 482 | www.tamn.com.au<br>
+                    <em>Liability Limited by a scheme approved under Professional Standards' Legislation</em>
+                </div>
+                {% endif %}
             </div>
             {% endif %}
             <div class="footer-container">
@@ -811,7 +866,7 @@
             <div class="section-header">
                 <h1>Table of Contents</h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -968,7 +1023,7 @@
             <div class="section-header">
                 <h1>1. Valuation Summary</h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -1114,7 +1169,7 @@
                 <h1>1.4 Valuation Details</h1>
                 {% endif %}
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -1335,7 +1390,7 @@
             <div class="section-header">
                 <h1>2. Location & Neighbourhood</h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -1455,7 +1510,7 @@
             <div class="section-header">
                 <h1>4. Site</h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -1648,7 +1703,7 @@
             <div class="section-header">
                 <h1>5. Improvements (cont'd)</h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -1748,7 +1803,7 @@
         <div class="page">
             <div class="section-header">
                 <span></span>
-                <img src="{{ logo_url }}" class="header-logo" alt="" />
+                <img src="{{ page_logo_url }}" class="header-logo" alt="" />
             </div>
             <div class="gap-section-content"></div>
             <div class="subtitle">5.3 Building Area</div>
@@ -1805,7 +1860,7 @@
                     %}6{% endif %}.{{ loop.index }} {{ dwelling.name|default('Other Dwelling ' ~ loop.index) }}
                 </h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -1941,7 +1996,7 @@
                     {% if record.property_valuation.show_improvements %}7{% else
                     %}6{% endif %}. Environmental Issues
                 </h1>
-                <img src="{{ logo_url }}" class="header-logo" alt="" />
+                <img src="{{ page_logo_url }}" class="header-logo" alt="" />
             </div>
             <div class="gap-section-content"></div>
             <div style="line-height: 1.5">
@@ -2054,7 +2109,7 @@
                     9. Market Evidence
                 </h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -2236,7 +2291,7 @@
         <div class="page">
             <div class="section-header">
                 <h1>10. Improvements - Area Calculation</h1>
-                <img src="{{ logo_url }}" class="header-logo" alt="" />
+                <img src="{{ page_logo_url }}" class="header-logo" alt="" />
             </div>
             <div class="gap-section-content"></div>
 
@@ -2453,7 +2508,7 @@
                     %}10{% endif %}. Valuation Methodology
                 </h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -2685,7 +2740,7 @@
                     else %}12{% endif %}. Assumptions, Conditions & Limitations
                 </h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -2736,7 +2791,7 @@
                     (cont'd)
                 </h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -2777,7 +2832,7 @@
                     loop.index > 1 else "" }}
                 </h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -2807,7 +2862,7 @@
         <div class="page">
             <div class="section-header">
                 <h1>{{ current_section }}. Floor Plan {{ "(cont'd)" if loop.index > 1 else "" }}</h1>
-                <img src="{{ logo_url }}" class="header-logo" alt="" />
+                <img src="{{ page_logo_url }}" class="header-logo" alt="" />
             </div>
             <div class="gap-section-content"></div>
             <div style="display: flex; align-items: center; justify-content: center; flex: 1;">
@@ -2826,7 +2881,7 @@
         <div class="page">
             <div class="section-header">
                 <h1>{{ current_section }}. Title Search</h1>
-                <img src="{{ logo_url }}" class="header-logo" alt="" />
+                <img src="{{ page_logo_url }}" class="header-logo" alt="" />
             </div>
             <div class="gap-section-content"></div>
             <div style="display: flex; align-items: center; justify-content: center; flex: 1;">
@@ -2845,7 +2900,7 @@
             <div class="section-header">
                 <h1>{{ annexure.annexure_header }}</h1>
                 <img
-                    src="{{ logo_url }}"
+                    src="{{ page_logo_url }}"
                     class="header-logo"
                     alt=""
                 />
@@ -2869,7 +2924,7 @@
         <div class="page">
             <div class="section-header">
                 <h1>Annexure</h1>
-                <img src="{{ logo_url }}" class="header-logo" alt="Logo" />
+                <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
             </div>
             <hr />
 
@@ -2915,7 +2970,7 @@
         <div class="page">
             <div class="section-header">
                 <h1>Appendix A: Floor plan (cont'd)</h1>
-                <img src="{{ logo_url }}" class="header-logo" alt="" />
+                <img src="{{ page_logo_url }}" class="header-logo" alt="" />
             </div>
             <div class="gap-section-content"></div>
             <div style="display: flex; align-items: center; justify-content: center; flex: 1;">
