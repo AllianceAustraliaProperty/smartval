@@ -34,8 +34,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
     const categories = photosSummary.categories
       .map(cat => cat.category.toLowerCase())
       .filter(cat => {
-        const lower = cat.category.toLowerCase();
-        return !lower.startsWith('bedroom') && !lower.startsWith('bathroom') && !lower.startsWith('ensuite');
+        return !cat.startsWith('bedroom') && !cat.startsWith('bathroom') && !cat.startsWith('ensuite');
       })
       .join(', ')
       .trim();
