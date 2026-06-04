@@ -551,6 +551,33 @@
             color: white;
         }
     </style>
+    {% elif logo_type == 'TAMN' %}                                                                                                                   
+    <style>                                                                                                                                          
+        .header-logo {                                                                                                                               
+            height: 85px !important;                                                                                                                
+        }                                                                                                                                            
+        /* TAMN styled page footer bar (solid dark) */      
+        .footer-container {
+            background: #1a1a1a !important;
+            color: white !important;
+            padding: 10px 30px !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            font-size: 10px !important;
+            font-weight: bold !important;
+            letter-spacing: 0.5px !important;
+            align-items: center;
+        }
+        .footer-container > span:first-child {
+            color: white;
+            flex: 1;
+            letter-spacing: 0.5px;
+        }
+        .footer-container .page-num {
+            color: white;
+        }                                                                           
+    </style>
     {% else %}
     <style>
         .header-logo {
