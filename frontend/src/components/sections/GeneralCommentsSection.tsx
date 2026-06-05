@@ -273,7 +273,8 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
       };
 
       const formatNumber = (value: number): string => {
-        return value.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const rounded = Math.round(value / 1000) * 1000;
+        return rounded.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
       };
 
       // Process market trends
@@ -285,7 +286,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
           marketTrendsFormatted.growth_rate = `${(seriesValue * 100).toFixed(2)}%`;
           marketTrendsRaw.growth_rate = seriesValue;
         } else if (metricType === "Median Value (monthly)") {
-          marketTrendsFormatted.median_house_price = formatNumber(seriesValue);
+          marketTrendsFormatted.median_house_price = `$${formatNumber(seriesValue)}`;
           marketTrendsRaw.median_house_price = seriesValue;
         } else if (metricType === "Median Asking Rent (12 months)") {
           marketTrendsFormatted.weekly_rent = `$${seriesValue}/w`;
@@ -375,7 +376,8 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
       };
 
       const formatNumber = (value: number): string => {
-        return value.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const rounded = Math.round(value / 1000) * 1000;
+        return rounded.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
       };
 
       // Process market trends
@@ -387,7 +389,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
           marketTrendsFormatted.growth_rate = `${(seriesValue * 100).toFixed(2)}%`;
           marketTrendsRaw.growth_rate = seriesValue;
         } else if (metricType === "Median Value (monthly)") {
-          marketTrendsFormatted.median_house_price = formatNumber(seriesValue);
+          marketTrendsFormatted.median_house_price = `$${formatNumber(seriesValue)}`;
           marketTrendsRaw.median_house_price = seriesValue;
         } else if (metricType === "Median Asking Rent (12 months)") {
           marketTrendsFormatted.weekly_rent = `$${seriesValue}/w`;
