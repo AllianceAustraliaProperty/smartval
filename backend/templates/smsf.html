@@ -672,7 +672,11 @@
         .divider-oj { background-color: #f97316 !important; }
     </style>
     {% elif logo_type == 'TAMN' %}
-    <style>.logo-title { height: 100px !important; width: auto; }</style>
+    <style>
+        .logo-title { height: 100px !important; width: auto; }
+        .divider-oj { background-color: #7d6118 !important; }
+        .dt-colour { color: #7d6118 !important; }
+    </style>
     {% else %}
     <style>.logo-title { height: 130px !important; width: auto; }</style>
     {% endif %}
@@ -1299,15 +1303,15 @@
         <ol class="mt-l pl-18">
             <li class="mb-m">
 
-                {% if logo_type == 'CPV' %}CPV Valuers{% else %}AAP Valuations{% endif %} hereby certifies that the assessments of the above property have been carried out as of
-                the valuation date stated in this report. Neither {% if logo_type == 'CPV' %}CPV Valuers{% else %}AAP Valuations{% endif %} nor, to the best of their knowledge,
+                {% if logo_type == 'CPV' %}CPV Valuers{% elif logo_type == 'TAMN' %}TAMN Valuations{% else %}AAP Valuations{% endif %} hereby certifies that the assessments of the above property have been carried out as of
+                the valuation date stated in this report. Neither {% if logo_type == 'CPV' %}CPV Valuers{% elif logo_type == 'TAMN' %}TAMN Valuations{% else %}AAP Valuations{% endif %} nor, to the best of their knowledge,
                 any member of their firm has any conflict of interest, direct, indirect, or financial, in relation to
                 this property that has not been disclosed herein.
             </li>
             <li class="mb-m">
                 This report is intended solely for the use of the party or parties to whom it is addressed for the
                 purpose of a Self-Managed Super Fund Audit and is not to be utilised for any other purpose. Assuming the
-                property has a clear and marketable title, free from any onerous easements or encumbrances, {% if logo_type == 'CPV' %}CPV Valuers{% else %}AAP Valuations{% endif %}
+                property has a clear and marketable title, free from any onerous easements or encumbrances, {% if logo_type == 'CPV' %}CPV Valuers{% elif logo_type == 'TAMN' %}TAMN Valuations{% else %}AAP Valuations{% endif %}
                 is of the opinion that the {% if True %} market value of the entire property can be fairly
                 expressed as {{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
                 AUD. {% else %}
@@ -1323,7 +1327,7 @@
             <li class="mb-m">
                 This report has been prepared for the private and confidential use of our client for the specified
                 purpose. It should not be reproduced in whole or
-                part without the express written authority of {% if logo_type == 'CPV' %}CPV Valuers{% else %}AAP Valuations{% endif %} or relied upon any other party for any
+                part without the express written authority of {% if logo_type == 'CPV' %}CPV Valuers{% elif logo_type == 'TAMN' %}TAMN Valuations{% else %}AAP Valuations{% endif %} or relied upon any other party for any
                 purpose and the valuer shall not have
                 any liability to any party who does so. Our warning is registered here, that any party other than those
                 specifically named in this report should obtain
