@@ -142,7 +142,7 @@ function transformValuationReportToBackend(report: ValuationReportData): any {
     ...report.ancillaryImprovements,
     otherItems: report.ancillaryImprovements.otherItemsText
       ? report.ancillaryImprovements.otherItemsText.split('\n').map(item => item.trim()).filter(Boolean)
-      : [],
+      : (report.ancillaryImprovements.otherItems ?? []),
   } : undefined;
 
   // Remove otherItemsText from the backend payload
