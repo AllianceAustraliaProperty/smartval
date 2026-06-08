@@ -198,8 +198,9 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       }
 
       let accommodationText = `${mainText}${gfText}`.trim();
-      if (accommodationText.endsWith('.')) {
-        accommodationText += '.'; // ensures it ends with a period
+      if (!accommodationText.endsWith('.')) {
+        accommodationText += '.';
+      }
       setValue('propertyDetails.accommodation', accommodationText, { shouldDirty: true });
 
       // After populating values, auto-save the full form
