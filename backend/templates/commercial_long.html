@@ -1378,8 +1378,20 @@
                     <td>{{ record.property_details.site_area|format_area_smart|default('N/A') }}</td>
                 </tr>
                 <tr>
-                    <td>Other Improvements</td>
-                    <td>{{ record.ancillary_improvements.accommodation|default('N/A') }}</td>
+                    <td>Ancillaries</td>
+                    <td>
+                        {% set parts = [] %}
+                        {% if record.ancillary_improvements.driveway %}{% set parts = parts + ['Driveway - ' ~ record.ancillary_improvements.driveway] %}{% endif %}
+                        {% if record.ancillary_improvements.fencing %}{% set parts = parts + ['Fencing - ' ~ record.ancillary_improvements.fencing] %}{% endif %}
+                        {% if record.ancillary_improvements.other_items %}
+                        {% if record.ancillary_improvements.other_items is string %}
+                        {% set parts = parts + record.ancillary_improvements.other_items.split(',') %}
+                        {% else %}
+                        {% set parts = parts + record.ancillary_improvements.other_items %}
+                        {% endif %}
+                        {% endif %}
+                        {{ parts|join(', ') if parts else 'N/A' }}
+                    </td>
                 </tr>
             </table>
         </div>

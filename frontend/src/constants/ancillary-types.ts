@@ -21,6 +21,8 @@ export const OTHER_ITEM_TYPES = [
   'Solar panels',
   'Swimming pool',
   'Verandah',
+  'Lift',
+  'Intercom',
 ] as const;
 
 export type DrivewayType = typeof DRIVEWAY_TYPES[number];

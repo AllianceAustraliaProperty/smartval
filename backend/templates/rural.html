@@ -1666,17 +1666,21 @@
                     <tr>
                         {% if record.ancillary_improvements.show %}
                         <td>Ancillaries</td>
-                        {% if record.ancillary_improvements.other_items %} {%
-                        set other_items =
-                        record.ancillary_improvements.other_items.split(',') %}
+                        {% if record.ancillary_improvements.other_items %}
+                        {% if record.ancillary_improvements.other_items is string %}
+                        {% set other_items = record.ancillary_improvements.other_items.split(',') %}
+                        {% else %}
+                        {% set other_items = record.ancillary_improvements.other_items %}
+                        {% endif %}
+                        {% else %}
+                        {% set other_items = [] %}
                         {% endif %}
                         <td>
                             Driveway - {{
                             record.ancillary_improvements.driveway|default('N/A')
                             }}, Fencing - {{
                             record.ancillary_improvements.fencing|default('N/A')
-                            }}{{', ' + other_items|join(', ') if
-                            record.ancillary_improvements.other_items else ''}}
+                            }}{{', ' + other_items|join(', ') if other_items else ''}}
                         </td>
                         {% endif %}
                     </tr>

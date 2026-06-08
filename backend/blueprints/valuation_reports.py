@@ -706,6 +706,9 @@ def generate_html_report(report_id, template_name='residential.html'):
                 },
                 "ancillary_improvements": {
                     "accommodation": report.get("ancillaryImprovements", {}).get("accommodation"),
+                    "driveway": report.get("ancillaryImprovements", {}).get("driveway"),
+                    "fencing": report.get("ancillaryImprovements", {}).get("fencing"),
+                    "other_items": report.get("ancillaryImprovements", {}).get("otherItems"),
                 },
                 "estimated_outgoings": report.get("valuationDetails", {}).get("outgoings"),
                 "listing_comparables": listing_comparables,
