@@ -160,11 +160,15 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
       const bedroomsVal = watch('propertyDescriptors.bedrooms') || 'N/A';
       const bathroomsVal = watch('propertyDescriptors.bathrooms') || 'N/A';
+      const ensuiteCount = photosSummary.categories
+        .filter(c => c.category.toLowerCase().startsWith('ensuite'))
+        .length;
       const parkingTypeVal = watch('propertyDescriptors.parkingType')?.toLowerCase() || 'N/A';
 
       const accommodationParts = [
         `${bedroomsVal} bedrooms`,
         `${bathroomsVal} bathrooms`,
+        ...(ensuiteCount > 0 ? [`${ensuiteCount} ensuite${ensuiteCount > 1 ? 's' : ''}`] : []),
         parkingTypeVal
       ];
 
