@@ -576,9 +576,9 @@
       height: 70px !important;
     }
 
-    /* TAMN styled page footer bar (solid dark) */
+    /* TAMN styled page footer bar (brown matching logo) */
     .footer-container:not(.vertical) {
-      background: #1a1a1a !important;
+      background: #7d6118 !important;
       color: white !important;
       padding: 10px 30px !important;
       bottom: 0 !important;
@@ -639,7 +639,7 @@
   <!-- TAMN Cover Page -->
   <div class="page" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
     <div style="text-align: center; margin-top: 60px;">
-      <img src="{{ logo_url }}" alt="TAMN Logo" style="height: 130px; width: auto; object-fit: contain; display: block; margin: 0 auto 20px auto;" />
+      <img src="{{ logo_url }}" alt="TAMN Logo" style="height: 160px; width: auto; object-fit: contain; display: block; margin: 0 auto 20px auto;" />
     </div>
     <div style="text-align: center; margin-top: 80px;">
       <p style="font-weight: bold; font-size: 26px; margin-bottom: 15px;">Valuation Report</p>
@@ -654,6 +654,9 @@
       <p style="font-size: 14px; margin-top: 15px;">Ref #{{ valuation_report["fileNumber"]|default('') }}</p>
     </div>
     <div style="position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center;">
+      <div style="font-size: 9px; margin-bottom: 4px; line-height: 1.5;">
+        Tamn Property Valuers | ABN 92 605 356 983 | info@tamn.com.au | 1300 226 482 | www.tamn.com.au
+      </div>
       <span style="font-size: 8.5pt; font-style: italic;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>
     </div>
   </div>
@@ -895,15 +898,9 @@
     </div>
 
     <div class="space-between-md"></div>
-    <div style="display: flex; justify-content: end; flex-direction: column; align-items: flex-end;">
+    <div style="display: flex; justify-content: end;">
       <img src="https://valai.duo.tax/assets/member-api-logo.png" alt=""
         style="width: 177.25984252px; height: 92.976377953px" />
-      {% if logo_type == 'TAMN' %}
-      <div style="font-size: 9px; margin-top: 6px; text-align: right; line-height: 1.5;">
-        Tamn Property Valuers | ABN 92 605 356 983 | info@tamn.com.au | 1300 226 482 | www.tamn.com.au<br>
-        <em>Liability Limited by a scheme approved under Professional Standards' Legislation</em>
-      </div>
-      {% endif %}
     </div>
     <div class="footer-container">
       <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
@@ -1373,7 +1370,7 @@
       </p>
       <p>This report has been prepared for the private and confidential use of our client for the specified purpose. It
         should not be reproduced in whole or part without the express written authority of {% if logo_type == 'CPV'
-        %}CPV Valuers{% else %}AAP Valuations{% endif %} or relied upon any other party for any purpose and the valuer
+        %}CPV Valuers{% elif logo_type == 'TAMN' %}TAMN Valuations{% else %}AAP Valuations{% endif %} or relied upon any other party for any purpose and the valuer
         shall not have any liability to any party who does so. Our warning is registered here, that any party other than
         those specifically named in this report should obtain their own valuation before acting in any way in respect of
         the subject property.</p>

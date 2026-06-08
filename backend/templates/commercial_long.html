@@ -556,9 +556,9 @@
         .header-logo {                                                                                                                               
             height: 70px !important;                                                                                                                
         }                                                                                                                                            
-        /* TAMN styled page footer bar (solid dark) */
+        /* TAMN styled page footer bar (brown matching logo) */
         .footer-container {
-            background: #1a1a1a !important;
+            background: #7d6118 !important;
             color: white !important;
             padding: 10px 30px !important;
             bottom: 0 !important;
@@ -713,7 +713,7 @@
         <div class="header-container">
             <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
-        <div class="banner" style="background-color: #2563eb; color: white; padding: 14px 18px;">
+        <div class="banner" style="background-color: {% if logo_type == 'CPV' %}#f97316{% else %}#2563eb{% endif %}; color: white; padding: 14px 18px;">
             <div style="font-size: 18px; font-weight: bold; margin-bottom: 3px;">Valuation Executive Summary</div>
             <div style="font-size: 12px; font-weight: normal;">{{ _full_addr }}</div>
         </div>
@@ -772,9 +772,6 @@
                 <!-- Prepared By (moved from right column) -->
                 <div class="subtitle-lg" style="font-weight: bold; margin-top: 40px; margin-bottom: 4px;">Prepared By.</div>
                 <div style="line-height: 1.5;">
-                    Alliance Australia Property Pty Ltd<br>
-                    T/A AAP Valuations<br>
-                    <br>
                     {% if sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
                     Peter Lee<br>
                     Director, AAPI CPV<br>
