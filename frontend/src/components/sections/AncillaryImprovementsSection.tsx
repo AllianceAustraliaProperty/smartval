@@ -52,7 +52,11 @@ export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register,
         >
           <Select
             {...register('ancillaryImprovements.otherItems' as const)}
-            onChange={(e) => setValue('ancillaryImprovements.otherItems' as any, e.target.value ? [e.target.value] : [], { shouldDirty: true })}
+            onChange={(e) => {
+              const val = e.target.value ? [e.target.value] : [];
+              setValue('ancillaryImprovements.otherItems' as any, val, { shouldDirty: true });
+              setValue('ancillaryImprovements.otherItemsText' as any, e.target.value || '', { shouldDirty: true });
+            }}
             options={OTHER_ITEM_TYPES.map(type => ({ value: type, label: type }))}
             error={errors.ancillaryImprovements?.otherItems?.message as string}
           />
