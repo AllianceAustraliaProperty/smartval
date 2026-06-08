@@ -94,7 +94,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
     // Get category names and convert to lowercase
     const categoryNames = categories
       .map(cat => cat.category.toLowerCase())
-      .filter(cat => !cat.startsWith('bedroom') && !cat.startsWith('bathroom') && !cat.startsWith('ensuite'))
+      .filter(cat => !cat.startsWith('bedroom') && !cat.startsWith('bathroom'))
       .filter(name => name && name.trim().length > 0);
 
     if (categoryNames.length === 0) return 'N/A';
@@ -119,9 +119,6 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
     // Get property data
     const bedrooms = watch('propertyDescriptors.bedrooms') || 'N/A';
     const bathrooms = watch('propertyDescriptors.bathrooms') || 'N/A';
-    const ensuiteCount = photosSummary.categories
-      .filter(c => c.category.toLowerCase().startsWith('ensuite'))
-      .length;
     const parkingType = watch('propertyDescriptors.parkingType')?.toLowerCase() || 'N/A';
     const siteArea = watch('propertyDetails.siteArea') || 'N/A';
     const buildingArea = watch('propertyDetails.buildingArea') || 'N/A';
@@ -146,7 +143,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
       }).length;
       const gfCategories = gfSummary.categories
         .map(c => c.category.toLowerCase())
-        .filter(c => !c.startsWith('bedroom') && !c.startsWith('bathroom') && !c.startsWith('ensuite'));
+        .filter(c => !c.startsWith('bedroom') && !c.startsWith('bathroom'));
       const gfStructural: string[] = [];
       if (gfBedrooms) gfStructural.push(`${gfBedrooms} bedrooms`);
       if (gfBathrooms) gfStructural.push(`${gfBathrooms} bathrooms`);
@@ -164,10 +161,8 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
       ? `The property features items such as ${generalItems}. `
       : '';
 
-    const ensuiteText = ensuiteCount > 0 ? `, ${ensuiteCount} ensuite${ensuiteCount > 1 ? 's' : ''}` : '';
-
     const propertyComments = (
-      `The subject property consists of ${bedrooms} bedrooms, ${bathrooms} bathrooms${ensuiteText}, ${parkingType}, with ${categories}.` +
+      `The subject property consists of ${bedrooms} bedrooms, ${bathrooms} bathrooms, ${parkingType}, with ${categories}.` +
       mainBuildingSuffix +
       grannyFlatLine + ' ' +
       `The subject property ${landAreaText} ${siteArea} sqm and a total building area of ${buildingArea} sqm approximately. ` +

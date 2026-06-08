@@ -152,23 +152,21 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       // Generate accommodation from photos and property descriptors
       const photos = watch('photos') || [];
       const photosSummary = summarizePhotos(photos);
-      const categories = photosSummary.categories
+      const catArray = photosSummary.categories
         .map(cat => cat.category.toLowerCase())
-        .filter(cat => !cat.startsWith('bedroom') && !cat.startsWith('bathroom') && !cat.startsWith('ensuite'))
-        .join(', ')
-        .trim();
+        .filter(cat => !cat.startsWith('bedroom') && !cat.startsWith('bathroom'))
+
+      const categories = catArray.length > 1
+        ? `${catArray.slice(0, -1).join(', ')} and ${catArray[catArray.length - 1]}`
+        : catArray.join('');
 
       const bedroomsVal = watch('propertyDescriptors.bedrooms') || 'N/A';
       const bathroomsVal = watch('propertyDescriptors.bathrooms') || 'N/A';
-      const ensuiteCount = photosSummary.categories
-        .filter(c => c.category.toLowerCase().startsWith('ensuite'))
-        .length;
       const parkingTypeVal = watch('propertyDescriptors.parkingType')?.toLowerCase() || 'N/A';
 
       const accommodationParts = [
         `${bedroomsVal} bedrooms`,
         `${bathroomsVal} bathrooms`,
-        ...(ensuiteCount > 0 ? [`${ensuiteCount} ensuite${ensuiteCount > 1 ? 's' : ''}`] : []),
         parkingTypeVal
       ];
 
@@ -189,7 +187,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         }).length;
         const gfCategories = gfSummary.categories
           .map(c => c.category.toLowerCase())
-          .filter(c => !c.startsWith('bedroom') && !c.startsWith('bathroom') && !c.startsWith('ensuite'));
+          .filter(c => !c.startsWith('bedroom') && !c.startsWith('bathroom'));
         const gfStructural: string[] = [];
         if (gfBedrooms) gfStructural.push(`${gfBedrooms} bedrooms`);
         if (gfBathrooms) gfStructural.push(`${gfBathrooms} bathrooms`);
@@ -199,7 +197,9 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         gfText = ` ${gfBase}${gfRooms} in the granny flat`;
       }
 
-      const accommodationText = `${mainText}${gfText}`.trim();
+      let accommodationText = `${mainText}${gfText}`.trim();
+      if (accommodationText.endsWith('.')) {
+        accommodationText += '.'; // ensures it ends with a period
       setValue('propertyDetails.accommodation', accommodationText, { shouldDirty: true });
 
       // After populating values, auto-save the full form
