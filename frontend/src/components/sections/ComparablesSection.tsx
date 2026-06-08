@@ -1217,6 +1217,25 @@ const ComparableCard: React.FC<{
   const comparisonValue = (watch(`comparables.${type}.${index}.comparison` as const) as string) ?? '';
   const comparableKey = `${type}-${index}`;
 
+  // Auto-calculate NLA Rate = Sale Price / NLA (buildingArea)
+  const saleLeasePrice = watch(`comparables.${type}.${index}.saleLeasePrice` as const) as number | undefined;
+  const buildingArea = watch(`comparables.${type}.${index}.buildingArea` as const) as number | undefined;
+  const netIncomeRental = watch(`comparables.${type}.${index}.netIncomeRental` as const) as number | undefined;
+
+  useEffect(() => {
+    if (saleLeasePrice && buildingArea && buildingArea > 0) {
+      const calculated = Math.round((saleLeasePrice / buildingArea) * 100) / 100;
+      setValue(`comparables.${type}.${index}.nlaRate` as any, calculated, { shouldDirty: true });
+    }
+  }, [saleLeasePrice, buildingArea]);
+
+  useEffect(() => {
+    if (netIncomeRental && saleLeasePrice && saleLeasePrice > 0) {
+      const calculated = Math.round((netIncomeRental / saleLeasePrice) * 10000) / 100;
+      setValue(`comparables.${type}.${index}.yield` as any, calculated, { shouldDirty: true });
+    }
+  }, [netIncomeRental, saleLeasePrice]);
+
   // Reset tracking when switching to a different comparable
   useEffect(() => {
     if (comparableKey !== lastComparableKey.current) {
@@ -1804,7 +1823,9 @@ const ComparableCard: React.FC<{
                     type="number"
                     step="0.01"
                     {...register(`comparables.${type}.${index}.nlaRate` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 350.00"
+                    placeholder="Auto-calculated"
+                    readOnly
+                    style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
                     error={errors.comparables?.[type]?.[index]?.nlaRate?.message}
                   />
                 </FormField>
@@ -1817,7 +1838,9 @@ const ComparableCard: React.FC<{
                     type="number"
                     step="0.01"
                     {...register(`comparables.${type}.${index}.yield` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 5.50"
+                    placeholder="Auto-calculated"
+                    readOnly
+                    style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
                     error={errors.comparables?.[type]?.[index]?.yield?.message}
                   />
                 </FormField>
@@ -2048,6 +2071,20 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
   title,
 }) => {
   const comparables = watch(`comparables.${type}`) ?? [];
+
+  // Auto-set lowestValueSqm / highestValueSqm from all comparables' nlaRate (sales only)
+  useEffect(() => {
+    if (type !== 'sales') return;
+    const rates: number[] = comparables
+      .map((c: any) => c.nlaRate)
+      .filter((r: any) => typeof r === 'number' && !isNaN(r) && r > 0);
+    if (rates.length === 0) return;
+    const min = Math.min(...rates);
+    const max = Math.max(...rates);
+    setValue('valuationDetails.lowestValueSqm' as any, Math.round(min * 100) / 100, { shouldDirty: true });
+    setValue('valuationDetails.highestValueSqm' as any, Math.round(max * 100) / 100, { shouldDirty: true });
+  }, [JSON.stringify(comparables.map((c: any) => c.nlaRate))]);
+
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
   const [addressSearch, setAddressSearch] = useState('');
   const [addressSearchResults, setAddressSearchResults] = useState<any[]>([]);
