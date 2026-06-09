@@ -56,7 +56,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       parkingType
     ];
     const mainBaseText = mainParts.join(', ') + (categories ? ` with ${categories}` : '');
-    const mainText = hasGrannyFlat ? `${mainBaseText} in the main house.` : mainBaseText;
+    const mainText = hasGrannyFlat ? `${mainBaseText} in the main house.` : `${mainBaseText}.`;
 
     // Granny Flat bedroom/bathroom count from additional photos if selected (no leading label)
     let gfText = '';
@@ -80,7 +80,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       gfStructural.push('car space');
       const gfBase = gfStructural.join(', ');
       const gfRooms = gfCategories.length > 0 ? ` with ${gfRoomsFormatted}` : '';
-      gfText = ` gfBase{gfRooms} in the granny flat.`;
+      gfText = ` ${gfBase}${gfRooms} in the granny flat.`;
     }
 
     const accommodation = `${mainText}${gfText}`.trim();
