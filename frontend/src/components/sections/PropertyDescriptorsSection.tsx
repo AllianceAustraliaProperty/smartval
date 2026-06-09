@@ -133,9 +133,9 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           label="External Walls"
           error={errors.propertyDescriptors?.externalWalls?.message}
         >
-          <Select
+          <Input
             {...register('propertyDescriptors.externalWalls')}
-            options={EXTERNAL_WALLS.map(type => ({ value: type, label: type }))}
+            placeholder="e.g., Double Brick"
             error={errors.propertyDescriptors?.externalWalls?.message}
           />
         </FormField>
@@ -144,9 +144,9 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           label="Internal Walls"
           error={errors.propertyDescriptors?.internalWalls?.message}
         >
-          <Select
+          <Input
             {...register('propertyDescriptors.internalWalls')}
-            options={INTERNAL_WALLS.map(type => ({ value: type, label: type }))}
+            placeholder="e.g., Rendered/Face Brick"
             error={errors.propertyDescriptors?.internalWalls?.message}
           />
         </FormField>
