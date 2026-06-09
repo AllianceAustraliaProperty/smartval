@@ -152,9 +152,9 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           label="Internal Walls"
           error={errors.propertyDescriptors?.internalWalls?.message}
         >
-          <Select
+          <Input
             {...register('propertyDescriptors.internalWalls')}
-            options={INTERNAL_WALLS.map(type => ({ value: type, label: type }))}
+            placeholder="e.g., Rendered/Face Brick"
             error={errors.propertyDescriptors?.internalWalls?.message}
           />
         </FormField>

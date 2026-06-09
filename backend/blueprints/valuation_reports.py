@@ -657,8 +657,8 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "council_area": report.get("propertyDetails", {}).get("councilArea"),
                     "zoning": report.get("propertyDetails", {}).get("zoning"),
                     "title_reference": report.get("propertyDetails", {}).get("titleReference"),
-                    "frontage": report.get("landDetails", {}).get("frontage"),
-                    "depth": report.get("landDetails", {}).get("depth"),
+                    "frontage": report.get("propertyDetails", {}).get("frontage") or report.get("landDetails", {}).get("frontage"),
+                    "depth": report.get("propertyDetails", {}).get("depth") or report.get("landDetails", {}).get("depth"),
                     "build_year": report.get("propertyDetails", {}).get("buildYear") or report.get("propertyDetails", {}).get("yearBuilt"),
                 },
                 "property_descriptors": {
