@@ -1675,12 +1675,18 @@
                         {% else %}
                         {% set other_items = [] %}
                         {% endif %}
+
+                        {% set formatted_other_items = [] %}
+                        {% for item in other_items %}
+                            {% set formatted_other_items = formatted_other_items + ['Other Items - ' ~ item.strip()] %}
+                        {% endfor %}
+
                         <td>
                             Driveway - {{
                             record.ancillary_improvements.driveway|default('N/A')
                             }}, Fencing - {{
                             record.ancillary_improvements.fencing|default('N/A')
-                            }}{{', ' + other_items|join(', ') if other_items else ''}}
+                            }}{{', ' + formatted_other_items|join(', ') if formatted_other_items else ''}}
                         </td>
                         {% endif %}
                     </tr>

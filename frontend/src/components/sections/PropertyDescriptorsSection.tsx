@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { FormField, Input, Select, Textarea, Checkbox } from '../ui/FormField';
+import { FormField, Input, Select, Textarea, Checkbox, MultiSelectDropdown } from '../ui/FormField';
+import { Controller } from 'react-hook-form';
 import { CONDITION_OPTIONS, SectionProps } from '@/types/property-valuation';
 import { ROOFING_TYPES } from '@/constants/roofing-types';
 import { INTERNAL_WALLS, EXTERNAL_WALLS } from '@/constants/wall-types';
@@ -7,7 +8,7 @@ import { PARKING_TYPES } from '@/constants/parking-types';
 import { ResidentialMainBuildingTypes, CommercialMainBuildingTypes, AllMainBuildingTypes } from '@/constants/main-building-types';
 import { ResidentialPropertyTypes, CommercialPropertyTypes } from '@/constants/property-types';
 
-export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, errors, watch }) => {
+export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, errors, watch, control }) => {
   // Watch the property type to determine which building types to show
   const propertyType = watch('propertyDetails.propertyType');
   const isGrannyFlat = watch('propertyDescriptors.isGrannyFlat');
@@ -133,10 +134,17 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           label="External Walls"
           error={errors.propertyDescriptors?.externalWalls?.message}
         >
-          <Input
-            {...register('propertyDescriptors.externalWalls')}
-            placeholder="e.g., Double Brick"
-            error={errors.propertyDescriptors?.externalWalls?.message}
+          <Controller
+            name="propertyDescriptors.externalWalls"
+            control={control}
+            render={({ field }) => (
+              <MultiSelectDropdown
+                options={EXTERNAL_WALLS.map(type => ({ value: type, label: type }))}
+                value={field.value || ''}
+                onChange={field.onChange}
+                error={errors.propertyDescriptors?.externalWalls?.message}
+              />
+            )}
           />
         </FormField>
 
@@ -284,9 +292,16 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
               />
             </FormField>
             <FormField label="External Walls">
-              <Select
-                {...register('propertyDescriptors.grannyFlat.externalWalls')}
-                options={EXTERNAL_WALLS.map(type => ({ value: type, label: type }))}
+              <Controller
+                name="propertyDescriptors.grannyFlat.externalWalls"
+                control={control}
+                render={({ field }) => (
+                  <MultiSelectDropdown
+                    options={EXTERNAL_WALLS.map(type => ({ value: type, label: type }))}
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                )}
               />
             </FormField>
             <FormField label="Internal Walls">

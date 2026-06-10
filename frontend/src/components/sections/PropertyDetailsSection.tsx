@@ -31,11 +31,13 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
     const photosSummary = summarizePhotos(photos);
 
     // Format categories as comma-separated string
-    const categories = photosSummary.categories
+    const catArray = photosSummary.categories
       .map(cat => cat.category.toLowerCase())
-      .filter(cat => !cat.startsWith('bedroom') && !cat.startsWith('bathroom') && !cat.startsWith('ensuite'))
-      .join(', ')
-      .trim();
+      .filter(cat => !cat.startsWith('bedroom') && !cat.startsWith('bathroom'));
+
+    const categories = catArray.length > 1
+      ? `${catArray.slice(0, -1).join(', ')} and ${catArray[catArray.length - 1]}`                                                                                
+      : catArray.join(''); 
 
     // Get property descriptors
     const bedrooms = watch('propertyDescriptors.bedrooms') || 'N/A';
@@ -54,7 +56,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       parkingType
     ];
     const mainBaseText = mainParts.join(', ') + (categories ? ` with ${categories}` : '');
-    const mainText = hasGrannyFlat ? `${mainBaseText} in the main house.` : mainBaseText;
+    const mainText = hasGrannyFlat ? `${mainBaseText} in the main house.` : `${mainBaseText}.`;
 
     // Granny Flat bedroom/bathroom count from additional photos if selected (no leading label)
     let gfText = '';
@@ -67,14 +69,18 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       }).length;
       const gfCategories = gfSummary.categories
         .map(c => c.category.toLowerCase())
-        .filter(c => !c.startsWith('bedroom') && !c.startsWith('bathroom') && !c.startsWith('ensuite'));
+        .filter(c => !c.startsWith('bedroom') && !c.startsWith('bathroom'));
+      
+      const gfRoomsFormatted = gfCategories.length > 1                                                                                                            
+          ? `${gfCategories.slice(0, -1).join(', ')} and ${gfCategories[gfCategories.length - 1]}`                                                                  
+          : gfCategories.join('');
       const gfStructural: string[] = [];
       if (gfBedrooms) gfStructural.push(`${gfBedrooms} bedrooms`);
       if (gfBathrooms) gfStructural.push(`${gfBathrooms} bathrooms`);
       gfStructural.push('car space');
       const gfBase = gfStructural.join(', ');
-      const gfRooms = gfCategories.length > 0 ? ` with ${gfCategories.join(', ')}` : '';
-      gfText = ` ${gfBase}${gfRooms} in the granny flat`;
+      const gfRooms = gfCategories.length > 0 ? ` with ${gfRoomsFormatted}` : '';
+      gfText = ` ${gfBase}${gfRooms} in the granny flat.`;
     }
 
     const accommodation = `${mainText}${gfText}`.trim();
