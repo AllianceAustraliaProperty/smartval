@@ -1199,7 +1199,7 @@ const ComparableCard: React.FC<{
     'Land shape',
     'Location',
     'View profile',
-    'Lettable area',
+    'Internal area',
     'Building condition',
     'Net Lettable Area',
   ];
