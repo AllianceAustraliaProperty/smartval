@@ -383,10 +383,10 @@ export default function ValuationReportEditPage() {
   const handleCancel = () => {
     if (isDirty) {
       if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
-        router.push('/valuation-reports');
+        router.push('/home');
       }
     } else {
-      router.push('/valuation-reports');
+      router.push('/home');
     }
   };
 
@@ -440,7 +440,7 @@ export default function ValuationReportEditPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Report</h2>
           <p className="text-gray-600 mb-6">{error || 'The valuation report could not be loaded.'}</p>
           <button
-            onClick={() => router.push('/valuation-reports')}
+            onClick={() => router.push('/home')}
             className="inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

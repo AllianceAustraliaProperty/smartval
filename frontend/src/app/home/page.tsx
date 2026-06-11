@@ -50,6 +50,7 @@ export default function ValuationReportsPage() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'all' | 'valuations' | 'alliance' | 'inspections'>('all');
   const [valuationReports, setValuationReports] = useState<ValuationReportCardData[]>([]);
   const [selectedReports, setSelectedReports] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
@@ -272,7 +273,7 @@ export default function ValuationReportsPage() {
   };
 
   const handleEdit = (id: string) => {
-    router.push(`/valuation-reports/${id}/edit`);
+    router.push(`/home/${id}/edit`);
   };
 
   const handlePreview = (id: string, address: string) => {
@@ -364,7 +365,7 @@ export default function ValuationReportsPage() {
   };
 
   const handleGoHome = () => {
-    window.location.href = '/valuation-reports';
+    window.location.href = '/home';
   };
 
   const handleLogout = () => {
@@ -568,8 +569,61 @@ export default function ValuationReportsPage() {
             </div>
           </div>
 
-          {/* Search and Filters */}
-          <div className="mb-8">
+          {/* Analytics Top Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-slate-600 font-semibold tracking-wide">Total Valuations</h3>
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+              <p className="text-4xl font-bold text-slate-800">{valuationReports.length}</p>
+            </div>
+            <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-slate-600 font-semibold tracking-wide">Alliance Jobs</h3>
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <ExternalLink className="w-6 h-6 text-orange-600" />
+                </div>
+              </div>
+              <p className="text-4xl font-bold text-slate-800">{allianceJobs.length}</p>
+            </div>
+            <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-slate-600 font-semibold tracking-wide">Pending Inspections</h3>
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <FileSearch className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+              <p className="text-4xl font-bold text-slate-800">{inspectionReports.length}</p>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex items-center space-x-2 mb-8 bg-white/40 backdrop-blur-md p-2 rounded-2xl w-max border border-white/50 shadow-sm">
+            {[
+              { id: 'all', label: 'All Reports' },
+              { id: 'valuations', label: 'My Valuations' },
+              { id: 'alliance', label: 'Alliance Jobs' },
+              { id: 'inspections', label: 'Inspections' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 tracking-wide ${
+                  activeTab === tab.id
+                    ? 'bg-white text-blue-700 shadow-sm shadow-blue-900/5 border border-white'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search and Filters (Sticky) */}
+          <div className="sticky top-4 z-40 mb-8 bg-white/70 backdrop-blur-xl p-4 rounded-3xl border border-white/60 shadow-lg transition-all duration-300">
             <div className="flex items-center space-x-4">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -602,17 +656,23 @@ export default function ValuationReportsPage() {
             </div>
           </div>
 
-          {/* Valuation Reports Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          {/* Valuation Reports Section */}
+          {(activeTab === 'all' || activeTab === 'valuations') && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                <FileText className="w-6 h-6 mr-3 text-blue-600" /> Valuation Reports
+              </h2>
+              {/* Valuation Reports Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {filteredReports.map((report, index) => (
               <div
                 key={report.id || index}
-                className="group relative bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02]"
+                className="group relative bg-white/70 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transform hover:-translate-y-1"
                 onMouseEnter={() => setHoveredCard(report.id)}
                 onMouseLeave={() => setHoveredCard(null)}
               >
                 {/* Selection Checkbox */}
-                <div className="absolute top-3 left-3 z-10">
+                <div className="absolute top-4 left-4 z-10">
                   <input
                     type="checkbox"
                     checked={selectedReports.has(report.id)}
@@ -622,8 +682,8 @@ export default function ValuationReportsPage() {
                 </div>
 
                 {/* Blue Header Section */}
-                <div className="bg-gradient-to-r from-blue-500 to-blue-700 p-4 text-white relative">
-                  <div className="flex items-center space-x-3 pl-6">
+                <div className="bg-[#0b70c5] p-5 text-white relative border-b border-white/20">
+                  <div className="flex items-center space-x-3 pl-8">
                     <Home className="w-6 h-6" />
                     <div>
                       <p className="text-sm font-medium opacity-90">{report.fileNumber || report.id}</p>
@@ -710,14 +770,15 @@ export default function ValuationReportsPage() {
                 <Sparkles className="w-5 h-5 ml-2 opacity-80 group-hover:animate-spin" />
               </button>
             </div>
+            </div>
           )}
-        </div>
-      </div>
+            </div>
+          )}
 
-      {/* Alliance Reports Section */}
-      <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 min-h-screen">
-        <div className="max-w-7xl mx-auto px-8 py-12">
-          {/* Alliance Section Header */}
+          {/* Alliance Reports Section */}
+          {(activeTab === 'all' || activeTab === 'alliance') && (
+            <div className="mb-12 pt-8 border-t border-gray-200/60">
+              {/* Alliance Section Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -780,10 +841,10 @@ export default function ValuationReportsPage() {
                   {allianceJobs.map((job) => (
                     <div
                       key={job.id}
-                      className="group relative bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02]"
+                      className="group relative bg-white/70 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transform hover:-translate-y-1"
                     >
                       {/* Orange Header Section */}
-                      <div className="bg-gradient-to-r from-orange-500 to-red-600 p-4 text-white relative">
+                      <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-5 text-white relative border-b border-white/20">
                         <div className="flex items-center space-x-3">
                           <ExternalLink className="w-6 h-6" />
                           <div>
@@ -902,12 +963,14 @@ export default function ValuationReportsPage() {
             </div>
           )}
         </div>
-      </div>
+          )}
+            </div>
+          )}
 
-      {/* Inspection Reports Section */}
-      <div className="bg-gradient-to-br from-slate-50 via-purple-50 to-purple-100 min-h-screen">
-        <div className="max-w-7xl mx-auto px-8 py-12">
-          {/* Inspection Section Header */}
+          {/* Inspection Reports Section */}
+          {(activeTab === 'all' || activeTab === 'inspections') && (
+            <div className="mb-12 pt-8 border-t border-gray-200/60">
+              {/* Inspection Section Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -1046,7 +1109,7 @@ export default function ValuationReportsPage() {
                             </button>
                             <button
                               onClick={() => {
-                                router.push(`/valuation-reports/${report.id}/edit`);
+                                router.push(`/home/${report.id}/edit`);
                               }}
                               className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
                             >
@@ -1062,9 +1125,10 @@ export default function ValuationReportsPage() {
               )}
             </div>
           )}
+            </div>
+          )}
         </div>
       </div>
-
 
       {/* Floating Status Indicator */}
       <div className="fixed bottom-8 left-8 z-50">

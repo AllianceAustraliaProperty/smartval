@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 export default function HomePage() {
   useEffect(() => {
     // Redirect to properties page on load
-    window.location.href = '/valuation-reports';
+    window.location.href = '/home';
   }, []);
 
   return (
