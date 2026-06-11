@@ -1710,13 +1710,14 @@
           {% if valuation_report["ancillaryImprovements"]["fencing"] %}
           {% set parts = parts + ['Fencing - ' ~ valuation_report["ancillaryImprovements"]["fencing"]] %}
           {% endif %}
-          {% if valuation_report["ancillaryImprovements"]["otherItems"] %}
-            {% for item in valuation_report["ancillaryImprovements"]["otherItems"] %}
-              {% set parts = parts + ['Other Items - ' ~ item] %}
-            {% endfor %}
-          {% endif %}
           <td>{{ parts|join(', ') if parts else 'N/A' }}</td>
         </tr>
+        {% if valuation_report["ancillaryImprovements"]["otherItems"] %}
+        <tr>
+          <td>Other Items</td>
+          <td>{{ valuation_report["ancillaryImprovements"]["otherItems"]|join(', ') }}</td>
+        </tr>
+        {% endif %}
         {% endif %}
       </table>
     </div>

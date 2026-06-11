@@ -1381,20 +1381,21 @@
                         {% set parts = [] %}
                         {% if record.ancillary_improvements.driveway %}{% set parts = parts + ['Driveway - ' ~ record.ancillary_improvements.driveway] %}{% endif %}
                         {% if record.ancillary_improvements.fencing %}{% set parts = parts + ['Fencing - ' ~ record.ancillary_improvements.fencing] %}{% endif %}
-                        {% if record.ancillary_improvements.other_items %}
-                            {% if record.ancillary_improvements.other_items is string %}
-                                {% for item in record.ancillary_improvements.other_items.split(',') %}
-                                    {set parts = parts + ['Other Items - ' ~ item.strip()] %}
-                                {% endfor %}
-                            {% else %}
-                                {% for item in record.ancillary_improvements.other_items %}
-                                    {set parts = parts + ['Other Items - ' ~ item] %}
-                                {% endfor %}
-                            {% endif %}
-                        {% endif %}
                         {{ parts|join(', ') if parts else 'N/A' }}
                     </td>
                 </tr>
+                {% if record.ancillary_improvements.other_items %}
+                <tr>
+                    <td>Other Items</td>
+                    <td>
+                        {% if record.ancillary_improvements.other_items is string %}
+                            {{ record.ancillary_improvements.other_items }}
+                        {% else %}
+                            {{ record.ancillary_improvements.other_items|join(', ') }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
             </table>
         </div>
         <div class="footer-container">
