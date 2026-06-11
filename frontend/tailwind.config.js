@@ -18,6 +18,7 @@ module.exports = {
         'bounce-slow': 'bounce 2s infinite',
         'pulse-slow': 'pulse 3s infinite',
         'glow': 'glow 2s ease-in-out infinite alternate',
+        'breath': 'breath 7s ease-in-out infinite',
         'float': 'float 3s ease-in-out infinite',
         'shimmer': 'shimmer 2s linear infinite',
         'spin-slow': 'spin 3s linear infinite',
@@ -46,6 +47,10 @@ module.exports = {
             opacity: '1',
             transform: 'translateY(0)'
           },
+        },
+        breath: {                                                                                                                                  
+          '0%, 100%': { opacity: '0.2', transform: 'scale(1.2)' },                                                                                 
+          '50%': { opacity: '0.7', transform: 'scale(1.5)' },                                                                                      
         },
         glow: {
           '0%': { 

@@ -3,9 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Building, Eye, EyeOff, Shield, Lock, Mail, AlertCircle } from 'lucide-react';
+import Image from 'next/image';
+import aapLogo from '../aap logo.svg';
+import { Dancing_Script, Inter } from 'next/font/google';
 import { signIn, getCurrentUser, getIdToken } from '@/lib/auth';
 import { loginSchema, type LoginInput } from '@/lib/validation';
 import { z } from 'zod';
+
+const dancingScript = Dancing_Script({
+  weight: ['700'],
+  subsets: ['latin'],
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+});
 
 export default function LoginPage() {
   const router = useRouter();
@@ -99,42 +112,72 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
-      </div>
+    <div
+      className={`min-h-screen relative overflow-hidden flex items-center justify-center ${inter.className}`}
+      style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
+    >
+      {/* dotted pattern goes here */}
+      <div
+        className="absolute inset-0 opacity-10 pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
+          backgroundSize: '20px 20px'
+        }}
+      ></div>
+
+      {/* breathing glow of the background overlay */}
+      <div
+      className="absolute inset-0 pointer-events-none animate-breath origin-bottom"
+      style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
+      ></div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg min-w-0 sm:min-w-[450px]">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center shadow-2xl transform transition-transform duration-300 group-hover:scale-110">
-                  <Building className="w-8 h-8 text-white drop-shadow-lg" />
+              {/* Add the "group" class here so hovering triggers children */}
+              <div className="relative group cursor-pointer">
+
+                {/* The glowing aura */}
+                <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl transition-all duration-500 ease-out group-hover:scale-[1.3] group-hover:opacity-100 group-hover:blur-2xl"></div>
+                                                                                                                                                       
+                {/* The circular logo container */}                                                                                                
+                <div                                                                                                                               
+                  className="relative w-24 h-24 rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(59,130,246,0.15)] border border-white shadow-inner transform transition-transform duration-500 ease-out group-hover:scale-105"
+                  style={{
+                    background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 100%)'
+                  }}
+                >
+                  <Image
+                    src={aapLogo}
+                    alt="AAP Logo"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 object-contain drop-shadow-sm"
+                    priority
+                  />
                 </div>
               </div>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 bg-clip-text text-transparent drop-shadow-lg mb-2">
-              SMARTval
+
+            <h1 className="text-5xl tracking-wide mb-3 flex items-center justify-center">
+              <span className={`font-bold text-[#1f7cc6] ${inter.className}`}>SMART</span>
+              <span className={`text-[#1f7cc6] relative -top-[0.1px] ${dancingScript.className}`} style={{ marginLeft: '2px', fontSize: '1.05em' }}>val</span>
             </h1>
-            <p className="text-gray-600 font-medium mb-2">Alliance Australia Property</p>
-            <div className="flex items-center justify-center text-sm text-gray-500">
-              <Shield className="w-4 h-4 mr-2" />
-              Secure Login Portal
+            <p className="text-slate-700 tracking-wide font-medium mb-3 text-sm">A Digital Solution to AAP Valuations Pty. Ltd.</p>
+            <div className="flex items-center justify-center text-sm text-slate-500 tracking-wider">
+              <Shield className="w-4 h-4 mr-1.5 opacity-70" />
+              Secure Dashboard Portal
             </div>
           </div>
 
           {/* Login Form */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="w-full px-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {/* General Error Message */}
               {generalError && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-2xl p-4">
                   <div className="flex items-center">
                     <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0" />
                     <p className="text-sm text-red-700">{generalError}</p>
@@ -142,14 +185,11 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* Email Field */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Address
-                </label>
+              {/* Login ID Field */}
+              <div className="flex flex-col">
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-slate-400" />
                   </div>
                   <input
                     id="email"
@@ -160,11 +200,11 @@ export default function LoginPage() {
                     value={formData.email}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className={`block w-full pl-10 pr-3 py-3 border-2 rounded-xl shadow-sm transition-all duration-300 ${errors.email
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                      : 'border-gray-200 focus:border-blue-500 focus:ring-blue-500/20'
-                      } focus:ring-4 bg-white/70 backdrop-blur-sm text-gray-900 placeholder-gray-500`}
-                    placeholder="Enter your email address"
+                    className={`block w-full pl-12 pr-4 py-4 border rounded-3xl shadow-inner transition-all duration-300 ${errors.email
+                      ? 'border-red-300 bg-red-50/50'
+                      : 'border-white/40 bg-white/30 hover:bg-white/40 focus:bg-white/50 focus:border-white/60'
+                    } focus:ring-4 focus:ring-white/20 text-slate-800 placeholder-slate-400 font-medium outline-none`}
+                    placeholder="Login ID"
                   />
                   {errors.email && (
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -173,21 +213,20 @@ export default function LoginPage() {
                   )}
                 </div>
                 {errors.email && (
-                  <p className="mt-2 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.email}
-                  </p>
+                  <div className="mt-2 ml-2 flex items-start gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-600 font-medium break-words leading-snug min-w-0 flex-1">
+                      {errors.email}
+                    </p>
+                  </div>
                 )}
               </div>
 
-              {/* Password Field */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Password
-                </label>
+              {/* Passkey Field */}
+              <div className="flex flex-col">
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-slate-400" />
                   </div>
                   <input
                     id="password"
@@ -198,50 +237,51 @@ export default function LoginPage() {
                     value={formData.password}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className={`block w-full pl-10 pr-12 py-3 border-2 rounded-xl shadow-sm transition-all duration-300 ${errors.password
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                      : 'border-gray-200 focus:border-blue-500 focus:ring-blue-500/20'
-                      } focus:ring-4 bg-white/70 backdrop-blur-sm text-gray-900 placeholder-gray-500`}
-                    placeholder="Enter your password"
+                    className={`block w-full pl-12 pr-12 py-4 border rounded-3xl shadow-inner transition-all duration-300 ${errors.password
+                      ? 'border-red-300 bg-red-50/50'
+                      : 'border-white/40 bg-white/30 hover:bg-white/40 focus:bg-white/50 focus:border-white/60'
+                    } focus:ring-4 focus:ring-white/20 text-slate-800 placeholder-slate-400 font-medium outline-none`}
+                    placeholder="Passkey"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
                     disabled={isLoading}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <EyeOff className="h-5 w-5 text-slate-500 hover:text-slate-700 transition-colors" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <Eye className="h-5 w-5 text-slate-700 hover:text-slate-900 transition-colors" />
                     )}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="mt-2 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.password}
-                  </p>
+                  <div className="mt-2 ml-2 flex items-start gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-600 font-medium break-words leading-snug flex-1">
+                      {errors.password}
+                    </p>
+                  </div>
                 )}
               </div>
+
+              {/* Divider */}
+                  <hr className="border-t border-[#000000]/25 my-6 mx-2" />
 
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative w-full flex justify-center py-4 px-4 border border-transparent text-base font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 shadow-lg hover:shadow-xl"
+                className="w-full bg-[#0b70c5] text-white font-bold text-lg tracking-wide rounded-3xl py-4 transition-all duration-300 border border-white/50 disabled:opacity-50 flex items-center justify-center hover:[text-shadow:0_0_12px_rgba(255,255,255,0.9)] hover:brightness-105"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
                 {isLoading ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                     Signing in...
-                  </div>
+                  </>
                 ) : (
-                  <span className="relative flex items-center">
-                    <Lock className="w-5 h-5 mr-2" />
-                    Sign In Securely
-                  </span>
+                  "Sign in"
                 )}
               </button>
             </form>
