@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building, Eye, EyeOff, Shield, Lock, Mail, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Shield, Lock, Mail, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
-import aapLogo from '../aap logo.svg';
+import aapLogo from '../aap-logo.svg';
 import { Dancing_Script, Inter } from 'next/font/google';
 import { signIn, getCurrentUser, getIdToken } from '@/lib/auth';
 import { loginSchema, type LoginInput } from '@/lib/validation';
@@ -103,9 +103,12 @@ export default function LoginPage() {
             router.push('/valuation-reports');
         }
       }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setGeneralError(error.message || 'Login failed. Please try again.');
+    } catch (error) {
+      if (error instanceof Error) {
+        setGeneralError(error.message);
+      } else {
+        setGeneralError('Login failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +147,7 @@ export default function LoginPage() {
                                                                                                                                                        
                 {/* The circular logo container */}                                                                                                
                 <div                                                                                                                               
-                  className="relative w-24 h-24 rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(59,130,246,0.15)] border border-white shadow-inner transform transition-transform duration-500 ease-out group-hover:scale-105"
+                  className="relative w-24 h-24 rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(59,130,246,0.15)] border border-white transform transition-transform duration-500 ease-out group-hover:scale-105"
                   style={{
                     background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 100%)'
                   }}

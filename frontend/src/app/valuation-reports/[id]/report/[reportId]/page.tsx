@@ -22,6 +22,12 @@ import {
 } from '@/components/sections';
 import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch } from 'lucide-react';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+});
 
 const sectionComponents = {
   propertyAddress: PropertyAddressSection,
@@ -277,10 +283,25 @@ export default function ValuationReportEditPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 animate-pulse">Loading Valuation Report...</p>
+      <div
+        className={`min-h-screen relative overflow-hidden flex items-center justify-center ${inter.className}`}
+        style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
+      >
+        <div
+          className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
+            backgroundSize: '20px 20px'
+          }}
+        ></div>
+        <div
+          className="absolute inset-0 pointer-events-none animate-breath origin-bottom"
+          style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
+        ></div>
+        
+        <div className="relative z-10 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#0b70c5] border-t-transparent mx-auto mb-4"></div>
+          <p className="text-slate-700 font-medium tracking-wide animate-pulse">Loading Valuation Report...</p>
         </div>
       </div>
     );
