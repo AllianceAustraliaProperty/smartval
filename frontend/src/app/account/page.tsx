@@ -135,7 +135,7 @@ export default function AccountPage() {
       <div className="relative z-10 max-w-3xl mx-auto p-8">
         <div className="flex items-center mb-8">
           <button
-            onClick={() => router.push('/home')}
+            onClick={() => router.push('/valuation-reports')}
             className="inline-flex items-center text-blue-700 hover:text-blue-800 font-medium"
           >
             <ArrowLeft className="w-5 h-5 mr-2" /> Back to Dashboard

@@ -97,10 +97,10 @@ export default function LoginPage() {
             router.push('/admin');
             break;
           case 'valuer':
-            router.push('/home');
+            router.push('/valuation-reports');
             break;
           default:
-            router.push('/home');
+            router.push('/valuation-reports');
         }
       }
     } catch (error) {

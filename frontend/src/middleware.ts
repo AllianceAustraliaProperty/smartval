@@ -129,7 +129,7 @@ export async function middleware(request: NextRequest) {
 
 
   // Authentication for protected routes
-  const protectedPaths = ['/home', '/valuation-report', '/dashboard', '/admin', '/account'];
+  const protectedPaths = ['/valuation-reports', '/valuation-report', '/dashboard', '/admin', '/account'];
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
 
   if (isProtectedPath) {

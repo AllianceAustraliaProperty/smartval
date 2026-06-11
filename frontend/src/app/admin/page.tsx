@@ -73,7 +73,7 @@ export default function AdminDashboard() {
           return;
         }
         if (user.role !== 'admin') {
-          router.push('/home');
+          router.push('/valuation-reports');
           return;
         }
         setCurrentUser(user);

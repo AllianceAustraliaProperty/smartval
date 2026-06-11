@@ -30,7 +30,7 @@ export default function NewValuationReportPage() {
       const { reportId } = await apiRepository.createValuationReport(newReportData);
 
       // Navigate to the report edit page
-      router.push(`/home/${reportId}/edit`);
+      router.push(`/valuation-reports/${reportId}/edit`);
     } catch (err) {
       console.error('Failed to create valuation report:', err);
       setError('Failed to create valuation report. Please try again.');
@@ -39,7 +39,7 @@ export default function NewValuationReportPage() {
   };
 
   const handleCancel = () => {
-    router.push('/home');
+    router.push('/valuation-reports');
   };
 
   return (
