@@ -14,75 +14,93 @@
 
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-size: 11px;
             line-height: 1.4;
-            color: black;
+            color: #333;
         }
 
         .page {
             width: 210mm;
             height: 297mm;
-            padding: 20mm;
+            padding: 40px 50px;
             background: white;
             page-break-after: always;
             position: relative;
             break-after: page;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
 
         .logo {
-            position: absolute;
-            top: 8mm;
-            right: 20mm;
+            max-width: 250px;
+            object-fit: contain;
+        }
+
+        .header-contact {
+            text-align: right;
+            font-size: 9px;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .header-contact a {
+            color: #333;
+            text-decoration: none;
         }
 
         h1 {
-            font-size: 24px;
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: bold;
+            font-size: 20px;
+            text-align: left;
+            margin-bottom: 15px;
+            font-weight: normal;
             color: black;
         }
 
         h2 {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
-            margin-top: 15px;
-            margin-bottom: 8px;
+            margin-top: 20px;
+            margin-bottom: 10px;
             color: black;
         }
 
         h3 {
-            font-size: 11px;
+            font-size: 14px;
             font-weight: bold;
             margin-top: 0;
-            margin-bottom: 10px;
-            background-color: #e8e8e8;
-            padding: 6px 8px;
+            margin-bottom: 15px;
+            background-color: #f0f0f0;
+            padding: 8px 12px;
             color: black;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         table td {
-            padding: 3px 6px;
+            padding: 5px 10px 5px 0;
             vertical-align: top;
-            font-size: 9px;
-            color: black;
+            font-size: 11px;
+            color: #333;
         }
 
         table td:first-child {
-            font-weight: bold;
             width: 30%;
         }
 
         .comparable-box {
-            margin-bottom: 15px;
-            padding: 8px;
-            border: 1px solid #ccc;
+            margin-bottom: 20px;
             page-break-inside: avoid;
             break-inside: avoid;
         }
@@ -91,40 +109,41 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
-            font-size: 9px;
+            font-size: 10px;
         }
 
         .comparable-image {
-            width: 140px;
-            height: 95px;
+            width: 160px;
+            height: 110px;
             object-fit: cover;
             float: right;
-            margin-left: 10px;
+            margin-left: 15px;
         }
 
         .comparable-details {
-            font-size: 8px;
+            font-size: 10px;
         }
 
         .footer {
             position: absolute;
-            bottom: 12mm;
-            left: 20mm;
-            right: 20mm;
-            font-size: 8px;
-            color: black;
+            bottom: 40px;
+            left: 50px;
+            right: 50px;
+            font-size: 9px;
+            color: #555;
+            text-align: justify;
         }
 
         .photo-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 15px;
             margin-top: 15px;
         }
 
         .photo-grid img {
             width: 100%;
-            height: 170px; /* Adjusted to fit taller logo */
+            height: 220px;
             object-fit: cover;
         }
 
@@ -139,40 +158,58 @@
         }
 
         .signature {
-            margin-top: 15px;
+            margin-top: 30px;
         }
     </style>
-    {% if logo_type == 'CPV' %}
-    <style>.logo { height: 50px !important; }</style>
-    {% elif logo_type == 'TAMN' %}
-    <style>.logo { height: 60px !important; }</style>
-    {% else %}
-    <style>.logo { height: 77px !important; }</style>
-    {% endif %}
 </head>
 
 <body>
-    {% set page_logo_url = tamn_page_logo_url if logo_type == 'TAMN' else logo_url %}
+    {% set theme_color = '#2563eb' %}
+    {% set company_name = 'Alliance Australia Property Pty Ltd' %}
+    {% set contact_phone = '043 1300 800' %}
+    {% set contact_web = 'allianceaustraliaproperty.com.au' %}
+    {% set contact_email = 'info@allianceaustraliaproperty.com.au' %}
+    {% set contact_abn = 'ABN 35 641 373 702' %}
+    {% set page_logo_url = logo_url %}
+
+    {% if logo_type == 'CPV' %}
+        {% set theme_color = '#f97316' %}
+        {% set company_name = 'Certified Property Valuer' %}
+        {% set contact_phone = '0485 008 806' %}
+        {% set contact_web = 'www.certifiedpropertyvaluer.com.au' %}
+        {% set contact_email = 'info@certifiedpropertyvaluer.com.au' %}
+        {% set contact_abn = '' %}
+    {% elif logo_type == 'TAMN' %}
+        {% set theme_color = '#7d6118' %}
+        {% set company_name = 'Tamn Property Valuers' %}
+        {% set contact_phone = '1300 226 482' %}
+        {% set contact_web = 'www.tamn.com.au' %}
+        {% set contact_email = 'info@tamn.com.au' %}
+        {% set contact_abn = 'ABN 92 605 356 983' %}
+        {% set page_logo_url = tamn_page_logo_url %}
+    {% endif %}
 
     <!-- Page 1: Certificate of Value -->
     <div class="page">
-        <img src="{{ page_logo_url }}" alt="Logo" class="logo">
+        <div class="header-container" style="border-bottom: 2px solid {{ theme_color }};">
+            <img src="{{ page_logo_url }}" alt="Logo" class="logo" style="{% if logo_type == 'CPV' %}height: 50px;{% elif logo_type == 'TAMN' %}height: 60px;{% else %}height: 77px;{% endif %}">
+            <div class="header-contact">
+                {{ company_name }} | {{ contact_phone }}<br>
+                <a href="https://{{ contact_web }}">{{ contact_web }}</a> | <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+                {% if contact_abn %}<br>{{ contact_abn }}{% endif %}
+            </div>
+        </div>
 
-        <h1>AAP VALUATIONS</h1>
-
-        <h2>Certificate of Value</h2>
-        <p style="margin-bottom: 12px; font-size: 9px;">In accordance with the Duties Act, 1997 (as amended). This is to
+        <h1>Certificate of Value</h1>
+        <p style="margin-bottom: 20px; font-size: 11px;">In accordance with the Duties Act, 1997 (as amended). This is to
             certify the Market Value of the interest and property described herein.</p>
+        
         {% set cover_photos = valuation_report.get("photos", [])|selectattr('isCover')|list %}
         {% set cover_photo = cover_photos[0] if cover_photos else None %}
 
-        <div style="display: flex; gap: 10px;">
-            {% if cover_photo %}
-            <table style="width: 65%;">
-                {% else %}
-                <table style="width: 100%;">
-                    {% endif %}
-
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <table>
                     <tr>
                         <td>Nature of interest:</td>
                         <td>Fee simple in possession</td>
@@ -191,8 +228,7 @@
                     </tr>
                     <tr>
                         <td>Property description:</td>
-                        <td>{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property
-                            comprises an office, reception, kitchenette, toilet and car space.') }}</td>
+                        <td>{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property comprises an office, reception, kitchenette, toilet and car space.') }}</td>
                     </tr>
                     <tr>
                         <td>Title reference:</td>
@@ -200,7 +236,7 @@
                     </tr>
                     <tr>
                         <td>Net Lettable area:</td>
-                        <td>{{ valuation_report["propertyDetails"]["buildingArea"]|default('N/A') }} Sqm</td>
+                        <td>{{ valuation_report["propertyDetails"]["buildingArea"]|default('N/A') }} Sqm (NLA)</td>
                     </tr>
                     <tr>
                         <td>Zoning:</td>
@@ -224,43 +260,42 @@
                     </tr>
                     <tr>
                         <td>Market Value:</td>
-                        <td><strong>{{
-                                valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
-                                ({{
-                                valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')
-                                }})</strong></td>
+                        <td>{{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
+                            ({{ valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')|title }}) (Exclusive of outgoings & GST)</td>
                     </tr>
                     <tr>
-                        <td>Valuer:</td>
-                        <td>JUGAL SAHA, AAPI CPV (Property Valuer)</td>
+                        <td style="padding-top: 15px;">Valuer:</td>
+                        <td style="padding-top: 15px;">JUGAL SAHA, AAPI CPV (Property Valuer)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-top: 15px;">Declaration:</td>
+                        <td style="padding-top: 15px; text-align: justify;">{{ valuation_report["generalComments"]["declaration"]|default('I hereby certify that I have carried out the assessments of the above property as at that valuation on the basis of valuation mentioned') }}</td>
                     </tr>
                 </table>
-                {% if cover_photo %}
-                <div style="width: 33%;">
-                    <img src="{{ cover_photo['photoUrl'] }}" alt="Property"
-                        style="width: 100%; height: auto; max-height: 200px; object-fit: cover;">
-                </div>
-                {% endif %}
+            </div>
+            {% if cover_photo %}
+            <div style="width: 200px; flex-shrink: 0;">
+                <img src="{{ cover_photo['photoUrl'] }}" alt="Property"
+                    style="width: 100%; height: auto; max-height: 250px; object-fit: cover;">
+            </div>
+            {% endif %}
         </div>
-        <h2>Declaration:</h2>
-        <p style="margin-bottom: 8px; font-size: 9px;">{{ valuation_report["generalComments"]["declaration"]|default('I
-            hereby certify that I have carried out the assessments of the above property as at that valuation on the
-            basis of valuation mentioned') }}</p>
+        
+        <h2 style="font-size: 14px; font-weight: normal;">Assumptions and Qualification:</h2>
+        <p style="font-size: 9px; text-align: justify;">{{ valuation_report["generalComments"]["assumptions"]|default('This report has been prepared for the private and confidential use of our client for the specified purpose.') }}</p>
 
-
-        <h2>Assumptions and Qualifications:</h2>
-        <p style="font-size: 9px;">{{ valuation_report["generalComments"]["assumptions"]|default('This report has been
-            prepared for the private and confidential use of our client for the specified purpose.') }}</p>
-
-
-        <div class="footer"> Alliance Australia Property Pty Ltd | ABN 35 641 373 702 |
-            info@allianceaustraliaproperty.com.au<br> {{ valuation_report["address"]["fullAddress"]|default('') }}
+        <div class="footer" style="text-align: center;">
+            {{ company_name }} {% if contact_abn %}| {{ contact_abn }} {% endif %}| {{ contact_email }} | {{ contact_phone }} | {{ contact_web }}<br>
+            <span style="font-style: italic;">Liability Limited by a scheme approved under Professional Standards' Legislation</span>
         </div>
     </div>
     <!-- Page 2: Market Evidence (Sales Comparables) -->
     {% if valuation_report.get("comparables", {}).get("sales") %}
 
-    <div class="page"> <img src="{{ page_logo_url }}" alt="Logo" class="logo">
+    <div class="page">
+        <div style="text-align: right; margin-bottom: 20px;">
+            <img src="{{ page_logo_url }}" alt="Logo" style="height: 40px; object-fit: contain;">
+        </div>
         <h3>Market Evidence</h3>
         {% for comparable in valuation_report["comparables"]["sales"][:4] %}
 
@@ -297,7 +332,10 @@
     {% endif %}
 
     <!-- Page 3: Rental Schedule & Valuation Remarks -->
-    <div class="page"> <img src="{{ page_logo_url }}" alt="Logo" class="logo">
+    <div class="page">
+        <div style="text-align: right; margin-bottom: 20px;">
+            <img src="{{ page_logo_url }}" alt="Logo" style="height: 40px; object-fit: contain;">
+        </div>
         {% if valuation_report.get("comparables", {}).get("rentals") %}
 
         <h3>Rental Schedule</h3>
@@ -371,7 +409,10 @@
 
     {% if gallery_photos %}
 
-    <div class="page"> <img src="{{ page_logo_url }}" alt="Logo" class="logo">
+    <div class="page">
+        <div style="text-align: right; margin-bottom: 20px;">
+            <img src="{{ page_logo_url }}" alt="Logo" style="height: 40px; object-fit: contain;">
+        </div>
         <h3>Photographs</h3>
         <div class="photo-grid">
             {% for photo in gallery_photos[:6] %}
@@ -387,7 +428,10 @@
     <!-- Page 5: Floor Plan -->
     {% if valuation_report.get("floorPlans") and valuation_report["floorPlans"]|length > 0 %}
 
-    <div class="page"> <img src="{{ page_logo_url }}" alt="Logo" class="logo">
+    <div class="page">
+        <div style="text-align: right; margin-bottom: 20px;">
+            <img src="{{ page_logo_url }}" alt="Logo" style="height: 40px; object-fit: contain;">
+        </div>
         <h3>Floor Plan</h3>
         <div class="floor-plan-container"> <img src="{{ valuation_report['floorPlans'][0]['photoUrl'] }}"
                 alt="Floor Plan"> </div>
