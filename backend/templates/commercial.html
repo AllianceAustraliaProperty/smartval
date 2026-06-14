@@ -17,6 +17,7 @@
             font-size: 11px;
             line-height: 1.4;
             color: #333;
+            counter-reset: page-counter;
         }
 
         .page {
@@ -29,6 +30,7 @@
             break-after: page;
             display: flex;
             flex-direction: column;
+            counter-increment: page-counter;
         }
 
         .header-container {
@@ -150,6 +152,10 @@
             font-size: 9px;
             color: #555;
             text-align: justify;
+        }
+
+        .page-number::after {
+            content: counter(page-counter);
         }
 
         .photo-grid {
@@ -341,17 +347,17 @@
         {% endfor %}
 
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
-            <span style="float: right;">2</span>
+            <span style="float: right;" class="page-number"></span>
         </div>
     </div>
     {% endif %}
 
-    <!-- Page 3: Rental Schedule & Valuation Remarks -->
+    <!-- Page 3: Rental Schedule -->
+    {% if valuation_report.get("comparables", {}).get("rentals") %}
     <div class="page">
         <div style="text-align: right; margin-bottom: 20px;">
             <img src="{{ page_logo_url }}" alt="Logo" style="height: 40px; object-fit: contain;">
         </div>
-        {% if valuation_report.get("comparables", {}).get("rentals") %}
 
         <h3>Rental Schedule</h3>
         {% for comparable in valuation_report["comparables"]["rentals"][:2] %}
@@ -385,8 +391,17 @@
                 comparable.get("briefComments") or 'Commercial strata building' }}</p>
         </div>
         {% endfor %}
+        <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
+            <span style="float: right;" class="page-number"></span>
+        </div>
+    </div>
+    {% endif %}
 
-        {% endif %}
+    <!-- Page 4: Valuation Remarks -->
+    <div class="page">
+        <div style="text-align: right; margin-bottom: 20px;">
+            <img src="{{ page_logo_url }}" alt="Logo" style="height: 40px; object-fit: contain;">
+        </div>
 
         <h3>Valuation Remarks</h3>
         <h2 style="font-size: 10px;">Method 1: Direct Comparison</h2>
@@ -416,7 +431,7 @@
             <p style="font-size: 9px;"><strong>Issue Date: {{ now() }}</strong></p>
         </div>
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
-            <span style="float: right;">3</span>
+            <span style="float: right;" class="page-number"></span>
         </div>
     </div>
     <!-- Page 4: Photographs -->
@@ -435,7 +450,7 @@
             {% endfor %}
         </div>
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
-            <span style="float: right;">4</span>
+            <span style="float: right;" class="page-number"></span>
         </div>
     </div>
     {% endif %}
@@ -451,7 +466,7 @@
         <div class="floor-plan-container"> <img src="{{ valuation_report['floorPlans'][0]['photoUrl'] }}"
                 alt="Floor Plan"> </div>
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
-            <span style="float: right;">5</span>
+            <span style="float: right;" class="page-number"></span>
         </div>
     </div>
     {% endif %}
