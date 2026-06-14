@@ -498,7 +498,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
           <div className="space-y-2">
             <Input
               type="number"
-              {...register('propertyDetails.buildYear', { valueAsNumber: true })}
+              {...register('propertyDetails.buildYear')}
               placeholder="e.g., 1998"
               error={errors.propertyDetails?.buildYear?.message}
             />

@@ -576,6 +576,32 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
         </FormField>
 
         <FormField
+          label="Yield Rate 1 (%)"
+          error={(errors as any).valuationDetails?.capRateLow?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.capRateLow', { valueAsNumber: true })}
+            placeholder="e.g., 4.75"
+            error={(errors as any).valuationDetails?.capRateLow?.message}
+          />
+        </FormField>
+
+        <FormField
+          label="Yield Rate 2 (%)"
+          error={(errors as any).valuationDetails?.capRateHigh?.message}
+        >
+          <Input
+            type="number"
+            step="0.01"
+            {...register('valuationDetails.capRateHigh', { valueAsNumber: true })}
+            placeholder="e.g., 5.25"
+            error={(errors as any).valuationDetails?.capRateHigh?.message}
+          />
+        </FormField>
+
+        <FormField
           label="Market Rent ($ p.a.)"
           error={(errors as any).valuationDetails?.marketRent?.message}
         >

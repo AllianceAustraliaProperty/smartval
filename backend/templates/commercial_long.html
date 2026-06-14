@@ -996,7 +996,7 @@
                 </tr>
                 <tr>
                     <td style="padding: 3px;">Purpose of Report:</td>
-                    <td>To determine the {{ 'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market value for {{ (record.purpose_of_report or record.valuation_type)|default('N/A')|title|replace('Capital Gains', 'Capital Gains Tax') }} purposes only.</td>
+                    <td>To determine the {{ 'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market value for {{ (record.purpose_of_report or record.property_valuation.commercial_subtype or record.valuation_type)|default('N/A')|title|replace('Capital Gains', 'Capital Gains Tax') }} purposes only.</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px;">Date of Inspection:</td>
@@ -1439,10 +1439,7 @@
         <div class="banner">Condition and Repair</div>
         <div class="space-between-xs"></div>
         <div>
-            <p>The subject property construction appears to be in good condition throughout. The facilities such as
-                toilets and
-                fixtures and fittings are in average condition.
-            </p>
+            <p>{{ record.property_descriptors.repairs_requirements|default('The subject property construction appears to be in good condition throughout. The facilities such as toilets and fixtures and fittings are in average condition.') }}</p>
             <p>As we are not experts in building and construction matters, we are unable to comment on the structural
                 integrity of
                 the improvements. Our valuation necessarily assumes that the improvements are structurally sound, and we
