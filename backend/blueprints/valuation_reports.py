@@ -674,6 +674,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "airconditioning": report.get("propertyDescriptors", {}).get("airconditioning"),
                     "fire_services": report.get("propertyDescriptors", {}).get("fireServices"),
                     "lift": report.get("propertyDescriptors", {}).get("lifts"),
+                    "repairs_requirements": report.get("propertyDescriptors", {}).get("repairsRequirements") or report.get("propertyDescriptors", {}).get("repairRequirements"),
                 },
                 "planning_details": {
                     "planning_scheme": report.get("valuationDetails", {}).get("planningScheme"),
