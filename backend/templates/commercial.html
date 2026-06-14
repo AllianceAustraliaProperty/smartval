@@ -99,6 +99,24 @@
             width: 30%;
         }
 
+        .detail-row {
+            clear: left;
+            padding: 5px 0;
+            font-size: 11px;
+            color: #333;
+            min-height: 1.4em;
+        }
+
+        .detail-label {
+            float: left;
+            width: 30%;
+            padding-right: 10px;
+        }
+
+        .detail-value {
+            margin-left: 30%;
+        }
+
         .comparable-box {
             margin-bottom: 20px;
             page-break-inside: avoid;
@@ -207,78 +225,75 @@
         {% set cover_photos = valuation_report.get("photos", [])|selectattr('isCover')|list %}
         {% set cover_photo = cover_photos[0] if cover_photos else None %}
 
-        <div style="display: flex; gap: 20px;">
-            <div style="flex: 1;">
-                <table>
-                    <tr>
-                        <td>Nature of interest:</td>
-                        <td>Fee simple in possession</td>
-                    </tr>
-                    <tr>
-                        <td>Classification:</td>
-                        <td>Transfer Duty Short Form Report</td>
-                    </tr>
-                    <tr>
-                        <td>Reported interest of:</td>
-                        <td>Further Education & Migration Services</td>
-                    </tr>
-                    <tr>
-                        <td>Address of property:</td>
-                        <td>{{ valuation_report["address"]["fullAddress"]|default('N/A') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Property description:</td>
-                        <td>{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property comprises an office, reception, kitchenette, toilet and car space.') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Title reference:</td>
-                        <td>{{ valuation_report["propertyDetails"]["titleReference"]|default('N/A') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Net Lettable area:</td>
-                        <td>{{ valuation_report["propertyDetails"]["buildingArea"]|default('N/A') }} Sqm (NLA)</td>
-                    </tr>
-                    <tr>
-                        <td>Zoning:</td>
-                        <td>{{ valuation_report["propertyDetails"]["zoning"]|default('SP5: Metropolitan Centre') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Council area:</td>
-                        <td>{{ valuation_report["propertyDetails"]["councilArea"]|default('N/A') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Highest & Best Use:</td>
-                        <td>Existing Use</td>
-                    </tr>
-                    <tr>
-                        <td>Date of Valuation:</td>
-                        <td>{{ valuation_report["valuationDetails"]["valuationDate"]|format_date|default('N/A') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Issue Date:</td>
-                        <td>{{ now() }}</td>
-                    </tr>
-                    <tr>
-                        <td>Market Value:</td>
-                        <td>{{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
-                            ({{ valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')|title }}) (Exclusive of outgoings & GST)</td>
-                    </tr>
-                    <tr>
-                        <td style="padding-top: 15px;">Valuer:</td>
-                        <td style="padding-top: 15px;">JUGAL SAHA, AAPI CPV (Property Valuer)</td>
-                    </tr>
-                    <tr>
-                        <td style="padding-top: 15px;">Declaration:</td>
-                        <td style="padding-top: 15px; text-align: justify;">{{ valuation_report["generalComments"]["declaration"]|default('I hereby certify that I have carried out the assessments of the above property as at that valuation on the basis of valuation mentioned') }}</td>
-                    </tr>
-                </table>
-            </div>
+        <div style="position: relative; margin-bottom: 15px;">
             {% if cover_photo %}
-            <div style="width: 200px; flex-shrink: 0;">
-                <img src="{{ cover_photo['photoUrl'] }}" alt="Property"
-                    style="width: 100%; height: auto; max-height: 250px; object-fit: cover;">
-            </div>
+            <img src="{{ cover_photo['photoUrl'] }}" alt="Property"
+                style="float: right; width: 200px; height: auto; max-height: 250px; object-fit: cover; margin-left: 20px; margin-bottom: 15px;">
             {% endif %}
+
+            <div class="detail-row">
+                <div class="detail-label">Nature of interest:</div>
+                <div class="detail-value">Fee simple in possession</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Classification:</div>
+                <div class="detail-value">Transfer Duty Short Form Report</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Reported interest of:</div>
+                <div class="detail-value">Further Education & Migration Services</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Address of property:</div>
+                <div class="detail-value">{{ valuation_report["address"]["fullAddress"]|default('N/A') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Property description:</div>
+                <div class="detail-value">{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property comprises an office, reception, kitchenette, toilet and car space.') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Title reference:</div>
+                <div class="detail-value">{{ valuation_report["propertyDetails"]["titleReference"]|default('N/A') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Net Lettable area:</div>
+                <div class="detail-value">{{ valuation_report["propertyDetails"]["buildingArea"]|default('N/A') }} Sqm (NLA)</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Zoning:</div>
+                <div class="detail-value">{{ valuation_report["propertyDetails"]["zoning"]|default('SP5: Metropolitan Centre') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Council area:</div>
+                <div class="detail-value">{{ valuation_report["propertyDetails"]["councilArea"]|default('N/A') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Highest & Best Use:</div>
+                <div class="detail-value">Existing Use</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Date of Valuation:</div>
+                <div class="detail-value">{{ valuation_report["valuationDetails"]["valuationDate"]|format_date|default('N/A') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Issue Date:</div>
+                <div class="detail-value">{{ now() }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Market Value:</div>
+                <div class="detail-value">{{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
+                    ({{ valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')|title }}) (Exclusive of outgoings & GST)</div>
+            </div>
+            <div class="detail-row" style="margin-top: 10px;">
+                <div class="detail-label">Valuer:</div>
+                <div class="detail-value">JUGAL SAHA, AAPI CPV (Property Valuer)</div>
+            </div>
+            <div class="detail-row" style="margin-top: 10px;">
+                <div class="detail-label">Declaration:</div>
+                <div class="detail-value" style="text-align: justify;">{{ valuation_report["generalComments"]["declaration"]|default('I hereby certify that I have carried out the assessments of the above property as at that valuation on the basis of valuation mentioned') }}</div>
+            </div>
+            
+            <div style="clear: both;"></div>
         </div>
         
         <h2 style="font-size: 14px; font-weight: normal;">Assumptions and Qualification:</h2>
