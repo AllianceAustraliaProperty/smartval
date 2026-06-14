@@ -562,6 +562,141 @@ export const apiRepository = {
     }
   },
 
+  /**
+   * Email the invoice PDF to the client via Microsoft Graph
+   */
+  async sendInvoice(
+    reportId: string,
+    payload?: { to?: string; subject?: string; message?: string }
+  ): Promise<{ message: string; recipient: string; invoice_number?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/invoice/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload || {}),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to send invoice' }));
+        throw new Error(errorData.error || 'Failed to send invoice');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to send invoice:', error);
+      throw error;
+    }
+  },
+
+  // Invoice email template (settings) methods
+
+  /**
+   * Get the current invoice email template + available variables
+   */
+  async getInvoiceEmailTemplate(): Promise<{
+    subject: string;
+    body: string;
+    sender: string;
+    defaultSender: string;
+    isCustom: boolean;
+    variables: { token: string; label: string }[];
+    defaultSubject: string;
+    defaultBody: string;
+  }> {
+    const response = await fetch(`${API_BASE_URL}/settings/invoice-email`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to load template' }));
+      throw new Error(errorData.error || 'Failed to load template');
+    }
+    return await response.json();
+  },
+
+  /**
+   * Save a custom invoice email template
+   */
+  async saveInvoiceEmailTemplate(payload: { subject: string; body: string; sender?: string }): Promise<{
+    message: string;
+    subject: string;
+    body: string;
+    sender: string;
+    isCustom: boolean;
+  }> {
+    const response = await fetch(`${API_BASE_URL}/settings/invoice-email`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to save template' }));
+      throw new Error(errorData.error || 'Failed to save template');
+    }
+    return await response.json();
+  },
+
+  /**
+   * Reset the invoice email template to the default
+   */
+  async resetInvoiceEmailTemplate(): Promise<{
+    subject: string;
+    body: string;
+    sender: string;
+    defaultSender: string;
+    isCustom: boolean;
+  }> {
+    const response = await fetch(`${API_BASE_URL}/settings/invoice-email/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to reset template' }));
+      throw new Error(errorData.error || 'Failed to reset template');
+    }
+    return await response.json();
+  },
+
+  /**
+   * Search tenant users (Microsoft Graph) for the sender / From picker
+   */
+  async searchGraphUsers(query: string): Promise<{
+    users: { name: string; email: string }[];
+    warning?: string;
+  }> {
+    const url = `${API_BASE_URL}/settings/graph-users?search=${encodeURIComponent(query || '')}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to load users' }));
+      throw new Error(errorData.error || 'Failed to load users');
+    }
+    return await response.json();
+  },
+
+  /**
+   * Render the template with sample data for previewing
+   */
+  async previewInvoiceEmailTemplate(payload: { subject: string; body: string }): Promise<{
+    subject: string;
+    html: string;
+  }> {
+    const response = await fetch(`${API_BASE_URL}/settings/invoice-email/preview`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to preview template' }));
+      throw new Error(errorData.error || 'Failed to preview template');
+    }
+    return await response.json();
+  },
+
   // Alliance API methods
   async getAllianceJobs(page: number = 1, perPage: number = 10): Promise<any> {
     try {

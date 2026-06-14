@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit3, Trash2, Building, FileText, CheckCircle, FileType, Download, Eye as Preview, Sparkles, Home, MapPin, DollarSign, Calendar, User as UserIcon, User, ArrowRight, Shield, Settings, LogOut, ChevronDown, FileSearch, ExternalLink, RefreshCw, Copy } from 'lucide-react';
+import { Search, Plus, Edit3, Trash2, Building, FileText, CheckCircle, FileType, Download, Eye as Preview, Sparkles, Home, MapPin, DollarSign, Calendar, User as UserIcon, User, ArrowRight, Shield, Settings, LogOut, ChevronDown, FileSearch, ExternalLink, RefreshCw, Copy, Mail } from 'lucide-react';
 import { getCurrentUser, signOut, type User as AuthUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -465,6 +465,17 @@ export default function ValuationReportsPage() {
               >
                 <Settings className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate">Admin Panel</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsUserMenuOpen(false);
+                  router.push('/settings');
+                }}
+                className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors duration-200"
+              >
+                <Mail className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">Email Templates</span>
               </button>
 
               <button

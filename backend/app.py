@@ -50,7 +50,8 @@ def create_app(config_class=Config):
     from blueprints.alliance import alliance_bp
     from blueprints.inspection_reports import inspection_bp
     from blueprints.title_search import title_search_bp
-    
+    from blueprints.settings import settings_bp
+
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(users_bp, url_prefix='/users')
@@ -66,7 +67,8 @@ def create_app(config_class=Config):
     app.register_blueprint(google_maps_bp, url_prefix='/api/google-maps')
     app.register_blueprint(alliance_bp, url_prefix='/api/alliance')
     app.register_blueprint(inspection_bp, url_prefix='/api/inspection-reports')
-    
+    app.register_blueprint(settings_bp, url_prefix='/api/settings')
+
     # Error handlers
     @app.errorhandler(404)
     def not_found(error):
