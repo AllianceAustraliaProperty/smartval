@@ -996,7 +996,7 @@
                 </tr>
                 <tr>
                     <td style="padding: 3px;">Purpose of Report:</td>
-                    <td>{% if record.purpose_of_report and record.purpose_of_report|lower is string and record.purpose_of_report|lower|truncate(3, true, '') == 'to ' %}{{ record.purpose_of_report }}{% else %}To determine the {{ 'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market value for {{ (record.purpose_of_report or record.valuation_type)|default('N/A')|title|replace('Capital Gains', 'Capital Gains Tax') }} purposes only.{% endif %}</td>
+                    <td>To determine the {{ 'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market value for {{ (record.purpose_of_report or record.valuation_type)|default('N/A')|title|replace('Capital Gains', 'Capital Gains Tax') }} purposes only.</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px;">Date of Inspection:</td>
