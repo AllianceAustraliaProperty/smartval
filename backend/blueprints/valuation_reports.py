@@ -950,7 +950,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "parking_type": report.get("propertyDescriptors", {}).get("parkingType"),
                     "internal_condition": report.get("propertyDescriptors", {}).get("internalCondition"),
                     "external_condition": report.get("propertyDescriptors", {}).get("externalCondition"),
-                    "repairs_requirements": report.get("propertyDescriptors", {}).get("repairsRequirements"),
+                    "repairs_requirements": report.get("propertyDescriptors", {}).get("repairsRequirements") or report.get("propertyDescriptors", {}).get("repairRequirements"),
                     "defects": report.get("propertyDescriptors", {}).get("defects"),
                 },
                 "site_details": {

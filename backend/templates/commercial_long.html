@@ -1785,9 +1785,21 @@
                 <td>{{ record.property_valuation.assessed_net_rental|format_currency|default('N/A') }}</td>
             </tr>
             <tr>
-                <td>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</td>
-                <td>{{ record.capitalised_value|format_currency|default('N/A') }}{% if record.capitalisation_method.cap_rate_low is defined and record.capitalisation_method.cap_rate_high is defined %}&nbsp;&nbsp;&nbsp;Capitalised at {{ record.capitalisation_method.cap_rate_low }}% - {{ record.capitalisation_method.cap_value_low|format_currency|default('N/A') }}&nbsp;&nbsp;&nbsp;Capitalised at {{ record.capitalisation_method.cap_rate_high }}% - {{ record.capitalisation_method.cap_value_high|format_currency|default('N/A') }}{% endif %}</td>
+                <td><b>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</b></td>
+                <td>{{ record.capitalised_value|format_currency|default('N/A') }}</td>
             </tr>
+            {% if record.capitalisation_method.cap_rate_low is defined %}
+            <tr>
+                <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_low }}%</b></td>
+                <td>{{ record.capitalisation_method.cap_value_low|format_currency|default('N/A') }}</td>
+            </tr>
+            {% endif %}
+            {% if record.capitalisation_method.cap_rate_high is defined %}
+            <tr>
+                <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_high }}%</b></td>
+                <td>{{ record.capitalisation_method.cap_value_high|format_currency|default('N/A') }}</td>
+            </tr>
+            {% endif %}
             <tr>
                 <td>Letting up expenses</td>
                 <td>{{ record.property_valuation.letting_up_expenses|format_currency|default('N/A') }}</td>
