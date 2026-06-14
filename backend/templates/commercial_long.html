@@ -996,7 +996,7 @@
                 </tr>
                 <tr>
                     <td style="padding: 3px;">Purpose of Report:</td>
-                    <td>{% if record.purpose_of_report and record.purpose_of_report|lower is string and record.purpose_of_report|lower|truncate(3, true, '') == 'to ' %}{{ record.purpose_of_report }}{% else %}To determine the {{ 'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market value for {{ (record.purpose_of_report or record.valuation_type)|default('N/A')|title|replace('Capital Gains', 'Capital Gains Tax') }} purposes only.{% endif %}</td>
+                    <td>To determine the {{ 'current' if record.property_valuation.current_day_valuation else 'retrospective' }} market value for {{ (record.purpose_of_report or record.property_valuation.commercial_subtype or record.valuation_type)|default('N/A')|title|replace('Capital Gains', 'Capital Gains Tax') }} purposes only.</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px;">Date of Inspection:</td>
@@ -1439,10 +1439,7 @@
         <div class="banner">Condition and Repair</div>
         <div class="space-between-xs"></div>
         <div>
-            <p>The subject property construction appears to be in good condition throughout. The facilities such as
-                toilets and
-                fixtures and fittings are in average condition.
-            </p>
+            <p>{% if record.property_descriptors.repairs_requirements %}{{ record.property_descriptors.repairs_requirements }}{% else %}The subject property construction appears to be in good condition throughout. The facilities such as toilets and fixtures and fittings are in average condition.{% endif %}</p>
             <p>As we are not experts in building and construction matters, we are unable to comment on the structural
                 integrity of
                 the improvements. Our valuation necessarily assumes that the improvements are structurally sound, and we
@@ -1788,9 +1785,21 @@
                 <td>{{ record.property_valuation.assessed_net_rental|format_currency|default('N/A') }}</td>
             </tr>
             <tr>
-                <td>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</td>
-                <td>{{ record.capitalised_value|format_currency|default('N/A') }}{% if record.capitalisation_method.cap_rate_low is defined and record.capitalisation_method.cap_rate_high is defined %}&nbsp;&nbsp;&nbsp;Capitalised at {{ record.capitalisation_method.cap_rate_low }}% - {{ record.capitalisation_method.cap_value_low|format_currency|default('N/A') }}&nbsp;&nbsp;&nbsp;Capitalised at {{ record.capitalisation_method.cap_rate_high }}% - {{ record.capitalisation_method.cap_value_high|format_currency|default('N/A') }}{% endif %}</td>
+                <td><b>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</b></td>
+                <td>{{ record.capitalised_value|format_currency|default('N/A') }}</td>
             </tr>
+            {% if record.capitalisation_method.cap_rate_low is defined %}
+            <tr>
+                <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_low }}%</b></td>
+                <td>{{ record.capitalisation_method.cap_value_low|format_currency|default('N/A') }}</td>
+            </tr>
+            {% endif %}
+            {% if record.capitalisation_method.cap_rate_high is defined %}
+            <tr>
+                <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_high }}%</b></td>
+                <td>{{ record.capitalisation_method.cap_value_high|format_currency|default('N/A') }}</td>
+            </tr>
+            {% endif %}
             <tr>
                 <td>Letting up expenses</td>
                 <td>{{ record.property_valuation.letting_up_expenses|format_currency|default('N/A') }}</td>
@@ -2042,7 +2051,7 @@
         <div class="header-container">
             <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
-        <div class="banner">Annexures</div>
+        <div class="banner">Other Improvements</div>
         <div class="space-between-sm"></div>
         <div style="text-align: center; margin-top: 80px;">
             <img style="max-width: 100%; max-height: 700px;" src="{{ ts_url }}" alt="Title Search">
