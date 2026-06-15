@@ -200,9 +200,10 @@
             </div>
         </div>
 
-        <h1>Certificate of Value</h1>
-        <p style="margin-bottom: 20px; font-size: 11px;">In accordance with the Duties Act, 1997 (as amended). This is to
-            certify the Market Value of the interest and property described herein.</p>
+        {% set is_rental = valuation_report["valuationDetails"].get("valuationType", "")|lower in ["rent review", "rental", "market rent", "rental valuation"] %}
+        <h1>{% if is_rental %}Certificate of Rental Value{% else %}Certificate of Value{% endif %}</h1>
+        <p style="margin-bottom: 20px; font-size: 11px;">In accordance with the {% if is_rental %}Retail Leases Act, 1994{% else %}Duties Act, 1997{% endif %} (as amended). This is to
+            certify the Market {% if is_rental %}Rental {% endif %}Value of the interest and property described herein.</p>
         
         {% set cover_photos = valuation_report.get("photos", [])|selectattr('isCover')|list %}
         {% set cover_photo = cover_photos[0] if cover_photos else None %}
@@ -220,7 +221,7 @@
                     </tr>
                     <tr>
                         <td>Reported interest of:</td>
-                        <td>Further Education & Migration Services</td>
+                        <td>{% set fn = valuation_report["primaryContact"]["firstName"]|default('') %}{% set ln = valuation_report["primaryContact"]["lastName"]|default('') %}{% if fn and ln %}{{ fn }} {{ ln }}{% elif fn %}{{ fn }}{% elif ln %}{{ ln }}{% else %}N/A{% endif %}</td>
                     </tr>
                     <tr>
                         <td>Address of property:</td>
@@ -228,7 +229,7 @@
                     </tr>
                     <tr>
                         <td>Property description:</td>
-                        <td>{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property comprises an office, reception, kitchenette, toilet and car space.') }}</td>
+                        <td>{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property comprises an office, reception, kitchenette, toilet and car space.')|replace('\n', ' ')|replace('\r', '') }}</td>
                     </tr>
                     <tr>
                         <td>Title reference:</td>
