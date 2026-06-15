@@ -194,6 +194,7 @@
     {% set contact_web = 'allianceaustraliaproperty.com.au' %}
     {% set contact_email = 'info@allianceaustraliaproperty.com.au' %}
     {% set contact_abn = 'ABN 35 641 373 702' %}
+    {% set contact_address = 'PO Box 195 NSW 2194' %}
     {% set page_logo_url = logo_url %}
 
     {% if logo_type == 'CPV' %}
@@ -203,6 +204,7 @@
         {% set contact_web = 'www.certifiedpropertyvaluer.com.au' %}
         {% set contact_email = 'info@certifiedpropertyvaluer.com.au' %}
         {% set contact_abn = '' %}
+        {% set contact_address = '' %}
     {% elif logo_type == 'TAMN' %}
         {% set theme_color = '#7d6118' %}
         {% set company_name = 'Tamn Property Valuers' %}
@@ -210,8 +212,77 @@
         {% set contact_web = 'www.tamn.com.au' %}
         {% set contact_email = 'info@tamn.com.au' %}
         {% set contact_abn = 'ABN 92 605 356 983' %}
+        {% set contact_address = '' %}
         {% set page_logo_url = tamn_page_logo_url %}
     {% endif %}
+
+    <!-- Cover Page -->
+    <div class="page" style="padding: 0; position: relative;">
+        <!-- Top Area -->
+        <div style="padding: 40px 50px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="font-size: 16px; font-weight: bold; font-family: Arial, sans-serif;">
+                    Ref #{{ valuation_report.get("jobReference", "") }}
+                </div>
+                <img src="{{ page_logo_url }}" alt="Logo" style="{% if logo_type == 'CPV' %}height: 50px;{% elif logo_type == 'TAMN' %}height: 60px;{% else %}height: 77px;{% endif %} max-width: 250px; object-fit: contain;">
+            </div>
+        </div>
+
+        <!-- Images Section -->
+        {% set cover_photos = valuation_report.get("photos", [])|selectattr('isCover')|list %}
+        {% if cover_photos|length >= 2 %}
+            {% set img1 = cover_photos[0]['photoUrl'] %}
+            {% set img2 = cover_photos[1]['photoUrl'] %}
+        {% elif cover_photos|length == 1 %}
+            {% set img1 = cover_photos[0]['photoUrl'] %}
+            {% set img2 = cover_photos[0]['photoUrl'] %}
+        {% else %}
+            {% set img1 = 'https://via.placeholder.com/400x300' %}
+            {% set img2 = 'https://via.placeholder.com/400x300' %}
+        {% endif %}
+        <div style="display: flex; height: 350px;">
+            <div style="flex: 1;">
+                <img src="{{ img1 }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="width: 2px;"></div>
+            <div style="flex: 1;">
+                <img src="{{ img2 }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        </div>
+        
+        <!-- Theme Bar -->
+        <div style="height: 15px; background-color: {{ theme_color }};"></div>
+
+        <!-- Content Area -->
+        <div style="padding: 40px 50px;">
+            <div style="font-size: 16px; margin-bottom: 5px; font-family: Arial, sans-serif;">
+                {% set is_rental = valuation_report["valuationDetails"].get("valuationType", "")|lower in ["rent review", "rental", "market rent", "rental valuation"] %}
+                Commercial Valuation {% if is_rental %}(Rental){% else %}(Stamp Duty){% endif %}
+            </div>
+            <h1 style="font-size: 30px; font-weight: bold; line-height: 1.2; margin-bottom: 40px; color: black; text-align: left; font-family: Arial, sans-serif;">
+                {{ valuation_report["address"]["fullAddress"]|default('N/A') }}
+            </h1>
+            
+            <div style="font-size: 11px; margin-bottom: 50px; font-family: Arial, sans-serif;">
+                Instructed by<br>
+                {% set fn = valuation_report["primaryContact"]["firstName"]|default('') %}
+                {% set ln = valuation_report["primaryContact"]["lastName"]|default('') %}
+                {% if fn and ln %}{{ fn }} {{ ln }}{% elif fn %}{{ fn }}{% elif ln %}{{ ln }}{% else %}N/A{% endif %}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; position: absolute; bottom: 50px; left: 50px; right: 50px;">
+                <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo" style="width: 150px; object-fit: contain;">
+                <div style="text-align: right; font-size: 9px; line-height: 1.5; color: black; font-family: Arial, sans-serif;">
+                    <strong>{{ company_name }}</strong><br>
+                    {% if contact_abn %}{{ contact_abn }}<br>{% endif %}
+                    Phone: {{ contact_phone }}<br>
+                    {% if contact_address %}{{ contact_address }}<br>{% endif %}
+                    <br>
+                    <em style="font-size: 8px;">Liability limited by a scheme approved under Professional Standards Legislation</em>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Page 1: Certificate of Value -->
     <div class="page">
@@ -228,14 +299,6 @@
         <h1>{% if is_rental %}Certificate of Rental Value{% else %}Certificate of Value{% endif %}</h1>
         <p style="margin-bottom: 20px; font-size: 11px;">In accordance with the {% if is_rental %}Retail Leases Act, 1994{% else %}Duties Act, 1997{% endif %} (as amended). This is to
             certify the Market {% if is_rental %}Rental {% endif %}Value of the interest and property described herein.</p>
-        
-        {% set cover_photos = valuation_report.get("photos", [])|selectattr('isCover')|list %}
-        {% set cover_photo = cover_photos[0] if cover_photos else None %}
-
-        {% if cover_photo %}
-        <img src="{{ cover_photo['photoUrl'] }}" alt="Property"
-            style="float: right; width: 200px; height: auto; max-height: 250px; object-fit: cover; margin-left: 20px; margin-bottom: 15px;">
-        {% endif %}
 
         <div>
             <div class="detail-row">
