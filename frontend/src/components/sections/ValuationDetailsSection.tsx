@@ -60,22 +60,58 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
 
   const handleAutoFillDirectComparison = () => {
     const comparables = watch('comparables');
-    const salesComparables = comparables?.sales || [];
+    const valuationType = watch('valuationDetails.valuationType');
 
-    // Find the sales comparable with isComparable: true
+    // 1. Commercial / Commercial Short Report Logic
+    if (valuationType === 'Commercial' || valuationType === 'Commercial Short Report') {
+      const rentalComparables = comparables?.rentals || [];
+      const rentalRates = rentalComparables
+        .map((r: any) => Number(r.rentalRate || r.rental_rate))
+        .filter((val: number) => !isNaN(val) && val > 0);
+
+      let rateRangeText = 'N/A';
+      if (rentalRates.length > 0) {
+        const minRate = Math.min(...rentalRates).toFixed(2);
+        const maxRate = Math.max(...rentalRates).toFixed(2);
+        rateRangeText = `$${minRate} to $${maxRate}`;
+      }
+
+      const sqMeterRate = Number(watch('valuationDetails.squareMeterRate')) || 0;
+      const nla = Number(watch('valuationDetails.nla')) || 0;
+      const marketRent = Number(watch('valuationDetails.marketRent')) || 0;
+      const rawDate = watch('valuationDetails.valuationDate');
+      
+      let valuationDate = 'N/A';
+      if (rawDate) {
+        const d = new Date(rawDate);
+        valuationDate = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+
+      const nlaTotal = nla * sqMeterRate;
+      
+      const autoText = `Based on the above comparable rental evidence, it suggests that the NLA rental rate ranges from ${rateRangeText} per sqm.
+We considered a value rate of $${sqMeterRate.toFixed(2)} per sqm appropriate for the total net lettable area of the retail space. The NLA rate of $${sqMeterRate.toFixed(2)} per sqm is noted to be within the range as supported from the rental evidence.
+
+NLA ${nla} Sqm @ $${sqMeterRate.toFixed(2)} p.sqm = ${formatCurrency(nlaTotal)}
+Car parking space [Area] Sqm @ $[Rate] p. sqm = $[Total]
+
+Rental Valuation Amount:
+We assessed the subject property's Fair Market Rental Value on ${valuationDate}, based on the above stated comparable rental evidence, we considered a Net Market Rental Value of ${formatCurrency(marketRent)} per annum (exclusive of outgoings & GST)`;
+
+      setValue('valuationDetails.directComparison', autoText, { shouldDirty: true });
+      return;
+    }
+
+    // 2. Residential Logic (Default)
+    const salesComparables = comparables?.sales || [];
     const evidence = salesComparables.find((comp: any) => comp.isComparable === true);
 
     if (evidence) {
-      // Convert address to title case but keep state abbreviations in CAPS
       const toTitleCase = (str: string) => {
         if (!str) return 'N/A';
         const stateAbbreviations = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT'];
         return str.split(' ').map(word => {
-          // Keep state abbreviations in uppercase
-          if (stateAbbreviations.includes(word.toUpperCase())) {
-            return word.toUpperCase();
-          }
-          // Convert other words to title case
+          if (stateAbbreviations.includes(word.toUpperCase())) return word.toUpperCase();
           return word.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
         }).join(' ');
       };

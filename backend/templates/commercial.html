@@ -17,6 +17,7 @@
             font-size: 11px;
             line-height: 1.4;
             color: #333;
+            counter-reset: page-counter;
         }
 
         .page {
@@ -29,6 +30,7 @@
             break-after: page;
             display: flex;
             flex-direction: column;
+            counter-increment: page-counter;
         }
 
         .header-container {
@@ -99,6 +101,24 @@
             width: 30%;
         }
 
+        .detail-row {
+            clear: left;
+            padding: 5px 0;
+            font-size: 11px;
+            color: #333;
+            min-height: 1.4em;
+        }
+
+        .detail-label {
+            float: left;
+            width: 30%;
+            padding-right: 10px;
+        }
+
+        .detail-value {
+            margin-left: 30%;
+        }
+
         .comparable-box {
             margin-bottom: 20px;
             page-break-inside: avoid;
@@ -132,6 +152,10 @@
             font-size: 9px;
             color: #555;
             text-align: justify;
+        }
+
+        .page-number::after {
+            content: counter(page-counter);
         }
 
         .photo-grid {
@@ -221,7 +245,7 @@
                     </tr>
                     <tr>
                         <td>Reported interest of:</td>
-                        <td>{% set fn = valuation_report["primaryContact"]["firstName"]|default('') %}{% set ln = valuation_report["primaryContact"]["lastName"]|default('') %}{% if fn and ln %}{{ fn }} {{ ln }}{% elif fn %}{{ fn }}{% elif ln %}{{ ln }}{% else %}N/A{% endif %}</td>
+                        <td>Further Education & Migration Services</td>
                     </tr>
                     <tr>
                         <td>Address of property:</td>
@@ -229,7 +253,7 @@
                     </tr>
                     <tr>
                         <td>Property description:</td>
-                        <td>{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property comprises an office, reception, kitchenette, toilet and car space.')|replace('\n', ' ')|replace('\r', '') }}</td>
+                        <td>{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property comprises an office, reception, kitchenette, toilet and car space.') }}</td>
                     </tr>
                     <tr>
                         <td>Title reference:</td>
@@ -275,11 +299,73 @@
                 </table>
             </div>
             {% if cover_photo %}
-            <div style="width: 200px; flex-shrink: 0;">
-                <img src="{{ cover_photo['photoUrl'] }}" alt="Property"
-                    style="width: 100%; height: auto; max-height: 250px; object-fit: cover;">
-            </div>
+            <img src="{{ cover_photo['photoUrl'] }}" alt="Property"
+                style="float: right; width: 200px; height: auto; max-height: 250px; object-fit: cover; margin-left: 20px; margin-bottom: 15px;">
             {% endif %}
+
+            <div class="detail-row">
+                <div class="detail-label">Nature of interest:</div>
+                <div class="detail-value">Fee simple in possession</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Classification:</div>
+                <div class="detail-value">Transfer Duty Short Form Report</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Reported interest of:</div>
+                <div class="detail-value">Further Education & Migration Services</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Address of property:</div>
+                <div class="detail-value">{{ valuation_report["address"]["fullAddress"]|default('N/A') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Property description:</div>
+                <div class="detail-value">{{ valuation_report["generalComments"]["propertyDescription"]|default('The subject property comprises an office, reception, kitchenette, toilet and car space.') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Title reference:</div>
+                <div class="detail-value">{{ valuation_report["propertyDetails"]["titleReference"]|default('N/A') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Net Lettable area:</div>
+                <div class="detail-value">{{ valuation_report["propertyDetails"]["buildingArea"]|default('N/A') }} Sqm (NLA)</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Zoning:</div>
+                <div class="detail-value">{{ valuation_report["propertyDetails"]["zoning"]|default('SP5: Metropolitan Centre') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Council area:</div>
+                <div class="detail-value">{{ valuation_report["propertyDetails"]["councilArea"]|default('N/A') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Highest & Best Use:</div>
+                <div class="detail-value">Existing Use</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Date of Valuation:</div>
+                <div class="detail-value">{{ valuation_report["valuationDetails"]["valuationDate"]|format_date|default('N/A') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Issue Date:</div>
+                <div class="detail-value">{{ now() }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Market Value:</div>
+                <div class="detail-value">{{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
+                    ({{ valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')|title }}) (Exclusive of outgoings & GST)</div>
+            </div>
+            <div class="detail-row" style="margin-top: 10px;">
+                <div class="detail-label">Valuer:</div>
+                <div class="detail-value">JUGAL SAHA, AAPI CPV (Property Valuer)</div>
+            </div>
+            <div class="detail-row" style="margin-top: 10px;">
+                <div class="detail-label">Declaration:</div>
+                <div class="detail-value" style="text-align: justify;">{{ valuation_report["generalComments"]["declaration"]|default('I hereby certify that I have carried out the assessments of the above property as at that valuation on the basis of valuation mentioned') }}</div>
+            </div>
+            
+            <div style="clear: both;"></div>
         </div>
         
         <h2 style="font-size: 14px; font-weight: normal;">Assumptions and Qualification:</h2>
@@ -327,17 +413,17 @@
         {% endfor %}
 
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
-            <span style="float: right;">2</span>
+            <span style="float: right;" class="page-number"></span>
         </div>
     </div>
     {% endif %}
 
-    <!-- Page 3: Rental Schedule & Valuation Remarks -->
+    <!-- Page 3: Rental Schedule -->
+    {% if valuation_report.get("comparables", {}).get("rentals") %}
     <div class="page">
         <div style="text-align: right; margin-bottom: 20px;">
             <img src="{{ page_logo_url }}" alt="Logo" style="height: 40px; object-fit: contain;">
         </div>
-        {% if valuation_report.get("comparables", {}).get("rentals") %}
 
         <h3>Rental Schedule</h3>
         {% for comparable in valuation_report["comparables"]["rentals"][:2] %}
@@ -371,8 +457,17 @@
                 comparable.get("briefComments") or 'Commercial strata building' }}</p>
         </div>
         {% endfor %}
+        <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
+            <span style="float: right;" class="page-number"></span>
+        </div>
+    </div>
+    {% endif %}
 
-        {% endif %}
+    <!-- Page 4: Valuation Remarks -->
+    <div class="page">
+        <div style="text-align: right; margin-bottom: 20px;">
+            <img src="{{ page_logo_url }}" alt="Logo" style="height: 40px; object-fit: contain;">
+        </div>
 
         <h3>Valuation Remarks</h3>
         <h2 style="font-size: 10px;">Method 1: Direct Comparison</h2>
@@ -402,7 +497,7 @@
             <p style="font-size: 9px;"><strong>Issue Date: {{ now() }}</strong></p>
         </div>
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
-            <span style="float: right;">3</span>
+            <span style="float: right;" class="page-number"></span>
         </div>
     </div>
     <!-- Page 4: Photographs -->
@@ -421,7 +516,7 @@
             {% endfor %}
         </div>
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
-            <span style="float: right;">4</span>
+            <span style="float: right;" class="page-number"></span>
         </div>
     </div>
     {% endif %}
@@ -437,7 +532,7 @@
         <div class="floor-plan-container"> <img src="{{ valuation_report['floorPlans'][0]['photoUrl'] }}"
                 alt="Floor Plan"> </div>
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
-            <span style="float: right;">5</span>
+            <span style="float: right;" class="page-number"></span>
         </div>
     </div>
     {% endif %}
