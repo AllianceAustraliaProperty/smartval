@@ -225,7 +225,7 @@
                 <div style="font-size: 16px; font-weight: bold; font-family: Arial, sans-serif;">
                     Ref #{{ valuation_report["fileNumber"]|default('') }}
                 </div>
-                <img src="{{ page_logo_url }}" alt="Logo" style="{% if logo_type == 'CPV' %}height: 50px;{% elif logo_type == 'TAMN' %}height: 60px;{% else %}height: 77px;{% endif %} max-width: 250px; object-fit: contain;">
+                <img src="{{ page_logo_url }}" alt="Logo" style="height: 70px; max-width: 250px; object-fit: contain;">
             </div>
         </div>
 
@@ -275,6 +275,8 @@
                     {% if contact_abn %}{{ contact_abn }}<br>{% endif %}
                     Phone: {{ contact_phone }}<br>
                     {% if contact_address %}{{ contact_address }}<br>{% endif %}
+                    {% if contact_web %}<a href="https://{{ contact_web }}" style="color: black; text-decoration: none;">{{ contact_web }}</a><br>{% endif %}
+                    {% if contact_email %}<a href="mailto:{{ contact_email }}" style="color: black; text-decoration: none;">{{ contact_email }}</a><br>{% endif %}
                     <br>
                     <em style="font-size: 9px;">Liability limited by a scheme approved under Professional Standards Legislation</em>
                 </div>
@@ -285,7 +287,7 @@
     <!-- Page 1: Certificate of Value -->
     <div class="page">
         <div class="header-container" style="border-bottom: 2px solid {{ theme_color }}; justify-content: flex-end;">
-            <img src="{{ page_logo_url }}" alt="Logo" class="logo" style="{% if logo_type == 'CPV' %}height: 50px;{% elif logo_type == 'TAMN' %}height: 60px;{% else %}height: 77px;{% endif %}">
+            <img src="{{ page_logo_url }}" alt="Logo" class="logo" style="height: 70px; object-fit: contain;">
         </div>
 
         {% set _vtype = valuation_report["valuationDetails"].get("valuationType", "")|lower %}
@@ -363,7 +365,7 @@
 
 
         <div class="footer" style="text-align: center;">
-            Alliance Australia Property Pty Ltd | ABN 35 641 373 702 | info@allianceaustraliaproperty.com.au | 043 1300 800 | allianceaustraliaproperty.com.au<br>
+            Alliance Australia Property Pty Ltd<br>
             <span style="font-style: italic;">Liability limited by a scheme approved under Professional Standards Legislation</span>
             <span style="float: right; position: relative; z-index: 10;" class="page-number"></span>
         </div>
@@ -442,18 +444,8 @@
                     <tr>
                         <td style="padding: 4px 0;">Lease Date</td>
                         <td style="padding: 4px 0;">{{ comparable.get("sale_lease_date") or comparable.get("saleLeaseDate") or '' |format_date }}</td>
-                        <td style="padding: 4px 0;">Outgoings</td>
-                        <td style="padding: 4px 0;">$ {{ comparable.get("outgoings", "-") }}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 4px 0;">NLA size</td>
-                        <td style="padding: 4px 0;">{{ comparable.get("building_area") or comparable.get("buildingArea") or '-' }}</td>
-                        <td style="padding: 4px 0;">Est. Gross Rental</td>
-                        <td style="padding: 4px 0;">$ {{ comparable.get("sale_lease_price") or comparable.get("saleLeasePrice") or '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 4px 0;">Gross Rental Rate</td>
-                        <td colspan="3" style="padding: 4px 0;">$ {{ comparable.get("rental_rate", "-") }}</td>
+                        <td style="padding: 4px 0;">Net Rental</td>
+                        <td style="padding: 4px 0;">$ {{ comparable.get("sale_lease_price") or comparable.get("saleLeasePrice") or '-' }} pa</td>
                     </tr>
                 </table>
                 <div style="flex-shrink: 0;">
@@ -463,6 +455,9 @@
             <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 12px;">
                 <p style="margin: 0; white-space: nowrap;"><b>Description</b></p>
                 <p style="margin: 0;">{{ comparable.get("description") or comparable.get("brief_comments") or comparable.get("briefComments") or 'Commercial strata building' }}</p>
+            </div>
+            <div style="margin-top: 5px; font-size: 12px;">
+                <p style="margin: 0;">Comparison to Subject: <i>{{ comparable.get("comparisonToSubject") or comparable.get("comparison_to_subject") or '' }}</i></p>
             </div>
         </div>
         {% endfor %}
