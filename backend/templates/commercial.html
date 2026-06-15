@@ -443,7 +443,7 @@
                     </tr>
                     <tr>
                         <td style="padding: 4px 0;">Lease Date</td>
-                        <td style="padding: 4px 0;">{{ comparable.get("sale_lease_date") or comparable.get("saleLeaseDate") or '' |format_date }}</td>
+                        <td style="padding: 4px 0;">{{ (comparable.get("sale_lease_date") or comparable.get("saleLeaseDate") or '') | format_date }}</td>
                         <td style="padding: 4px 0;">Net Rental</td>
                         <td style="padding: 4px 0;">$ {{ comparable.get("sale_lease_price") or comparable.get("saleLeasePrice") or '-' }} pa</td>
                     </tr>
