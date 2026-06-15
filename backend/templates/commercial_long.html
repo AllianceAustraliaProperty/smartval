@@ -1791,37 +1791,37 @@
         <div style="display: flex; gap: 40px;">
             <table style="width: 45%;">
                 <tr>
-                    <td>Net Annual Income</td>
-                    <td>{{ record.property_valuation.assessed_net_rental|format_currency|default('N/A') }}</td>
+                    <td style="white-space: nowrap;">Net Annual Income</td>
+                    <td style="white-space: nowrap;">{{ record.property_valuation.assessed_net_rental|format_currency|default('N/A') }}</td>
                 </tr>
                 <tr>
-                    <td>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</td>
-                    <td>{{ record.capitalised_value|format_currency|default('N/A') }}</td>
+                    <td style="white-space: nowrap;">Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</td>
+                    <td style="white-space: nowrap;">{{ record.capitalised_value|format_currency|default('N/A') }}</td>
                 </tr>
                 <tr>
-                    <td>Letting up expenses</td>
-                    <td>{{ record.property_valuation.letting_up_expenses|format_currency|default('N/A') }}</td>
+                    <td style="white-space: nowrap;">Letting up expenses</td>
+                    <td style="white-space: nowrap;">{{ record.property_valuation.letting_up_expenses|format_currency|default('N/A') }}</td>
                 </tr>
                 <tr>
-                    <td>Market Value</td>
-                    <td>{{ record.property_valuation.market_value|format_currency|default('N/A') }}</td>
+                    <td style="white-space: nowrap;">Market Value</td>
+                    <td style="white-space: nowrap;">{{ record.property_valuation.market_value|format_currency|default('N/A') }}</td>
                 </tr>
             </table>
             <table style="width: 45%;">
                 <tr>
-                    <td><b>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</b></td>
-                    <td>{{ record.capitalised_value|format_currency|default('N/A') }}</td>
+                    <td style="white-space: nowrap;"><b>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</b></td>
+                    <td style="white-space: nowrap;">{{ record.capitalised_value|format_currency|default('N/A') }}</td>
                 </tr>
                 {% if record.capitalisation_method.cap_rate_low is defined and record.capitalisation_method.cap_rate_low != record.property_valuation.capitalisation_rate %}
                 <tr>
-                    <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_low }}%</b></td>
-                    <td>{{ record.capitalisation_method.cap_value_low|format_currency|default('N/A') }}</td>
+                    <td style="white-space: nowrap;"><b>Capitalised at {{ record.capitalisation_method.cap_rate_low }}%</b></td>
+                    <td style="white-space: nowrap;">{{ record.capitalisation_method.cap_value_low|format_currency|default('N/A') }}</td>
                 </tr>
                 {% endif %}
                 {% if record.capitalisation_method.cap_rate_high is defined and record.capitalisation_method.cap_rate_high != record.property_valuation.capitalisation_rate %}
                 <tr>
-                    <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_high }}%</b></td>
-                    <td>{{ record.capitalisation_method.cap_value_high|format_currency|default('N/A') }}</td>
+                    <td style="white-space: nowrap;"><b>Capitalised at {{ record.capitalisation_method.cap_rate_high }}%</b></td>
+                    <td style="white-space: nowrap;">{{ record.capitalisation_method.cap_value_high|format_currency|default('N/A') }}</td>
                 </tr>
                 {% endif %}
             </table>
