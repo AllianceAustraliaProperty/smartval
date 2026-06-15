@@ -222,7 +222,7 @@
         <div style="padding: 40px 50px 0;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div style="font-size: 16px; font-weight: bold; font-family: Arial, sans-serif;">
-                    Ref #{{ valuation_report.get("jobReference", "") }}
+                    Ref #{{ valuation_report["fileNumber"]|default('') }}
                 </div>
                 <img src="{{ page_logo_url }}" alt="Logo" style="{% if logo_type == 'CPV' %}height: 50px;{% elif logo_type == 'TAMN' %}height: 60px;{% else %}height: 77px;{% endif %} max-width: 250px; object-fit: contain;">
             </div>
@@ -230,36 +230,32 @@
 
         <!-- Images Section -->
         {% set cover_photos = valuation_report.get("photos", [])|selectattr('isCover')|list %}
-        {% if cover_photos|length >= 2 %}
-            {% set img1 = cover_photos[0]['photoUrl'] %}
-            {% set img2 = cover_photos[1]['photoUrl'] %}
-        {% elif cover_photos|length == 1 %}
-            {% set img1 = cover_photos[0]['photoUrl'] %}
-            {% set img2 = cover_photos[0]['photoUrl'] %}
-        {% else %}
-            {% set img1 = 'https://via.placeholder.com/400x300' %}
-            {% set img2 = 'https://via.placeholder.com/400x300' %}
-        {% endif %}
-        <div style="display: flex; height: 350px;">
+        <div style="display: flex; height: 400px; margin-top: 60px;">
+            {% if cover_photos|length >= 2 %}
             <div style="flex: 1;">
-                <img src="{{ img1 }}" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="{{ cover_photos[0]['photoUrl'] }}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="width: 2px;"></div>
             <div style="flex: 1;">
-                <img src="{{ img2 }}" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="{{ cover_photos[1]['photoUrl'] }}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
+            {% elif cover_photos|length == 1 %}
+            <div style="flex: 1;">
+                <img src="{{ cover_photos[0]['photoUrl'] }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            {% else %}
+            <div style="flex: 1;">
+                <img src="https://via.placeholder.com/800x400" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            {% endif %}
         </div>
         
         <!-- Theme Bar -->
         <div style="height: 15px; background-color: {{ theme_color }};"></div>
 
         <!-- Content Area -->
-        <div style="padding: 40px 50px;">
-            <div style="font-size: 16px; margin-bottom: 5px; font-family: Arial, sans-serif;">
-                {% set is_rental = valuation_report["valuationDetails"].get("valuationType", "")|lower in ["rent review", "rental", "market rent", "rental valuation"] %}
-                Commercial Valuation {% if is_rental %}(Rental){% else %}(Stamp Duty){% endif %}
-            </div>
-            <h1 style="font-size: 30px; font-weight: bold; line-height: 1.2; margin-bottom: 40px; color: black; text-align: left; font-family: Arial, sans-serif;">
+        <div style="padding: 80px 50px 40px;">
+            <h1 style="font-size: 34px; font-weight: bold; line-height: 1.2; margin-bottom: 50px; color: black; text-align: left; font-family: Arial, sans-serif;">
                 {{ valuation_report["address"]["fullAddress"]|default('N/A') }}
             </h1>
             
