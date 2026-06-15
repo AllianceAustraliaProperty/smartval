@@ -374,7 +374,7 @@
                     comparable.get("saleLeaseDate") or '' |format_date }}
                     <br> <strong>Outgoings:</strong> $ {{ comparable.get("outgoings", "-") }}
                 </div> <img
-                    src="{{ comparable.get('image_url') or comparable.get('imageUrl') or 'https://via.placeholder.com/140x95' }}"
+                    src="{{ comparable.get('photoUrl') or comparable.get('imageUrl') or comparable.get('image_url') or 'https://via.placeholder.com/140x95' }}"
                     alt="Property" class="comparable-image">
             </div>
             <table class="comparable-details">
