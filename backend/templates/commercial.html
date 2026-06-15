@@ -256,7 +256,7 @@
 
         <!-- Content Area -->
         <div style="padding: 80px 50px 40px;">
-            <h1 style="font-size: 34px; font-weight: bold; line-height: 1.2; margin-bottom: 50px; color: black; text-align: left; font-family: Arial, sans-serif;">
+            <h1 style="font-size: 26px; font-weight: bold; line-height: 1.2; margin-bottom: 50px; color: black; text-align: left; font-family: Arial, sans-serif;">
                 {{ valuation_report["address"]["fullAddress"]|default('N/A') }}
             </h1>
             
@@ -385,27 +385,27 @@
 
         <div class="comparable-box">
             <div class="comparable-header">
-                <div> <strong>Address:</strong> {{ comparable["fullAddress"]|default('') }}
+                <div style="flex: 1; padding-right: 15px;"> <strong>Address:</strong> {{ comparable["fullAddress"]|default('') }}
                     <br> <strong>Sale Date:</strong> {{ comparable["saleLeaseDate"]|format_date|default('') }}
                     <br> <strong>Sale Price:</strong> {{ comparable["saleLeasePrice"]|format_currency|default('') }}
+                    <table class="comparable-details" style="margin-top: 10px; margin-bottom: 10px;">
+                        <tr>
+                            <td width="50%"><strong>NLA:</strong> {{ comparable["buildingArea"]|default('-') }}</td>
+                            <td><strong>Site Area:</strong> {{ comparable["siteArea"]|default('-') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>NLA Rate:</strong> $ {{ comparable.get("nlaRate", "-") }}</td>
+                            <td><strong>Yield:</strong> {{ comparable.get("yield", "-") }} %</td>
+                        </tr>
+                    </table>
+                    <p class="comparable-details" style="margin-bottom: 5px;"><strong>Description:</strong> {{
+                        comparable["briefComments"]|default('Commercial strata building with NLA') }}</p>
+                    <p class="comparable-details"><strong>Comparison to Subject:</strong> {{
+                        comparable["comparison"]|default('Similar features. Overall similar.') }}</p>
                 </div> <img
                     src="{{ comparable.get('imageUrl') or comparable.get('photoUrl') or 'https://via.placeholder.com/140x95' }}"
                     alt="Property" class="comparable-image">
             </div>
-            <table class="comparable-details">
-                <tr>
-                    <td width="50%"><strong>NLA:</strong> {{ comparable["buildingArea"]|default('-') }}</td>
-                    <td><strong>Site Area:</strong> {{ comparable["siteArea"]|default('-') }}</td>
-                </tr>
-                <tr>
-                    <td><strong>NLA Rate:</strong> $ {{ comparable.get("nlaRate", "-") }}</td>
-                    <td><strong>Yield:</strong> {{ comparable.get("yield", "-") }} %</td>
-                </tr>
-            </table>
-            <p class="comparable-details"><strong>Description:</strong> {{
-                comparable["briefComments"]|default('Commercial strata building with NLA') }}</p>
-            <p class="comparable-details"><strong>Comparison to Subject:</strong> {{
-                comparable["comparison"]|default('Similar features. Overall similar.') }}</p>
         </div>
         {% endfor %}
 
@@ -427,31 +427,31 @@
 
         <div class="comparable-box">
             <div class="comparable-header">
-                <div> <strong>Address:</strong> {{ (comparable.get("full_address") or comparable.get("fullAddress") or '')|title_address
+                <div style="flex: 1; padding-right: 15px;"> <strong>Address:</strong> {{ (comparable.get("full_address") or comparable.get("fullAddress") or '')|title_address
                     }}
                     <br> <strong>Lessor:</strong> {{ comparable.get("lessor", "The Proprietors") }}
                     <br> <strong>Lease Date:</strong> {{ comparable.get("sale_lease_date") or
                     comparable.get("saleLeaseDate") or '' |format_date }}
                     <br> <strong>Outgoings:</strong> $ {{ comparable.get("outgoings", "-") }}
+                    <table class="comparable-details" style="margin-top: 10px; margin-bottom: 10px;">
+                        <tr>
+                            <td width="50%"><strong>NLA size:</strong> {{ comparable.get("building_area") or
+                                comparable.get("buildingArea") or '-' }}</td>
+                            <td><strong>Building Area:</strong> {{ comparable.get("building_area") or
+                                comparable.get("buildingArea") or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Est. Gross Rental:</strong> $ {{ comparable.get("sale_lease_price") or
+                                comparable.get("saleLeasePrice") or '-' }}</td>
+                            <td><strong>Gross Rental Rate:</strong> $ {{ comparable.get("rental_rate", "-") }}</td>
+                        </tr>
+                    </table>
+                    <p class="comparable-details"><strong>Description:</strong> {{ comparable.get("brief_comments") or
+                        comparable.get("briefComments") or 'Commercial strata building' }}</p>
                 </div> <img
                     src="{{ comparable.get('photoUrl') or comparable.get('imageUrl') or comparable.get('image_url') or 'https://via.placeholder.com/140x95' }}"
                     alt="Property" class="comparable-image">
             </div>
-            <table class="comparable-details">
-                <tr>
-                    <td width="50%"><strong>NLA size:</strong> {{ comparable.get("building_area") or
-                        comparable.get("buildingArea") or '-' }}</td>
-                    <td><strong>Building Area:</strong> {{ comparable.get("building_area") or
-                        comparable.get("buildingArea") or '-' }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Est. Gross Rental:</strong> $ {{ comparable.get("sale_lease_price") or
-                        comparable.get("saleLeasePrice") or '-' }}</td>
-                    <td><strong>Gross Rental Rate:</strong> $ {{ comparable.get("rental_rate", "-") }}</td>
-                </tr>
-            </table>
-            <p class="comparable-details"><strong>Description:</strong> {{ comparable.get("brief_comments") or
-                comparable.get("briefComments") or 'Commercial strata building' }}</p>
         </div>
         {% endfor %}
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
