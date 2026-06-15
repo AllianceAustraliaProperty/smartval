@@ -1386,15 +1386,22 @@
                     </td>
                 </tr>
                 {% endif %}
-                {% if record.ancillary_improvements.other_items %}
+                {% if record.ancillary_improvements.other_items or record.ancillary_improvements.accommodation %}
                 <tr>
                     <td>Other Improvements</td>
                     <td>
-                        {% if record.ancillary_improvements.other_items is string %}
-                            {{ record.ancillary_improvements.other_items }}
-                        {% else %}
-                            {{ record.ancillary_improvements.other_items|join(', ') }}
+                        {% set other_parts = [] %}
+                        {% if record.ancillary_improvements.other_items %}
+                            {% if record.ancillary_improvements.other_items is string %}
+                                {% set other_parts = other_parts + [record.ancillary_improvements.other_items] %}
+                            {% else %}
+                                {% set other_parts = other_parts + record.ancillary_improvements.other_items %}
+                            {% endif %}
                         {% endif %}
+                        {% if record.ancillary_improvements.accommodation %}
+                            {% set other_parts = other_parts + [record.ancillary_improvements.accommodation] %}
+                        {% endif %}
+                        {{ other_parts|join(', ') }}
                     </td>
                 </tr>
                 {% endif %}
@@ -1781,37 +1788,44 @@
         <div class="space-between-xs"></div>
         <p>As a secondary or check method of assessment, we have considered the income capitalisation approach. As previously detailed, our assessment as to a fair and maintainable net market rent for the subject suite is in the sum of {{ _market_rent|format_currency|default('N/A') }} to which we have applied an appropriate yield of {% if _yield is not none %}{{ _yield }}%{% else %}N/A{% endif %}, equating to the capitalised sum of {{ _cap_sum|format_currency|default('N/A') }}. This has been rounded for practical valuation purposes in the sum of {{ _cap_rounded|format_currency|default('N/A') }} and we refer you to our calculations as follows:</p>
         <div class="space-between-xs"></div>
-        <table>
-            <tr>
-                <td>Net Annual Income</td>
-                <td>{{ record.property_valuation.assessed_net_rental|format_currency|default('N/A') }}</td>
-            </tr>
-            <tr>
-                <td>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</td>
-                <td>{{ record.capitalised_value|format_currency|default('N/A') }}</td>
-            </tr>
-            {% if record.capitalisation_method.cap_rate_low is defined and record.capitalisation_method.cap_rate_low != record.property_valuation.capitalisation_rate %}
-            <tr>
-                <td>Capitalised at {{ record.capitalisation_method.cap_rate_low }}%</td>
-                <td>{{ record.capitalisation_method.cap_value_low|format_currency|default('N/A') }}</td>
-            </tr>
-            {% endif %}
-            {% if record.capitalisation_method.cap_rate_high is defined and record.capitalisation_method.cap_rate_high != record.property_valuation.capitalisation_rate %}
-            <tr>
-                <td>Capitalised at {{ record.capitalisation_method.cap_rate_high }}%</td>
-                <td>{{ record.capitalisation_method.cap_value_high|format_currency|default('N/A') }}</td>
-            </tr>
-            {% endif %}
-            <tr>
-                <td>Letting up expenses</td>
-                <td>{{ record.property_valuation.letting_up_expenses|format_currency|default('N/A') }}</td>
-            </tr>
-
-            <tr>
-                <td>Market Value</td>
-                <td>{{ record.property_valuation.market_value|format_currency|default('N/A') }}</td>
-            </tr>
-        </table>
+        <div style="display: flex; gap: 40px;">
+            <table style="width: 45%;">
+                <tr>
+                    <td>Net Annual Income</td>
+                    <td>{{ record.property_valuation.assessed_net_rental|format_currency|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</td>
+                    <td>{{ record.capitalised_value|format_currency|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Letting up expenses</td>
+                    <td>{{ record.property_valuation.letting_up_expenses|format_currency|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td>Market Value</td>
+                    <td>{{ record.property_valuation.market_value|format_currency|default('N/A') }}</td>
+                </tr>
+            </table>
+            <table style="width: 45%;">
+                <tr>
+                    <td><b>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</b></td>
+                    <td>{{ record.capitalised_value|format_currency|default('N/A') }}</td>
+                </tr>
+                {% if record.capitalisation_method.cap_rate_low is defined and record.capitalisation_method.cap_rate_low != record.property_valuation.capitalisation_rate %}
+                <tr>
+                    <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_low }}%</b></td>
+                    <td>{{ record.capitalisation_method.cap_value_low|format_currency|default('N/A') }}</td>
+                </tr>
+                {% endif %}
+                {% if record.capitalisation_method.cap_rate_high is defined and record.capitalisation_method.cap_rate_high != record.property_valuation.capitalisation_rate %}
+                <tr>
+                    <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_high }}%</b></td>
+                    <td>{{ record.capitalisation_method.cap_value_high|format_currency|default('N/A') }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
         <div class="space-between-xs"></div>
         <div style="display: flex; justify-content: center;">
             <p style="font-size: 14px;">
