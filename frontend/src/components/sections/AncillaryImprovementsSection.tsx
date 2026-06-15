@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormField, Textarea, Checkbox, Select } from '../ui/FormField';
+import { FormField, Textarea, Checkbox, Select, MultiSelectDropdown } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { DRIVEWAY_TYPES, FENCING_TYPES, OTHER_ITEM_TYPES } from '@/constants/ancillary-types';
 
@@ -50,12 +50,12 @@ export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register,
           label="Other Items"
           error={errors.ancillaryImprovements?.otherItems?.message as string}
         >
-          <Select
-            {...register('ancillaryImprovements.otherItems' as const)}
-            onChange={(e) => {
-              const val = e.target.value ? [e.target.value] : [];
-              setValue('ancillaryImprovements.otherItems' as any, val, { shouldDirty: true });
-              setValue('ancillaryImprovements.otherItemsText' as any, e.target.value || '', { shouldDirty: true });
+          <MultiSelectDropdown
+            value={(watch('ancillaryImprovements.otherItems') || []).join(', ')}
+            onChange={(val) => {
+              const arr = val ? val.split(', ').filter(Boolean) : [];
+              setValue('ancillaryImprovements.otherItems' as any, arr, { shouldDirty: true });
+              setValue('ancillaryImprovements.otherItemsText' as any, val, { shouldDirty: true });
             }}
             options={OTHER_ITEM_TYPES.map(type => ({ value: type, label: type }))}
             error={errors.ancillaryImprovements?.otherItems?.message as string}

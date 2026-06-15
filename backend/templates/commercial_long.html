@@ -1375,15 +1375,17 @@
                     <td>Site Area</td>
                     <td>{{ record.property_details.site_area|format_area_smart|default('N/A') }}</td>
                 </tr>
+                {% set parts = [] %}
+                {% if record.ancillary_improvements.driveway %}{% set parts = parts + ['Driveway - ' ~ record.ancillary_improvements.driveway] %}{% endif %}
+                {% if record.ancillary_improvements.fencing %}{% set parts = parts + ['Fencing - ' ~ record.ancillary_improvements.fencing] %}{% endif %}
+                {% if parts %}
                 <tr>
                     <td>Ancillaries</td>
                     <td>
-                        {% set parts = [] %}
-                        {% if record.ancillary_improvements.driveway %}{% set parts = parts + ['Driveway - ' ~ record.ancillary_improvements.driveway] %}{% endif %}
-                        {% if record.ancillary_improvements.fencing %}{% set parts = parts + ['Fencing - ' ~ record.ancillary_improvements.fencing] %}{% endif %}
-                        {{ parts|join(', ') if parts else 'N/A' }}
+                        {{ parts|join(', ') }}
                     </td>
                 </tr>
+                {% endif %}
                 {% if record.ancillary_improvements.other_items %}
                 <tr>
                     <td>Other Items</td>
@@ -1785,18 +1787,18 @@
                 <td>{{ record.property_valuation.assessed_net_rental|format_currency|default('N/A') }}</td>
             </tr>
             <tr>
-                <td><b>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</b></td>
+                <td>Capitalised at {{ record.property_valuation.capitalisation_rate|default('N/A') }}%</td>
                 <td>{{ record.capitalised_value|format_currency|default('N/A') }}</td>
             </tr>
-            {% if record.capitalisation_method.cap_rate_low is defined %}
+            {% if record.capitalisation_method.cap_rate_low is defined and record.capitalisation_method.cap_rate_low != record.property_valuation.capitalisation_rate %}
             <tr>
-                <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_low }}%</b></td>
+                <td>Capitalised at {{ record.capitalisation_method.cap_rate_low }}%</td>
                 <td>{{ record.capitalisation_method.cap_value_low|format_currency|default('N/A') }}</td>
             </tr>
             {% endif %}
-            {% if record.capitalisation_method.cap_rate_high is defined %}
+            {% if record.capitalisation_method.cap_rate_high is defined and record.capitalisation_method.cap_rate_high != record.property_valuation.capitalisation_rate %}
             <tr>
-                <td><b>Capitalised at {{ record.capitalisation_method.cap_rate_high }}%</b></td>
+                <td>Capitalised at {{ record.capitalisation_method.cap_rate_high }}%</td>
                 <td>{{ record.capitalisation_method.cap_value_high|format_currency|default('N/A') }}</td>
             </tr>
             {% endif %}
