@@ -385,7 +385,7 @@
 
         <div class="comparable-box">
             <div class="comparable-header">
-                <div style="flex: 1; padding-right: 15px;"> <strong>Address:</strong> {{ comparable["fullAddress"]|default('') }}
+                <div style="flex: 1; padding-right: 15px;"> <strong style="font-size: 11px;">{{ comparable["fullAddress"]|default('') }}</strong>
                     <br> <strong>Sale Date:</strong> {{ comparable["saleLeaseDate"]|format_date|default('') }}
                     <br> <strong>Sale Price:</strong> {{ comparable["saleLeasePrice"]|format_currency|default('') }}
                     <table class="comparable-details" style="margin-top: 10px; margin-bottom: 10px;">
@@ -427,8 +427,8 @@
 
         <div class="comparable-box">
             <div class="comparable-header">
-                <div style="flex: 1; padding-right: 15px;"> <strong>Address:</strong> {{ (comparable.get("full_address") or comparable.get("fullAddress") or '')|title_address
-                    }}
+                <div style="flex: 1; padding-right: 15px;"> <strong style="font-size: 11px;">{{ (comparable.get("full_address") or comparable.get("fullAddress") or '')|title_address
+                    }}</strong>
                     <br> <strong>Lessor:</strong> {{ comparable.get("lessor", "The Proprietors") }}
                     <br> <strong>Lease Date:</strong> {{ comparable.get("sale_lease_date") or
                     comparable.get("saleLeaseDate") or '' |format_date }}
