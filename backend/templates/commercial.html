@@ -14,7 +14,7 @@
 
         body {
             font-family: Arial, sans-serif;
-            font-size: 11px;
+            font-size: 12px;
             line-height: 1.4;
             color: #333;
             counter-reset: page-counter;
@@ -48,7 +48,7 @@
 
         .header-contact {
             text-align: right;
-            font-size: 9px;
+            font-size: 10px;
             font-weight: bold;
             line-height: 1.5;
         }
@@ -67,7 +67,7 @@
         }
 
         h2 {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             margin-top: 20px;
             margin-bottom: 10px;
@@ -75,7 +75,7 @@
         }
 
         h3 {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             margin-top: 0;
             margin-bottom: 15px;
@@ -93,7 +93,7 @@
         table td {
             padding: 5px 10px 5px 0;
             vertical-align: top;
-            font-size: 11px;
+            font-size: 12px;
             color: #333;
         }
 
@@ -104,7 +104,7 @@
         .detail-row {
             clear: left;
             padding: 5px 0;
-            font-size: 11px;
+            font-size: 12px;
             color: #333;
             min-height: 1.4em;
         }
@@ -129,7 +129,7 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
-            font-size: 10px;
+            font-size: 11px;
         }
 
         .comparable-image {
@@ -141,7 +141,7 @@
         }
 
         .comparable-details {
-            font-size: 10px;
+            font-size: 11px;
         }
 
         .footer {
@@ -149,7 +149,7 @@
             bottom: 40px;
             left: 50px;
             right: 50px;
-            font-size: 9px;
+            font-size: 10px;
             color: #555;
             text-align: justify;
         }
@@ -261,7 +261,7 @@
                 {{ valuation_report["address"]["fullAddress"]|default('N/A') }}
             </h1>
             
-            <div style="font-size: 11px; margin-bottom: 50px; font-family: Arial, sans-serif;">
+            <div style="font-size: 12px; margin-bottom: 50px; font-family: Arial, sans-serif;">
                 Instructed by<br>
                 {% set fn = valuation_report["primaryContact"]["firstName"]|default('') %}
                 {% set ln = valuation_report["primaryContact"]["lastName"]|default('') %}
@@ -270,13 +270,13 @@
 
             <div style="display: flex; justify-content: space-between; align-items: flex-end; position: absolute; bottom: 50px; left: 50px; right: 50px;">
                 <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo" style="width: 150px; object-fit: contain;">
-                <div style="text-align: right; font-size: 9px; line-height: 1.5; color: black; font-family: Arial, sans-serif;">
+                <div style="text-align: right; font-size: 10px; line-height: 1.5; color: black; font-family: Arial, sans-serif;">
                     <strong>{{ company_name }}</strong><br>
                     {% if contact_abn %}{{ contact_abn }}<br>{% endif %}
                     Phone: {{ contact_phone }}<br>
                     {% if contact_address %}{{ contact_address }}<br>{% endif %}
                     <br>
-                    <em style="font-size: 8px;">Liability limited by a scheme approved under Professional Standards Legislation</em>
+                    <em style="font-size: 9px;">Liability limited by a scheme approved under Professional Standards Legislation</em>
                 </div>
             </div>
         </div>
@@ -284,19 +284,14 @@
 
     <!-- Page 1: Certificate of Value -->
     <div class="page">
-        <div class="header-container" style="border-bottom: 2px solid {{ theme_color }};">
+        <div class="header-container" style="border-bottom: 2px solid {{ theme_color }}; justify-content: flex-end;">
             <img src="{{ page_logo_url }}" alt="Logo" class="logo" style="{% if logo_type == 'CPV' %}height: 50px;{% elif logo_type == 'TAMN' %}height: 60px;{% else %}height: 77px;{% endif %}">
-            <div class="header-contact">
-                {{ company_name }} | {{ contact_phone }}<br>
-                <a href="https://{{ contact_web }}">{{ contact_web }}</a> | <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
-                {% if contact_abn %}<br>{{ contact_abn }}{% endif %}
-            </div>
         </div>
 
         {% set _vtype = valuation_report["valuationDetails"].get("valuationType", "")|lower %}
         {% set is_rental = _vtype in ["rent review", "rental", "market rent", "rental valuation", "commercial short report"] %}
         <h1>{% if is_rental %}Certificate of Rental Value{% else %}Certificate of Value{% endif %}</h1>
-        <p style="margin-bottom: 20px; font-size: 11px;">In accordance with the {% if is_rental %}Retail Leases Act, 1994{% else %}Duties Act, 1997{% endif %} (as amended). This is to
+        <p style="margin-bottom: 20px; font-size: 12px;">In accordance with the {% if is_rental %}Retail Leases Act, 1994{% else %}Duties Act, 1997{% endif %} (as amended). This is to
             certify the Market {% if is_rental %}Rental {% endif %}Value of the interest and property described herein.</p>
 
         <div>
@@ -357,21 +352,26 @@
                 <div class="detail-label">Valuer:</div>
                 <div class="detail-value">JUGAL SAHA, AAPI CPV (Property Valuer)</div>
             </div>
-            <div class="detail-row" style="margin-top: 10px;">
-                <div class="detail-label">Declaration:</div>
-                <div class="detail-value" style="text-align: justify;">{{ valuation_report["generalComments"]["declaration"]|default('I hereby certify that I have carried out the assessments of the above property as at that valuation on the basis of valuation mentioned') }}</div>
+            <div class="detail-row" style="margin-top: 10px; display: flex;">
+                <div class="detail-label" style="float: none; width: 30%;">Declaration:</div>
+                <div class="detail-value" style="margin-left: 0; width: 70%; text-align: justify;">{{ valuation_report["generalComments"]["declaration"]|default('I hereby certify that I have carried out the assessments of the above property as at that valuation on the basis of valuation mentioned') }}</div>
             </div>
             
             <div style="clear: both;"></div>
         </div>
 
-        {% set _company_ref = 'CPV Valuers' if logo_type == 'CPV' else ('TAMN Valuations' if logo_type == 'TAMN' else 'AAP Valuations') %}
-        <h2 style="font-size: 14px; font-weight: normal;">Assumptions and Qualification:</h2>
-        <p style="font-size: 9px; text-align: justify;">{% if valuation_report["generalComments"]["assumptions"] %}{{ valuation_report["generalComments"]["assumptions"] }}{% else %}This report has been prepared for the private and confidential use of our client for the specified purpose. It should not be reproduced in whole or part without the express written authority of {{ _company_ref }} or relied upon any other party for any purpose and the valuer shall not have any liability to any party who does so. Our warning is registered here, that any party other than those specifically named in this report should obtain their own valuation before acting in any way in respect of the subject property. Where a digital copy of the report has been provided and has not been received directly from us, the report contents, especially the valuation and critical assumption should be verified by contacting the using office to ensure contents are appropriate. In particular if this report appears to be suspicious - that the report is tampered or altered, we recommend to contact the office. This valuation should be read in its entirety, inclusive of any summary and also its expiration date, 3 months from the date of valuation. The valuer and valuation firm does not accept any responsibility where part of this report has been relied upon without reference to the full context of the valuation report.{% endif %}</p>
 
-        <div class="footer" style="text-align: center;">
-            {{ company_name }} {% if contact_abn %}| {{ contact_abn }} {% endif %}| {{ contact_email }} | {{ contact_phone }} | {{ contact_web }}<br>
-            <span style="font-style: italic;">Liability Limited by a scheme approved under Professional Standards' Legislation</span>
+
+        <div class="footer">
+            <div style="position: absolute; left: 0; right: 0; text-align: center;">
+                <div style="display: inline-block; text-align: center;">
+                    <p style="font-size: 9.5pt; margin: 0 0 3px 0; padding-bottom: 3px; border-bottom: 1.5px solid {{ theme_color }};">
+                        {{ company_name }}&nbsp;&nbsp;{% if contact_abn %}{{ contact_abn }}&nbsp;&nbsp;{% endif %}Phone: {{ contact_phone }}&nbsp;&nbsp;{{ contact_address }}
+                    </p>
+                    <p style="font-size: 8pt; font-style: italic; margin: 0;">Liability limited by a scheme approved under Professional Standards Legislation</p>
+                </div>
+            </div>
+            <span style="float: right; position: relative; z-index: 10;" class="page-number"></span>
         </div>
     </div>
     <!-- Page 2: Market Evidence (Sales Comparables) -->
@@ -386,7 +386,7 @@
 
         <div class="comparable-box">
             <div class="comparable-header">
-                <div style="flex: 1; padding-right: 15px;"> <strong style="font-size: 11px;">{{ comparable["fullAddress"]|default('') }}</strong>
+                <div style="flex: 1; padding-right: 15px;"> <strong style="font-size: 12px;">{{ comparable["fullAddress"]|default('') }}</strong>
                     <br> <strong>Sale Date:</strong> {{ comparable["saleLeaseDate"]|format_date|default('') }}
                     <br> <strong>Sale Price:</strong> {{ comparable["saleLeasePrice"]|format_currency|default('') }}
                     <table class="comparable-details" style="margin-top: 10px; margin-bottom: 10px;">
@@ -428,7 +428,7 @@
 
         <div class="comparable-box" style="margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 15px;">
             <div style="display: flex; gap: 20px;">
-                <table style="flex: 1; border-collapse: collapse; font-size: 11px;">
+                <table style="flex: 1; border-collapse: collapse; font-size: 12px;">
                     <colgroup>
                         <col style="width: 20%;">
                         <col style="width: 30%;">
@@ -466,9 +466,9 @@
                     <img src="{{ comparable.get('photoUrl') or comparable.get('imageUrl') or comparable.get('image_url') or 'https://via.placeholder.com/140x95' }}" alt="Property" style="object-fit: cover; width: 140px; height: 95px;">
                 </div>
             </div>
-            <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 11px;">
+            <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 12px;">
                 <p style="margin: 0; white-space: nowrap;"><b>Description</b></p>
-                <p style="margin: 0;">{{ comparable.get("brief_comments") or comparable.get("briefComments") or 'Commercial strata building' }}</p>
+                <p style="margin: 0;">{{ comparable.get("description") or comparable.get("brief_comments") or comparable.get("briefComments") or 'Commercial strata building' }}</p>
             </div>
         </div>
         {% endfor %}
@@ -485,20 +485,24 @@
         </div>
 
         <h3>Valuation Remarks</h3>
-        <h2 style="font-size: 12px;">Method 1: Direct Comparison</h2>
-        <p style="font-size: 11px; text-align: justify; white-space: pre-line;">{{ valuation_report["valuationDetails"].get("directComparison") or 'Sales evidence reflects a rate range. Referring to these rates and adjusting for size, age, condition, location, we consider an appropriate rate which when applied to the NET LETTABLE AREA equates to the assessed value.' }}</p>
+        <h2 style="font-size: 13px;">Method 1: Direct Comparison</h2>
+        <p style="font-size: 12px; text-align: justify; white-space: pre-line;">{{ valuation_report["valuationDetails"].get("directComparison") or 'Sales evidence reflects a rate range. Referring to these rates and adjusting for size, age, condition, location, we consider an appropriate rate which when applied to the NET LETTABLE AREA equates to the assessed value.' }}</p>
 
-        <p style="margin-top: 15px; font-size: 11px;"><strong>As at {{
+        {% set _company_ref = 'CPV Valuers' if logo_type == 'CPV' else ('TAMN Valuations' if logo_type == 'TAMN' else 'AAP Valuations') %}
+        <h2 style="font-size: 15px; font-weight: normal; margin-top: 15px;">Assumptions and Qualification:</h2>
+        <p style="font-size: 10px; text-align: justify;">{% if valuation_report["generalComments"]["assumptions"] %}{{ valuation_report["generalComments"]["assumptions"] }}{% else %}This report has been prepared for the private and confidential use of our client for the specified purpose. It should not be reproduced in whole or part without the express written authority of {{ _company_ref }} or relied upon any other party for any purpose and the valuer shall not have any liability to any party who does so. Our warning is registered here, that any party other than those specifically named in this report should obtain their own valuation before acting in any way in respect of the subject property. Where a digital copy of the report has been provided and has not been received directly from us, the report contents, especially the valuation and critical assumption should be verified by contacting the using office to ensure contents are appropriate. In particular if this report appears to be suspicious - that the report is tampered or altered, we recommend to contact the office. This valuation should be read in its entirety, inclusive of any summary and also its expiration date, 3 months from the date of valuation. The valuer and valuation firm does not accept any responsibility where part of this report has been relied upon without reference to the full context of the valuation report.{% endif %}</p>
+
+        <p style="margin-top: 15px; font-size: 12px;"><strong>As at {{
                 valuation_report["valuationDetails"]["valuationDate"]|format_date|default('22 October 2025') }} (Date of
                 Valuation)</strong> &nbsp; &nbsp; &nbsp; &nbsp; <strong>Fair Market Value: {{
                 valuation_report["valuationDetails"]["marketValue"]|format_currency|default('$640,000.00') }}</strong>
         </p>
         <div class="signature">
-            <p style="font-size: 11px;"><strong>Prepared By: Jugal Saha (AAPI CPV 101474)</strong></p>
-            <p style="font-size: 11px;"><strong>Valuation Firm: AAP Property Valuers</strong></p> <img
+            <p style="font-size: 12px;"><strong>Prepared By: Jugal Saha (AAPI CPV 101474)</strong></p>
+            <p style="font-size: 12px;"><strong>Valuation Firm: AAP Property Valuers</strong></p> <img
                 src="https://valai.duo.tax/assets/jugal-signature.png" alt="Signature"
                 style="width: 130px; margin-top: 8px;">
-            <p style="font-size: 11px;"><strong>Issue Date: {{ now() }}</strong></p>
+            <p style="font-size: 12px;"><strong>Issue Date: {{ now() }}</strong></p>
         </div>
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
             <span style="float: right;" class="page-number"></span>
