@@ -48,3 +48,11 @@ class Config:
     REPORT_LOGO_URL = os.environ.get('REPORT_LOGO_URL') or 'https://smartval-bucket-copy.s3.ap-southeast-2.amazonaws.com/photos/aap-logo-final.png'
 
     ALLIANCE_BASE_URL = os.environ.get('ALLIANCE_BASE_URL')
+
+    # Microsoft Graph email (used for "Send Invoice" via Microsoft 365).
+    # Reuses existing TENANT_ID / CLIENT_ID / CLIENT_SECRET / USER_EMAIL as
+    # fallbacks if the MS_GRAPH_* prefixed vars are not set.
+    MS_GRAPH_TENANT_ID = os.environ.get('MS_GRAPH_TENANT_ID') or os.environ.get('TENANT_ID')
+    MS_GRAPH_CLIENT_ID = os.environ.get('MS_GRAPH_CLIENT_ID') or os.environ.get('CLIENT_ID')
+    MS_GRAPH_CLIENT_SECRET = os.environ.get('MS_GRAPH_CLIENT_SECRET') or os.environ.get('CLIENT_SECRET')
+    MS_GRAPH_SENDER_EMAIL = os.environ.get('MS_GRAPH_SENDER_EMAIL') or os.environ.get('USER_EMAIL')

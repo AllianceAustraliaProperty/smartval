@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request, render_template_string
 # CORS is handled globally in app.py
 from database import get_database
 from models.valuation_report import ValuationReport
+from models.settings import Settings
 from pymongo import MongoClient
 from config import Config
 import base64
@@ -39,6 +40,7 @@ RESIDENTIAL_PROPERTY_TYPES = [
 client = MongoClient(Config.MONGODB_URI)
 db = client.get_default_database()
 valuation_report_model = ValuationReport(db)
+settings_model = Settings(db)
 
 # Template filter functions
 def _is_missing(value):
@@ -1183,3 +1185,93 @@ def generate_invoice_pdf(report_id):
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Failed to generate invoice PDF: {str(e)}'}), 500
+
+
+def _get_invoice_recipient(report):
+    primary = report.get('primaryContact', {}) or {}
+    email = (primary.get('email') or '').strip()
+    if not email:
+        email = (primary.get('email2') or '').strip()
+    return email
+
+
+@valuation_reports_bp.route('/<report_id>/invoice/send', methods=['POST'])
+def send_invoice_email(report_id):
+    try:
+        report = valuation_report_model.get_by_id(report_id)
+        if not report:
+            return jsonify({'error': 'Valuation report not found'}), 404
+
+        body = request.get_json(silent=True) or {}
+
+        recipient = (body.get('to') or '').strip() or _get_invoice_recipient(report)
+        if not recipient:
+            return jsonify({
+                'error': 'No client email address found. Add an email in the Primary '
+                         'Contact section before sending the invoice.'
+            }), 400
+
+        html_content, context, error, status = _render_invoice_html(report_id)
+        if error:
+            return jsonify({'error': error}), status
+
+        pdf_content = generate_pdf_from_html(html_content)
+        filename = f"{context['invoice_number']}.pdf"
+
+        from utils.invoice_email import (
+            DEFAULT_INVOICE_EMAIL_BODY,
+            DEFAULT_INVOICE_EMAIL_SUBJECT,
+            build_invoice_email_context,
+            render_string,
+        )
+
+        client_name = context.get('client_name', 'N/A')
+        email_ctx = build_invoice_email_context(context, client_name, Config.REPORT_LOGO_URL)
+
+        subject_tmpl = settings_model.get('invoiceEmailSubject') or DEFAULT_INVOICE_EMAIL_SUBJECT
+        body_tmpl = settings_model.get('invoiceEmailBody') or DEFAULT_INVOICE_EMAIL_BODY
+
+        req_subject = (body.get('subject') or '').strip()
+        req_message = (body.get('message') or '').strip()
+
+        subject = render_string(req_subject or subject_tmpl, email_ctx)
+        if req_message:
+            email_html = render_string(
+                '<div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; '
+                'color: #1f2937; line-height: 1.6; white-space: pre-wrap;">'
+                '{{ message_body }}</div>',
+                {**email_ctx, 'message_body': req_message},
+            )
+        else:
+            email_html = render_string(body_tmpl, email_ctx)
+
+        sender = settings_model.get('invoiceEmailSender') or None
+
+        from utils.graph_mail import send_mail, GraphMailError
+        try:
+            send_mail(
+                to_recipients=recipient,
+                subject=subject,
+                html_body=email_html,
+                attachments=[{
+                    'name': filename,
+                    'content': pdf_content,
+                    'content_type': 'application/pdf',
+                }],
+                sender=sender,
+            )
+        except GraphMailError as ge:
+            print(f"Error sending invoice email: {str(ge)}")
+            return jsonify({'error': f'Failed to send invoice email: {str(ge)}'}), 502
+
+        return jsonify({
+            'message': f'Invoice sent to {recipient}',
+            'recipient': recipient,
+            'invoice_number': context['invoice_number'],
+        }), 200
+
+    except Exception as e:
+        print(f"Error sending invoice email: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to send invoice email: {str(e)}'}), 500

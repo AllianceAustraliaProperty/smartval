@@ -19,7 +19,7 @@ import {
   PhotosSection,
   ComparablesSection,
 } from '@/components/sections';
-import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch, Download, AlertTriangle, Receipt, ChevronDown } from 'lucide-react';
+import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch, Download, AlertTriangle, Receipt, ChevronDown, Send } from 'lucide-react';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
 import { Inter } from 'next/font/google';
 
@@ -71,6 +71,7 @@ export default function ValuationReportEditPage() {
   const [showInvoicePreviewModal, setShowInvoicePreviewModal] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
+  const [isSendingInvoice, setIsSendingInvoice] = useState(false);
   const [isInvoiceMenuOpen, setIsInvoiceMenuOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
@@ -380,6 +381,30 @@ export default function ValuationReportEditPage() {
     }
   };
 
+  const handleSendInvoice = async () => {
+    const reportFee = watch('invoiceDetails.reportFee');
+    if (reportFee === undefined || reportFee === null || isNaN(Number(reportFee)) || Number(reportFee) <= 0) {
+      alert('Please enter a Report Fee in the Financial & Referral Details section before sending an invoice.');
+      return;
+    }
+    const recipient = (watch('primaryContact.email') || watch('primaryContact.email2') || '').trim();
+    if (!recipient) {
+      alert('No client email address found. Please add an email in the Property Address section before sending the invoice.');
+      return;
+    }
+    if (!confirm(`Send the invoice to ${recipient}?`)) return;
+    try {
+      setIsSendingInvoice(true);
+      const result = await apiRepository.sendInvoice(reportId, { to: recipient });
+      alert(`Invoice sent to ${result.recipient || recipient}.`);
+    } catch (err) {
+      console.error('Failed to send invoice:', err);
+      alert(err instanceof Error ? err.message : 'Failed to send invoice. Please try again.');
+    } finally {
+      setIsSendingInvoice(false);
+    }
+  };
+
   const handleCancel = () => {
     if (isDirty) {
       if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
@@ -601,13 +626,13 @@ export default function ValuationReportEditPage() {
                   <div className="relative" data-invoice-menu>
                     <button
                       onClick={() => setIsInvoiceMenuOpen((open) => !open)}
-                      disabled={isGeneratingInvoice}
+                      disabled={isGeneratingInvoice || isSendingInvoice}
                       className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-amber-700 bg-amber-50 border-2 border-amber-200 hover:border-amber-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isGeneratingInvoice ? (
+                      {(isGeneratingInvoice || isSendingInvoice) ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-2 border-amber-600 border-t-transparent mr-2"></div>
-                          Generating...
+                          {isSendingInvoice ? 'Sending...' : 'Generating...'}
                         </>
                       ) : (
                         <>
@@ -618,7 +643,7 @@ export default function ValuationReportEditPage() {
                       )}
                     </button>
 
-                    {isInvoiceMenuOpen && !isGeneratingInvoice && (
+                    {isInvoiceMenuOpen && !isGeneratingInvoice && !isSendingInvoice && (
                       <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-xl shadow-xl border border-amber-100 z-30 overflow-hidden">
                         <button
                           onClick={() => {
@@ -640,6 +665,17 @@ export default function ValuationReportEditPage() {
                         >
                           <Download className="w-4 h-4 mr-3 text-amber-600" />
                           Generate PDF
+                        </button>
+                        <div className="h-px bg-amber-100" />
+                        <button
+                          onClick={() => {
+                            setIsInvoiceMenuOpen(false);
+                            handleSendInvoice();
+                          }}
+                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 transition-colors"
+                        >
+                          <Send className="w-4 h-4 mr-3 text-amber-600" />
+                          Send Invoice
                         </button>
                       </div>
                     )}
