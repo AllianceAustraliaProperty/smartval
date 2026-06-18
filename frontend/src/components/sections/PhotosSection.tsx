@@ -542,14 +542,24 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                       )}
                       <div className="absolute top-2 right-2 flex gap-2">
                         {photo.photoUrl && (
-                          <button
-                            type="button"
-                            onClick={() => setEditingPhoto(editingPhoto === index ? null : index)}
-                            className="bg-blue-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-blue-700"
-                            title="Edit photo attributes"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
+                          <>
+                            <label
+                              htmlFor={`replace-upload-${index}`}
+                              className="bg-blue-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-blue-700 cursor-pointer flex items-center justify-center"
+                              title="Upload a different picture"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </label>
+                            <input
+                              id={`replace-upload-${index}`}
+                              ref={(el) => { individualFileInputRefs.current[index] = el; }}
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) => handleIndividualFileUpload(index, e.target.files)}
+                              disabled={uploading}
+                            />
+                          </>
                         )}
                         <button
                           type="button"
@@ -1326,14 +1336,24 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                   )}
                   <div className="absolute top-2 right-2 flex gap-2">
                     {photo.photoUrl && (
-                      <button
-                        type="button"
-                        onClick={() => setEditingPhoto(editingPhoto === index ? null : index)}
-                        className="bg-blue-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-blue-700"
-                        title="Edit photo attributes"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
+                      <>
+                        <label
+                          htmlFor={`additional-replace-upload-${index}`}
+                          className="bg-blue-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-blue-700 cursor-pointer flex items-center justify-center"
+                          title="Upload a different picture"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </label>
+                        <input
+                          id={`additional-replace-upload-${index}`}
+                          ref={(el) => { individualFileInputRefs.current[index] = el; }}
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) => handleIndividualFileUpload(index, e.target.files)}
+                          disabled={uploading}
+                        />
+                      </>
                     )}
                     <button
                       type="button"
