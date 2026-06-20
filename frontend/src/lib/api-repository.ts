@@ -651,6 +651,85 @@ export const apiRepository = {
     return await response.json();
   },
 
+  async sendReport(
+    reportId: string,
+    payload?: { to?: string; subject?: string; message?: string }
+  ): Promise<{ message: string; recipient: string; file_number?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/report/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload || {}),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to send report' }));
+        throw new Error(errorData.error || 'Failed to send report');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to send report:', error);
+      throw error;
+    }
+  },
+
+  async getReportEmailTemplate(): Promise<{
+    subject: string; body: string; sender: string; defaultSender: string;
+    isCustom: boolean; variables: { token: string; label: string }[];
+    defaultSubject: string; defaultBody: string;
+  }> {
+    const response = await fetch(`${API_BASE_URL}/settings/report-email`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to load template' }));
+      throw new Error(errorData.error || 'Failed to load template');
+    }
+    return await response.json();
+  },
+
+  async saveReportEmailTemplate(payload: { subject: string; body: string; sender?: string }): Promise<{
+    message: string; subject: string; body: string; sender: string; isCustom: boolean;
+  }> {
+    const response = await fetch(`${API_BASE_URL}/settings/report-email`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to save template' }));
+      throw new Error(errorData.error || 'Failed to save template');
+    }
+    return await response.json();
+  },
+
+  async resetReportEmailTemplate(): Promise<{
+    subject: string; body: string; sender: string; defaultSender: string; isCustom: boolean;
+  }> {
+    const response = await fetch(`${API_BASE_URL}/settings/report-email/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to reset template' }));
+      throw new Error(errorData.error || 'Failed to reset template');
+    }
+    return await response.json();
+  },
+
+  async previewReportEmailTemplate(payload: { subject: string; body: string }): Promise<{ subject: string; html: string }> {
+    const response = await fetch(`${API_BASE_URL}/settings/report-email/preview`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to preview template' }));
+      throw new Error(errorData.error || 'Failed to preview template');
+    }
+    return await response.json();
+  },
+
   // Alliance API methods
   async getAllianceJobs(page: number = 1, perPage: number = 10): Promise<any> {
     try {

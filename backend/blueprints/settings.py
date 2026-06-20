@@ -10,6 +10,13 @@ from utils.invoice_email import (
     render_string,
     sample_context,
 )
+from utils.report_email import (
+    DEFAULT_REPORT_EMAIL_BODY,
+    DEFAULT_REPORT_EMAIL_SUBJECT,
+    REPORT_EMAIL_VARIABLES,
+    render_string as render_report_string,
+    sample_report_context,
+)
 
 settings_bp = Blueprint('settings', __name__)
 settings_model = Settings(get_database())
@@ -133,3 +140,112 @@ def preview_invoice_email_template():
     except Exception as e:
         print(f"Error previewing invoice email template: {str(e)}")
         return jsonify({'error': f'Failed to preview invoice email template: {str(e)}'}), 500
+
+
+# ── Report email template routes ──────────────────────────────────────────────
+
+def _current_report_email_template():
+    stored_subject = settings_model.get('reportEmailSubject')
+    stored_body = settings_model.get('reportEmailBody')
+    stored_sender = settings_model.get('reportEmailSender')
+    return {
+        'subject': stored_subject or DEFAULT_REPORT_EMAIL_SUBJECT,
+        'body': stored_body or DEFAULT_REPORT_EMAIL_BODY,
+        'sender': stored_sender or '',
+        'defaultSender': Config.MS_GRAPH_SENDER_EMAIL or '',
+        'isCustom': bool(stored_body),
+    }
+
+
+@settings_bp.route('/report-email', methods=['GET'])
+def get_report_email_template():
+    try:
+        current = _current_report_email_template()
+        return jsonify({
+            **current,
+            'variables': REPORT_EMAIL_VARIABLES,
+            'defaultSubject': DEFAULT_REPORT_EMAIL_SUBJECT,
+            'defaultBody': DEFAULT_REPORT_EMAIL_BODY,
+        }), 200
+    except Exception as e:
+        print(f"Error loading report email template: {str(e)}")
+        return jsonify({'error': f'Failed to load report email template: {str(e)}'}), 500
+
+
+@settings_bp.route('/report-email', methods=['PUT'])
+def update_report_email_template():
+    try:
+        data = request.get_json(silent=True) or {}
+        subject = (data.get('subject') or '').strip()
+        body = data.get('body') or ''
+        sender = (data.get('sender') or '').strip()
+
+        if not subject:
+            return jsonify({'error': 'Subject is required.'}), 400
+        if not body.strip():
+            return jsonify({'error': 'Email body is required.'}), 400
+        if sender and '@' not in sender:
+            return jsonify({'error': 'Sender must be a valid email address.'}), 400
+
+        try:
+            render_report_string(subject, sample_report_context())
+            render_report_string(body, sample_report_context())
+        except Exception as render_error:
+            return jsonify({'error': f'Template is invalid: {str(render_error)}'}), 400
+
+        settings_model.set_many({
+            'reportEmailSubject': subject,
+            'reportEmailBody': body,
+            'reportEmailSender': sender or None,
+        })
+        return jsonify({
+            'message': 'Report email template saved.',
+            'subject': subject,
+            'body': body,
+            'sender': sender,
+            'isCustom': True,
+        }), 200
+    except Exception as e:
+        print(f"Error saving report email template: {str(e)}")
+        return jsonify({'error': f'Failed to save report email template: {str(e)}'}), 500
+
+
+@settings_bp.route('/report-email/reset', methods=['POST'])
+def reset_report_email_template():
+    try:
+        settings_model.set_many({
+            'reportEmailSubject': None,
+            'reportEmailBody': None,
+            'reportEmailSender': None,
+        })
+        return jsonify({
+            'message': 'Report email template reset to default.',
+            'subject': DEFAULT_REPORT_EMAIL_SUBJECT,
+            'body': DEFAULT_REPORT_EMAIL_BODY,
+            'sender': '',
+            'defaultSender': Config.MS_GRAPH_SENDER_EMAIL or '',
+            'isCustom': False,
+        }), 200
+    except Exception as e:
+        print(f"Error resetting report email template: {str(e)}")
+        return jsonify({'error': f'Failed to reset report email template: {str(e)}'}), 500
+
+
+@settings_bp.route('/report-email/preview', methods=['POST'])
+def preview_report_email_template():
+    try:
+        data = request.get_json(silent=True) or {}
+        subject = data.get('subject') or DEFAULT_REPORT_EMAIL_SUBJECT
+        body = data.get('body') or DEFAULT_REPORT_EMAIL_BODY
+
+        ctx = sample_report_context()
+        try:
+            rendered_subject = render_report_string(subject, ctx)
+            rendered_html = render_report_string(body, ctx)
+        except Exception as render_error:
+            return jsonify({'error': f'Template is invalid: {str(render_error)}'}), 400
+
+        return jsonify({'subject': rendered_subject, 'html': rendered_html}), 200
+    except Exception as e:
+        print(f"Error previewing report email template: {str(e)}")
+        return jsonify({'error': f'Failed to preview report email template: {str(e)}'}), 500

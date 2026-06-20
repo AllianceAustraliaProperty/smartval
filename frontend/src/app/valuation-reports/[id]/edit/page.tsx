@@ -70,6 +70,7 @@ export default function ValuationReportEditPage() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showInvoicePreviewModal, setShowInvoicePreviewModal] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [isSendingReport, setIsSendingReport] = useState(false);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const [isSendingInvoice, setIsSendingInvoice] = useState(false);
   const [isInvoiceMenuOpen, setIsInvoiceMenuOpen] = useState(false);
@@ -345,6 +346,26 @@ export default function ValuationReportEditPage() {
     }
   };
 
+  const handleSendReport = async () => {
+    if (!validatePhotosAndComparables()) return;
+    const recipient = (watch('primaryContact.email') || watch('primaryContact.email2') || '').trim();
+    if (!recipient) {
+      alert('No client email address found. Please add an email in the Property Address section before sending the report.');
+      return;
+    }
+    if (!confirm(`Send the valuation report to ${recipient}?`)) return;
+    try {
+      setIsSendingReport(true);
+      const result = await apiRepository.sendReport(reportId, { to: recipient });
+      alert(`Report sent to ${result.recipient || recipient}.`);
+    } catch (err) {
+      console.error('Failed to send report:', err);
+      alert(err instanceof Error ? err.message : 'Failed to send report. Please try again.');
+    } finally {
+      setIsSendingReport(false);
+    }
+  };
+
   const handlePreviewInvoice = () => {
     const reportFee = watch('invoiceDetails.reportFee');
     if (reportFee === undefined || reportFee === null || isNaN(Number(reportFee)) || Number(reportFee) <= 0) {
@@ -579,13 +600,13 @@ export default function ValuationReportEditPage() {
                   <div className="relative" data-report-menu>
                     <button
                       onClick={() => setIsReportMenuOpen((open) => !open)}
-                      disabled={isGeneratingReport}
+                      disabled={isGeneratingReport || isSendingReport}
                       className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-green-700 bg-green-50 border-2 border-green-200 hover:border-green-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isGeneratingReport ? (
+                      {(isGeneratingReport || isSendingReport) ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-600 border-t-transparent mr-2"></div>
-                          Generating...
+                          {isSendingReport ? 'Sending...' : 'Generating...'}
                         </>
                       ) : (
                         <>
@@ -596,7 +617,7 @@ export default function ValuationReportEditPage() {
                       )}
                     </button>
 
-                    {isReportMenuOpen && !isGeneratingReport && (
+                    {isReportMenuOpen && !isGeneratingReport && !isSendingReport && (
                       <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-xl shadow-xl border border-green-100 z-30 overflow-hidden">
                         <button
                           onClick={() => {
@@ -618,6 +639,17 @@ export default function ValuationReportEditPage() {
                         >
                           <Download className="w-4 h-4 mr-3 text-green-600" />
                           Generate PDF
+                        </button>
+                        <div className="h-px bg-green-100" />
+                        <button
+                          onClick={() => {
+                            setIsReportMenuOpen(false);
+                            handleSendReport();
+                          }}
+                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors"
+                        >
+                          <Send className="w-4 h-4 mr-3 text-green-600" />
+                          Send Report
                         </button>
                       </div>
                     )}
