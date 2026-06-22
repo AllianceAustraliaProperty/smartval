@@ -39,6 +39,7 @@ DEFAULT_INVOICE_EMAIL_BODY = """<div style="font-family: Arial, Helvetica, sans-
   </table>
   <p>If you have any questions about this invoice, please reply to this email.</p>
   <p>Kind regards,<br/>Australian Appraisers</p>
+  <p style="margin-top: 24px;"><img src="https://smartval-bucket-copy.s3.ap-southeast-2.amazonaws.com/assets/footer_report_automation.jpeg" alt="AAP Valuations" style="max-width: 100%; height: auto;" /></p>
 </div>"""
 
 
