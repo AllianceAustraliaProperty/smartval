@@ -390,7 +390,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     // ✅ Function to crop/resize image to fit box perfectly
     async function cropImageToFit(imageBuffer: Buffer | ArrayBuffer, targetWidth: number, targetHeight: number): Promise<Buffer> {
       try {
-        const image = sharp(Buffer.isBuffer(imageBuffer) ? imageBuffer : Buffer.from(imageBuffer));
+        const image = sharp(Buffer.isBuffer(imageBuffer) ? imageBuffer : Buffer.from(imageBuffer)).rotate();
         const metadata = await image.metadata();
         
         if (!metadata.width || !metadata.height) {
