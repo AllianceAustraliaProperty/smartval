@@ -390,57 +390,22 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     // ✅ Function to crop/resize image to fit box perfectly
     async function cropImageToFit(imageBuffer: Buffer | ArrayBuffer, targetWidth: number, targetHeight: number): Promise<Buffer> {
       try {
-        const image = sharp(Buffer.isBuffer(imageBuffer) ? imageBuffer : Buffer.from(imageBuffer)).rotate();
-        const metadata = await image.metadata();
-        
-        if (!metadata.width || !metadata.height) {
-          // If we can't get metadata, return original
-          return Buffer.isBuffer(imageBuffer) ? imageBuffer : Buffer.from(imageBuffer);
-        }
-
-        const originalWidth = metadata.width;
-        const originalHeight = metadata.height;
-        const targetRatio = targetWidth / targetHeight;
-        const originalRatio = originalWidth / originalHeight;
-
-        let resizeWidth: number;
-        let resizeHeight: number;
-
-        // ✅ Implement your logic: smaller dimension takes 100%, other gets cropped
-        if (originalRatio > targetRatio) {
-          // Image is wider - fit to height, crop width
-          resizeHeight = targetHeight;
-          resizeWidth = Math.round(targetHeight * originalRatio);
-        } else {
-          // Image is taller - fit to width, crop height  
-          resizeWidth = targetWidth;
-          resizeHeight = Math.round(targetWidth / originalRatio);
-        }
-
-        // Resize and crop from center, then add black border
-        const croppedImage = await image
-          .resize(resizeWidth, resizeHeight)
-          .extract({
-            left: Math.max(0, Math.round((resizeWidth - targetWidth) / 2)),
-            top: Math.max(0, Math.round((resizeHeight - targetHeight) / 2)),
-            width: targetWidth,
-            height: targetHeight
-          });
-
-        // ✅ Add professional black border (2px on all sides)
-        const borderWidth = 2;
-        const processedImage = await croppedImage
+        const processedImage = await sharp(Buffer.isBuffer(imageBuffer) ? imageBuffer : Buffer.from(imageBuffer))
+          .rotate() // Auto-rotate via EXIF
+          .resize(targetWidth, targetHeight, {
+            fit: 'cover',
+            position: 'center'
+          })
           .extend({
-            top: borderWidth,
-            bottom: borderWidth,
-            left: borderWidth,
-            right: borderWidth,
+            top: 2,
+            bottom: 2,
+            left: 2,
+            right: 2,
             background: { r: 0, g: 0, b: 0, alpha: 1 } // Black border
           })
           .png()
           .toBuffer();
 
-        console.log(`🖼️ Image processed: ${originalWidth}x${originalHeight} → ${targetWidth}x${targetHeight} + 2px black border`);
         return processedImage;
       } catch (error) {
         console.warn('Failed to crop image, using original:', error);
