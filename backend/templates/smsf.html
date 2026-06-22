@@ -741,8 +741,29 @@
                     valuation_report["primaryContact"]["firstName"]|default('N/A') }} {{
                     valuation_report["primaryContact"]["lastName"]|default('N/A') }}</div>
 
-                <div class="title-margin fs-20"
-                    style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px;">
+                {% if logo_type == 'CPV' %}
+                <div class="title-margin fs-20" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 80px;">
+                    <div>
+                        <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo"
+                            style="width: 140px; height: auto; display: block;" />
+                    </div>
+                    <div style="text-align: left; font-size: 12px; line-height: 2;">
+                        <p style="font-weight: bold; margin: 0 0 6px 0; font-size: 14px;">Certified Property Valuer</p>
+                        <p style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 14px;">&#9990;</span> 0485 008 806
+                        </p>
+                        <p style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 13px;">&#9993;</span>
+                            <a href="mailto:info@certifiedpropertyvaluer.com.au" style="color: #1a56db; text-decoration: underline;">info@certifiedpropertyvaluer.com.au</a>
+                        </p>
+                        <p style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 13px;">&#127760;</span>
+                            <a href="https://www.certifiedpropertyvaluer.com.au" style="color: #1a56db; text-decoration: underline;">www.certifiedpropertyvaluer.com.au</a>
+                        </p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="title-margin fs-20" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px;">
                     <div>
                         <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo"
                             style="width: 140px; height: auto; display: block;" />
@@ -753,14 +774,7 @@
                         </div>
                         {% endif %}
                     </div>
-                    {% if logo_type == 'CPV' %}
-                    <div style="text-align: right; font-size: 11px; line-height: 1.6;">
-                        <p style="font-weight: bold; margin: 0; font-size: 13px;">Certified Property Valuer</p>
-                        <p style="margin: 4px 0 0 0;">&#9990; 0485 008 806</p>
-                        <p style="margin: 2px 0 0 0;">&#9993; info@certifiedpropertyvaluer.com.au</p>
-                        <p style="margin: 2px 0 0 0;">&#127760; www.certifiedpropertyvaluer.com.au</p>
-                    </div>
-                    {% elif logo_type != 'TAMN' %}
+                    {% if logo_type != 'TAMN' %}
                     <div style="text-align: right; font-size: 11px; line-height: 1.5;">
                         <p style="font-weight: bold; margin: 0;">Alliance Australia Property Pty Ltd</p>
                         <p style="margin: 0;">ABN 35 641 373 702</p>
@@ -770,6 +784,7 @@
                     </div>
                     {% endif %}
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
