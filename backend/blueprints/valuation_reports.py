@@ -584,7 +584,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "nla_rate": comp.get("nlaRate"),
                     "yield_": comp.get("yield"),
                     "build_year": comp.get("buildYear"),
-                    "image_url": comp.get("imageUrl") or comp.get("photoUrl") or None,
+                    "image_url": comp.get("photoUrl") or comp.get("imageUrl") or None,
                     "description": comp.get("description"),
                     "comparison": comp.get("comparison"),
                 })
@@ -602,7 +602,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "net_income_rental_suffix": "pa",
                     "net_rental_rate": comp.get("rentalRate"),
                     "passing_rent": comp.get("passingRent"),
-                    "image_url": comp.get("imageUrl") or comp.get("photoUrl") or None,
+                    "image_url": comp.get("photoUrl") or comp.get("imageUrl") or None,
                     "description": comp.get("description"),
                     "comparison": comp.get("comparison"),
                 })
@@ -845,7 +845,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "site_area": comp.get("siteArea"),
                     "building_area": comp.get("buildingArea"),
                     "build_year": comp.get("buildYear"),
-                    "image_url": comp.get("imageUrl") or comp.get("photoUrl") or None,
+                    "image_url": comp.get("photoUrl") or comp.get("imageUrl") or None,
                     "description": comp.get("description"),
                     "comparison": comp.get("comparison"),
                     "bedrooms": comp.get("bedrooms"),
