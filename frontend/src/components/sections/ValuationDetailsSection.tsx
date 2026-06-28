@@ -155,6 +155,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             <option value="Rural (2 Hectare Exemption)">Rural (2 Hectare Exemption)</option>
             <option value="Probate Valuation">Probate Valuation</option>
             <option value="Family Law">Family Law</option>
+            <option value="Financial Settlement">Financial Settlement</option>
           </select>
         </FormField>
 

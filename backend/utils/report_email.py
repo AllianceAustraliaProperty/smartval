@@ -48,7 +48,11 @@ def build_report_email_context(report, logo_url=None):
     file_number = (report.get('fileNumber') or '').strip()
 
     val_details = report.get('valuationDetails', {}) or {}
-    valuation_date = (val_details.get('inspectionDate') or val_details.get('valuationDate') or '').strip()
+    _vdate = val_details.get('inspectionDate') or val_details.get('valuationDate') or ''
+    if hasattr(_vdate, 'strftime'):
+        valuation_date = _vdate.strftime('%d/%m/%Y')
+    else:
+        valuation_date = str(_vdate).strip()
 
     return {
         'client_name': client_name,
