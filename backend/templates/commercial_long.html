@@ -2128,11 +2128,11 @@
     {% endfor %}
 
     <div class="page">
-        <div class="section-header">
-            <h1>Annexure</h1>
-            <img src="{{ logo_url }}" class="header-logo" alt="Logo" />
+        <div class="header-container">
+            <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
-        <hr />
+        <div class="banner">Annexure</div>
+        <div class="space-between-sm"></div>
 
         {% if record.floor_plans and record.floor_plans|length > 0 %}
         <div style="font-size: 13px;">
