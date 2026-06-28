@@ -729,6 +729,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                 "net_market_rent": float(val_details.get("netMarketRent") or 0),
                 "gallery_photos_groups": comm_gallery_groups,
                 "annexures": comm_annexures,
+                "floor_plans": [{"url": fp.get("photoUrl", "")} for fp in report.get("floorPlans", [])],
                 "title_search": (report.get("titleSearch", [{}])[0].get("photoUrl") if report.get("titleSearch") else None),
                 "title_search_list": [p.get("photoUrl") for p in report.get("titleSearch", []) if p.get("photoUrl")],
                 "blank_pages_count": report.get("valuationDetails", {}).get("blankPagesCount", 0) or 0,
