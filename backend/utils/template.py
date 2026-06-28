@@ -6,7 +6,10 @@ def summarize_photos(photos: list[dict]):
     summary = {}
     floorings = set()
     for photo in photos:
-        if not photo["category"]:
+        if photo.get("flooring"):
+            floorings.add(photo["flooring"])
+
+        if not photo.get("category"):
             continue
         
         if photo.get("category") not in summary:
@@ -25,7 +28,6 @@ def summarize_photos(photos: list[dict]):
 
         if photo.get("flooring"):
             summary[photo["category"]]["floorings"].add(photo["flooring"])
-            floorings.add(photo["flooring"])
 
     categories = []
     for k, v in summary.items():

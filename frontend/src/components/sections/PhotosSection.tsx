@@ -16,7 +16,7 @@ const ROOM_CATEGORIES = [
 
 const FLOORING_OPTIONS = [
   'Brick', 'Carpet', 'Concrete Flooring', 'Cork', 'Hardwood', 'Laminated Floorboards', 'Marble Flooring', 'Parquet',
-  'Polished Concrete', 'Porcelain Tile', 'Rubber Mat', 'Tile Flooring', 'Timber Flooring', 'Vinyl', 'Other'
+  'Polished Concrete', 'Porcelain Tile', 'Floorboards', 'Rubber Mat', 'Tile Flooring', 'Timber Flooring', 'Vinyl', 'Other'
 ];
 
 const CONDITION_OPTIONS = ['Very Good', 'Good', 'Average', 'Fair', 'Poor'];
