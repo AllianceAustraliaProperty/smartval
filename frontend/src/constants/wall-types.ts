@@ -3,13 +3,13 @@ export const INTERNAL_WALLS = [
   "Rendered Brick",
   "Concrete Slab",
   "Gyprock",
-  "Rendered Face Brick",
-  "Face Brick"
+  "Rendered Face Brick"
 ] as const;
 
 export const EXTERNAL_WALLS = [
   "Brick Veneer",
   "Brick Veneer/Cladding",
+  "Face Brick",
   "Double Brick",
   "Concrete Slab",
   "Horizontal Cladding",
