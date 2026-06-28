@@ -152,9 +152,9 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           label="Internal Walls"
           error={errors.propertyDescriptors?.internalWalls?.message}
         >
-          <Input
+          <Select
             {...register('propertyDescriptors.internalWalls')}
-            placeholder="e.g., Rendered/Face Brick"
+            options={INTERNAL_WALLS.map(type => ({ value: type, label: type}))}
             error={errors.propertyDescriptors?.internalWalls?.message}
           />
         </FormField>
@@ -163,10 +163,17 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           label="Parking Type"
           error={errors.propertyDescriptors?.parkingType?.message}
         >
-          <Select
-            {...register('propertyDescriptors.parkingType')}
-            options={PARKING_TYPES.map(type => ({ value: type, label: type }))}
-            error={errors.propertyDescriptors?.parkingType?.message}
+          <Controller
+            name="propertyDescriptors.parkingType"
+            control={control}
+            render={({ field }) => (
+              <MultiSelectDropdown
+                options={PARKING_TYPES.map(type => ({ value: type, label: type }))}
+                value={field.value || ''}
+                onChange={field.onChange}
+                error={errors.propertyDescriptors?.parkingType?.message}
+              />
+            )}
           />
         </FormField>
 
@@ -311,9 +318,16 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
               />
             </FormField>
             <FormField label="Parking Type">
-              <Select
-                {...register('propertyDescriptors.grannyFlat.parkingType')}
-                options={PARKING_TYPES.map(type => ({ value: type, label: type }))}
+              <Controller
+                name="propertyDescriptors.grannyFlat.parkingType"
+                control={control}
+                render={({ field }) => (
+                  <MultiSelectDropdown
+                    options={PARKING_TYPES.map(type => ({ value: type, label: type }))}
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                )}
               />
             </FormField>
             <FormField label="Internal Condition">

@@ -10,7 +10,7 @@ const ROOM_CATEGORIES = [
   'Alfresco', 'Balcony', 'Bathroom', 'Bedroom', 'Bedroom 1', 'Bedroom 2', 'Bedroom 3', 'Bedroom 4', 'Bedroom 5', 'Bedroom 6',
   'Deck', 'Dining', 'Ensuite', 'Ensuite 2', 'Entertainment Area', 'Family', 'Family And Meals', 'Formal Dining', 'General',
   'Kitchen', 'Kitchen 1', 'Kitchen 2', 'Kitchen And Dining', 'Kitchen And Meals', 'Laundry', 'Living', 'Living And Dining',
-  'Lounge', 'Media Room', 'Patio', 'Porch', 'Powder Room', 'Retreat', 'Rumpus', 'Storage', 'Study', 'Sunroom',
+  'Lounge', 'Office Room', 'Media Room', 'Patio', 'Porch', 'Powder Room', 'Retreat', 'Rumpus', 'Storage', 'Study', 'Sunroom',
   'Swimming Pool', 'Theatre Room', 'Toilet', 'Workshop'
 ];
 
@@ -68,6 +68,7 @@ const ROOM_FEATURES: Record<string, string[]> = {
   'Family': ['aluminium framed windows', 'timber framed windows', 'blinds', 'plantation shutters', 'sliding door'],
   'Family And Meals': ['aluminium framed windows', 'timber framed windows', 'blinds', 'plantation shutters', 'sliding door', 'aluminium glazed door'],
   'General': ['security system', 'smoke alarm'],
+  'Office Room': ['aluminium framed windows', 'timber framed windows', 'blinds', 'plantation shutters', 'sliding door'],
   'Media Room': ['aluminium framed windows', 'timber framed windows', 'blinds', 'plantation shutters', 'sliding door'],
   'Powder Room': [],
   'Retreat': ['aluminium framed windows', 'timber framed windows', 'blinds', 'plantation shutters', 'sliding door'],
@@ -106,6 +107,7 @@ const ROOM_PRIME_COST_ITEMS: Record<string, string[]> = {
   'Living': ['ceiling fans', 'room unit air conditioning', 'split system air conditioning', 'ducted air conditioning', 'ducted heater'],
   'Living And Dining': ['ceiling fans', 'room unit air conditioning', 'split system air conditioning', 'ducted air conditioning', 'ducted heater'],
   'Lounge': ['ceiling fans', 'room unit air conditioning', 'split system air conditioning', 'ducted air conditioning', 'ducted heater'],
+  'Office Room': ['ceiling fans', 'room unit air conditioning', 'split system air conditioning', 'ducted air conditioning'],
   'Media Room': ['ceiling fans', 'room unit air conditioning', 'split system air conditioning', 'ducted air conditioning'],
   'Patio': ['ceiling fans', 'retaining walls', 'paths', 'pergola'],
   'Porch': ['ceiling fans', 'retaining walls', 'paths'],
