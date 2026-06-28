@@ -701,7 +701,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "map_source": report.get("locationDetails", {}).get("map", {}).get("source", "Google Maps"),
                 },
                 "photos_summary": {
-                    "floorings": ["Concrete", "Carpet"],
+                    "floorings": report.get("photosSummary", {}).get("floorings", []),
                 },
                 "general_comments": {
                     "valuation_comments": report.get("generalComments", {}).get("valuationCommentsPara"),
