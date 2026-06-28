@@ -711,7 +711,7 @@
     {% set _nla = record.property_details.lettable_area %}
     {% set _mv = record.property_valuation.market_value %}
     {% set _nla_rate = (_mv / _nla) if (_mv and _nla) else None %}
-    <div class="page">
+    <div class="page executive-summary">
         <div class="header-container">
             <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="">
         </div>
@@ -2212,6 +2212,9 @@
                 for (let el of candidates) {
                     // Skip elements inside the TOC itself
                     if (el.closest('.toc-table')) continue;
+                    
+                    // Skip elements inside the Executive Summary
+                    if (el.closest('.executive-summary')) continue;
                     
                     let elText = el.textContent.trim().replace(/^[0-9.]+\s*/, '').trim().toLowerCase();
                     elText = elText.replace(/\{\{.*?\}\}/g, '').trim();
