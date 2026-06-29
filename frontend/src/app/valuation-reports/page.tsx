@@ -472,7 +472,10 @@ export default function ValuationReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 relative overflow-hidden">
+    <div
+      className={`min-h-screen relative overflow-hidden ${inter.className}`}
+      style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
+    >
       {/* User Menu Dropdown Portal - At the very top */}
       {isUserMenuOpen && currentUser && (
         <div className="fixed inset-0 z-[999999]">
@@ -530,18 +533,25 @@ export default function ValuationReportsPage() {
       )}
 
       {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-600/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-      </div>
+      <div
+        className="absolute inset-0 opacity-10 pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
+          backgroundSize: '20px 20px'
+        }}
+      ></div>
+      <div
+        className="absolute inset-0 pointer-events-none animate-breath origin-bottom"
+        style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
+      ></div>
 
       <div className="relative z-10 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+              {/* Left: Logo and Title */}
+              <div className="flex items-center space-x-4 shrink-0">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg">
                   <Home className="w-7 h-7 text-white" />
                 </div>
@@ -553,15 +563,29 @@ export default function ValuationReportsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4">
+              {/* Middle: Search Bar */}
+              <div className="flex-1 max-w-2xl px-8 hidden md:block">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by job number, address, valuer, client, or property type..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-lg placeholder-gray-500 text-gray-900"
+                  />
+                </div>
+              </div>
+
+              {/* Right: Actions */}
+              <div className="flex items-center space-x-4 shrink-0">
                 {/* Create Button */}
                 <button
                   onClick={handleCreateNew}
-                  className="group relative inline-flex items-center px-6 py-3 text-sm font-bold rounded-2xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110"
+                  className="group relative inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
-                  <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-                  Create New Valuation Report
-                  <Sparkles className="w-4 h-4 ml-2 opacity-80 group-hover:animate-spin" />
+                  <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
+                  New Report
                 </button>
 
                 {/* User Menu Button */}
@@ -577,41 +601,39 @@ export default function ValuationReportsPage() {
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Search and Filters */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-4">
-              <div className="relative flex-1 max-w-md">
+            
+            {/* Mobile Search Bar (shows only on small screens) */}
+            <div className="mt-4 block md:hidden">
+              <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by job number, address, valuer, client, or property type..."
+                  placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-lg placeholder-gray-500 text-gray-900"
                 />
               </div>
-
-              {/* Bulk Actions */}
-              {selectedReports.size > 0 && (
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleBulkDelete}
-                    className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors duration-200"
-                  >
-                    Delete ({selectedReports.size})
-                  </button>
-                  <button
-                    onClick={handleExport}
-                    className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors duration-200"
-                  >
-                    Export ({selectedReports.size})
-                  </button>
-                </div>
-              )}
             </div>
           </div>
+
+          {/* Bulk Actions */}
+          {selectedReports.size > 0 && (
+            <div className="mb-6 flex items-center justify-end space-x-2">
+              <button
+                onClick={handleBulkDelete}
+                className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors duration-200"
+              >
+                Delete ({selectedReports.size})
+              </button>
+              <button
+                onClick={handleExport}
+                className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors duration-200"
+              >
+                Export ({selectedReports.size})
+              </button>
+            </div>
+          )}
 
           {/* Valuation Reports Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -714,11 +736,10 @@ export default function ValuationReportsPage() {
               </p>
               <button
                 onClick={handleCreateNew}
-                className="group inline-flex items-center px-8 py-4 text-lg font-bold rounded-2xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110"
+                className="group inline-flex items-center px-6 py-3 text-base font-semibold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
-                <Plus className="w-6 h-6 mr-3 group-hover:rotate-90 transition-transform duration-300" />
-                Create New Valuation Report
-                <Sparkles className="w-5 h-5 ml-2 opacity-80 group-hover:animate-spin" />
+                <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+                New Report
               </button>
             </div>
           )}
@@ -726,7 +747,7 @@ export default function ValuationReportsPage() {
       </div>
 
       {/* Alliance Reports Section */}
-      <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 min-h-screen">
+      <div className="min-h-screen relative z-10">
         <div className="max-w-7xl mx-auto px-8 py-12">
           {/* Alliance Section Header */}
           <div className="flex items-center justify-between mb-8">
@@ -916,7 +937,7 @@ export default function ValuationReportsPage() {
       </div>
 
       {/* Inspection Reports Section */}
-      <div className="bg-gradient-to-br from-slate-50 via-purple-50 to-purple-100 min-h-screen">
+      <div className="min-h-screen relative z-10">
         <div className="max-w-7xl mx-auto px-8 py-12">
           {/* Inspection Section Header */}
           <div className="flex items-center justify-between mb-8">
