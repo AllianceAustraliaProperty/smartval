@@ -479,7 +479,7 @@ export default function ValuationReportsPage() {
   }
 
   return (
-    <div className={`min-h-screen bg-white flex flex-col font-sans ${inter.className}`}>
+    <div className={`h-screen bg-white flex flex-col font-sans ${inter.className}`}>
       
       {/* TOP HEADER */}
       <header className="h-[90px] flex items-center justify-between px-6 lg:px-8 shrink-0">
@@ -1101,7 +1101,7 @@ export default function ValuationReportsPage() {
 
 
       {/* Floating Status Indicator */}
-      <div className="fixed bottom-8 left-8 z-50">
+      <div className="fixed bottom-8 left-[112px] z-50">
         <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 p-4 transform transition-all duration-500 hover:scale-105">
           <div className="flex items-center space-x-3">
             <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
