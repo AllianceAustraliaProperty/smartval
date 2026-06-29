@@ -746,7 +746,6 @@ export default function ValuationReportsPage() {
             </div>
           )}
         </div>
-      </div>
 
       {/* Alliance Reports Section */}
       <div className="min-h-screen relative z-10">
