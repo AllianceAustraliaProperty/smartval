@@ -472,10 +472,24 @@ export default function ValuationReportsPage() {
   }
 
   return (
-    <div
-      className={`min-h-screen relative overflow-hidden ${inter.className}`}
-      style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
-    >
+    <div className={`min-h-screen relative ${inter.className}`}>
+      {/* Fixed Background Layer */}
+      <div 
+        className="fixed inset-0 z-0 overflow-hidden pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
+      >
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
+            backgroundSize: '20px 20px'
+          }}
+        ></div>
+        <div
+          className="absolute inset-0 animate-breath origin-bottom"
+          style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
+        ></div>
+      </div>
       {/* User Menu Dropdown Portal - At the very top */}
       {isUserMenuOpen && currentUser && (
         <div className="fixed inset-0 z-[999999]">
@@ -532,18 +546,7 @@ export default function ValuationReportsPage() {
         </div>
       )}
 
-      {/* Background Elements */}
-      <div
-        className="absolute inset-0 opacity-10 pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
-          backgroundSize: '20px 20px'
-        }}
-      ></div>
-      <div
-        className="absolute inset-0 pointer-events-none animate-breath origin-bottom"
-        style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
-      ></div>
+
 
       <div className="relative z-10 p-8">
         <div className="max-w-7xl mx-auto">
