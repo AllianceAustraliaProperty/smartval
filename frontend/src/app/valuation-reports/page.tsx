@@ -1096,6 +1096,7 @@ export default function ValuationReportsPage() {
             </div>
           )}
         </div>
+      </div>
       </main>
 
 
