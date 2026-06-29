@@ -119,14 +119,6 @@ export default function LoginPage() {
       className={`min-h-screen relative overflow-hidden flex items-center justify-center ${inter.className}`}
       style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
     >
-      {/* dotted pattern goes here */}
-      <div
-        className="absolute inset-0 opacity-10 pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
-          backgroundSize: '20px 20px'
-        }}
-      ></div>
 
       {/* breathing glow of the background overlay */}
       <div

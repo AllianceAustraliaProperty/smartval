@@ -8,7 +8,14 @@ import axios from 'axios';
 import { apiRepository } from '@/lib/api-repository';
 import { DEFAULT_PROPERTY_FORM, PropertyData } from '@/types/property-valuation';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
-import { Inter } from 'next/font/google';
+import { Inter, Dancing_Script } from 'next/font/google';
+import Image from 'next/image';
+import aapLogo from '../aap-logo.svg';
+
+const dancingScript = Dancing_Script({
+  weight: ['700'],
+  subsets: ['latin'],
+});
 
 const inter = Inter({
   subsets: ['latin'],
@@ -54,7 +61,7 @@ export default function ValuationReportsPage() {
   const [selectedReports, setSelectedReports] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [userButtonPosition, setUserButtonPosition] = useState({ top: 0, right: 0 });
+  const [userButtonPosition, setUserButtonPosition] = useState({ top: 0, left: 0 });
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewReportId, setPreviewReportId] = useState<string | null>(null);
   const [previewAddress, setPreviewAddress] = useState<string>('');
@@ -86,8 +93,8 @@ export default function ValuationReportsPage() {
     if (userButtonRef.current && isUserMenuOpen) {
       const rect = userButtonRef.current.getBoundingClientRect();
       setUserButtonPosition({
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right
+        top: rect.top - 180, // displays above the button
+        left: rect.right + 12
       });
     }
   }, [isUserMenuOpen]);
@@ -472,153 +479,145 @@ export default function ValuationReportsPage() {
   }
 
   return (
-    <div className={`min-h-screen relative ${inter.className}`}>
-      {/* Fixed Background Layer */}
-      <div 
-        className="fixed inset-0 z-0 overflow-hidden pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
-      >
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
-            backgroundSize: '20px 20px'
-          }}
-        ></div>
-        <div
-          className="absolute inset-0 animate-breath origin-bottom"
-          style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
-        ></div>
-      </div>
-      {/* User Menu Dropdown Portal - At the very top */}
-      {isUserMenuOpen && currentUser && (
-        <div className="fixed inset-0 z-[999999]">
-          {/* Dropdown Menu */}
-          <div
-            className="absolute w-72 bg-white rounded-2xl shadow-2xl border border-gray-200"
-            style={{
-              top: `${userButtonPosition.top}px`,
-              right: `${userButtonPosition.right}px`
-            }}
-            ref={userMenuRef}
-          >
-            <div className="p-4 border-b border-gray-100">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <UserIcon className="w-5 h-5 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-gray-900 truncate">{currentUser.name}</p>
-                  <p className="text-sm text-gray-500 truncate">{currentUser.email}</p>
-                </div>
-              </div>
+    <div className={`min-h-screen bg-white flex flex-col font-sans ${inter.className}`}>
+      
+      {/* TOP HEADER */}
+      <header className="h-[90px] flex items-center justify-between px-6 lg:px-8 shrink-0">
+        {/* logo and subtitle on the left  */}
+        <div className="flex items-center space-x-3 shrink-0">
+          <div className="cursor-pointer group flex items-center space-x-3" onClick={handleGoHome}>
+            <div 
+              className="relative w-12 h-12 rounded-full flex items-center justify-center shadow-sm border border-gray-100 transform transition-transform duration-500 ease-out group-hover:scale-105"
+              style={{ background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 100%)' }}
+            >
+              <Image src={aapLogo} alt="AAP Logo" width={32} height={32} className="w-8 h-8 object-contain drop-shadow-sm" priority />
             </div>
-
-            <div className="p-2">
-              <button
-                onClick={handleAdminPanel}
-                className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors duration-200"
-              >
-                <Settings className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">Admin Panel</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setIsUserMenuOpen(false);
-                  router.push('/settings');
-                }}
-                className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors duration-200"
-              >
-                <Mail className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">Email Templates</span>
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors duration-200"
-              >
-                <LogOut className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">Sign Out</span>
-              </button>
+            <div className="flex flex-col justify-center">
+              <h1 className="text-3xl tracking-wide flex items-center h-8">
+                <span className={`font-bold text-[#1f7cc6] ${inter.className}`}>SMART</span>
+                <span className={`text-[#1f7cc6] relative -top-[0.1px] ${dancingScript.className}`} style={{ marginLeft: '2px', fontSize: '1.05em' }}>val</span>
+              </h1>
+              <p className="text-gray-500 font-medium text-xs tracking-wide">Alliance Australia Property</p>
             </div>
           </div>
         </div>
-      )}
 
-
-
-      <div className="relative z-10 p-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              {/* Left: Logo and Title */}
-              <div className="flex items-center space-x-4 shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Home className="w-7 h-7 text-white" />
-                </div>
-                <div className="cursor-pointer" onClick={handleGoHome}>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 bg-clip-text text-transparent drop-shadow-lg hover:from-blue-500 hover:via-blue-600 hover:to-blue-700 transition-all duration-300">
-                    SMARTval
-                  </h1>
-                  <p className="text-gray-600 font-medium">Alliance Australia Property</p>
-                </div>
-              </div>
-
-              {/* Middle: Search Bar */}
-              <div className="flex-1 max-w-2xl px-8 hidden md:block">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by job number, address, valuer, client, or property type..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-lg placeholder-gray-500 text-gray-900"
-                  />
-                </div>
-              </div>
-
-              {/* Right: Actions */}
-              <div className="flex items-center space-x-4 shrink-0">
-                {/* Create Button */}
-                <button
-                  onClick={handleCreateNew}
-                  className="group relative inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
-                  New Report
-                </button>
-
-                {/* User Menu Button */}
-                {currentUser && (
-                  <button
-                    ref={userButtonRef}
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="relative w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                  >
-                    <UserIcon className="w-5 h-5 text-white" />
-                    <ChevronDown className="absolute -bottom-1 -right-1 w-3 h-3 text-white bg-blue-600 rounded-full" />
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            {/* Mobile Search Bar (shows only on small screens) */}
-            <div className="mt-4 block md:hidden">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-lg placeholder-gray-500 text-gray-900"
-                />
-              </div>
-            </div>
+        {/* search bar in the middle */}
+        <div className="flex-1 max-w-2xl px-8 hidden md:block">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#1f7cc6]" />
+            <input
+              type="text"
+              placeholder="Search by file number, address, valuer, client or property number..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1f7cc6] focus:border-[#1f7cc6] transition-all duration-300 placeholder-gray-400 text-gray-900 shadow-sm"
+            />
           </div>
+        </div>
+
+        {/* actions on the right side */}
+        <div className="flex items-center space-x-4 shrink-0">
+          {/* create New Valuation Report button */}
+          <button
+            onClick={handleCreateNew}
+            className="group relative inline-flex items-center px-4 py-2.5 text-sm font-semibold rounded-xl text-white bg-[#5b9bd5] hover:bg-[#4a8cc6] shadow-sm transition-all duration-300 transform hover:scale-105"
+          >
+            <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
+            New Report
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Search Bar (shows only on small screens) */}
+      <div className="px-6 py-2 bg-white block md:hidden">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#1f7cc6]" />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1f7cc6] focus:border-[#1f7cc6] transition-all duration-300 placeholder-gray-400 text-gray-900 shadow-sm"
+          />
+        </div>
+      </div>
+
+      {/* BOTTOM SECTION */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* LEFT SIDEBAR */}
+        <aside className="w-[80px] bg-white flex flex-col justify-end items-center pb-8 shrink-0">
+          {currentUser && (
+            <button
+              ref={userButtonRef}
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="relative w-12 h-12 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105"
+            >
+              <UserIcon className="w-6 h-6 text-[#1f7cc6]" />
+            </button>
+          )}
+        </aside>
+
+        {/* MAIN CONTENT AREA */}
+        <main className="flex-1 bg-[#b5cddd] rounded-tl-[32px] p-8 overflow-y-auto shadow-inner relative">
+          
+          {/* User Menu Dropdown Portal */}
+          {isUserMenuOpen && currentUser && (
+            <div className="fixed inset-0 z-[999999] pointer-events-none">
+              <div
+                className="absolute w-72 bg-white rounded-2xl shadow-2xl border border-gray-200 pointer-events-auto"
+                style={{
+                  top: `${userButtonPosition.top}px`,
+                  left: `${userButtonPosition.left}px`
+                }}
+                ref={userMenuRef}
+              >
+                <div className="p-4 border-b border-gray-100">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-[#5b9bd5] rounded-xl flex items-center justify-center flex-shrink-0">
+                      <UserIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-gray-900 truncate">{currentUser.name}</p>
+                      <p className="text-sm text-gray-500 truncate">{currentUser.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-2">
+                  <button
+                    onClick={handleAdminPanel}
+                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors duration-200"
+                  >
+                    <Settings className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Admin Panel</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      router.push('/settings');
+                    }}
+                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors duration-200"
+                  >
+                    <Mail className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Email Templates</span>
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors duration-200"
+                  >
+                    <LogOut className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="max-w-7xl mx-auto">
 
           {/* Bulk Actions */}
           {selectedReports.size > 0 && (
