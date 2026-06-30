@@ -482,7 +482,7 @@ export default function ValuationReportsPage() {
     <div className={`h-screen bg-white flex flex-col font-sans ${inter.className}`}>
       
       {/* TOP HEADER */}
-      <header className="h-[90px] flex items-center justify-between px-6 lg:px-8 shrink-0">
+      <header className="h-[80px] flex items-center justify-between pl-4 pr-6 lg:pl-4 lg:pr-8 shrink-0 border-b border-gray-300 shadow-sm relative z-20">
         {/* logo and subtitle on the left  */}
         <div className="flex items-center space-x-3 shrink-0">
           <div className="cursor-pointer group flex items-center space-x-3" onClick={handleGoHome}>
@@ -516,7 +516,7 @@ export default function ValuationReportsPage() {
           {/* create New Valuation Report button */}
           <button
             onClick={handleCreateNew}
-            className="group relative inline-flex items-center px-5 h-10 text-sm font-semibold rounded-xl text-white bg-[#5b9bd5] hover:bg-[#4a8cc6] shadow-sm transition-all duration-300 hover:brightness-110 hover:[box-shadow:0_0_15px_rgba(91,155,213,0.6)]"
+            className="group relative inline-flex items-center px-5 h-10 text-sm font-semibold rounded-xl text-white bg-[#2b7bc4] shadow-sm transition-all duration-300 hover:brightness-110 hover:[box-shadow:0_0_15px_rgba(43,123,196,0.6)]"
           >
             <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
             New Report
@@ -539,10 +539,10 @@ export default function ValuationReportsPage() {
       </div>
 
       {/* BOTTOM SECTION */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative z-10">
         
         {/* LEFT SIDEBAR */}
-        <aside className="w-[80px] bg-white flex flex-col justify-end items-center pb-4 shrink-0">
+        <aside className="w-[80px] bg-white flex flex-col justify-end items-center pb-4 shrink-0 border-r border-gray-300 shadow-md relative z-20">
           {currentUser && (
             <div className="flex flex-col items-center w-full">
               <hr className="w-8 border-t-2 border-[#94a3b8] mb-4 opacity-60" />
@@ -560,7 +560,7 @@ export default function ValuationReportsPage() {
         </aside>
 
         {/* MAIN CONTENT AREA */}
-        <main className="flex-1 bg-[#b5cddd] rounded-tl-[32px] p-8 overflow-y-auto shadow-inner relative">
+        <main className="flex-1 bg-[#b5cddd] rounded-tl-[64px] p-8 overflow-y-auto shadow-inner relative">
           
           {/* User Menu Dropdown Portal */}
           {isUserMenuOpen && currentUser && (
