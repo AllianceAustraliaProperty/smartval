@@ -516,7 +516,7 @@ export default function ValuationReportsPage() {
           {/* create New Valuation Report button */}
           <button
             onClick={handleCreateNew}
-            className="group relative inline-flex items-center px-5 h-10 text-sm font-semibold rounded-xl text-white bg-[#5b9bd5] hover:bg-[#4a8cc6] shadow-sm transition-all duration-300 transform hover:scale-105"
+            className="group relative inline-flex items-center px-5 h-10 text-sm font-semibold rounded-xl text-white bg-[#5b9bd5] hover:bg-[#4a8cc6] shadow-sm transition-all duration-300 hover:brightness-110 hover:[box-shadow:0_0_15px_rgba(91,155,213,0.6)]"
           >
             <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
             New Report
@@ -542,17 +542,17 @@ export default function ValuationReportsPage() {
       <div className="flex flex-1 overflow-hidden">
         
         {/* LEFT SIDEBAR */}
-        <aside className="w-[80px] bg-white flex flex-col justify-end items-center pb-8 shrink-0">
+        <aside className="w-[80px] bg-white flex flex-col justify-end items-center pb-4 shrink-0">
           {currentUser && (
             <div className="flex flex-col items-center w-full">
-              <hr className="w-8 border-t-2 border-[#94a3b8] mb-6 opacity-60" />
+              <hr className="w-8 border-t-2 border-[#94a3b8] mb-4 opacity-60" />
               <button
                 ref={userButtonRef}
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="relative w-14 h-14 bg-[#2b7bc4] text-white rounded-2xl flex items-center justify-center transition-all duration-300 hover:brightness-110 hover:[box-shadow:0_0_15px_rgba(43,123,196,0.6)]"
+                className="relative w-12 h-12 bg-[#2b7bc4] text-white rounded-[14px] flex items-center justify-center transition-all duration-300 hover:brightness-110 hover:[box-shadow:0_0_15px_rgba(43,123,196,0.6)]"
               >
-                <div className="w-9 h-9 border-[1.5px] border-white rounded-[10px] flex items-center justify-center">
-                  <UserIcon className="w-[22px] h-[22px] text-white" strokeWidth={1.5} />
+                <div className="w-7 h-7 border-[1.5px] border-white rounded-[8px] flex items-center justify-center">
+                  <UserIcon className="w-[18px] h-[18px] text-white" strokeWidth={1.5} />
                 </div>
               </button>
             </div>
