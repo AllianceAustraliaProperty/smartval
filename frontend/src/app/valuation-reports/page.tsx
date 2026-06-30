@@ -482,7 +482,7 @@ export default function ValuationReportsPage() {
     <div className={`h-screen bg-white flex flex-col font-sans ${inter.className}`}>
       
       {/* TOP HEADER */}
-      <header className="h-[80px] flex items-center justify-between pl-4 pr-6 lg:pl-4 lg:pr-8 shrink-0 border-b border-gray-300 shadow-sm relative z-20">
+      <header className="h-[80px] flex items-center justify-between pl-4 pr-6 lg:pl-4 lg:pr-8 shrink-0 relative z-20">
         {/* logo and subtitle on the left  */}
         <div className="flex items-center space-x-3 shrink-0">
           <div className="cursor-pointer group flex items-center space-x-3" onClick={handleGoHome}>
@@ -542,7 +542,7 @@ export default function ValuationReportsPage() {
       <div className="flex flex-1 overflow-hidden relative z-10">
         
         {/* LEFT SIDEBAR */}
-        <aside className="w-[80px] bg-white flex flex-col justify-end items-center pb-4 shrink-0 border-r border-gray-300 shadow-md relative z-20">
+        <aside className="w-[80px] bg-white flex flex-col justify-end items-center pb-4 shrink-0 relative z-20">
           {currentUser && (
             <div className="flex flex-col items-center w-full">
               <hr className="w-8 border-t-2 border-[#94a3b8] mb-4 opacity-60" />
@@ -560,7 +560,7 @@ export default function ValuationReportsPage() {
         </aside>
 
         {/* MAIN CONTENT AREA */}
-        <main className="flex-1 bg-[#b5cddd] rounded-tl-[64px] p-8 overflow-y-auto shadow-inner relative">
+        <main className="flex-1 bg-[#b5cddd] rounded-tl-[64px] border-t border-l border-gray-300 shadow-[inset_6px_6px_20px_rgba(0,0,0,0.08)] p-8 overflow-y-auto relative">
           
           {/* User Menu Dropdown Portal */}
           {isUserMenuOpen && currentUser && (
