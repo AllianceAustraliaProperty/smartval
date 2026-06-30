@@ -486,14 +486,9 @@ export default function ValuationReportsPage() {
         {/* logo and subtitle on the left  */}
         <div className="flex items-center space-x-3 shrink-0">
           <div className="cursor-pointer group flex items-center space-x-3" onClick={handleGoHome}>
-            <div 
-              className="relative w-12 h-12 rounded-full flex items-center justify-center shadow-sm border border-gray-100 transform transition-transform duration-500 ease-out group-hover:scale-105"
-              style={{ background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 100%)' }}
-            >
-              <Image src={aapLogo} alt="AAP Logo" width={32} height={32} className="w-8 h-8 object-contain drop-shadow-sm" priority />
-            </div>
+            <Image src={aapLogo} alt="AAP Logo" width={52} height={52} className="w-[52px] h-[52px] object-contain drop-shadow-sm transform transition-transform duration-500 ease-out group-hover:scale-105" priority />
             <div className="flex flex-col justify-center">
-              <h1 className="text-3xl tracking-wide flex items-center h-8">
+              <h1 className="text-4xl tracking-wide flex items-center h-10">
                 <span className={`font-bold text-[#1f7cc6] ${inter.className}`}>SMART</span>
                 <span className={`text-[#1f7cc6] relative -top-[0.1px] ${dancingScript.className}`} style={{ marginLeft: '2px', fontSize: '1.05em' }}>val</span>
               </h1>
@@ -503,15 +498,15 @@ export default function ValuationReportsPage() {
         </div>
 
         {/* search bar in the middle */}
-        <div className="flex-1 max-w-2xl px-8 hidden md:block">
+        <div className="flex-1 max-w-5xl px-12 hidden md:block">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#1f7cc6]" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#1f7cc6]" />
             <input
               type="text"
               placeholder="Search by file number, address, valuer, client or property number..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1f7cc6] focus:border-[#1f7cc6] transition-all duration-300 placeholder-gray-400 text-gray-900 shadow-sm"
+              className="w-full h-10 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1f7cc6] focus:border-[#1f7cc6] transition-all duration-300 placeholder-gray-400 text-gray-900 shadow-sm text-sm"
             />
           </div>
         </div>
@@ -521,7 +516,7 @@ export default function ValuationReportsPage() {
           {/* create New Valuation Report button */}
           <button
             onClick={handleCreateNew}
-            className="group relative inline-flex items-center px-4 py-2.5 text-sm font-semibold rounded-xl text-white bg-[#5b9bd5] hover:bg-[#4a8cc6] shadow-sm transition-all duration-300 transform hover:scale-105"
+            className="group relative inline-flex items-center px-5 h-10 text-sm font-semibold rounded-xl text-white bg-[#5b9bd5] hover:bg-[#4a8cc6] shadow-sm transition-all duration-300 transform hover:scale-105"
           >
             <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
             New Report
@@ -549,13 +544,18 @@ export default function ValuationReportsPage() {
         {/* LEFT SIDEBAR */}
         <aside className="w-[80px] bg-white flex flex-col justify-end items-center pb-8 shrink-0">
           {currentUser && (
-            <button
-              ref={userButtonRef}
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="relative w-12 h-12 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105"
-            >
-              <UserIcon className="w-6 h-6 text-[#1f7cc6]" />
-            </button>
+            <div className="flex flex-col items-center w-full">
+              <hr className="w-8 border-t-2 border-[#94a3b8] mb-6 opacity-60" />
+              <button
+                ref={userButtonRef}
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="relative w-14 h-14 bg-[#2b7bc4] text-white rounded-2xl flex items-center justify-center transition-all duration-300 hover:brightness-110 hover:[box-shadow:0_0_15px_rgba(43,123,196,0.6)]"
+              >
+                <div className="w-9 h-9 border-[1.5px] border-white rounded-[10px] flex items-center justify-center">
+                  <UserIcon className="w-[22px] h-[22px] text-white" strokeWidth={1.5} />
+                </div>
+              </button>
+            </div>
           )}
         </aside>
 

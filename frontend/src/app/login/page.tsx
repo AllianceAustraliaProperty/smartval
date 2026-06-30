@@ -160,7 +160,7 @@ export default function LoginPage() {
               <span className={`font-bold text-[#1f7cc6] ${inter.className}`}>SMART</span>
               <span className={`text-[#1f7cc6] relative -top-[0.1px] ${dancingScript.className}`} style={{ marginLeft: '2px', fontSize: '1.05em' }}>val</span>
             </h1>
-            <p className="text-slate-700 tracking-wide font-medium mb-3 text-sm">A Digital Solution to AAP Valuations Pty. Ltd.</p>
+            <p className="text-slate-700 tracking-wide font-medium mb-3 text-sm">A Digital Solution for Alliance Australia Property PTY LTD</p>
             <div className="flex items-center justify-center text-sm text-slate-500 tracking-wider">
               <Shield className="w-4 h-4 mr-1.5 opacity-70" />
               Secure Dashboard Portal
