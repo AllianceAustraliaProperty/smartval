@@ -560,7 +560,7 @@ export default function ValuationReportsPage() {
         </aside>
 
         {/* MAIN CONTENT AREA */}
-        <main className="flex-1 bg-[#b5cddd] rounded-tl-[64px] border-t border-l border-gray-300 shadow-[inset_6px_6px_20px_rgba(0,0,0,0.08)] p-8 overflow-y-auto relative">
+        <main className="flex-1 bg-[#b5cddd] rounded-tl-2xl border-t border-l border-gray-300 shadow-[inset_6px_6px_20px_rgba(0,0,0,0.08)] p-8 overflow-y-auto relative">
           
           {/* User Menu Dropdown Portal */}
           {isUserMenuOpen && currentUser && (
