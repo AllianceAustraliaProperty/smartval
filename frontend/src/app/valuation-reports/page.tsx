@@ -1112,6 +1112,8 @@ export default function ValuationReportsPage() {
         </div>
       </div>
 
+      </div>
+
       {/* Preview Modal */}
       {showPreviewModal && previewReportId && (
         <PreviewReportModal
@@ -1172,7 +1174,6 @@ export default function ValuationReportsPage() {
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 }
