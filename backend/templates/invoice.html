@@ -246,9 +246,10 @@
     <table class="items">
       <thead>
         <tr>
-          <th style="width:58%">Item &amp; Description</th>
-          <th style="width:10%">Qty</th>
-          <th style="width:14%">Rate</th>
+          <th style="width:50%">Item &amp; Description</th>
+          <th style="width:8%">Qty</th>
+          <th style="width:12%">Rate</th>
+          <th style="width:12%">GST</th>
           <th style="width:18%">Amount</th>
         </tr>
       </thead>
@@ -260,6 +261,7 @@
           </td>
           <td>{{ '%.2f'|format(qty) }}</td>
           <td>{{ '%.2f'|format(rate) }}</td>
+          <td>{{ '%.2f'|format(gst) }}</td>
           <td>{{ '%.2f'|format(amount) }}</td>
         </tr>
       </tbody>
@@ -285,7 +287,7 @@
 
     <div class="notes">
       <div class="heading">Notes</div>
-      <div class="gst-line">GST (excluded)</div>
+      <div class="gst-line">GST (included)</div>
       <div>Thanks for your business.</div>
     </div>
 

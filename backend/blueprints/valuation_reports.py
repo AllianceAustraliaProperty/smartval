@@ -1100,6 +1100,9 @@ def _build_invoice_context(report):
     except (TypeError, ValueError):
         report_fee = 0.0
 
+    gst_amount = report_fee * 0.10
+    total_amount = report_fee + gst_amount
+
     file_number = (report.get('fileNumber') or '').strip()
     report_id = str(report.get('_id') or report.get('id') or '')
     if file_number:
@@ -1121,10 +1124,11 @@ def _build_invoice_context(report):
         'item_address': full_address,
         'qty': 1.0,
         'rate': report_fee,
-        'amount': report_fee,
-        'subtotal': report_fee,
-        'total': report_fee,
-        'balance_due': report_fee,
+        'gst': gst_amount,
+        'amount': total_amount,
+        'subtotal': total_amount,
+        'total': total_amount,
+        'balance_due': total_amount,
     }
 
 
@@ -1248,10 +1252,20 @@ def send_invoice_email(report_id):
 
         sender = settings_model.get('invoiceEmailSender') or None
 
+        # Extract secondary email for CC
+        cc_recipients = []
+        primary_contact = report.get('primaryContact', {}) or {}
+        secondary_email = (primary_contact.get('email2') or '').strip()
+        
+        # Add to CC list if it exists and isn't already the primary recipient
+        if secondary_email and secondary_email != recipient:
+            cc_recipients.append(secondary_email)
+
         from utils.graph_mail import send_mail, GraphMailError
         try:
             send_mail(
                 to_recipients=recipient,
+                cc_recipients=cc_recipients,
                 subject=subject,
                 html_body=email_html,
                 attachments=[{
@@ -1330,10 +1344,20 @@ def send_report_email(report_id):
 
         sender = settings_model.get('reportEmailSender') or None
 
+        # Extract secondary email for CC
+        cc_recipients = []
+        primary_contact = report.get('primaryContact', {}) or {}
+        secondary_email = (primary_contact.get('email2') or '').strip()
+        
+        # Add to CC list if it exists and isn't already the primary recipient
+        if secondary_email and secondary_email != recipient:
+            cc_recipients.append(secondary_email)
+
         from utils.graph_mail import send_mail, GraphMailError
         try:
             send_mail(
                 to_recipients=recipient,
+                cc_recipients=cc_recipients,
                 subject=subject,
                 html_body=email_html,
                 attachments=[{
