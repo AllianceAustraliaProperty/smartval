@@ -212,11 +212,17 @@ def generate_pdf_from_html(html: str):
         page = browser.new_page()
         page.set_content(html, wait_until='domcontentloaded')
         time.sleep(3)
-        return page.pdf(
+        
+        pdf_bytes = page.pdf(
             format="A4",
             print_background=True,
             margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
         )
+        
+        # Explicitly close the browser to ensure Playwright cleans up /tmp artifacts
+        browser.close()
+        
+        return pdf_bytes
 
 @valuation_reports_bp.route('/', methods=['GET'])
 def get_all_valuation_reports():
