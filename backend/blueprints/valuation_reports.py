@@ -1102,13 +1102,13 @@ def _build_invoice_context(report):
 
     invoice_details = report.get('invoiceDetails', {}) or {}
     try:
-        # Round the report fee to the nearest integer
-        report_fee = round(float(invoice_details.get('reportFee') or 0))
+        # Truncate the decimal parts on the report fee
+        report_fee = int(float(invoice_details.get('reportFee') or 0))
     except (TypeError, ValueError):
         report_fee = 0
 
-    # Round the GST to the nearest integer to keep prices rounded off
-    gst_amount = round(report_fee * 0.10)
+    # Truncate the decimal parts on the GST
+    gst_amount = int(report_fee * 0.10)
     total_amount = report_fee + gst_amount
 
     file_number = (report.get('fileNumber') or '').strip()
