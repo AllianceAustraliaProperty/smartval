@@ -259,10 +259,10 @@
             {{ item_description }}
             <span class="item-desc-secondary">{{ item_address }}</span>
           </td>
-          <td>{{ '%.2f'|format(qty) }}</td>
-          <td>{{ '%.2f'|format(rate) }}</td>
-          <td>{{ '%.2f'|format(gst) }}</td>
-          <td>{{ '%.2f'|format(amount) }}</td>
+          <td>{{ '%.0f'|format(qty) }}</td>
+          <td>{{ '%.0f'|format(rate) }}</td>
+          <td>{{ '%.0f'|format(gst) }}</td>
+          <td>{{ '%.0f'|format(amount) }}</td>
         </tr>
       </tbody>
     </table>
@@ -271,17 +271,17 @@
       <tr class="row-subtotal">
         <td class="spacer"></td>
         <td class="label-cell">Sub Total</td>
-        <td class="amount-cell">{{ '%.2f'|format(subtotal) }}</td>
+        <td class="amount-cell">{{ '%.0f'|format(subtotal) }}</td>
       </tr>
       <tr class="row-total">
         <td></td>
         <td class="label-cell">Total</td>
-        <td class="amount-cell">${{ '%.2f'|format(total) }}</td>
+        <td class="amount-cell">${{ '%.0f'|format(total) }}</td>
       </tr>
       <tr class="row-balance">
         <td></td>
         <td class="label-cell">Balance Due</td>
-        <td class="amount-cell">${{ '%.2f'|format(balance_due) }}</td>
+        <td class="amount-cell">${{ '%.0f'|format(balance_due) }}</td>
       </tr>
     </table>
 
