@@ -1133,8 +1133,8 @@ def _build_invoice_context(report):
         'qty': 1.0,
         'rate': report_fee,
         'gst': gst_amount,
-        'amount': total_amount,
-        'subtotal': total_amount,
+        'amount': report_fee,
+        'subtotal': report_fee,
         'total': total_amount,
         'balance_due': total_amount,
     }
