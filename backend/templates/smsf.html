@@ -966,16 +966,18 @@
                             endif %}</b></p>
                 </div>
 
-                {% if valuation_report["valuationDetails"].get("assessedNetRental") and valuation_report["valuationDetails"].get("capitalisationRate") %}
-                <div style="margin-top: 30px;">
-                    <p style="font-weight: bold; text-decoration: underline; margin-bottom: 10px;">Capitalisation Method:</p>
-                    <p style="margin-bottom: 3px;">Estimated Net Market Rent {{ valuation_report["valuationDetails"]["assessedNetRental"]|format_currency }} p.a.</p>
-                    <p style="margin-bottom: 3px;">Adopted Capitalisation Rate {{ valuation_report["valuationDetails"]["capitalisationRate"] }}%</p>
-                    <p>Market Value {{ valuation_report["valuationDetails"]["marketValue"]|format_currency }}</p>
                 </div>
-                {% endif %}
             </div>
         </div>
+
+        {% if valuation_report["valuationDetails"].get("assessedNetRental") and valuation_report["valuationDetails"].get("capitalisationRate") %}
+        <div style="margin-top: 30px; margin-left: 10px;">
+            <p style="font-weight: bold; text-decoration: underline; margin-bottom: 15px;">Capitalisation Method:</p>
+            <p style="margin-bottom: 3px;">Estimated Net Market Rent {{ valuation_report["valuationDetails"]["assessedNetRental"]|format_currency_no_decimal }} p.a.</p>
+            <p style="margin-bottom: 3px;">Adopted Capitalisation Rate {{ valuation_report["valuationDetails"]["capitalisationRate"] }}%</p>
+            <p>Market Value <b>{{ valuation_report["valuationDetails"]["marketValue"]|format_currency_no_decimal }}</b></p>
+        </div>
+        {% endif %}
 
         {% if valuation_report["valuationDetails"].get("nla") and valuation_report["valuationDetails"].get("squareMeterRate") %}
         <div class="flex cert-container" style="margin-top: 20px;">

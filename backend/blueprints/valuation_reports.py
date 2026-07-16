@@ -55,6 +55,14 @@ def format_currency(value):
     except (TypeError, ValueError):
         return 'N/A'
 
+def format_currency_no_decimal(value):
+    if _is_missing(value):
+        return 'N/A'
+    try:
+        return f"${int(float(value)):,d}"
+    except (TypeError, ValueError):
+        return 'N/A'
+
 def format_date(value):
     if _is_missing(value):
         return 'N/A'
@@ -120,6 +128,7 @@ def title_address(value):
 # Create the environment with custom filters
 jinja_env = Environment(loader=TemplateLoader())
 jinja_env.filters['format_currency'] = format_currency
+jinja_env.filters['format_currency_no_decimal'] = format_currency_no_decimal
 jinja_env.filters['format_currency_words'] = format_currency_words
 jinja_env.filters['format_date'] = format_date
 jinja_env.filters['format_date_v2'] = format_date_v2
