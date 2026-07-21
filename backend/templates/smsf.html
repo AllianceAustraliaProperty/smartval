@@ -770,13 +770,28 @@
                         <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo"
                             style="width: 140px; height: auto; display: block;" />
                         {% if logo_type == 'TAMN' %}
-                        <div style="font-size: 9px; margin-top: 6px; line-height: 1.5; white-space: nowrap;">
-                            Tamn Property Valuers | ABN 92 605 356 983 | info@tamn.com.au | 1300 226 482 | www.tamn.com.au<br>
+                        <div style="font-size: 9px; margin-top: 4px; line-height: 1.5;">
+                            Tamn Property Valuers | ABN 92 605 356 983<br>
                             <em>Liability Limited by a scheme approved under Professional Standards' Legislation</em>
                         </div>
                         {% endif %}
                     </div>
-                    {% if logo_type != 'TAMN' %}
+                    {% if logo_type == 'TAMN' %}
+                    <div style="text-align: left; font-size: 12px; line-height: 2;">
+                        <p style="font-weight: bold; margin: 0 0 6px 0; font-size: 14px;">Tamn Property Valuers</p>
+                        <p style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 14px;">&#9990;</span> 1300 226 482
+                        </p>
+                        <p style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 13px;">&#9993;</span>
+                            <a href="mailto:info@tamn.com.au" style="color: #1a56db; text-decoration: underline;">info@tamn.com.au</a>
+                        </p>
+                        <p style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 13px;">&#8853;</span>
+                            <a href="https://www.tamn.com.au" style="color: #1a56db; text-decoration: underline;">www.tamn.com.au</a>
+                        </p>
+                    </div>
+                    {% else %}
                     <div style="text-align: right; font-size: 11px; line-height: 1.5;">
                         <p style="font-weight: bold; margin: 0;">Alliance Australia Property Pty Ltd</p>
                         <p style="margin: 0;">ABN 35 641 373 702</p>
