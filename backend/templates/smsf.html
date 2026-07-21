@@ -672,8 +672,8 @@
     {% elif logo_type == 'TAMN' %}
     <style>
         .logo-title { height: 100px !important; width: auto; }
-        .divider-oj { background-color: #7d6118 !important; }
-        .dt-colour { color: #7d6118 !important; }
+        .divider-oj { background-color: #987a02 !important; }
+        .dt-colour { color: #987a02 !important; }
     </style>
     {% else %}
     <style>.logo-title { height: 130px !important; width: auto; }</style>
@@ -706,9 +706,9 @@
             <span style="font-size: 8.5pt; font-style: italic;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>
         </div>
     </div>
-    {% else %}
+    {% endif %}
     <!-- Page 1: TITLE -->
-    <div class="page-title" id="page1">
+    <div class="page-title" id="{% if logo_type == 'TAMN' %}page2{% else %}page1{% endif %}">
         <div class="flex vert">
             <div class="flex jc-sb header-title">
                 <div class="dt-colour bold fs-20">Ref #{{ valuation_report["fileNumber"]|default('') }}</div>
@@ -790,7 +790,6 @@
             </div>
         </div>
     </div>
-    {% endif %}
     <!-- Page 1: END -->
 
 
