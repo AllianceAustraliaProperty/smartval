@@ -684,31 +684,8 @@
     {% set page_logo_url = tamn_page_logo_url if logo_type == 'TAMN' else logo_url %}
 
 
-    {% if logo_type == 'TAMN' %}
-    <!-- TAMN Cover Page -->
-    <div class="page" id="page1" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <div style="text-align: center; margin-top: 60px;">
-            <img src="{{ logo_url }}" alt="TAMN Logo" style="height: 130px; width: auto; object-fit: contain; display: block; margin: 0 auto 20px auto;" />
-        </div>
-        <div style="text-align: center; margin-top: 80px;">
-            <p style="font-weight: bold; font-size: 26px; margin-bottom: 15px;">Valuation Report</p>
-            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">{{
-                valuation_report["address"]["unitNumber"]|default('') }} {{
-                valuation_report["address"]["streetName"]|default('') }}</p>
-            <p style="font-weight: bold; font-size: 16px; margin: 5px 0;">
-                {{ valuation_report["address"]["suburb"]|default('') }}
-                {{ valuation_report["address"]["state"]|default('') }}
-                {{ valuation_report["address"]["postcode"]|default('') }}
-            </p>
-            <p style="font-size: 14px; margin-top: 15px;">Ref #{{ valuation_report["fileNumber"]|default('') }}</p>
-        </div>
-        <div style="position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center;">
-            <span style="font-size: 8.5pt; font-style: italic;">Liability Limited by a scheme approved under Professional Standards&rsquo; Legislation</span>
-        </div>
-    </div>
-    {% endif %}
     <!-- Page 1: TITLE -->
-    <div class="page-title" id="{% if logo_type == 'TAMN' %}page2{% else %}page1{% endif %}">
+    <div class="page-title" id="page1">
         <div class="flex vert">
             <div class="flex jc-sb header-title">
                 <div class="dt-colour bold fs-20">Ref #{{ valuation_report["fileNumber"]|default('') }}</div>
@@ -771,7 +748,7 @@
                             style="width: 140px; height: auto; display: block;" />
                         {% if logo_type == 'TAMN' %}
                         <div style="font-size: 9px; margin-top: 4px; line-height: 1.5;">
-                            Tamn Property Valuers | ABN 92 605 356 983<br>
+                            Alliance Australia Property Pty Ltd<br>
                             <em>Liability Limited by a scheme approved under Professional Standards' Legislation</em>
                         </div>
                         {% endif %}
