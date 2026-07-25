@@ -128,6 +128,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
   const [automatingPhotos, setAutomatingPhotos] = useState<Set<number>>(new Set());
 
   const handleAutomatePhoto = async (index: number, photoUrl: string, expectedCategory?: string) => {
+    console.log("Automating photo:", { index, photoUrl, expectedCategory });
     if (!photoUrl) return;
 
     setAutomatingPhotos(prev => {
@@ -138,6 +139,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
     setUploadError(null);
 
     try {
+      console.log("Sending request to /api/analyze-photo...");
       const response = await fetch('/api/analyze-photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,7 +150,11 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       });
 
       if (!response.ok) {
-        throw new Error('Failed to analyze photo');
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {}
+        throw new Error(errorData?.error || 'Failed to analyze photo');
       }
 
       const { data } = await response.json();
@@ -187,7 +193,9 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
 
     } catch (err: any) {
       console.error('AI Automation error:', err);
-      setUploadError(err.message || 'An error occurred during AI analysis');
+      const errorMsg = err.message || 'An error occurred during AI analysis';
+      setUploadError(errorMsg);
+      alert(`AI Automation failed: ${errorMsg}`);
     } finally {
       setAutomatingPhotos(prev => {
         const newSet = new Set(prev);
