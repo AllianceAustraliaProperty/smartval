@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormField, Input, Checkbox, FileUpload, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { Upload, X, Edit3 } from 'lucide-react';
+import { Upload, X, Edit3, Wand2 } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { uploadMultipleFilesToS3 } from '@/lib/s3-upload';
 
@@ -125,6 +125,75 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const photoGridRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
+  const [automatingPhotos, setAutomatingPhotos] = useState<Set<number>>(new Set());
+
+  const handleAutomatePhoto = async (index: number, photoUrl: string, expectedCategory?: string) => {
+    if (!photoUrl) return;
+
+    setAutomatingPhotos(prev => {
+      const newSet = new Set(prev);
+      newSet.add(index);
+      return newSet;
+    });
+    setUploadError(null);
+
+    try {
+      const response = await fetch('/api/analyze-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          imageUrl: photoUrl, 
+          expectedCategory: expectedCategory || undefined 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze photo');
+      }
+
+      const { data } = await response.json();
+      
+      const updatedPhotos = [...photos];
+      const photo = { ...updatedPhotos[index] };
+
+      if (data.category && !photo.category) {
+        photo.category = data.category;
+      }
+      if (data.flooring && !photo.flooring) {
+        photo.flooring = data.flooring;
+      }
+      if (data.featuresAndFixtures && data.featuresAndFixtures.length > 0) {
+        // Merge or replace. Let's replace if empty, otherwise merge uniquely
+        const current = photo.featuresFixtures || [];
+        photo.featuresFixtures = Array.from(new Set([...current, ...data.featuresAndFixtures]));
+      }
+      if (data.primeCostItems && data.primeCostItems.length > 0) {
+        const current = photo.primeCostItems || [];
+        photo.primeCostItems = Array.from(new Set([...current, ...data.primeCostItems]));
+      }
+
+      updatedPhotos[index] = photo;
+      setPhotos(updatedPhotos);
+      onPhotosUpdate(updatedPhotos);
+
+      // Save to database
+      await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photos: updatedPhotos }),
+      });
+
+    } catch (err: any) {
+      console.error('AI Automation error:', err);
+      setUploadError(err.message || 'An error occurred during AI analysis');
+    } finally {
+      setAutomatingPhotos(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(index);
+        return newSet;
+      });
+    }
+  };
 
   // Fetch photos when component mounts
   useEffect(() => {
@@ -631,7 +700,30 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
 
                           {/* Basic Details */}
                           <div className="space-y-3 bg-gray-50 p-3 rounded-md">
-                            <h4 className="text-sm font-semibold text-gray-800 mb-2">Basic Details</h4>
+                            <div className="flex justify-between items-center mb-2">
+                              <h4 className="text-sm font-semibold text-gray-800">Basic Details</h4>
+                              {photo.photoUrl && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleAutomatePhoto(index, photo.photoUrl, photo.category)}
+                                  disabled={automatingPhotos.has(index)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
+                                  title="Automate photo details with AI"
+                                >
+                                  {automatingPhotos.has(index) ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                      Automating...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Wand2 className="w-3 h-3" />
+                                      Automate
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-800 mb-1">Category</label>
                               <select
