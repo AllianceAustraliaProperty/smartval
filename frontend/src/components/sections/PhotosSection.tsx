@@ -140,7 +140,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
 
     try {
       console.log("Sending request to /api/analyze-photo...");
-      const response = await fetch('/api/analyze-photo', {
+      const response = await fetch('/internal-api/analyze-photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
