@@ -21,7 +21,7 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
   } else {
     try {
       const response = await fetch(imageUrl);
-      if (!response.ok) throw new Error(\`Failed to fetch image: \${response.statusText}\`);
+      if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
       mimeType = response.headers.get("content-type") || "image/jpeg";
       const arrayBuffer = await response.arrayBuffer();
       base64Image = Buffer.from(arrayBuffer).toString('base64');
@@ -57,7 +57,7 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
   const systemInstruction = getSystemInstruction(expectedCategory);
 
   // 3. Make the API call to Gemini
-  const response = await fetch(\`\${GEMINI_API_URL}?key=\${apiKey}\`, {
+  const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -90,7 +90,7 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
   if (!response.ok) {
     const errorData = await response.text();
     console.error("Gemini API Error:", errorData);
-    throw new Error(\`Gemini API returned an error: \${response.statusText}\`);
+    throw new Error(`Gemini API returned an error: ${response.statusText}`);
   }
 
   const data = await response.json();
