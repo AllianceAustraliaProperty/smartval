@@ -28,8 +28,10 @@ export type PrimeCostItem =
 export interface PhotoAnalysisResult {
   category: RoomCategory | null;
   flooring: FlooringType | null;
-  featuresAndFixtures: FeatureFixture[];
-  primeCostItems: PrimeCostItem[];
+  categorySpecificDetails: {
+    featuresAndFixtures: FeatureFixture[];
+    primeCostItems: PrimeCostItem[];
+  } | null;
 }
 
 export interface AnalyzePhotoRequest {

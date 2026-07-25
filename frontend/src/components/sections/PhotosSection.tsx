@@ -162,14 +162,16 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       if (data.flooring && !photo.flooring) {
         photo.flooring = data.flooring;
       }
-      if (data.featuresAndFixtures && data.featuresAndFixtures.length > 0) {
-        // Merge or replace. Let's replace if empty, otherwise merge uniquely
-        const current = photo.featuresFixtures || [];
-        photo.featuresFixtures = Array.from(new Set([...current, ...data.featuresAndFixtures]));
-      }
-      if (data.primeCostItems && data.primeCostItems.length > 0) {
-        const current = photo.primeCostItems || [];
-        photo.primeCostItems = Array.from(new Set([...current, ...data.primeCostItems]));
+      if (data.categorySpecificDetails) {
+        if (data.categorySpecificDetails.featuresAndFixtures && data.categorySpecificDetails.featuresAndFixtures.length > 0) {
+          // Merge or replace. Let's replace if empty, otherwise merge uniquely
+          const current = photo.featuresFixtures || [];
+          photo.featuresFixtures = Array.from(new Set([...current, ...data.categorySpecificDetails.featuresAndFixtures]));
+        }
+        if (data.categorySpecificDetails.primeCostItems && data.categorySpecificDetails.primeCostItems.length > 0) {
+          const current = photo.primeCostItems || [];
+          photo.primeCostItems = Array.from(new Set([...current, ...data.categorySpecificDetails.primeCostItems]));
+        }
       }
 
       updatedPhotos[index] = photo;

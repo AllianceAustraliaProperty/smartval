@@ -68,18 +68,20 @@ export const PhotoUploadForm: React.FC = () => {
           newSuggestedFields.add('flooring');
         }
         
-        if (data.featuresAndFixtures && data.featuresAndFixtures.length > 0) {
-          // Merge arrays or replace depending on logic. Here we replace for simplicity if currently empty.
-          if (prev.featuresAndFixtures.length === 0) {
-            updated.featuresAndFixtures = data.featuresAndFixtures;
-            newSuggestedFields.add('featuresAndFixtures');
+        if (data.categorySpecificDetails) {
+          if (data.categorySpecificDetails.featuresAndFixtures && data.categorySpecificDetails.featuresAndFixtures.length > 0) {
+            // Merge arrays or replace depending on logic. Here we replace for simplicity if currently empty.
+            if (prev.featuresAndFixtures.length === 0) {
+              updated.featuresAndFixtures = data.categorySpecificDetails.featuresAndFixtures;
+              newSuggestedFields.add('featuresAndFixtures');
+            }
           }
-        }
-        
-        if (data.primeCostItems && data.primeCostItems.length > 0) {
-          if (prev.primeCostItems.length === 0) {
-            updated.primeCostItems = data.primeCostItems;
-            newSuggestedFields.add('primeCostItems');
+          
+          if (data.categorySpecificDetails.primeCostItems && data.categorySpecificDetails.primeCostItems.length > 0) {
+            if (prev.primeCostItems.length === 0) {
+              updated.primeCostItems = data.categorySpecificDetails.primeCostItems;
+              newSuggestedFields.add('primeCostItems');
+            }
           }
         }
 

@@ -37,13 +37,19 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
     properties: {
       category: { type: "STRING", nullable: true },
       flooring: { type: "STRING", nullable: true },
-      featuresAndFixtures: {
-        type: "ARRAY",
-        items: { type: "STRING" },
-      },
-      primeCostItems: {
-        type: "ARRAY",
-        items: { type: "STRING" },
+      categorySpecificDetails: {
+        type: "OBJECT",
+        nullable: true,
+        properties: {
+          featuresAndFixtures: {
+            type: "ARRAY",
+            items: { type: "STRING" },
+          },
+          primeCostItems: {
+            type: "ARRAY",
+            items: { type: "STRING" },
+          }
+        }
       }
     }
   };
