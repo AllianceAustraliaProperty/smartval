@@ -1,4 +1,4 @@
-import { PhotoAnalysisResult, RoomCategory } from "@/types/photo-analysis";
+import { PhotoAnalysisResult, RoomCategory, ROOM_CATEGORIES_LIST, FLOORING_TYPES_LIST, FEATURE_FIXTURES_LIST, PRIME_COST_ITEMS_LIST } from "@/types/photo-analysis";
 import { getSystemInstruction } from "./prompts";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent";
@@ -35,19 +35,19 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
   const responseSchema = {
     type: "OBJECT",
     properties: {
-      category: { type: "STRING", nullable: true },
-      flooring: { type: "STRING", nullable: true },
+      category: { type: "STRING", nullable: true, enum: [...ROOM_CATEGORIES_LIST] },
+      flooring: { type: "STRING", nullable: true, enum: [...FLOORING_TYPES_LIST] },
       categorySpecificDetails: {
         type: "OBJECT",
         nullable: true,
         properties: {
           featuresAndFixtures: {
             type: "ARRAY",
-            items: { type: "STRING" },
+            items: { type: "STRING", enum: [...FEATURE_FIXTURES_LIST] },
           },
           primeCostItems: {
             type: "ARRAY",
-            items: { type: "STRING" },
+            items: { type: "STRING", enum: [...PRIME_COST_ITEMS_LIST] },
           }
         }
       }
