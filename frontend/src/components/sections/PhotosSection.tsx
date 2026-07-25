@@ -19,18 +19,6 @@ const FLOORING_OPTIONS = [
   'Polished Concrete', 'Porcelain Tile', 'Floorboards', 'Rubber Mat', 'Tile Flooring', 'Timber Flooring', 'Vinyl', 'Other'
 ];
 
-const CONDITION_OPTIONS = ['Very Good', 'Good', 'Average', 'Fair', 'Poor'];
-
-const INTERNAL_WALL_TYPES = [
-  'Plasterboard', 'Rendered Brick', 'Concrete Slab', 'Gyprock', 'Rendered Face Brick', 'Face Brick'
-];
-
-const EXTERNAL_WALL_TYPES = [
-  'Brick Veneer', 'Brick Veneer/Cladding', 'Double Brick', 'Concrete Slab', 'Horizontal Cladding', 'Cavity Brick',
-  'Weatherboard', 'Rendered Brick', 'Rendered Brick/Cladding', 'Timber Cladding', 'Bagged Brick', 'Sandstone',
-  'Rendered Hebel', 'Rendered Masonry', 'Fibre Cement'
-];
-
 const PRIME_COST_ITEMS = [
   "butler's pantry", 'ceiling fans', 'cooktop', 'dishwasher', 'double bowl sink', 'ducted air conditioning',
   'ducted heater', 'european laundry', 'evaporative cooling system', 'exhaust fan', 'extra toilet', 'fireplace',
@@ -133,7 +121,6 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
   const [editingPhoto, setEditingPhoto] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const individualFileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
-  const [customItemInputs, setCustomItemInputs] = useState<{ [key: number]: string }>({});
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const photoGridRef = useRef<HTMLDivElement>(null);
@@ -683,78 +670,12 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                             </div>
                           </div>
                         </div>
-
-                        {/* Right Column */}
-                        <div className="space-y-4">
-                          {/* Conditions */}
-                          <div className="space-y-3 bg-gray-50 p-3 rounded-md">
-                            <h4 className="text-sm font-semibold text-gray-800 mb-2">Conditions</h4>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-800 mb-1">Internal Condition</label>
-                              <select
-                                value={photo.internalCondition || ''}
-                                onChange={(e) => updatePhotoAttribute(index, 'internalCondition', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              >
-                                <option value="">Select Condition</option>
-                                {CONDITION_OPTIONS.map(condition => (
-                                  <option key={condition} value={condition}>{condition}</option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-800 mb-1">External Condition</label>
-                              <select
-                                value={photo.externalCondition || ''}
-                                onChange={(e) => updatePhotoAttribute(index, 'externalCondition', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              >
-                                <option value="">Select Condition</option>
-                                {CONDITION_OPTIONS.map(condition => (
-                                  <option key={condition} value={condition}>{condition}</option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          {/* Wall Types */}
-                          <div className="space-y-3 bg-gray-50 p-3 rounded-md">
-                            <h4 className="text-sm font-semibold text-gray-800 mb-2">Wall Types</h4>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-800 mb-1">Internal Wall Type</label>
-                              <select
-                                value={photo.internalWallsType || ''}
-                                onChange={(e) => updatePhotoAttribute(index, 'internalWallsType', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              >
-                                <option value="">Select Wall Type</option>
-                                {INTERNAL_WALL_TYPES.map(wall => (
-                                  <option key={wall} value={wall}>{wall}</option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-800 mb-1">External Wall Type</label>
-                              <select
-                                value={photo.externalWallsType || ''}
-                                onChange={(e) => updatePhotoAttribute(index, 'externalWallsType', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              >
-                                <option value="">Select Wall Type</option>
-                                {EXTERNAL_WALL_TYPES.map(wall => (
-                                  <option key={wall} value={wall}>{wall}</option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-                        </div>
                       </div>
-
                     </div>
                   </div>
 
                   {/* Full Width Sections Below - 3 Column Grid */}
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Features & Fixtures Checkboxes */}
                     <div className="bg-gray-50 p-4 rounded-md">
                       <label className="block text-sm font-semibold text-gray-800 mb-3">Features & Fixtures</label>
@@ -850,90 +771,6 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                         {(!photo.category || !ROOM_PRIME_COST_ITEMS[photo.category]) && (photo.primeCostItems || []).length === 0 && (
                           <p className="text-sm text-gray-600 text-center py-4 bg-gray-100 rounded">Select a category to see prime cost items or add custom items</p>
                         )}
-                      </div>
-                    </div>
-
-                    {/* Add Custom Items */}
-                    <div className="bg-gray-50 p-4 rounded-md">
-                      <label className="block text-sm font-semibold text-gray-800 mb-3">Add Custom Items</label>
-                      <div className="space-y-3">
-                        <input
-                          type="text"
-                          placeholder="Enter custom item name"
-                          value={customItemInputs[index] || ''}
-                          onChange={(e) => {
-                            setCustomItemInputs(prev => ({
-                              ...prev,
-                              [index]: e.target.value
-                            }));
-                          }}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              const itemName = customItemInputs[index]?.trim();
-                              if (itemName) {
-                                // Add to both features and prime cost items
-                                const currentFeatures = photo.featuresFixtures || [];
-                                const currentPrimeCost = photo.primeCostItems || [];
-
-                                if (!currentFeatures.includes(itemName)) {
-                                  updatePhotoAttribute(index, 'featuresFixtures', [...currentFeatures, itemName]);
-                                }
-                                if (!currentPrimeCost.includes(itemName)) {
-                                  updatePhotoAttribute(index, 'primeCostItems', [...currentPrimeCost, itemName]);
-                                }
-
-                                setCustomItemInputs(prev => ({
-                                  ...prev,
-                                  [index]: ''
-                                }));
-                              }
-                            }
-                          }}
-                          className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const itemName = customItemInputs[index]?.trim();
-                              if (itemName) {
-                                const currentFeatures = photo.featuresFixtures || [];
-                                if (!currentFeatures.includes(itemName)) {
-                                  updatePhotoAttribute(index, 'featuresFixtures', [...currentFeatures, itemName]);
-                                }
-                                setCustomItemInputs(prev => ({
-                                  ...prev,
-                                  [index]: ''
-                                }));
-                              }
-                            }}
-                            className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
-                          >
-                            Add to Features
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const itemName = customItemInputs[index]?.trim();
-                              if (itemName) {
-                                const currentPrimeCost = photo.primeCostItems || [];
-                                if (!currentPrimeCost.includes(itemName)) {
-                                  updatePhotoAttribute(index, 'primeCostItems', [...currentPrimeCost, itemName]);
-                                }
-                                setCustomItemInputs(prev => ({
-                                  ...prev,
-                                  [index]: ''
-                                }));
-                              }
-                            }}
-                            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                          >
-                            Add to Prime Cost
-                          </button>
-                        </div>
-                        <p className="text-xs text-gray-600">
-                          Type an item name and press Enter or click a button to add it to the appropriate category.
-                        </p>
                       </div>
                     </div>
                   </div>
@@ -1435,77 +1272,12 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                         </div>
                       </div>
                     </div>
-
-                    {/* Right Column */}
-                    <div className="space-y-4">
-                      {/* Conditions */}
-                      <div className="space-y-3 bg-gray-50 p-3 rounded-md">
-                        <h4 className="text-sm font-semibold text-gray-800 mb-2">Conditions</h4>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-800 mb-1">Internal Condition</label>
-                          <select
-                            value={photo.internalCondition || ''}
-                            onChange={(e) => updatePhotoAttribute(index, 'internalCondition', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="">Select Condition</option>
-                            {CONDITION_OPTIONS.map(condition => (
-                              <option key={condition} value={condition}>{condition}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-800 mb-1">External Condition</label>
-                          <select
-                            value={photo.externalCondition || ''}
-                            onChange={(e) => updatePhotoAttribute(index, 'externalCondition', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="">Select Condition</option>
-                            {CONDITION_OPTIONS.map(condition => (
-                              <option key={condition} value={condition}>{condition}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* Wall Types */}
-                      <div className="space-y-3 bg-gray-50 p-3 rounded-md">
-                        <h4 className="text-sm font-semibold text-gray-800 mb-2">Wall Types</h4>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-800 mb-1">Internal Wall Type</label>
-                          <select
-                            value={photo.internalWallsType || ''}
-                            onChange={(e) => updatePhotoAttribute(index, 'internalWallsType', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="">Select Wall Type</option>
-                            {INTERNAL_WALL_TYPES.map(wall => (
-                              <option key={wall} value={wall}>{wall}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-800 mb-1">External Wall Type</label>
-                          <select
-                            value={photo.externalWallsType || ''}
-                            onChange={(e) => updatePhotoAttribute(index, 'externalWallsType', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="">Select Wall Type</option>
-                            {EXTERNAL_WALL_TYPES.map(wall => (
-                              <option key={wall} value={wall}>{wall}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Full Width Sections Below - 3 Column Grid */}
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Features & Fixtures Checkboxes */}
                 <div className="bg-gray-50 p-4 rounded-md">
                   <label className="block text-sm font-semibold text-gray-800 mb-3">Features & Fixtures</label>
@@ -1597,89 +1369,6 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                     {(!photo.category || !ROOM_PRIME_COST_ITEMS[photo.category]) && (photo.primeCostItems || []).length === 0 && (
                       <p className="text-sm text-gray-600 text-center py-4 bg-gray-100 rounded">Select a category to see prime cost items or add custom items</p>
                     )}
-                  </div>
-                </div>
-
-                {/* Add Custom Items */}
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <label className="block text-sm font-semibold text-gray-800 mb-3">Add Custom Items</label>
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Enter custom item name"
-                      value={customItemInputs[index] || ''}
-                      onChange={(e) => {
-                        setCustomItemInputs(prev => ({
-                          ...prev,
-                          [index]: e.target.value
-                        }));
-                      }}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          const itemName = customItemInputs[index]?.trim();
-                          if (itemName) {
-                            const currentFeatures = photo.featuresFixtures || [];
-                            const currentPrimeCost = photo.primeCostItems || [];
-
-                            if (!currentFeatures.includes(itemName)) {
-                              updatePhotoAttribute(index, 'featuresFixtures', [...currentFeatures, itemName]);
-                            }
-                            if (!currentPrimeCost.includes(itemName)) {
-                              updatePhotoAttribute(index, 'primeCostItems', [...currentPrimeCost, itemName]);
-                            }
-
-                            setCustomItemInputs(prev => ({
-                              ...prev,
-                              [index]: ''
-                            }));
-                          }
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const itemName = customItemInputs[index]?.trim();
-                          if (itemName) {
-                            const currentFeatures = photo.featuresFixtures || [];
-                            if (!currentFeatures.includes(itemName)) {
-                              updatePhotoAttribute(index, 'featuresFixtures', [...currentFeatures, itemName]);
-                            }
-                            setCustomItemInputs(prev => ({
-                              ...prev,
-                              [index]: ''
-                            }));
-                          }
-                        }}
-                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
-                      >
-                        Add to Features
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const itemName = customItemInputs[index]?.trim();
-                          if (itemName) {
-                            const currentPrimeCost = photo.primeCostItems || [];
-                            if (!currentPrimeCost.includes(itemName)) {
-                              updatePhotoAttribute(index, 'primeCostItems', [...currentPrimeCost, itemName]);
-                            }
-                            setCustomItemInputs(prev => ({
-                              ...prev,
-                              [index]: ''
-                            }));
-                          }
-                        }}
-                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                      >
-                        Add to Prime Cost
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-600">
-                      Type an item name and press Enter or click a button to add it to the appropriate category.
-                    </p>
                   </div>
                 </div>
               </div>
