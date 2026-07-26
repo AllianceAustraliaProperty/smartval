@@ -208,7 +208,45 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       const photo = { ...updatedPhotos[index] };
 
       if (data.category && !photo.category) {
-        photo.category = data.category;
+        let finalCategory = data.category;
+        
+        if (finalCategory.toLowerCase() === 'bedroom') {
+          let maxBedroom = 0;
+          photos.forEach(p => {
+            if (p.category && p.category.toLowerCase().startsWith('bedroom')) {
+              if (p.category.toLowerCase() === 'bedroom') {
+                maxBedroom = Math.max(maxBedroom, 1);
+              } else {
+                const match = p.category.match(/\d+/);
+                if (match) {
+                  maxBedroom = Math.max(maxBedroom, parseInt(match[0], 10));
+                }
+              }
+            }
+          });
+          finalCategory = `Bedroom ${maxBedroom + 1}`;
+        } else if (finalCategory.toLowerCase() === 'ensuite') {
+          let ensuiteCount = 0;
+          let maxEnsuite = 1;
+          photos.forEach(p => {
+            if (p.category && p.category.toLowerCase().startsWith('ensuite')) {
+              ensuiteCount++;
+              const match = p.category.match(/\d+/);
+              if (match) {
+                maxEnsuite = Math.max(maxEnsuite, parseInt(match[0], 10));
+              } else if (p.category.toLowerCase() === 'ensuite') {
+                maxEnsuite = Math.max(maxEnsuite, 1);
+              }
+            }
+          });
+          if (ensuiteCount === 0) {
+            finalCategory = 'Ensuite';
+          } else {
+            finalCategory = `Ensuite ${maxEnsuite + 1}`;
+          }
+        }
+
+        photo.category = finalCategory;
       }
       if (data.flooring && !photo.flooring) {
         photo.flooring = data.flooring;
