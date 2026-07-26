@@ -210,7 +210,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       if (data.category && !photo.category) {
         let finalCategory = data.category;
         
-        if (finalCategory.toLowerCase() === 'bedroom') {
+        if (finalCategory.toLowerCase().startsWith('bedroom')) {
           let maxBedroom = 0;
           photos.forEach(p => {
             if (p.category && p.category.toLowerCase().startsWith('bedroom')) {
@@ -225,7 +225,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
             }
           });
           finalCategory = `Bedroom ${maxBedroom + 1}`;
-        } else if (finalCategory.toLowerCase() === 'ensuite') {
+        } else if (finalCategory.toLowerCase().startsWith('ensuite')) {
           let ensuiteCount = 0;
           let maxEnsuite = 1;
           photos.forEach(p => {
