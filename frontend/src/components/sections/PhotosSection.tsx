@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormField, Input, Checkbox, FileUpload, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { Upload, X, Edit3, Wand2 } from 'lucide-react';
+import { Upload, X, Edit3, Wand2, ListOrdered } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { uploadMultipleFilesToS3 } from '@/lib/s3-upload';
 
@@ -126,6 +126,51 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
   const photoGridRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const [automatingPhotos, setAutomatingPhotos] = useState<Set<number>>(new Set());
+  const [isArranging, setIsArranging] = useState(false);
+
+  const handleAutoArrange = async () => {
+    setIsArranging(true);
+    setUploadError(null);
+    try {
+      const getCategoryRank = (category: string | undefined | null) => {
+        if (!category) return 999;
+        const lower = category.toLowerCase();
+        if (lower === 'living') return 10;
+        if (lower === 'kitchen') return 20;
+        if (lower === 'dining') return 30;
+        if (lower === 'bathroom') return 40;
+        if (lower.startsWith('bedroom')) {
+          const match = lower.match(/\d+/);
+          const num = match ? parseInt(match[0], 10) : 0;
+          return 50 + num;
+        }
+        if (lower === 'ensuite') return 60;
+        if (lower === 'balcony' || lower === 'deck' || lower === 'balcony/deck') return 70;
+        if (lower === 'patio') return 80;
+        return 100;
+      };
+
+      const sorted = [...photos].sort((a, b) => {
+        const rankA = getCategoryRank(a.category);
+        const rankB = getCategoryRank(b.category);
+        return rankA - rankB;
+      });
+
+      setPhotos(sorted);
+      onPhotosUpdate(sorted);
+
+      await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photos: sorted }),
+      });
+    } catch (error) {
+      console.error('Error auto-arranging photos:', error);
+      setUploadError('Failed to save auto-arranged order');
+    } finally {
+      setIsArranging(false);
+    }
+  };
 
   const handleAutomatePhoto = async (index: number, photoUrl: string, expectedCategory?: string) => {
     console.log("Automating photo:", { index, photoUrl, expectedCategory });
@@ -169,14 +214,19 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
         photo.flooring = data.flooring;
       }
       if (data.categorySpecificDetails) {
+        const categoryFeatures = ROOM_FEATURES[photo.category || ''] || [];
+        const categoryPrimeCostItems = ROOM_PRIME_COST_ITEMS[photo.category || ''] || [];
+
         if (data.categorySpecificDetails.featuresAndFixtures && data.categorySpecificDetails.featuresAndFixtures.length > 0) {
-          // Merge or replace. Let's replace if empty, otherwise merge uniquely
+          // Merge uniquely but filter strictly against the predefined lists for this category
           const current = photo.featuresFixtures || [];
-          photo.featuresFixtures = Array.from(new Set([...current, ...data.categorySpecificDetails.featuresAndFixtures]));
+          const validAiFeatures = data.categorySpecificDetails.featuresAndFixtures.filter((f: string) => categoryFeatures.includes(f));
+          photo.featuresFixtures = Array.from(new Set([...current, ...validAiFeatures]));
         }
         if (data.categorySpecificDetails.primeCostItems && data.categorySpecificDetails.primeCostItems.length > 0) {
           const current = photo.primeCostItems || [];
-          photo.primeCostItems = Array.from(new Set([...current, ...data.categorySpecificDetails.primeCostItems]));
+          const validAiItems = data.categorySpecificDetails.primeCostItems.filter((i: string) => categoryPrimeCostItems.includes(i));
+          photo.primeCostItems = Array.from(new Set([...current, ...validAiItems]));
         }
       }
 
@@ -516,9 +566,19 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
 
       {/* Single Photo Upload Section */}
       <div className="border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Upload Photos
-        </h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Upload Photos
+          </h3>
+          <button
+            onClick={handleAutoArrange}
+            disabled={isArranging || photos.length === 0}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            {isArranging ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div> : <ListOrdered className="w-4 h-4" />}
+            Auto Arrange
+          </button>
+        </div>
 
         <div className="space-y-4">
           {/* Upload Button and Add Photo Button */}

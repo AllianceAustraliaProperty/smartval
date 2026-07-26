@@ -15,5 +15,8 @@ IMPORTANT RULES:
 3. SECOND, determine the \`flooring\` type visible in the room.
 4. THEN, based on the category you determined, populate the \`categorySpecificDetails\` sub-object with the \`featuresAndFixtures\` and \`primeCostItems\` that are clearly visible.
 5. If you are unsure about any field, or if it is not clearly visible in the image, you MUST return null or an empty array. Do not guess. We only want high-confidence data.
-5. Only select from the strict options provided in the schema where applicable.${context}`;
+6. Only select from the strict options provided in the schema where applicable.
+
+CLASSIFICATION HEURISTICS:
+- Bathroom vs Ensuite: If a room has bathroom fixtures (shower, toilet, vanity) but NO bathtub is visible, classify it as 'Ensuite'. If a bathtub IS visible, classify it as 'Bathroom'.${context}`;
 }
