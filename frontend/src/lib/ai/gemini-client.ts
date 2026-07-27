@@ -1,7 +1,7 @@
 import { PhotoAnalysisResult, RoomCategory, ROOM_CATEGORIES_LIST, FLOORING_TYPES_LIST, FEATURE_FIXTURES_LIST, PRIME_COST_ITEMS_LIST } from "@/types/photo-analysis";
 import { getSystemInstruction } from "./prompts";
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent";
 
 export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?: RoomCategory): Promise<PhotoAnalysisResult> {
   const apiKey = process.env.GEMINI_API_KEY;
