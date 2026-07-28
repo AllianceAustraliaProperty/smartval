@@ -5,6 +5,8 @@ import { DRIVEWAY_TYPES, FENCING_TYPES, OTHER_ITEM_TYPES } from '@/constants/anc
 
 export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue }) => {
   const otherItems = watch('ancillaryImprovements.otherItems') ?? [];
+  const valuationType = watch('valuationDetails.valuationType')?.toLowerCase() || '';
+  const isRural = valuationType.includes('rural');
 
   return (
     <div className="space-y-8">
@@ -62,6 +64,18 @@ export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register,
           />
         </FormField>
       </div>
+
+      {isRural && (
+        <FormField
+          label="Water Utilisation"
+          error={(errors as any).ancillaryImprovements?.waterUtilisation?.message}
+        >
+          <Checkbox
+            {...register('ancillaryImprovements.waterUtilisation')}
+            label="Property utilises water"
+          />
+        </FormField>
+      )}
 
       <FormField
         label="Accommodation"

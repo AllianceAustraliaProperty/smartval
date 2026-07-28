@@ -218,6 +218,7 @@ export interface AncillaryImprovementsData {
   otherItems?: string[];
   otherItemsText?: string;
   accommodation?: string;
+  waterUtilisation?: boolean;
 }
 
 export interface GeneralCommentsData {
@@ -544,7 +545,8 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
     fencing: '',
     otherItems: [],
     otherItemsText: '',
-    accommodation: ''
+    accommodation: '',
+    waterUtilisation: false
   },
   generalComments: {
     propertyDescription: '',

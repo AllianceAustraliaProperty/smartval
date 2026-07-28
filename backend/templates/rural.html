@@ -1693,9 +1693,13 @@
                     <tr>
                         <td>Water Utilisation</td>
                         <td>
-                            {{
-                            record.property_details.water_utilisation|default('N/A')
-                            }}
+                            {% if record.ancillary_improvements.water_utilisation is sameas true %}
+                                Yes
+                            {% elif record.ancillary_improvements.water_utilisation is sameas false %}
+                                No
+                            {% else %}
+                                {{ record.ancillary_improvements.water_utilisation|default('N/A', true) }}
+                            {% endif %}
                         </td>
                     </tr>
                 </table>
@@ -1801,22 +1805,7 @@
                     {% endif %} {% endfor %}
                 </table>
             </div>
-            <div class="footer-container">
-                <span
-                    >{{ record.location_details.street|default('N/A') }}, {{
-                    record.location_details.suburb|default('N/A') }}, {{
-                    record.location_details.state|default('N/A') }} {{
-                    record.location_details.postcode|default('N/A') }}</span
-                >
-                <span class="page-num"></span>
-            </div>
-        </div>
-        <div class="page">
-            <div class="section-header">
-                <span></span>
-                <img src="{{ page_logo_url }}" class="header-logo" alt="" />
-            </div>
-            <div class="gap-section-content"></div>
+            <div style="margin-top: 12px;"></div>
             <div class="subtitle">5.3 Building Area</div>
             <div>
                 <table class="compact-table">
@@ -1838,7 +1827,22 @@
                     </tr>
                 </table>
             </div>
-            <div style="margin-top: 12px;"></div>
+            <div class="footer-container">
+                <span
+                    >{{ record.location_details.street|default('N/A') }}, {{
+                    record.location_details.suburb|default('N/A') }}, {{
+                    record.location_details.state|default('N/A') }} {{
+                    record.location_details.postcode|default('N/A') }}</span
+                >
+                <span class="page-num"></span>
+            </div>
+        </div>
+        <div class="page">
+            <div class="section-header">
+                <span></span>
+                <img src="{{ page_logo_url }}" class="header-logo" alt="" />
+            </div>
+            <div class="gap-section-content"></div>
             <div class="banner">6. Planning Details</div>
             <div style="margin-top: 8px;"></div>
             <div>
@@ -2867,26 +2871,7 @@
         {% endfor %}
         {% set current_section = 14 if (record.property_valuation.show_improvements and logo_type != 'CPV') else 13 %}
 
-        {# Floor plans are now shown in Annexure section for AAP #}
-        {% if logo_type == 'CPV' and record.floor_plans and record.floor_plans|length > 0 %}
-        {% for floor_plan in record.floor_plans %}
-        <div class="page">
-            <div class="section-header">
-                <h1>{{ current_section }}. Floor Plan {{ "(cont'd)" if loop.index > 1 else "" }}</h1>
-                <img src="{{ page_logo_url }}" class="header-logo" alt="" />
-            </div>
-            <div class="gap-section-content"></div>
-            <div style="display: flex; align-items: center; justify-content: center; flex: 1;">
-                <img src="{{ floor_plan.url }}" alt="Floor Plan" style="max-width: 100%; max-height: 650px; object-fit: contain;" />
-            </div>
-            <div class="footer-container">
-                <span>{{ record.location_details.street|default('N/A') }}, {{ record.location_details.suburb|default('N/A') }}, {{ record.location_details.state|default('N/A') }} {{ record.location_details.postcode|default('N/A') }}</span>
-                <span class="page-num"></span>
-            </div>
-        </div>
-        {% endfor %}
-        {% set current_section = current_section + 1 %}
-        {% endif %}
+
 
         {% if record.title_search %}
         <div class="page">
