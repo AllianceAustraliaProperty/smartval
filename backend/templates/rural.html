@@ -1693,13 +1693,7 @@
                     <tr>
                         <td>Water Utilisation</td>
                         <td>
-                            {% if record.ancillary_improvements.water_utilisation is sameas true %}
-                                Yes
-                            {% elif record.ancillary_improvements.water_utilisation is sameas false %}
-                                No
-                            {% else %}
-                                {{ record.ancillary_improvements.water_utilisation|default('N/A', true) }}
-                            {% endif %}
+                                {{ record.ancillary_improvements.water_utilisation|default('None', true) }}
                         </td>
                     </tr>
                 </table>

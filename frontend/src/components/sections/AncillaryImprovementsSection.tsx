@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormField, Textarea, Checkbox, Select, MultiSelectDropdown } from '../ui/FormField';
+import { FormField, Textarea, Checkbox, Select, MultiSelectDropdown, Input } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { DRIVEWAY_TYPES, FENCING_TYPES, OTHER_ITEM_TYPES } from '@/constants/ancillary-types';
 
@@ -70,9 +70,10 @@ export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register,
           label="Water Utilisation"
           error={(errors as any).ancillaryImprovements?.waterUtilisation?.message}
         >
-          <Checkbox
+          <Input
             {...register('ancillaryImprovements.waterUtilisation')}
-            label="Property utilises water"
+            placeholder="e.g. 104,000L water tank"
+            error={(errors as any).ancillaryImprovements?.waterUtilisation?.message}
           />
         </FormField>
       )}
