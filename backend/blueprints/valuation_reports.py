@@ -999,6 +999,10 @@ def generate_html_report(report_id, template_name='residential.html'):
                 "sales_comparables": mapped_sales,
                 "market_evidence": mapped_sales,
                 "other_dwellings": other_dwellings,
+                "town_planning": {
+                    "local_government_area": report.get("propertyDetails", {}).get("councilArea"),
+                    "zoning": report.get("propertyDetails", {}).get("zoning"),
+                },
                 "primary_contact": {
                     "first_name": report.get("primaryContact", {}).get("firstName", ""),
                     "last_name": report.get("primaryContact", {}).get("lastName", ""),
