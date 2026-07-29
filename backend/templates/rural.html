@@ -593,7 +593,7 @@
 {% macro render_interior_header() %}
 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 500; color: #333; margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 12px;">
     <div style="text-align: left;">
-        <img src="{{ page_logo_url }}" alt="Logo" style="height: 55px; width: auto; object-fit: contain;">
+        <img src="{{ page_logo_url }}" alt="Logo" style="height: 65px; width: auto; object-fit: contain;">
     </div>
     <div style="text-align: right; line-height: 1.5;">
         {{ record.location_details.street|default('') }} {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}<br>
@@ -605,7 +605,7 @@
         www.allianceaustraliaproperty.com.au | info@allianceaustraliaproperty.com.au
         {% endif %}
         <br>
-        Ref: #PV{{ sf_record.Job_Number__c|default('') }}
+        Ref: #{{ sf_record.Job_Number__c|default('') }}
     </div>
 </div>
 {% endmacro %}
@@ -661,7 +661,7 @@
                     {{ record.location_details.state|default('') }}
                     {{ record.location_details.postcode|default('') }}
                 </p>
-                <p style="font-size: 14px; margin-top: 15px;">Ref #PV{{ sf_record.Job_Number__c|default('') }}</p>
+                <p style="font-size: 14px; margin-top: 15px;">Ref #{{ sf_record.Job_Number__c|default('') }}</p>
             </div>
             <!-- Footer at bottom -->
             <div style="position: absolute; bottom: 30px; left: 50px; right: 50px; text-align: center;">
@@ -875,8 +875,8 @@
                     {{ record.ancillary_improvements.water_utilisation|default('None', true) }}
                 </p>
             </div>
-        </div>
 {% if record.other_dwellings and record.other_dwellings|length > 0 %}
+        </div>
         {% for dwelling in record.other_dwellings %}
         <div class="page">
             {{ render_interior_header() }}
