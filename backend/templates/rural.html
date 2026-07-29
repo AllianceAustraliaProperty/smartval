@@ -1442,26 +1442,26 @@
                 {% if record.property_details.zoning %}{{ record.property_details.zoning }}{% else %}Rural Residential{% endif %}
                 zoned) land value per
                 {% if record.property_valuation.display_in_sqm %}sqm{% else %}hectare{% endif %}
-                is {{ '${:,.0f}'.format(record.property_valuation.total_improve_value_rate|default(0)) }}.
+                is {{ '${:,.0f}'.format(record.property_valuation.total_improve_value_rate|default(0, true)) }}.
             </p>
             {% endif %}
 
             <div style="margin: 6px 0;"></div>
 
-            {% set actual_site_area = record.property_details.site_area|default(0) %}
+            {% set actual_site_area = record.property_details.site_area|default(0, true) %}
             {% if record.property_valuation.display_in_sqm %}
-                {% set calc_land_value = (actual_site_area * record.property_valuation.total_improve_value_rate)|round(0)|int if record.property_valuation.total_improve_value_rate else 0 %}
+                {% set calc_land_value = (actual_site_area * (record.property_valuation.total_improve_value_rate|default(0, true)))|round(0)|int %}
             {% else %}
                 {% set site_area_ha = (actual_site_area / 10000)|round(2) %}
-                {% set calc_land_value = (site_area_ha * record.property_valuation.total_improve_value_rate)|round(0)|int if record.property_valuation.total_improve_value_rate else 0 %}
+                {% set calc_land_value = ((site_area_ha) * (record.property_valuation.total_improve_value_rate|default(0, true)))|round(0)|int %}
             {% endif %}
 
             <p style="font-size: 11px; line-height: 1.6; margin-bottom: 4px;">
                 Land Value
                 {% if record.property_valuation.display_in_sqm %}
-                    &ndash; ({{ '{:,}'.format((actual_site_area|round(0)|int)|default(0)) }} sqm @ {{ '${:,.0f}'.format(record.property_valuation.total_improve_value_rate|default(0)) }})
+                    &ndash; ({{ '{:,}'.format((actual_site_area|round(0)|int)) }} sqm @ {{ '${:,.0f}'.format(record.property_valuation.total_improve_value_rate|default(0, true)) }})
                 {% else %}
-                    &ndash; ({{ site_area_ha }} Ha @ {{ '${:,.0f}'.format(record.property_valuation.total_improve_value_rate|default(0)) }})
+                    &ndash; ({{ site_area_ha }} Ha @ {{ '${:,.0f}'.format(record.property_valuation.total_improve_value_rate|default(0, true)) }})
                 {% endif %}
                 = {{ calc_land_value|format_currency }}{% if record.property_valuation.land_value %} round off {{ record.property_valuation.land_value|format_currency }}{% endif %}
             </p>
