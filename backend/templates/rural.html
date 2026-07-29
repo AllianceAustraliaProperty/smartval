@@ -807,9 +807,10 @@
                     <em>Liability limited by a scheme approved under Professional Standards Legislation</em>
                 </div>
             </div>
-            <div style="text-align: center; padding-top: 8px; font-size: 10px; color: #666;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         
 <div class="page">
@@ -844,9 +845,10 @@
                     Identification: Street number, online Cadastral plan, RP Data mapping.
                 </p>
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         <div class="page">
             {{ render_interior_header() }}
@@ -874,8 +876,45 @@
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline;">Water utilisation:</span><br>
                     {{ record.ancillary_improvements.water_utilisation|default('None', true) }}
                 </p>
-                <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                    - <span class="page-num"></span> -
+<div>
+                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline;">Environmental Issue:</span><br>
+                    {{ record.environmental_issues|default('During the course of our inspection, no apparent environmental issues were observed that would be expected to materially affect the value or marketability of the subject property.') }}
+                </p>
+            </div>
+            <div>
+                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline;">General Market Overview:</span><br>
+                    {{ record.general_comments.market_overview|default('') }}
+                </p>
+                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline;">Property Description:</span><br>
+                    {% if record.property_valuation.show_improvements %}
+                    {{ record.general_comments.property_comments|default('') }}
+                    {% else %}
+                    {{ record.general_comments.property_description|default('') }}
+                    {% endif %}
+                </p>
+            </div>
+            {% if '2 hectare exemption' in
+            (record.valuation_type|default('')|lower) %}
+            <div class="gap-before-subsection"></div>
+            <div class="subtitle">2-Hectare Exemption Clause</div>
+            <div style="margin-bottom: 4px; line-height: 1.5">
+                <p>
+                    For the purpose of this valuation, we have assessed the
+                    value of the <em>best two hectares</em> of the subject rural
+                    holding, in accordance with the Capital Gains Tax (CGT) main
+                    residence exemption provisions. The selected two hectares
+                    are considered to represent the most suitable and valuable
+                    portion of the property reasonably associated with the main
+                    residence, having regard to site improvements, access, and
+                    highest and best use.
+                </p>
+            </div>
+            {% endif %}
+
+            
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
                 </div>
             </div>
         </div>
@@ -1000,53 +1039,13 @@
                     {% endif %}
                 </table>
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         {% endfor %}
         {% endif %}
-        <div class="page">
-            {{ render_interior_header() }}
-            <div>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline;">Environmental Issue:</span><br>
-                    {{ record.environmental_issues|default('During the course of our inspection, no apparent environmental issues were observed that would be expected to materially affect the value or marketability of the subject property.') }}
-                </p>
-            </div>
-            <div>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline;">General Market Overview:</span><br>
-                    {{ record.general_comments.market_overview|default('') }}
-                </p>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline;">Property Description:</span><br>
-                    {% if record.property_valuation.show_improvements %}
-                    {{ record.general_comments.property_comments|default('') }}
-                    {% else %}
-                    {{ record.general_comments.property_description|default('') }}
-                    {% endif %}
-                </p>
-            </div>
-            {% if '2 hectare exemption' in
-            (record.valuation_type|default('')|lower) %}
-            <div class="gap-before-subsection"></div>
-            <div class="subtitle">2-Hectare Exemption Clause</div>
-            <div style="margin-bottom: 4px; line-height: 1.5">
-                <p>
-                    For the purpose of this valuation, we have assessed the
-                    value of the <em>best two hectares</em> of the subject rural
-                    holding, in accordance with the Capital Gains Tax (CGT) main
-                    residence exemption provisions. The selected two hectares
-                    are considered to represent the most suitable and valuable
-                    portion of the property reasonably associated with the main
-                    residence, having regard to site improvements, access, and
-                    highest and best use.
-                </p>
-            </div>
-            {% endif %}
-
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
-        </div>
 
         <div class="page">
             {{ render_interior_header() }}
@@ -1216,9 +1215,10 @@
                     {% endfor %}
                 </div>
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}
         <div class="page">
@@ -1423,9 +1423,10 @@
             </div>
             <hr class="custom-hr" style="margin-top:12px; margin-bottom:10px; border-top: 1px solid #999;" />
 
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         {% endif %}
         {% set actual_site_area = record.property_details.site_area|default(0, true) %}
@@ -1449,7 +1450,7 @@
                     <td style="width: 75%; vertical-align: top; padding: 2px 0 8px 0; color: #333; border: none; background: none;">
                         {{ record.property_valuation.direct_comparison|default('') }}
 
-                        {% if record.property_details.site_area and record.property_valuation.total_improve_value_rate %}
+                        {% if record.property_details.site_area %}
                         <br><br>
                         Sales evidence reflects this
                         {% if record.property_valuation.display_in_sqm %}
@@ -1480,16 +1481,13 @@
                         Based on the Direct Comparison &amp; Summation on {{ record.valuation_date|format_date|default('N/A') }}, we assessed the market value &lsquo;as is&rsquo; of the subject property at <strong>{{ record.property_valuation.market_value|format_currency|default('N/A') }} ({{ record.property_valuation.market_value|format_currency_words|default('N/A') }})</strong>.
                         <br><br>
                         <strong>Market Value &lsquo;As Is&rsquo; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <u>{{ record.property_valuation.market_value|format_currency|default('N/A') }}</u></strong>
-                    </td>
-                </tr>
-            </table>
+                        <br>
+                        <p style="font-size: 10px; line-height: 1.5; margin: 12px 0;">
+                            Our valuation is on the basis the property is input taxed and free of GST. We are not privy to the financial circumstances of the current owner(s) nor previous transactions upon the property which may impact upon the status of the property in relation to GST. Should the property not qualify as GST free, our assessment inclusive of GST.
+                        </p>
 
-            <p style="font-size: 10px; line-height: 1.5; margin: 12px 0;">
-                Our valuation is on the basis the property is input taxed and free of GST. We are not privy to the financial circumstances of the current owner(s) nor previous transactions upon the property which may impact upon the status of the property in relation to GST. Should the property not qualify as GST free, our assessment inclusive of GST.
-            </p>
-
-            <!-- Signature block inline after GST note -->
-            <p style="font-size: 11px; margin: 0 0 2px 0;"><strong>Valuation Firm:</strong> Certified Property Valuers</p>
+                        <!-- Signature block inline after GST note -->
+                        <p style="font-size: 11px; margin: 0 0 2px 0;"><strong>Valuation Firm:</strong> {% if logo_type == 'CPV' %}Certified Property Valuers{% elif logo_type == 'TAMN' %}TAMN Property Valuers{% else %}Duotax Property Valuers{% endif %}</p>
             <p style="font-size: 10px; margin: 1px 0; line-height: 1.8;">
                 <strong>Valuation Date:</strong> {{ record.valuation_date|format_date|default('N/A') }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Date of Issue:</strong> {{ record.report_date|format_date|default('N/A') }}
             </p>
@@ -1500,7 +1498,7 @@
             <p style="font-size: 10px; margin: 0; line-height: 1.4; color: #333;">
                 (Property Valuer) AAPI CPV 101474<br>
                 {% if record.location_details.state == 'WA' %}WA Licence Number - LV45321
-                {% elif record.location_details.state == 'QLD' %}QVRB no: 5429MR{% endif %}
+                {% else %}QVRB no: 5429MR{% endif %}
             </p>
             {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
             <img src="https://valai.duo.tax/assets/peter-signature.png" alt="" style="height: 30px; width: auto; display: block; margin: 2px 0;" />
@@ -1533,14 +1531,17 @@
             <!-- Map photo full width below signature -->
             {% if record.site_details.map_photo and record.site_details.map_photo.base %}
             <div style="margin-top: 12px;">
-                <img src="{{ record.site_details.map_photo.base }}" alt="Location Map" style="width: 100%; height: 220px; object-fit: cover; border: 1px solid #ccc;">
-                <p style="font-size: 9px; color: #888; margin-top: 2px;">{{ record.site_details.map_source|default('RP Data') }}</p>
+                <img src="{{ record.site_details.map_photo.base }}" alt="Location Map" style="width: 100%; max-width: 400px; height: auto; object-fit: cover; border: 1px solid #ccc;">
             </div>
             {% endif %}
+                    </td>
+                </tr>
+            </table>
 
-            <div style="text-align: center; padding-top: 8px; font-size: 10px; color: #666;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         <div class="page">
             {{ render_interior_header() }}
@@ -1576,9 +1577,10 @@
                 <p class="bold" style="margin-bottom: 2px">Title Search</p>
                 <p style="margin-top: 2px; margin-bottom: 5px">Unless stated as otherwise in this report we advise that a copy of the current Certificate of Title has not been provided or searched. This valuation assumes clear title. Should any encumbrances, easements, leases or other restrictions not mentioned in this report be known or discovered then the valuation should be referred to the Valuer for comment.</p>
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         <div class="page">
             {{ render_interior_header() }}
@@ -1604,9 +1606,10 @@
                 <p class="bold" style="margin-bottom: 1px">Sales Evidence</p>
                 <p style="margin-top: 1px; margin-bottom: 4px">The attributes i.e. bedrooms/bathrooms of the sales evidence included in our report are recorded in available sales databases. As we have not physically inspected the interior of the sales evidence we cannot certify the accuracy of the information.</p>
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         {% for photos_group in record.gallery_photos_groups %}
         <div class="page">
@@ -1622,9 +1625,10 @@
                 <img src="{{ photo.large or photo.base }}" alt="" />
                 {% endfor %}
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         {% endfor %}
         {% set current_section = 13 if (record.property_valuation.show_improvements and logo_type != 'CPV') else 12 %}
@@ -1639,9 +1643,10 @@
             <div style="display: flex; align-items: center; justify-content: center; flex: 1;">
                 <img src="{{ record.title_search }}" alt="Title Search" style="max-width: 100%; max-height: 650px; object-fit: contain;" />
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         {% set current_section = current_section + 1 %}
         {% endif %}
@@ -1654,9 +1659,10 @@
             <div class="annexure-content">
                 <img src="{{ annexure.base }}" alt="Annexure Document" />
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         {% endfor %}
 
@@ -1691,9 +1697,10 @@
                 </ul>
             </div>
 
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
 
         {# Additional floor plans as continuation pages #}
@@ -1707,9 +1714,10 @@
             <div style="display: flex; align-items: center; justify-content: center; flex: 1;">
                 <img src="{{ floor_plan.url }}" alt="Floor Plan" style="max-width: 100%; max-height: 650px; object-fit: contain;" />
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
         {% endif %}
         {% endfor %}
