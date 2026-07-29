@@ -1049,16 +1049,6 @@
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Town Planning:</span><br>
                     {{ record.property_details.town_planning|default('N/A') }}
                 </p>
-            </div>
-            <div class="footer-container">
-                <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
-                <span class="page-num"></span>
-            </div>
-        </div>
-
-        <div class="page">
-            {{ render_interior_header() }}
-            <div>
                 <h1 style="display:none;">Services</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Services:</span><br>
                     {{ record.site_details.services|default('N/A') }}
@@ -1104,16 +1094,6 @@
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Condition/Repairs:</span><br>
                     Internal Condition: {{ record.property_descriptors.internal_condition|default('N/A') }}. External Condition: {{ record.property_descriptors.external_condition|default('N/A') }}. {% if record.property_descriptors.repairs_requirements and record.property_descriptors.repairs_requirements != 'N/A' %}Essential Repairs: {{ record.property_descriptors.repairs_requirements }}. {% endif %}{% if record.property_descriptors.defects and record.property_descriptors.defects != 'N/A' %}Repair Comments: {{ record.property_descriptors.defects }}.{% endif %} The residence generally has mixed-age PC items of basic quality in average condition.
                 </p>
-            </div>
-            <div class="footer-container">
-                <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
-                <span class="page-num"></span>
-            </div>
-        </div>
-
-        <div class="page">
-            {{ render_interior_header() }}
-            <div>
                 <h1 style="display:none;">Ancillary Improvements</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Ancillary Improvements:</span><br>
                     {% if record.ancillary_improvements.show %}Driveway: {{ record.ancillary_improvements.driveway|default('N/A') }}. Fencing: {{ record.ancillary_improvements.fencing|default('N/A') }}. {% if record.ancillary_improvements.other_items %}{{ record.ancillary_improvements.other_items }}{% endif %}{% else %}N/A{% endif %}
@@ -1126,16 +1106,6 @@
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Environmental Issue:</span><br>
                     {{ record.environmental_issues|default('During the course of our inspection, no apparent environmental issues were observed that would be expected to materially affect the value or marketability of the subject property.') }}
                 </p>
-            </div>
-            <div class="footer-container">
-                <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
-                <span class="page-num"></span>
-            </div>
-        </div>
-
-        <div class="page">
-            {{ render_interior_header() }}
-            <div>
                 <h1 style="display:none;">General Market Overview</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">General Market Overview:</span><br>
                     {{ record.general_comments.market_overview|default('') }}
@@ -1696,6 +1666,7 @@
                 <div class="page">
             {{ render_interior_header() }}
 
+            <h1 style="display:none;">Valuation Remarks</h1>
             <p style="font-weight: bold; font-size: 15px; margin: 0 0 10px 0;">VALUATION REMARKS:</p>
 
             <!-- Two-column layout matching reference format -->
