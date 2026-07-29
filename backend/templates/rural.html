@@ -875,8 +875,8 @@
                     {{ record.ancillary_improvements.water_utilisation|default('None', true) }}
                 </p>
             </div>
-{% if record.other_dwellings and record.other_dwellings|length > 0 %}
         </div>
+{% if record.other_dwellings and record.other_dwellings|length > 0 %}
         {% for dwelling in record.other_dwellings %}
         <div class="page">
             {{ render_interior_header() }}
