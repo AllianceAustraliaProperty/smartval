@@ -823,7 +823,13 @@
                     Identification: Street number, online Cadastral plan, RP Data mapping.
                 </p>
             </div>
-                        <div>
+                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
+                - <span class="page-num"></span> -
+            </div>
+        </div>
+        <div class="page">
+            {{ render_interior_header() }}
+            <div>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline;">Improvements:</span><br>
                     Built about {{ record.property_details.build_year or 'N/A' }}
                     Foundations: Brick
