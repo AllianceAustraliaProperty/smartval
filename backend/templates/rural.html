@@ -812,7 +812,127 @@
                     <span class="page-num"></span>
                 </div>
         </div>
-        
+
+        <!-- Duotax-style purpose & property description page -->
+        <div class="page">
+            {{ render_interior_header() }}
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                <tr>
+                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                        Address:
+                    </td>
+                    <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #000; border: none; background: none;">
+                        <span style="display: inline-block; background: #000; color: #fff; padding: 2px 10px; font-weight: bold; font-size: 12px;">
+                            {{ record.location_details.street|default('') }} {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                        Date of Valuation:
+                    </td>
+                    <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        {{ record.valuation_date|format_date|default('N/A') }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                        Prepared for:
+                    </td>
+                    <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        {{ record.primary_contact.first_name|default('') }} {{ record.primary_contact.last_name|default('') }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                        Purpose of Valuation:
+                    </td>
+                    <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        {{ record.purpose_of_report|default('Determination of Current Market Value for Market Assessment purposes') }}
+                    </td>
+                </tr>
+            </table>
+
+            <div style="margin-top: 12px;"></div>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 8px;">
+                This valuation is to determine the current market value for Stamp Duty purposes only. Please note that this report does not meet practice standards for court proceedings and mortgage purposes. It is specifically for market assessment and not suitable for no other purpose. No responsibility is accepted by any third party that may use or rely on overall or any part of the content of this valuation.
+            </p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 8px;">
+                The Australian Property Institute has adopted the International Valuation Standards Council (IVSC)'s definition of Market Value.
+            </p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 8px; padding-left: 20px;">
+                &mdash; &ldquo;the estimated amount for which an asset should exchange on the date of valuation between a willing buyer and a willing seller in an arms' length transaction after proper marketing wherein the parties had each acted knowledgeably, prudently, and without compulsion.&rdquo;
+            </p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 8px;">
+                &ldquo;Asset&rdquo; includes property.
+            </p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 8px;">
+                The market value in this report is the same as this definition.
+            </p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 12px;">
+                This valuation report is for use and may be relied upon only by the party/parties to whom it is addressed. No other parties are entitled to use or rely upon it, and the valuer does not assume any liability or responsibility to any other party who does so rely upon the valuation without the express written authority of duo tax property valuers.
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                <tr>
+                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                        Real Property Description:
+                    </td>
+                    <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        {{ record.property_details.title_reference|default('N/A') }}
+                    </td>
+                </tr>
+            </table>
+
+            <p style="font-size: 11px; line-height: 1.6; margin: 4px 0 4px 25%; padding-left: 0;">
+                We advise that no property title search has been undertaken or sighted. If a full title search is obtained and it contains anything which could be considered a title defect, or which may affect the property's value, we reserve the right to review our valuation. Should any encumbrance not noted within this report be discovered, the valuer should be consulted to reassess any effect on the value stated in this report.
+            </p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin: 4px 0 12px 25%; padding-left: 0;">
+                A Local Authority search has not been carried out and it is assumed the property is free of requisitions.
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                <tr>
+                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                        Highest &amp; Best Use:
+                    </td>
+                    <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        Existing Use
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                        Land Area:
+                    </td>
+                    <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        {% if record.property_details.site_area %}
+                            Approximately {{ (record.property_details.site_area / 10000)|round(2) }} Hectares or {{ '{:,}'.format(record.property_details.site_area|round(0)|int) }} sqm
+                        {% else %}N/A{% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                        Local Authority:
+                    </td>
+                    <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        {{ record.property_details.council_area|default('N/A') }}
+                    </td>
+                </tr>
+            </table>
+
+            <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
+                - <span class="page-num"></span> -
+            </div>
+        </div>
+
 <div class="page">
             {{ render_interior_header() }}
             <div>
