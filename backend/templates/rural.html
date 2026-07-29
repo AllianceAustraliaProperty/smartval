@@ -36,6 +36,7 @@
                 padding: 50px 40px; /* Match residential template */
                 display: flex;
                 flex-direction: column;
+                overflow: hidden;
             }
 
             /* Orange accent bar on left side - disabled */
@@ -1033,7 +1034,7 @@
                 </div>
         </div>
 
-<div class="page">
+        <div class="page">
             {{ render_interior_header() }}
             <div>
                 <h1 style="display:none;">Location</h1>
@@ -1044,19 +1045,17 @@
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Neighbourhood:</span><br>
                     This neighbourhood is part of the {{ record.property_details.zoning|default('Rural Residential') }}, Community Facilities with varying property quality in the surrounding area.
                 </p>
-            </div>
-            <div class="gap-before-subsection"></div>
-            <div>
                 <h1 style="display:none;">Town Planning</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Town Planning:</span><br>
                     {{ record.property_details.town_planning|default('N/A') }}
                 </p>
-                            </div>
+            </div>
             <div class="footer-container">
                 <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
                 <span class="page-num"></span>
             </div>
         </div>
+
         <div class="page">
             {{ render_interior_header() }}
             <div>
@@ -1068,9 +1067,6 @@
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Topography:</span><br>
                     {{ record.property_details.topography|default('N/A') }}
                 </p>
-            </div>
-            <div class="gap-before-subsection"></div>
-            <div>
                 <h1 style="display:none;">Site Description</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Site Description:</span><br>
                     {% if record.property_details.site_area %}The site area is approximately {% if record.property_valuation.display_in_sqm %}{{ record.property_details.site_area|format_area_sqm|default('N/A') }}{% else %}{{ record.property_details.site_area|format_area_smart|default('N/A') }}{% endif %}. {% endif %}
@@ -1081,10 +1077,11 @@
                 </p>
             </div>
             <div class="footer-container">
-                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
-                    <span class="page-num"></span>
-                </div>
+                <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                <span class="page-num"></span>
+            </div>
         </div>
+
         <div class="page">
             {{ render_interior_header() }}
             <div>
@@ -1107,12 +1104,13 @@
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Condition/Repairs:</span><br>
                     Internal Condition: {{ record.property_descriptors.internal_condition|default('N/A') }}. External Condition: {{ record.property_descriptors.external_condition|default('N/A') }}. {% if record.property_descriptors.repairs_requirements and record.property_descriptors.repairs_requirements != 'N/A' %}Essential Repairs: {{ record.property_descriptors.repairs_requirements }}. {% endif %}{% if record.property_descriptors.defects and record.property_descriptors.defects != 'N/A' %}Repair Comments: {{ record.property_descriptors.defects }}.{% endif %} The residence generally has mixed-age PC items of basic quality in average condition.
                 </p>
-                            </div>
+            </div>
             <div class="footer-container">
                 <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
                 <span class="page-num"></span>
             </div>
         </div>
+
         <div class="page">
             {{ render_interior_header() }}
             <div>
@@ -1120,11 +1118,10 @@
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Ancillary Improvements:</span><br>
                     {% if record.ancillary_improvements.show %}Driveway: {{ record.ancillary_improvements.driveway|default('N/A') }}. Fencing: {{ record.ancillary_improvements.fencing|default('N/A') }}. {% if record.ancillary_improvements.other_items %}{{ record.ancillary_improvements.other_items }}{% endif %}{% else %}N/A{% endif %}
                 </p>
-                <h1 style="display:none;">Water utilisation</h1>
+                <h1 style="display:none;">Water Utilisation</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Water utilisation:</span><br>
                     {{ record.ancillary_improvements.water_utilisation|default('None', true) }}
                 </p>
-<div>
                 <h1 style="display:none;">Environmental Issue</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Environmental Issue:</span><br>
                     {{ record.environmental_issues|default('During the course of our inspection, no apparent environmental issues were observed that would be expected to materially affect the value or marketability of the subject property.') }}
@@ -1135,6 +1132,7 @@
                 <span class="page-num"></span>
             </div>
         </div>
+
         <div class="page">
             {{ render_interior_header() }}
             <div>
@@ -1168,15 +1166,13 @@
                 </p>
             </div>
             {% endif %}
-
-            
             <div class="footer-container">
-                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
-                    <span class="page-num"></span>
-                </div>
+                <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                <span class="page-num"></span>
             </div>
         </div>
-{% if record.other_dwellings and record.other_dwellings|length > 0 %}
+
+        {% if record.other_dwellings and record.other_dwellings|length > 0 %}
         {% for dwelling in record.other_dwellings %}
         <div class="page">
             {{ render_interior_header() }}
@@ -2009,11 +2005,13 @@
                 let cleanName = rawName.replace(/^[0-9.]+\s*/, '').trim().toLowerCase();
                 // Remove any leftover liquid tags if they were not rendered (just in case)
                 cleanName = cleanName.replace(/\{\{.*?\}\}/g, '').trim();
+                // Normalize whitespace around slashes for matching
+                cleanName = cleanName.replace(/\s*\/\s*/g, '/');
                 
                 if (!cleanName) return;
 
                 // Custom mappings where TOC text doesn't explicitly match banner text
-                if (cleanName === "general market overview") cleanName = "valuation comments";
+                // mapping removed — hidden h1 matches directly
                 if (cleanName === "income assessment") cleanName = "income statement";
 
                 if (cleanName === "environmental issues") cleanName = "environmental statement";
@@ -2029,6 +2027,8 @@
                     
                     let elText = el.textContent.trim().replace(/^[0-9.]+\s*/, '').trim().toLowerCase();
                     elText = elText.replace(/\{\{.*?\}\}/g, '').trim();
+                    // Normalize whitespace around slashes and colons for matching
+                    elText = elText.replace(/\s*\/\s*/g, '/').replace(/:$/, '');
                     
                     // Allow partial match for long enough strings
                     if (elText === cleanName || 
@@ -2045,11 +2045,7 @@
                         const pageNumElement = parentPage.querySelector('.page-num');
                         if (pageNumElement && pageNumElement.textContent.trim() !== '') {
                             numTd.textContent = pageNumElement.textContent;
-                        } else {
-                            row.style.display = 'none';
                         }
-                    } else {
-                        row.style.display = 'none';
                     }
                 }
             });
