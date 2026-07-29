@@ -1427,229 +1427,144 @@
         {% endif %}
         <div class="page">
             {{ render_interior_header() }}
-            <h1>
-                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}11{% else
-                    %}10{% endif %}. Valuation Methodology
-                </h1>
-            <div class="gap-section-content"></div>
-            <table>
-                <tr>
-                    <td>Primary Methodology</td>
-                    <td>Direct Comparison</td>
-                </tr>
-                <tr>
-                    <td>Secondary Methodology</td>
-                    <td>Summation</td>
-                </tr>
-            </table>
-            <div class="gap-before-section"></div>
-            <div style="margin-top: 15px"></div>
-            <h1
-                style="
-                    font-size: 16px;
-                    font-weight: 600;
-                    color: #000;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    padding-bottom: 5px;
-                    border-bottom: 2px solid #ececec;
-                    margin: 0 0 0 0;
-                "
-            >
-                {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}12{% else
-                %}11{% endif %}. Valuation Remarks
-            </h1>
-            <div class="gap-section-content"></div>
-            <div class="subtitle">Method 1: Direct Comparison</div>
-            <div style="line-height: 13px">
-                <p style="white-space: pre-line">
-                    {{ record.property_valuation.direct_comparison|default('')
-                    }}
-                </p>
-            </div>
-            <div class="gap-before-subsection"></div>
-            <div class="subtitle">Method 2: Summation</div>
-            <table>
-                <tr>
-                    <td>Land Value</td>
-                    <td>
-                        {% if record.property_details.site_area and
-                        record.property_valuation.total_improve_value_rate %}
-                        {% if record.property_valuation.display_in_sqm %}
-                        {% set site_area_display = record.property_details.site_area|round(0)|int %}
-                        {% set calculated_land_value =
-                        (record.property_details.site_area *
-                        record.property_valuation.total_improve_value_rate)|round(0)|int
-                        %} ({{ '{:,}'.format(site_area_display) }} sqm @ {{
-                        '${:,.0f}'.format(record.property_valuation.total_improve_value_rate)
-                        }}/sqm) = {{ calculated_land_value|format_currency }}{%
-                        if record.property_valuation.land_value %} round off {{
-                        record.property_valuation.land_value|format_currency
-                        }}{% endif %}
-                        {% else %}
-                        {% set site_area_ha = (record.property_details.site_area /
-                        10000)|round(2) %} {% set calculated_land_value =
-                        (site_area_ha *
-                        record.property_valuation.total_improve_value_rate)|round(0)|int
-                        %} ({{ site_area_ha }} ha @ {{
-                        '${:,.0f}'.format(record.property_valuation.total_improve_value_rate)
-                        }}/ha) = {{ calculated_land_value|format_currency }}{%
-                        if record.property_valuation.land_value %} round off {{
-                        record.property_valuation.land_value|format_currency
-                        }}{% endif %}
-                        {% endif %}
-                        {% else %} {{
-                        record.property_valuation.land_value|format_currency|default('N/A')
-                        }} {% endif %}
-                    </td>
-                </tr>
-                {% if record.property_valuation.show_improvements %}
-                <tr>
-                    <td>{% if record.other_dwellings and record.other_dwellings|length > 0 %}Main Improvements{% else %}Improvements{% endif %}</td>
-                    <td>
-                        {{
-                        record.property_valuation.improvements|format_currency|default('N/A')
-                        }}
-                    </td>
-                </tr>
-                {% endif %}
-                {% if record.other_dwellings and record.other_dwellings|length > 0 %}
-                <tr>
-                    <td>Secondary Dwelling</td>
-                    <td>
-                        {{
-                        record.property_valuation.secondary_dwelling_value|format_currency|default('N/A')
-                        }}
-                    </td>
-                </tr>
-                {% endif %}
-                <tr>
-                    <td>Market Value</td>
-                    <td>
-                        {{
-                        record.property_valuation.market_value|format_currency|default('N/A')
-                        }}
-                    </td>
-                </tr>
-                <tr>
-                    <td>Interest Valued</td>
-                    <td>
-                        {{
-                        record.property_valuation.interest_valued|default('N/A')
-                        }}
-                    </td>
-                </tr>
-            </table>
-            <div class="gap-content-block"></div>
-            <div style="display: flex; justify-content: center">
-                <p style="font-size: 14px">
-                    {% if record.property_valuation.current_day_valuation %}
-                    Certificate of Property Valuation {% else %} Declaration {%
-                    endif %}
-                </p>
-            </div>
-            <div style="text-align: center; width: 60%; margin: 0 auto">
-                <hr />
-            </div>
-            {% if not record.property_valuation.current_day_valuation %}
-            <div>
-                <p>
-                    I hereby certify that I have carried out the assessments of
-                    the above property as at that valuation on date of
-                    inspection. Neither I, nor to the best of my knowledge, any
-                    member of this firm, has any conflict of interest; direct,
-                    indirect or financial interest in relation to this property
-                    that is not disclosed herein. This report is for the use
-                    only of the party/s to which it is addressed for {{
-                    record.valuation_type }} purposes only and is not to be used
-                    for any other purpose.
-                </p>
-            </div>
-            {% endif %}
-            <div>
-                <p>We certify the subject property:</p>
-                <p class="bold">
-                    {{ record.location_details.street|default('N/A') }}, {{
-                    record.location_details.suburb|default('N/A') }}, {{
-                    record.location_details.state|default('N/A') }} {{
-                    record.location_details.postcode|default('N/A') }}
-                </p>
-                <p>
-                    We assess the subject property's Market Value in its present
-                    condition and on a vacant possession basis to be:
-                </p>
-                <p class="bold">
-                    As at {{ record.valuation_date|format_date|default('N/A') }}
-                    (Date of Valuation)
-                </p>
-                <p class="bold">Market Value -</p>
-                <p class="bold">
-                    {{
-                    record.property_valuation.market_value|format_currency|default('N/A')
-                    }} ({{
-                    record.property_valuation.market_value|format_currency_words|default('N/A')
-                    }})
-                </p>
-                <div class="gap-before-subsection"></div>
-                {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
-                <img
-                    src="https://valai.duo.tax/assets/jugal-signature.png"
-                    alt=""
-                    srcset=""
-                />
-                <p>
-                    JUGAL SAHA, AAPI CPV (Certified Practising Valuer 101474) {%
-                    if record.location_details.state == 'WA' %}WA Licence Number
-                    - LV45321 {% elif record.location_details.state == 'QLD'
-                    %}QVRB No: 5429MR{% endif %}
-                </p>
 
-                {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
-                <img
-                    src="https://valai.duo.tax/assets/peter-signature.png"
-                    alt=""
-                    srcset=""
-                />
-                <p>
-                    PETER LEE, AAPI CPV (Certified Practising Valuer 70581) {%
-                    if record.location_details.state == 'WA' %}WA Licence Number
-                    - LV45411 {% elif record.location_details.state == 'QLD'
-                    %}QVRB No: 5434{% endif %}
-                </p>
-                {% elif sf_record.PropertyValuer__r.Name == 'Edward Aoun' %}
-                <img
-                    src="https://valai.duo.tax/assets/edward-signature.png"
-                    alt=""
-                    srcset=""
-                />
-                <p>EDWARD AOUN, AVI CPV (Certified Property Valuer 20231) API RPV 111395</p>
-                {% elif sf_record.PropertyValuer__r.Name == 'Timothy Jang' %}
-                <img
-                    src="https://valai.duo.tax/assets/goosuk-signature.png"
-                    alt=""
-                    srcset=""
-                />
-                <p>GOOSUK JANG, AAPI (Certified Practising Valuer 69833) {% if record.location_details.state == 'WA' %}WA Licence Number - LV45421{% elif record.location_details.state == 'QLD' %}QVRB No: 5498{% endif %}</p>
-                {% elif sf_record.PropertyValuer__r.Name == 'Martin Lam' %}
-                <img
-                    src="https://valai.duo.tax/assets/martin_signature.png"
-                    alt=""
-                    srcset=""
-                />
-                <p>MARTIN LAM, AAPI CPV (Certified Practising Valuer 102423)</p>
+            <p style="font-weight: bold; font-size: 14px; margin: 0 0 10px 0;">VALUATION REMARKS:</p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 8px; text-align: justify;">
+                {{ record.property_valuation.direct_comparison|default('') }}
+            </p>
+
+            {% if record.property_details.site_area and record.property_valuation.total_improve_value_rate %}
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 4px;">
+                Sales evidence reflects this {{ record.property_details.site_area|round(2) }}
+                {% if record.property_valuation.display_in_sqm %}sqm{% else %}hectares{% endif %}
+                land area of the subject property (in
+                {% if record.property_details.zoning %}{{ record.property_details.zoning }}{% else %}Rural Residential{% endif %}
+                zoned) land value per
+                {% if record.property_valuation.display_in_sqm %}sqm{% else %}hectare{% endif %}
+                is {{ '${:,.0f}'.format(record.property_valuation.total_improve_value_rate) }}.
+            </p>
+            {% endif %}
+
+            <div style="margin: 6px 0;"></div>
+
+            {% set actual_site_area = record.property_details.site_area|default(0) %}
+            {% if record.property_valuation.display_in_sqm %}
+                {% set calc_land_value = (actual_site_area * record.property_valuation.total_improve_value_rate)|round(0)|int if record.property_valuation.total_improve_value_rate else 0 %}
+            {% else %}
+                {% set site_area_ha = (actual_site_area / 10000)|round(2) %}
+                {% set calc_land_value = (site_area_ha * record.property_valuation.total_improve_value_rate)|round(0)|int if record.property_valuation.total_improve_value_rate else 0 %}
+            {% endif %}
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 4px;">
+                Land Value
+                {% if record.property_valuation.display_in_sqm %}
+                    &ndash; ({{ '{:,}'.format(actual_site_area|round(0)|int) }} sqm @ {{ '${:,.0f}'.format(record.property_valuation.total_improve_value_rate) }})
                 {% else %}
-                <span>NO SIGNATURE</span>
+                    &ndash; ({{ site_area_ha }} Ha @ {{ '${:,.0f}'.format(record.property_valuation.total_improve_value_rate) }})
                 {% endif %}
+                = {{ calc_land_value|format_currency }}{% if record.property_valuation.land_value %} round off {{ record.property_valuation.land_value|format_currency }}{% endif %}
+            </p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 4px;">
+                Improvements &ndash; {{ record.property_valuation.improvements|format_currency|default('$400,000.00') }}
+            </p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 4px;">
+                On balance, we considered the indicative market value of the property to be {{ record.property_valuation.market_value|format_currency|default('N/A') }}.
+            </p>
+
+            <div style="margin: 4px 0;"></div>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 4px;">
+                <strong>Summation</strong>
+                (Land Value {{ record.property_valuation.land_value|format_currency|default(calc_land_value|format_currency) }} + Improvements Value: {{ record.property_valuation.improvements|format_currency|default('$400,000.00') }})
+                = {{ record.property_valuation.market_value|format_currency|default('N/A') }}
+            </p>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 4px;">
+                <strong>Market Value: {{ record.property_valuation.market_value|format_currency|default('N/A') }}</strong>
+            </p>
+
+            <div style="margin: 6px 0;"></div>
+
+            <p style="font-size: 11px; line-height: 1.6; margin-bottom: 4px;">
+                Based on the Direct Comparison &amp; Summation on {{ record.valuation_date|format_date|default('N/A') }}, we assessed the market value &lsquo;as is&rsquo; of the subject property at {{ record.property_valuation.market_value|format_currency|default('N/A') }} ({{ record.property_valuation.market_value|format_currency_words|default('N/A') }})
+            </p>
+
+            <p style="font-size: 11px; font-weight: bold; line-height: 1.6; margin-bottom: 6px;">
+                Market Value &lsquo;As Is&rsquo; <u>{{ record.property_valuation.market_value|format_currency|default('N/A') }}</u>
+            </p>
+
+            <p style="font-size: 10px; line-height: 1.5; margin-bottom: 8px; color: #555;">
+                Our valuation is on the basis the property is input taxed and free of GST. We are not privy to the financial circumstances of the current owner(s) nor previous transactions upon the property which may impact upon the status of the property in relation to GST. Should the property not qualify as GST free, our assessment inclusive of GST.
+            </p>
+
+            <div style="display: flex; gap: 20px; margin-top: auto;">
+                <div style="width: 50%;">
+                    {% if record.site_details.map_photo and record.site_details.map_photo.base %}
+                    <img src="{{ record.site_details.map_photo.base }}" alt="Location Map" style="width: 100%; height: 200px; object-fit: cover; border: 1px solid #ccc;">
+                    <p style="font-size: 9px; color: #888; margin-top: 2px;">{{ record.site_details.map_source|default('Google Maps') }}</p>
+                    {% endif %}
+                </div>
+                <div style="width: 50%;">
+                    <p style="font-size: 11px; font-weight: bold; margin: 0 0 2px 0;">Certified Property Valuers</p>
+                    <p style="font-size: 10px; margin: 1px 0; line-height: 1.5;">
+                        <strong>Valuation Date:</strong> {{ record.valuation_date|format_date|default('N/A') }}<br>
+                        <strong>Date of Issue:</strong> {{ record.report_date|format_date|default('N/A') }}<br>
+                        <strong>Valuer:</strong>
+                    </p>
+                    {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
+                    <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="" style="height: 35px; width: auto; display: block; margin: 2px 0;" />
+                    <p style="font-size: 10px; margin: 1px 0; line-height: 1.4;">
+                        Jugal Saha<br>
+                        (Property Valuer) AAPI CPV 101474<br>
+                        {% if record.location_details.state == 'WA' %}WA Licence Number - LV45321
+                        {% elif record.location_details.state == 'QLD' %}QVRB no: 5429MR{% endif %}
+                    </p>
+                    {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
+                    <img src="https://valai.duo.tax/assets/peter-signature.png" alt="" style="height: 35px; width: auto; display: block; margin: 2px 0;" />
+                    <p style="font-size: 10px; margin: 1px 0; line-height: 1.4;">
+                        Peter Lee<br>
+                        AAPI CPV (Certified Practising Valuer 70581)<br>
+                        {% if record.location_details.state == 'WA' %}WA Licence Number - LV45411
+                        {% elif record.location_details.state == 'QLD' %}QVRB No: 5434{% endif %}
+                    </p>
+                    {% elif sf_record.PropertyValuer__r.Name == 'Edward Aoun' %}
+                    <img src="https://valai.duo.tax/assets/edward-signature.png" alt="" style="height: 35px; width: auto; display: block; margin: 2px 0;" />
+                    <p style="font-size: 10px; margin: 1px 0; line-height: 1.4;">
+                        Edward Aoun<br>
+                        AVI CPV (Certified Property Valuer 20231) API RPV 111395
+                    </p>
+                    {% elif sf_record.PropertyValuer__r.Name == 'Timothy Jang' %}
+                    <img src="https://valai.duo.tax/assets/goosuk-signature.png" alt="" style="height: 35px; width: auto; display: block; margin: 2px 0;" />
+                    <p style="font-size: 10px; margin: 1px 0; line-height: 1.4;">
+                        Goosuk Jang<br>
+                        AAPI (Certified Practising Valuer 69833)<br>
+                        {% if record.location_details.state == 'WA' %}WA Licence Number - LV45421
+                        {% elif record.location_details.state == 'QLD' %}QVRB No: 5498{% endif %}
+                    </p>
+                    {% elif sf_record.PropertyValuer__r.Name == 'Martin Lam' %}
+                    <img src="https://valai.duo.tax/assets/martin_signature.png" alt="" style="height: 35px; width: auto; display: block; margin: 2px 0;" />
+                    <p style="font-size: 10px; margin: 1px 0; line-height: 1.4;">
+                        Martin Lam<br>
+                        AAPI CPV (Certified Practising Valuer 102423)
+                    </p>
+                    {% else %}
+                    <p style="font-size: 10px; margin: 1px 0;">NO SIGNATURE</p>
+                    {% endif %}
+                </div>
             </div>
-                        <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
+
+            <div style="text-align: center; padding-top: 8px; font-size: 10px; color: #666;">
                 - <span class="page-num"></span> -
             </div>
         </div>
         <div class="page">
             {{ render_interior_header() }}
             <h1>
-                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}13{%
-                    else %}12{% endif %}. Assumptions, Conditions & Limitations
+                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}12{%
+                    else %}11{% endif %}. Assumptions, Conditions & Limitations
                 </h1>
             <div style="margin-top: 10px;"></div>
             <div class="compact-content" style="line-height: 1.3; font-size: 10px;">
@@ -1686,8 +1601,8 @@
         <div class="page">
             {{ render_interior_header() }}
             <h1>
-                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}13{%
-                    else %}12{% endif %}. Assumptions, Conditions & Limitations
+                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}12{%
+                    else %}11{% endif %}. Assumptions, Conditions & Limitations
                     (cont'd)
                 </h1>
             <div style="margin-top: 5px;"></div>
@@ -1715,8 +1630,8 @@
         <div class="page">
             {{ render_interior_header() }}
             <h1>
-                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}14{%
-                    else %}13{% endif %}. Photographs {{ "(cont'd)" if
+                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}13{%
+                    else %}12{% endif %}. Photographs {{ "(cont'd)" if
                     loop.index > 1 else "" }}
                 </h1>
             <div class="gap-section-content"></div>
@@ -1730,7 +1645,7 @@
             </div>
         </div>
         {% endfor %}
-        {% set current_section = 14 if (record.property_valuation.show_improvements and logo_type != 'CPV') else 13 %}
+        {% set current_section = 13 if (record.property_valuation.show_improvements and logo_type != 'CPV') else 12 %}
 
 
 

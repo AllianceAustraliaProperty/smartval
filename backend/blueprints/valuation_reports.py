@@ -912,6 +912,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "suburb_description": report.get("locationDetails", {}).get("suburbDescription"),
                 },
                 "valuation_date": report.get("valuationDetails", {}).get("valuationDate"),
+                "report_date": report.get("valuationDetails", {}).get("reportDate") or report.get("valuationDetails", {}).get("dateIssued"),
                 "valuation_type": report.get("valuationDetails", {}).get("valuationType"),
                 "purpose_of_report": report.get("valuationDetails", {}).get("purposeOfReport"),
                 "photos": mapped_photos,
