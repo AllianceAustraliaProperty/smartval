@@ -708,41 +708,99 @@
             <div style="padding: 0 50px">
                 <table class="toc-table" style="width: 100%; border-collapse: collapse">
                     <tr class="toc-main-row">
-                        <td style="text-align: left; width: 90%;">Valuation Summary</td>
+                        <td style="text-align: left; width: 90%;">Instructions</td>
                         <td style="text-align: right; width: 10%"></td>
                     </tr>
                     <tr class="toc-main-row">
-                        <td style="text-align: left">Location &amp; Neighbourhood</td>
+                        <td style="text-align: left">Valuation Summary</td>
                         <td style="text-align: right"></td>
                     </tr>
                     <tr class="toc-main-row">
-                        <td style="text-align: left">Site &amp; Improvements</td>
+                        <td style="text-align: left">Address</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Location</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Neighbourhood</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Town Planning</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Services</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Topography</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Site Description</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Improvements</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Condition / Repairs</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Ancillary Improvements</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Water Utilisation</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Environmental Issue</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">General Market Overview</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Property Description</td>
                         <td style="text-align: right"></td>
                     </tr>
                     <tr class="toc-main-row">
                         <td style="text-align: left">Market Evidence</td>
                         <td style="text-align: right"></td>
                     </tr>
+                    {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}
                     <tr class="toc-main-row">
                         <td style="text-align: left">Improvements - Area Calculation</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    {% endif %}
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Valuation Remarks</td>
                         <td style="text-align: right"></td>
                     </tr>
                     <tr class="toc-main-row">
                         <td style="text-align: left">Assumptions, Conditions &amp; Limitations</td>
                         <td style="text-align: right"></td>
                     </tr>
+                    {% if record.property_valuation.photographs and record.property_valuation.photographs|length > 0 %}
                     <tr class="toc-main-row">
                         <td style="text-align: left">Photographs</td>
                         <td style="text-align: right"></td>
                     </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Title Search</td>
-                        <td style="text-align: right"></td>
-                    </tr>
+                    {% endif %}
+                    {% if record.annexures %}
                     <tr class="toc-main-row">
                         <td style="text-align: left">Annexures</td>
                         <td style="text-align: right"></td>
                     </tr>
+                    {% endif %}
                 </table>
             </div>
             <div class="footer-container">
@@ -751,11 +809,10 @@
             </div>
         </div>
         <div class="page">
-            <h1 style="display:none;">Valuation Summary</h1>
-            <h1 style="display:none;">Location & Neighbourhood</h1>
-            <h1 style="display:none;">Site & Improvements</h1>
             {{ render_interior_header() }}
 
+            <h1 style="display:none;">Instructions</h1>
+            <h1 style="display:none;">Valuation Summary</h1>
             <!-- Property Image + Instructions side by side -->
             <div style="display: flex; gap: 20px; margin-bottom: 5px;">
                 <div style="width: 45%;">
@@ -858,6 +915,7 @@
 
         <!-- Duotax-style purpose & property description page -->
         <div class="page">
+            <h1 style="display:none;">Address</h1>
             {{ render_interior_header() }}
 
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
@@ -982,27 +1040,33 @@
 <div class="page">
             {{ render_interior_header() }}
             <div>
+                <h1 style="display:none;">Location</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Location:</span><br>
                     {{ record.location_details.suburb_description|default('') }}
                 </p>
+                <h1 style="display:none;">Neighbourhood</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Neighbourhood:</span><br>
                     This neighbourhood is part of the {{ record.property_details.zoning|default('Rural Residential') }}, Community Facilities with varying property quality in the surrounding area.
                 </p>
             </div>
             <div class="gap-before-subsection"></div>
             <div>
+                <h1 style="display:none;">Town Planning</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Town Planning:</span><br>
                     {{ record.property_details.town_planning|default('N/A') }}
                 </p>
+                <h1 style="display:none;">Services</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Services:</span><br>
                     {{ record.site_details.services|default('N/A') }}
                 </p>
+                <h1 style="display:none;">Topography</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Topography:</span><br>
                     {{ record.property_details.topography|default('N/A') }}
                 </p>
             </div>
             <div class="gap-before-subsection"></div>
             <div>
+                <h1 style="display:none;">Site Description</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Site Description:</span><br>
                     {% if record.property_details.site_area %}The site area is approximately {% if record.property_valuation.display_in_sqm %}{{ record.property_details.site_area|format_area_sqm|default('N/A') }}{% else %}{{ record.property_details.site_area|format_area_smart|default('N/A') }}{% endif %}. {% endif %}
                     A{{ 'n' if record.property_details.land_shape|lower|default('N/A')|first in 'aeiou' else '' }} {{ record.property_details.land_shape|lower|default('N/A') }} shaped land parcel positioned at the road height position. The pedestrian access provided along {{ record.location_details.street_only|default('N/A') }} is good and the site appears to have satisfactory surface drainage. 
@@ -1019,6 +1083,7 @@
         <div class="page">
             {{ render_interior_header() }}
             <div>
+                <h1 style="display:none;">Improvements</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Improvements:</span><br>
                     Built about {{ record.property_details.build_year or 'N/A' }}
                     Foundations: Brick
@@ -1033,24 +1098,30 @@
                     Accommodation:
                     {{ record.property_details.accommodation|default('N/A') }}
                 </p>
+                <h1 style="display:none;">Condition / Repairs</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Condition/Repairs:</span><br>
                     Internal Condition: {{ record.property_descriptors.internal_condition|default('N/A') }}. External Condition: {{ record.property_descriptors.external_condition|default('N/A') }}. {% if record.property_descriptors.repairs_requirements and record.property_descriptors.repairs_requirements != 'N/A' %}Essential Repairs: {{ record.property_descriptors.repairs_requirements }}. {% endif %}{% if record.property_descriptors.defects and record.property_descriptors.defects != 'N/A' %}Repair Comments: {{ record.property_descriptors.defects }}.{% endif %} The residence generally has mixed-age PC items of basic quality in average condition.
                 </p>
+                <h1 style="display:none;">Ancillary Improvements</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Ancillary Improvements:</span><br>
                     {% if record.ancillary_improvements.show %}Driveway: {{ record.ancillary_improvements.driveway|default('N/A') }}. Fencing: {{ record.ancillary_improvements.fencing|default('N/A') }}. {% if record.ancillary_improvements.other_items %}{{ record.ancillary_improvements.other_items }}{% endif %}{% else %}N/A{% endif %}
                 </p>
+                <h1 style="display:none;">Water utilisation</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Water utilisation:</span><br>
                     {{ record.ancillary_improvements.water_utilisation|default('None', true) }}
                 </p>
 <div>
+                <h1 style="display:none;">Environmental Issue</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Environmental Issue:</span><br>
                     {{ record.environmental_issues|default('During the course of our inspection, no apparent environmental issues were observed that would be expected to materially affect the value or marketability of the subject property.') }}
                 </p>
             </div>
             <div>
+                <h1 style="display:none;">General Market Overview</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">General Market Overview:</span><br>
                     {{ record.general_comments.market_overview|default('') }}
                 </p>
+                <h1 style="display:none;">Property Description</h1>
                 <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Property Description:</span><br>
                     {% if record.property_valuation.show_improvements %}
                     {{ record.general_comments.property_comments|default('') }}
@@ -1605,59 +1676,7 @@
             {% set calc_land_value = ((site_area_ha) * (record.property_valuation.total_improve_value_rate|default(0, true)))|round(0)|int %}
         {% endif %}
 
-        <div class="page">
-            {{ render_interior_header() }}
-            <h1>Table of Contents</h1>
-            <div class="gap-section-content"></div>
-            <div style="padding: 0 50px">
-                <table class="toc-table" style="width: 100%; border-collapse: collapse">
-                    <tr class="toc-main-row">
-                        <td style="text-align: left; width: 90%;">Valuation Summary</td>
-                        <td style="text-align: right; width: 10%"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Location &amp; Neighbourhood</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Site &amp; Improvements</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Market Evidence</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Improvements - Area Calculation</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Assumptions, Conditions &amp; Limitations</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Photographs</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Title Search</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Annexures</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                </table>
-            </div>
-            <div class="footer-container">
-                <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
-                <span class="page-num"></span>
-            </div>
-        </div>
-        <div class="page">
-            <h1 style="display:none;">Valuation Summary</h1>
-            <h1 style="display:none;">Location & Neighbourhood</h1>
-            <h1 style="display:none;">Site & Improvements</h1>
+                <div class="page">
             {{ render_interior_header() }}
 
             <p style="font-weight: bold; font-size: 15px; margin: 0 0 10px 0;">VALUATION REMARKS:</p>
@@ -1712,7 +1731,25 @@
             <p style="font-size: 11px; margin: 1px 0; line-height: 1.8;">
                 <strong>Valuation Date:</strong> {{ record.valuation_date|format_date|default('N/A') }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Date of Issue:</strong> {{ record.report_date|format_date|default('N/A') }}
             </p>
-            <p style="font-size: 11px; margin: 4px 0 0 0;"><strong>Valuer:</strong></p>
+                    </td>
+                </tr>
+            </table>
+            <div class="footer-container">
+                <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                <span class="page-num"></span>
+            </div>
+        </div>
+        
+        <div class="page">
+            <h1 style="display:none;">Valuation Remarks</h1>
+            {{ render_interior_header() }}
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <tr>
+                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 2px 10px 8px 0; color: #000; border: none; background: none;">
+                        Valuer:
+                    </td>
+                    <td style="width: 75%; vertical-align: top; padding: 2px 0 8px 0; color: #333; border: none; background: none;">
             {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
             <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="" style="height: 30px; width: auto; display: block; margin: 2px 0;" />
             <p style="font-size: 12px; font-weight: bold; margin: 1px 0; line-height: 1.4;">Jugal Saha</p>
