@@ -595,7 +595,7 @@
     <div style="text-align: left;">
         <img src="{{ page_logo_url }}" alt="Logo" style="height: 65px; width: auto; object-fit: contain;">
     </div>
-    <div style="text-align: right; line-height: 1.5;">
+    <div style="text-align: left; line-height: 1.5;">
         {{ record.location_details.street|default('') }} {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}<br>
         {% if logo_type == 'CPV' %}
         www.certifiedpropertyvaluer.com.au | info@certifiedpropertyvaluer.com.au
@@ -799,7 +799,7 @@
                 <div>
                     <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo" style="width: 130px; object-fit: contain;">
                 </div>
-                <div style="text-align: right; font-size: 9px; line-height: 1.5; color: #333;">
+                <div style="text-align: left; font-size: 9px; line-height: 1.5; color: #333;">
                     <strong>Alliance Australia Property Pty Ltd</strong><br>
                     ABN 35 641 373 702<br>
                     Phone: 043 1300 800 | PO Box 195 NSW 2194<br>
@@ -819,7 +819,7 @@
 
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <tr>
-                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                    <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
                         Address:
                     </td>
                     <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #000; border: none; background: none;">
@@ -829,7 +829,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                    <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                         Date of Valuation:
                     </td>
                     <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
@@ -837,7 +837,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                    <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                         Prepared for:
                     </td>
                     <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
@@ -845,7 +845,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                    <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                         Purpose of Valuation:
                     </td>
                     <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
@@ -854,7 +854,7 @@
                 </tr>
             </table>
 
-            <div style="margin-top: 12px;"></div>
+            <div style="margin-top: 12px; margin-left: 25%; padding-left: 12px;">
 
             <p style="font-size: 11px; line-height: 1.6; margin-bottom: 8px;">
                 This valuation is to determine the current market value for Stamp Duty purposes only. Please note that this report does not meet practice standards for court proceedings and mortgage purposes. It is specifically for market assessment and not suitable for no other purpose. No responsibility is accepted by any third party that may use or rely on overall or any part of the content of this valuation.
@@ -880,9 +880,11 @@
                 This valuation report is for use and may be relied upon only by the party/parties to whom it is addressed. No other parties are entitled to use or rely upon it, and the valuer does not assume any liability or responsibility to any other party who does so rely upon the valuation without the express written authority of duo tax property valuers.
             </p>
 
+            </div>
+
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <tr>
-                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                    <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                         Real Property Description:
                     </td>
                     <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
@@ -901,7 +903,7 @@
 
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <tr>
-                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                    <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                         Highest &amp; Best Use:
                     </td>
                     <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
@@ -909,7 +911,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                    <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                         Land Area:
                     </td>
                     <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
@@ -919,7 +921,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
+                    <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                         Local Authority:
                     </td>
                     <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
@@ -928,9 +930,10 @@
                 </tr>
             </table>
 
-            <div style="text-align: center; margin-top: auto; padding-top: 20px; font-size: 11px;">
-                - <span class="page-num"></span> -
-            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
         </div>
 
 <div class="page">
