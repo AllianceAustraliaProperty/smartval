@@ -812,7 +812,7 @@
             <div style="padding: 0 50px">
                 <table class="toc-table" style="width: 100%; border-collapse: collapse">
                     <tr class="toc-main-row">
-                        <td style="text-align: left; width: 90%;">Address</td>
+                        <td style="text-align: left; width: 90%;">Summary</td>
                         <td style="text-align: right; width: 10%"></td>
                     </tr>
                     <tr class="toc-main-row">
@@ -1068,10 +1068,26 @@
                     </tr>
                     <tr>
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
-                            Environmental Issue
+                            Flood
                         </td>
                         <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
-                            Flood: {{ record.property_details.flood|default('None known') }}. Bushfire: {{ record.property_details.bushfire|default('None known') }}. Rainfall: {{ record.property_details.rainfall|default('None known') }}.
+                            {{ record.property_details.flood|default('None detected') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Bushfire
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {{ record.property_details.bushfire|default('None detected') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Rainfall
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {{ record.property_details.rainfall|default('None known') }}
                         </td>
                     </tr>
                 </table>
@@ -1835,60 +1851,29 @@
                     Assumptions, Conditions & Limitations
                 </h1>
             <div style="margin-top: 5px;"></div>
-            <div class="compact-content" style="line-height: 1.2; font-size: 9.5px;">
-                <p class="bold" style="margin-bottom: 1px">Market Value</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">
-                    The valuation is made on the basis of "Market Value" as
-                    adopted by the International Valuation Standards Council
-                    definition. That is: "The estimated amount for which an
-                    asset or liability should exchange on the valuation date
-                    between a willing buyer and a willing seller in an arm's
-                    length transaction, after proper marketing and where the
-                    parties had each acted knowledgeably, prudently and without
-                    compulsion.".
-                </p>
-                <p class="bold" style="margin-bottom: 1px">Highest and Best Use</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">The use of an asset that maximises its potential and that is possible, legally permissible and financially feasible.</p>
+            <div class="compact-content" style="line-height: 1.2; font-size: 9px;">
+                <p style="margin: 0 0 6px 0;">This report has been prepared for the private and confidential use of our client for the specified purpose. It should not be reproduced in whole or part without the express written authority of our property valuers or relied upon any other party for any purpose and the valuer shall not have any liability to any party who does so. Our warning is registered here, that any party other than those specifically named in this report should obtain their own valuation before acting in any way in respect of the subject property. Where a digital copy of the report has been provided and has not been received directly from us, the report contents, especially the valuation and critical assumption should be verified by contacting the using office to ensure contents are appropriate. If this report appears to be suspicious - that the report is tampered or altered, we recommend contacting the office. This valuation should be read in its entirety, inclusive of any summary and its expiration date, 3 months from the date of valuation. The valuer and valuation firm does not accept any responsibility where part of this report has been relied upon without reference to the full context of the valuation report.</p>
+
                 <p class="bold" style="margin-bottom: 1px">Reliance and Liability Disclaimer</p>
                 <p style="margin-top: 1px; margin-bottom: 4px">This valuation is for the use of the party or parties to whom it is addressed and is not to be used for any other purposes. The report is subject to the definitions, qualifiers and disclaimers contained herein and which form part of this report. No liability or responsibility is accepted or undertaken to any third party or parties which may use or rely on the whole or any part of this report or its conclusion. No liability or responsibility is accepted or undertaken in the event that the party or parties to which it is addressed use this report for any other purpose apart from that expressly outlined.</p>
+
+                <p class="bold" style="margin-bottom: 1px">Accuracy of Information</p>
+                <p style="margin-top: 1px; margin-bottom: 4px">We advise that any objective information, data or calculations set out in the Valuation Report will be accurate so far as is reasonably expected from a qualified and experienced valuer, reflecting due skill, care and diligence. However, we have not independently verified third party information, adopted it as our own, or accepted its reliability. If any of the information provided by others and referred to in the Valuation Report is incorrect, it may have an impact on the valuation. The valuation is provided on the proviso that the reliant party accepts this risk.</p>
+
+                <p class="bold" style="margin-bottom: 1px">Environmental Issue</p>
+                <p style="margin-top: 1px; margin-bottom: 4px">No soil tests or environmental studies have been made available for the valuer's perusal. Therefore, it should be noted that the valuation is subject to there being no surface or sub-surface soil problems including instability, toxic/ hazardous wastes, toxic mould, asbestos or building material hazards in or on the property that would adversely affect, its existing or potential use or reduce its marketability. Should a problem be known or arise the valuation should be referred to the valuer for comment and review as deemed appropriate. We are not experts in this regard and if more detailed advice is required, an environmental consultant should be retained. The client acknowledges and recognizes that the Valuer is not expert in identifying environmental hazards and compliance requirements affecting properties. The Valuer has endeavoured to identify all matters of environmental concern and the effect they might have on the value of the property. However, the Valuer will not be held liable nor responsible for failure to identify all such matters of environmental concern and the impact which any environmental related issue has on the property and its value.</p>
+
+                <p class="bold" style="margin-bottom: 1px">Market Movement &amp; Report Expiry</p>
+                <p style="margin-top: 1px; margin-bottom: 4px">This valuation is current as at the date of valuation only. The value assessed herein may change significantly and unexpectedly over a relatively short period (including general market movements or factors specific to the particular property). We do not accept liability for losses arising from such subsequent changes in value. Without limiting the generality of the above comment, we do not assume any responsibility or accept any liability where this valuation is relied upon after the expiration of 90 days from the date of the valuation, or such earlier date if you become aware of any factors that have any effect on the valuation.</p>
+
                 <p class="bold" style="margin-bottom: 1px">Reproduction and Conflict of Interest</p>
                 <p style="margin-top: 1px; margin-bottom: 4px">No part of this valuation or any reference to it may be included in any other document or reproduced or published in any way without written approval of the form and context in which it is to appear. Only a signed original of this valuation should be relied upon and no responsibility will be accepted for photocopies of the report or signatures to the report. The Valuer nor, to the best of my knowledge, any member of this firm, has any conflict of interest; direct, indirect or financial interest pecuniary or otherwise in the said property that is not disclosed herein.</p>
-                <p class="bold" style="margin-bottom: 1px">Market Movement &amp; Report Expiry</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">This valuation is current as at the date of valuation only. The value assessed herein may change significantly and unexpectedly over a relatively short period (including as a result of general market movements or factors specific to the particular property). We do not accept liability for losses arising from such subsequent changes in value. Without limiting the generality of the above comment, we do not assume any responsibility or accept any liability where this valuation is relied upon after the expiration of 90 days from the date of the valuation, or such earlier date if you become aware of any factors that have any effect on the valuation.</p>
-                <p class="bold" style="margin-bottom: 1px">Strata Unit</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">Unless specifically stated, where the valuation relates to a Strata Titled property, all parties should be aware that the market value is assessed without knowledge of orders against the Strata Company and without the benefit of a search of the Strata Company's records, particularly relating to reserve funds. All parties should make their own enquiries in relation to this matter.</p>
-                <p class="bold" style="margin-bottom: 1px">Environmental</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">No soil tests or environmental studies have been made available for the valuer's perusal. Therefore, it should be noted that the valuation is subject to there being no surface or sub-surface soil problems including instability, toxic/ hazardous wastes, toxic mould, asbestos or building material hazards in or on the property that would adversely affect, its existing or potential use or reduce its marketability. Should a problem be known or arise the valuation should be referred to the valuer for comment and review as deemed appropriate. We are not experts in this regard and if more detailed advice is required, an environmental consultant should be retained. The client acknowledges and recognizes that the Valuer is not expert in identifying environmental hazards and compliance requirements affecting properties. The Valuer has endeavoured to identify all matters of environmental concern and the effect they might have on the value of the property. However, the Valuer will not be held liable nor responsible for his/her failure to identify all such matters of environmental concern and the impact which any environmental related issue has on the property and its value.</p>
-            </div>
-            <div class="footer-container">
-                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
-                    <span class="page-num"></span>
-                </div>
-        </div>
-        <div class="page">
-            {{ render_interior_header() }}
-            <h1>
-                    Assumptions, Conditions & Limitations
-                    (cont'd)
-                </h1>
-            <div style="margin-top: 5px;"></div>
-            <div class="compact-content" style="line-height: 1.2; font-size: 9.5px;">
-                <p class="bold" style="margin-bottom: 1px">Title Search</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">Unless stated as otherwise in this report we advise that a copy of the current Certificate of Title has not been provided or searched. This valuation assumes clear title. Should any encumbrances, easements, leases or other restrictions not mentioned in this report be known or discovered then the valuation should be referred to the Valuer for comment.</p>
-                <p class="bold" style="margin-bottom: 1px">Retrospective Assessment</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">For retrospective valuations where the valuer does not have access to conduct an internal inspection, we will proceed on the basis of an external/desktop assessment. The information and photographs of the subject property including condition and presentation will be sourced from a combination but not limited to our internal database, online property searches, local agent, our clients and government resources. Should the information noted in our report be revealed inaccurate/incorrect at a future date, we reserve the right to amend our valuation report.</p>
-                <p class="bold" style="margin-bottom: 1px">Court Proceedings</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">It is noted that our Valuation Report is not suitable for Court Purposes. This report should not be used for litigation proceedings and does not meet the criteria of Property Disputes, Expert Witness and/or Family Court Matters.</p>
-                <p class="bold" style="margin-bottom: 1px">Building and Construction</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">This valuation inspection and report does not constitute a structural survey and is not intended as such. We have carried out an inspection only of the exposed and readily accessible areas of the improvements. The Valuer is not a building construction or structural expert and is therefore unable to certify the structural soundness of the improvements. Readers of this report should make their own enquiries. This valuation has been based on the condition of the structural improvements and the apparent defects as at the inspection date, and if the property has to be sold in circumstances where its condition has deteriorated and/or essential fixtures/fixtures may require attention, there is likely to be a significant write down in the asset value when compared to the current assessment. Under these circumstances the valuer will not be responsible for any reduction in value.</p>
-                <p class="bold" style="margin-bottom: 1px">Environmental, Social, and Corporate Governance</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">ESG considers and prioritises Environmental, Social, and Corporate Governance aspects when assessing a property. Our valuation has considered readily apparent ESG aspects that are relevant to the market segment and property type. Prospective purchasers/owners in this segment are generally not impacted by governance policies and any consideration to environmental and social aspects are usually outweighed by personal and/or financial considerations such as location/lifestyle or return on investment. Any observations or comments made in relation to aspects of ESG are provided in our capacity as a Valuer only and where further advice or information is required, an appropriately qualified advisor should be engaged.</p>
-                <p class="bold" style="margin-bottom: 1px">High Rise Developments</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">The Valuer is not an expert in building materials and has not attempted to determine the existence of ACP or EPS cladding systems (or similar) is present in a building/development from a visual inspection alone. The Valuer is not expected to make any enquiries into whether ACP or EPS cladding (or similar) has been used is compliant and/or non-compliant or conforming. If you (lender/requestor/LMI) suspects or your enquiries confirm there are non-compliant/non-conforming materials used, you are required to engage an expert in building materials.</p>
-                <p class="bold" style="margin-bottom: 1px">Method of Valuation Approach Used</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">In arriving at our opinion of market value, we have used the Market Approach (Direct Comparison) – As per the current International Valuation Standards (IVS), the market approach provides an indication of value by comparing the asset with identical or comparable (that is similar) assets for which price information is available. (IVS 103 p33 s20)</p>
-                <p class="bold" style="margin-bottom: 1px">Sales Evidence</p>
-                <p style="margin-top: 1px; margin-bottom: 4px">The attributes i.e. bedrooms/bathrooms of the sales evidence included in our report are recorded in available sales databases. As we have not physically inspected the interior of the sales evidence we cannot certify the accuracy of the information.</p>
+
+                <p class="bold" style="margin-bottom: 1px">Encroachments</p>
+                <p style="margin-top: 1px; margin-bottom: 4px">We have physically identified the boundaries upon inspection and there do not appear to be any encroachments. However, we are not surveyors, and no warranty can be given without the benefit of an identification survey.</p>
+
+                <p class="bold" style="margin-bottom: 1px">Land not Affected</p>
+                <p style="margin-top: 1px; margin-bottom: 4px">Unless identified within the body of this report, we assume, the land is not affected by unstable, hazardous, or toxic soil material; however, no professional expert advice has been sought in this regard. This valuation assumes that there are no problems, however, should any such issues arise; then this should be referred to the Valuer for further comment.</p>
             </div>
             <div class="footer-container">
                     <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
