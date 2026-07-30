@@ -1063,8 +1063,8 @@
 
                 <h1 style="font-weight: bold; font-size: 14px; margin: 3px 0 6px 0; color: #000;">Land Description</h1>
                 {% if record.site_details.map_photo and record.site_details.map_photo.base %}
-                <div style="text-align: center; margin: 0 0 15px 0;">
-                    <img src="{{ record.site_details.map_photo.base }}" alt="Land Description" style="width: 100%; max-width: 520px; max-height: 280px; height: auto; object-fit: contain; border: 1px solid #ccc;">
+                <div style="width: 75%; margin-left: 25%; margin-bottom: 15px; box-sizing: border-box;">
+                    <img src="{{ record.site_details.map_photo.base }}" alt="Land Description" style="display: block; width: 100%; max-height: 280px; height: auto; object-fit: contain; border: 1px solid #ccc; margin: 0; padding: 0;">
                 </div>
                 {% endif %}
 
@@ -1107,49 +1107,109 @@
         <div class="page">
             {{ render_interior_header() }}
             <div>
-                <h1 style="display:none;">Improvements</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Improvements:</span><br>
-                    Built about {{ record.property_details.build_year or 'N/A' }}
-                    Foundations: Brick
-                    Floor: {{ record.photos_summary.floorings|join(', ')|default('Tile/Concrete/Timber/Carpet flooring') }}
-                    External/Internal walls: {{ record.property_descriptors.external_walls|default('N/A') }} / {{ record.property_descriptors.internal_walls|default('N/A') }}
-                    Windows: Aluminium-framed
-                    Roof: {{ record.property_descriptors.roofing_type|default('Metal') }}
-                    
-                    Floor area:
-                    Living area {% if record.property_details.living_area %}approximately {{ record.property_details.living_area }} sqm{% else %}N/A{% endif %}
-                    
-                    Accommodation:
-                    {{ record.property_details.accommodation|default('N/A') }}
+                <h1 style="font-weight: bold; font-size: 15px; margin: 0 0 10px 0; color: #000;">Location Details</h1>
+                <p style="font-size: 12px; line-height: 1.6; margin: 0 0 12px 0; color: #333;">
+                    The general location of the subject property is indicated on the map below.
                 </p>
-                <h1 style="display:none;">Condition / Repairs</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Condition/Repairs:</span><br>
-                    Internal Condition: {{ record.property_descriptors.internal_condition|default('N/A') }}. External Condition: {{ record.property_descriptors.external_condition|default('N/A') }}. {% if record.property_descriptors.repairs_requirements and record.property_descriptors.repairs_requirements != 'N/A' %}Essential Repairs: {{ record.property_descriptors.repairs_requirements }}. {% endif %}{% if record.property_descriptors.defects and record.property_descriptors.defects != 'N/A' %}Repair Comments: {{ record.property_descriptors.defects }}.{% endif %} The residence generally has mixed-age PC items of basic quality in average condition.
+                {% if record.location_details.latitude and record.location_details.longitude %}
+                <div style="width: 75%; margin-left: 25%; margin-bottom: 18px; box-sizing: border-box;">
+                    <img src="https://maps.googleapis.com/maps/api/staticmap?center={{ record.location_details.latitude }},{{ record.location_details.longitude }}&zoom=15&size=800x400&maptype=hybrid&markers=color:red%7Clabel:A%7C{{ record.location_details.latitude }},{{ record.location_details.longitude }}&key={{ maps_api_key }}" alt="Location Map" style="display: block; width: 100%; max-height: 280px; height: auto; object-fit: contain; border: 1px solid #ccc; margin: 0; padding: 0;">
+                </div>
+                {% endif %}
+
+                <table style="width: 100%; border-collapse: collapse; background: #f3f0f7; font-size: 12px; margin-bottom: 18px; border-top: 1px solid #aaa; border-bottom: 1px solid #aaa;">
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 8px 12px 8px 8px; color: #000;">
+                            Services
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 8px 8px; color: #333;">
+                            The following major services are connected: {% if record.site_details.services %}{{ record.site_details.services }}{% else %}rural electricity, telecommunications, on-site rainwater storage and on-site septic disposal. Reticulated town water, sewerage and gas services are not generally available in this rural locality.{% endif %}
+                        </td>
+                    </tr>
+                </table>
+
+                <h1 style="font-weight: bold; font-size: 15px; margin: 18px 0 8px 0; color: #1a2a5e;">Improvements</h1>
+
+                <h1 style="display:none;">General Description</h1>
+                <p style="margin: 0 0 14px 0; font-size: 12px; line-height: 1.6; color: #333;">
+                    Erected on the property is a {{ record.property_details.building_type|default('residence')|lower }} of approximately {{ record.property_details.living_area|default('N/A') }} sqm internal living area.
+                    {% if record.property_details.accommodation %}{{ record.property_details.accommodation }}.{% endif %}
+                    The improvements are estimated to have been constructed about {{ record.property_details.build_year|default('N/A') }}.
                 </p>
-                <h1 style="display:none;">Ancillary Improvements</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Ancillary Improvements:</span><br>
-                    {% if record.ancillary_improvements.show %}Driveway: {{ record.ancillary_improvements.driveway|default('N/A') }}. Fencing: {{ record.ancillary_improvements.fencing|default('N/A') }}. {% if record.ancillary_improvements.other_items %}{{ record.ancillary_improvements.other_items }}{% endif %}{% else %}N/A{% endif %}
+
+                <h1 style="display:none;">Floor Areas</h1>
+                <p style="margin: 0 0 14px 0; font-size: 12px; line-height: 1.6; color: #333;">
+                    <span style="font-weight: bold; color: #000;">Floor Areas.</span> The following floor areas are based on building plans and our own onsite measurements. These measurements are approximate and subject to confirmation by survey.
+                    {% if record.property_details.living_area %}Living area approximately {{ record.property_details.living_area }} sqm.{% endif %}
                 </p>
-                <h1 style="display:none;">Water Utilisation</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Water utilisation:</span><br>
-                    {{ record.ancillary_improvements.water_utilisation|default('None', true) }}
-                </p>
-                <h1 style="display:none;">Environmental Issue</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Environmental Issue:</span><br>
-                    {{ record.environmental_issues|default('During the course of our inspection, no apparent environmental issues were observed that would be expected to materially affect the value or marketability of the subject property.') }}
-                </p>
-                <h1 style="display:none;">General Market Overview</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">General Market Overview:</span><br>
-                    {{ record.general_comments.market_overview|default('') }}
-                </p>
-                <h1 style="display:none;">Property Description</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Property Description:</span><br>
-                    {% if record.property_valuation.show_improvements %}
-                    {{ record.general_comments.property_comments|default('') }}
-                    {% else %}
-                    {{ record.general_comments.property_description|default('') }}
-                    {% endif %}
-                </p>
+
+                <h1 style="display:none;">Building Details</h1>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; background: none;">
+                            Foundations
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; background: none;">
+                            Brick
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border-bottom: 1px solid #ddd; background: none;">
+                            Floor
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-bottom: 1px solid #ddd; background: none;">
+                            {{ record.photos_summary.floorings|join(', ')|default('Tile/Concrete/Timber/Carpet flooring') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border-bottom: 1px solid #ddd; background: none;">
+                            External walls
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-bottom: 1px solid #ddd; background: none;">
+                            {{ record.property_descriptors.external_walls|default('N/A') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border-bottom: 1px solid #ddd; background: none;">
+                            Internal walls
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-bottom: 1px solid #ddd; background: none;">
+                            {{ record.property_descriptors.internal_walls|default('N/A') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border-bottom: 1px solid #ddd; background: none;">
+                            Ceilings
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-bottom: 1px solid #ddd; background: none;">
+                            Plasterboard
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border-bottom: 1px solid #ddd; background: none;">
+                            Windows
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-bottom: 1px solid #ddd; background: none;">
+                            Aluminium-framed
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border-bottom: 1px solid #ddd; background: none;">
+                            Roof
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-bottom: 1px solid #ddd; background: none;">
+                            {{ record.property_descriptors.roofing_type|default('Metal') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border-bottom: 1px solid #ddd; background: none;">
+                            Floor coverings
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-bottom: 1px solid #ddd; background: none;">
+                            {{ record.photos_summary.floorings|join(', ')|default('Tile/Concrete/Timber/Carpet flooring') }}
+                        </td>
+                    </tr>
+                </table>
             </div>
             {% if '2 hectare exemption' in
             (record.valuation_type|default('')|lower) %}
