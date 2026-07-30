@@ -907,6 +907,8 @@
             <h1 style="display:none;">Address</h1>
             {{ render_interior_header() }}
 
+            <h1 style="font-weight: bold; font-size: 15px; margin: 0 0 12px 0; color: #000;">Summary</h1>
+
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <tr>
                     <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
@@ -947,7 +949,7 @@
             <div style="margin-top: 12px; margin-left: 25%;">
 
             <p style="font-size: 11px; line-height: 1.6; margin-bottom: 8px;">
-                This valuation is to determine the current market value for Stamp Duty purposes only. Please note that this report does not meet practice standards for court proceedings and mortgage purposes. It is specifically for market assessment and not suitable for no other purpose. No responsibility is accepted by any third party that may use or rely on overall or any part of the content of this valuation.
+                This valuation is to determine the current market value for specific purposes only. Please note that this report does not meet practice standards for court proceedings and mortgage purposes. It is specifically for {{ record.purpose_of_report|default('Market Assessment') }} and not suitable for any other purpose. No responsibility is accepted by any third party that may use or rely on overall or any part of the content of this valuation.
             </p>
 
             <p style="font-size: 11px; line-height: 1.6; margin-bottom: 8px;">
@@ -1117,12 +1119,12 @@
                 </div>
                 {% endif %}
 
-                <table style="width: 100%; border-collapse: collapse; background: #f3f0f7; font-size: 12px; margin-bottom: 18px; border-top: 1px solid #aaa; border-bottom: 1px solid #aaa;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 18px;">
                     <tr>
-                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 8px 12px 8px 8px; color: #000;">
+                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
                             Services
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 8px 8px; color: #333;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
                             The following major services are connected: {% if record.site_details.services %}{{ record.site_details.services }}{% else %}rural electricity, telecommunications, on-site rainwater storage and on-site septic disposal. Reticulated town water, sewerage and gas services are not generally available in this rural locality.{% endif %}
                         </td>
                     </tr>
