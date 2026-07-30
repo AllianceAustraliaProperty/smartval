@@ -720,7 +720,7 @@
                     </tr>
                     <tr>
                         <td colspan="2" style="padding-top: 5px; font-size: 12px; line-height: 1.5; background: none; color: #333;">
-                            <strong style="font-size: 13px;">{{ record.property_details.property_type|default('Rural Residential')|title }}</strong><br>
+                            <strong style="font-size: 13px;">{{ default('Rural Residential') }}</strong><br>
                             {{ record.location_details.street|default('') }} {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}<br>
                             <strong>Instructed by</strong><br>
                             {{ record.primary_contact.first_name|default('') }} {{ record.primary_contact.last_name|default('') }}<br>
@@ -740,7 +740,7 @@
             <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                 <tr>
                     <td style="width: 30%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Property Type</td>
-                    <td style="width: 70%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.property_details.property_type|default('Rural Residential')|title }}</td>
+                    <td style="width: 70%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ default('Rural Residential') }}</td>
                 </tr>
                 <tr>
                     <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Council Area</td>
@@ -772,7 +772,6 @@
                         {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
                         JUGAL SAHA, Property Valuer, AAPI, CPV<br>
                         Certified Practicing Valuer 101474<br>
-                        QVRB no: 5429MR
                         {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
                         PETER LEE, Certified Practicing Valuer<br>
                         AAPI CPV 70919
@@ -1055,7 +1054,7 @@
                             Ancillary Improvements
                         </td>
                         <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
-                            Driveway: {{ record.ancillary_improvements.driveway|default('Gravel') }}. Fencing: {{ record.ancillary_improvements.fencing|default('') }}.
+                            Driveway: {{ record.ancillary_improvements.driveway|default('Gravel') }}.
                         </td>
                     </tr>
                     <tr>
@@ -1811,8 +1810,6 @@
             <p style="font-size: 12px; font-weight: bold; margin: 1px 0; line-height: 1.4;">Jugal Saha</p>
             <p style="font-size: 11px; margin: 0; line-height: 1.4; color: #333;">
                 (Property Valuer) AAPI CPV 101474<br>
-                {% if record.location_details.state == 'WA' %}WA Licence Number - LV45321
-                {% else %}QVRB no: 5429MR{% endif %}
             </p>
             {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
             <img src="https://valai.duo.tax/assets/peter-signature.png" alt="" style="height: 30px; width: auto; display: block; margin: 2px 0;" />
