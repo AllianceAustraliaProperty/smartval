@@ -811,38 +811,16 @@
             <div class="gap-section-content"></div>
             <div style="padding: 0 50px">
                 <table class="toc-table" style="width: 100%; border-collapse: collapse">
-                    
-                    
                     <tr class="toc-main-row">
-                        <td style="text-align: left">Address</td>
+                        <td style="text-align: left; width: 90%;">Address</td>
+                        <td style="text-align: right; width: 10%"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Land Description</td>
                         <td style="text-align: right"></td>
                     </tr>
                     <tr class="toc-main-row">
-                        <td style="text-align: left">Location</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Neighbourhood</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Town Planning</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Services</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Topography</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Site Description</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Improvements</td>
+                        <td style="text-align: left">Property Description</td>
                         <td style="text-align: right"></td>
                     </tr>
                     <tr class="toc-main-row">
@@ -862,11 +840,11 @@
                         <td style="text-align: right"></td>
                     </tr>
                     <tr class="toc-main-row">
-                        <td style="text-align: left">General Market Overview</td>
+                        <td style="text-align: left">Location Details</td>
                         <td style="text-align: right"></td>
                     </tr>
                     <tr class="toc-main-row">
-                        <td style="text-align: left">Property Description</td>
+                        <td style="text-align: left">Improvements</td>
                         <td style="text-align: right"></td>
                     </tr>
                     <tr class="toc-main-row">
@@ -887,11 +865,11 @@
                         <td style="text-align: left">Assumptions, Conditions &amp; Limitations</td>
                         <td style="text-align: right"></td>
                     </tr>
-                                        <tr class="toc-main-row">
+                    <tr class="toc-main-row">
                         <td style="text-align: left">Photographs</td>
                         <td style="text-align: right"></td>
                     </tr>
-                                        <tr class="toc-main-row">
+                    <tr class="toc-main-row">
                         <td style="text-align: left">Annexures</td>
                         <td style="text-align: right"></td>
                     </tr>
@@ -1028,50 +1006,34 @@
                 </div>
         </div>
 
-        <div class="page">
+        <div class="page" style="height: auto; min-height: 297.35mm; overflow: visible;">
             {{ render_interior_header() }}
             <div>
-                <h1 style="display:none;">Locality</h1>
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
-                    <tr>
-                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
-                            Locality
-                        </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
-                            {{ record.location_details.suburb_description|default('') }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
-                            Surrounding Development
-                        </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
-                            {% if record.location_details.surrounding_development %}
-                                {{ record.location_details.surrounding_development }}
-                            {% else %}
-                                The subject property is located in a well-established rural locality, comprising predominantly dwellings of varying age and style of complementary nature. Surrounding development includes agricultural holdings, rural-residential dwellings and open pasture land consistent with the zoning of the area.
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
-                            Infrastructure
-                        </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
-                            The property is located close to arterial roads and local services appropriate to the rural locality.
-                        </td>
-                    </tr>
-                </table>
 
                 <h1 style="font-weight: bold; font-size: 14px; margin: 3px 0 6px 0; color: #000;">Land Description</h1>
                 {% if record.site_details.map_photo and record.site_details.map_photo.base %}
                 <div style="width: 75%; margin-left: 25%; margin-bottom: 15px; box-sizing: border-box;">
-                    <img src="{{ record.site_details.map_photo.base }}" alt="Land Description" style="display: block; width: 100%; max-height: 280px; height: auto; object-fit: contain; border: 1px solid #ccc; margin: 0; padding: 0;">
+                    <img src="{{ record.site_details.map_photo.base }}" alt="Land Description" style="display: block; width: 100%; height: 280px; object-fit: cover; border: 1px solid #ccc; margin: 0; padding: 0;">
                 </div>
                 {% endif %}
 
-                <h1 style="display:none;">Area</h1>
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Topography
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {{ record.property_details.topography|default('Topographically, the allotment is generally undulating to moderately sloping in contour, which is typical of the surrounding rural landscape.') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Town Planning
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {{ record.property_details.town_planning|default('N/A') }}
+                        </td>
+                    </tr>
                     <tr>
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Area
@@ -1090,15 +1052,32 @@
                             {% if record.location_details.street_only %}frontage to {{ record.location_details.street_only }}{% else %}frontage to {{ record.location_details.street|default('the subject road') }}{% endif %}. A{{ 'n' if record.property_details.land_shape|lower|default('N/A')|first in 'aeiou' else '' }} {{ record.property_details.land_shape|lower|default('irregular') }} shaped land parcel.
                         </td>
                     </tr>
-                    <tr>
-                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
-                            Topography
-                        </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
-                            {{ record.property_details.topography|default('Topographically, the allotment is generally undulating to moderately sloping in contour, which is typical of the surrounding rural landscape.') }}
-                        </td>
-                    </tr>
                 </table>
+                <br>
+                <div style="margin: 0 0 14px 0; font-size: 12px; line-height: 1.6; color: #333;">
+                    <h3 style="display: inline; margin: 0; padding: 0; font-size: 12px; font-weight: bold; color: #000; text-decoration: underline;">Property Description:</h3><br><br>
+                    {{ record.general_comments.property_description|default('N/A') }}
+                </div>
+
+                <div style="margin: 0 0 14px 0; font-size: 12px; line-height: 1.6; color: #333;">
+                    <h3 style="display: inline; margin: 0; padding: 0; font-size: 12px; font-weight: bold; color: #000; text-decoration: underline;">Condition/Repairs:</h3><br><br>
+                    Internal Condition: {{ record.property_descriptors.internal_condition|default('Good') }}. External Condition: {{ record.property_descriptors.external_condition|default('Good') }}. Essential Repairs: {{ record.property_descriptors.repairs_requirements|default('None') }}. {{ record.general_comments.property_comments|default('The residence generally has mixed-age PC items of basic quality in average condition.') }}
+                </div>
+
+                <div style="margin: 0 0 14px 0; font-size: 12px; line-height: 1.6; color: #333;">
+                    <h3 style="display: inline; margin: 0; padding: 0; font-size: 12px; font-weight: bold; color: #000; text-decoration: underline;">Ancillary Improvements:</h3><br><br>
+                    Driveway: {{ record.ancillary_improvements.driveway|default('Gravel') }}. Fencing: {{ record.ancillary_improvements.fencing|default('') }}.
+                </div>
+
+                <div style="margin: 0 0 14px 0; font-size: 12px; line-height: 1.6; color: #333;">
+                    <h3 style="display: inline; margin: 0; padding: 0; font-size: 12px; font-weight: bold; color: #000; text-decoration: underline;">Water utilisation:</h3><br><br>
+                    {{ record.ancillary_improvements.water_utilisation|default('None') }}
+                </div>
+
+                <div style="margin: 0 0 14px 0; font-size: 12px; line-height: 1.6; color: #333;">
+                    <h3 style="display: inline; margin: 0; padding: 0; font-size: 12px; font-weight: bold; color: #000; text-decoration: underline;">Environmental Issue:</h3><br><br>
+                    Flood: {{ record.property_details.flood|default('None known') }}. Bushfire: {{ record.property_details.bushfire|default('None known') }}. Rainfall: {{ record.property_details.rainfall|default('None known') }}.
+                </div>
             </div>
             <div class="footer-container">
                 <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
@@ -1106,29 +1085,32 @@
             </div>
         </div>
 
-        <div class="page">
+        <div class="page" style="height: auto; min-height: 297.35mm; overflow: visible;">
             {{ render_interior_header() }}
             <div>
                 <h1 style="font-weight: bold; font-size: 15px; margin: 0 0 10px 0; color: #000;">Location Details</h1>
                 <p style="font-size: 12px; line-height: 1.6; margin: 0 0 12px 0; color: #333;">
                     The general location of the subject property is indicated on the map below.
                 </p>
+
                 {% if record.location_details.latitude and record.location_details.longitude %}
                 <div style="width: 75%; margin-left: 25%; margin-bottom: 18px; box-sizing: border-box;">
-                    <img src="https://maps.googleapis.com/maps/api/staticmap?center={{ record.location_details.latitude }},{{ record.location_details.longitude }}&zoom=15&size=800x400&maptype=hybrid&markers=color:red%7Clabel:A%7C{{ record.location_details.latitude }},{{ record.location_details.longitude }}&key={{ maps_api_key }}" alt="Location Map" style="display: block; width: 100%; max-height: 280px; height: auto; object-fit: contain; border: 1px solid #ccc; margin: 0; padding: 0;">
+                    <img src="https://maps.googleapis.com/maps/api/staticmap?center={{ record.location_details.latitude }},{{ record.location_details.longitude }}&zoom=15&size=800x400&maptype=hybrid&markers=color:red%7Clabel:A%7C{{ record.location_details.latitude }},{{ record.location_details.longitude }}&key={{ maps_api_key }}" alt="Location Map" style="display: block; width: 100%; height: 280px; object-fit: cover; border: 1px solid #ccc; margin: 0; padding: 0;">
                 </div>
                 {% endif %}
 
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 18px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
                     <tr>
-                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none;">
-                            Services
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Locality
                         </td>
                         <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
-                            The following major services are connected: {% if record.site_details.services %}{{ record.site_details.services }}{% else %}rural electricity, telecommunications, on-site rainwater storage and on-site septic disposal. Reticulated town water, sewerage and gas services are not generally available in this rural locality.{% endif %}
+                            {{ record.location_details.suburb_description|default('') }}
                         </td>
                     </tr>
                 </table>
+
+
 
                 <h1 style="font-weight: bold; font-size: 15px; margin: 18px 0 8px 0; color: #1a2a5e;">Improvements</h1>
 
@@ -1203,14 +1185,7 @@
                             {{ record.property_descriptors.roofing_type|default('Metal') }}
                         </td>
                     </tr>
-                    <tr>
-                        <td style="width: 25%; font-weight: bold; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border-bottom: 1px solid #ddd; background: none;">
-                            Floor coverings
-                        </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-bottom: 1px solid #ddd; background: none;">
-                            {{ record.photos_summary.floorings|join(', ')|default('Tile/Concrete/Timber/Carpet flooring') }}
-                        </td>
-                    </tr>
+
                 </table>
             </div>
             {% if '2 hectare exemption' in
