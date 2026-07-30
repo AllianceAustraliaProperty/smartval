@@ -815,10 +815,6 @@
                         <td style="text-align: right; width: 10%"></td>
                     </tr>
                     <tr class="toc-main-row">
-                        <td style="text-align: left">Land Description</td>
-                        <td style="text-align: right"></td>
-                    </tr>
-                    <tr class="toc-main-row">
                         <td style="text-align: left">Property Description</td>
                         <td style="text-align: right"></td>
                     </tr>
@@ -2025,11 +2021,13 @@
                 // mapping removed — hidden h1 matches directly
                 if (cleanName === "income assessment") cleanName = "income statement";
 
+                if (cleanName === "condition/repairs") cleanName = "conditions/repairs";
+
                 if (cleanName === "environmental issues") cleanName = "environmental statement";
                 if (cleanName === "annexure") cleanName = "annexures";
 
-                // Find all possible headings/banners in the document
-                const candidates = document.querySelectorAll('.banner, h1, h2, h3, h4, .subtitle, .subtitle-lg');
+                // Find all possible headings/banners in the document, as well as td and p tags for inline sections
+                const candidates = document.querySelectorAll('.banner, h1, h2, h3, h4, .subtitle, .subtitle-lg, td, p');
                 
                 let targetElement = null;
                 for (let el of candidates) {
@@ -2041,10 +2039,12 @@
                     // Normalize whitespace around slashes and colons for matching
                     elText = elText.replace(/\s*\/\s*/g, '/').replace(/:$/, '');
                     
-                    // Allow partial match for long enough strings
-                    if (elText === cleanName || 
-                       (elText.includes(cleanName) && cleanName.length > 5) || 
-                       (cleanName.includes(elText) && elText.length > 5)) {
+                    let isExact = (elText === cleanName);
+                    let isPartial = (elText.includes(cleanName) && cleanName.length > 5) || 
+                                    (cleanName.includes(elText) && elText.length > 5);
+
+                    // For td and p elements, require an exact match to avoid false positives in body text
+                    if (isExact || (isPartial && el.tagName !== 'P' && el.tagName !== 'TD')) {
                         targetElement = el;
                         break;
                     }
