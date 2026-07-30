@@ -1036,16 +1036,6 @@
                     </tr>
                     <tr>
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
-                            Area
-                        </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
-                            {% if record.property_details.site_area %}
-                                Approximately {{ (record.property_details.site_area / 10000)|round(2) }} Hectares or {{ '{:,}'.format(record.property_details.site_area|round(0)|int) }} sqm
-                            {% else %}N/A{% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Frontage &amp; Depth
                         </td>
                         <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
@@ -1843,9 +1833,6 @@
 
             <!-- Map photo full width below signature -->
             {% if record.site_details.map_photo and record.site_details.map_photo.base %}
-            <div style="margin-top: 12px;">
-                <img src="{{ record.site_details.map_photo.base }}" alt="Location Map" style="width: 100%; max-width: 300px; max-height: 200px; height: auto; object-fit: cover; border: 1px solid #ccc;">
-            </div>
             {% endif %}
                     </td>
                 </tr>
