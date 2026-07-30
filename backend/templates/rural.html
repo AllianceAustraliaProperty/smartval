@@ -704,18 +704,115 @@
 
         <div class="page">
             {{ render_interior_header() }}
+            <h1>Report Overview</h1>
+                        <!-- Property Image -->
+            <div style="margin-bottom: 15px;">
+                {% if record.cover_photo and record.cover_photo.base %}
+                <img src="{{ record.cover_photo.base }}" alt="Property Photo" style="width: 100%; height: 350px; object-fit: cover; border: 1px solid #ddd;">
+                {% endif %}
+            </div>
+            
+            <!-- Instructions -->
+            <div style="margin-bottom: 15px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td colspan="2" style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; background: none; color: #333;">Instructions:</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding-top: 5px; font-size: 12px; line-height: 1.5; background: none; color: #333;">
+                            <strong style="font-size: 13px;">{{ record.property_details.property_type|default('Rural Residential')|title }}</strong><br>
+                            {{ record.location_details.street|default('') }} {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}<br>
+                            <strong>Instructed by</strong><br>
+                            {{ record.primary_contact.first_name|default('') }} {{ record.primary_contact.last_name|default('') }}<br>
+                            <strong>Interest Valued:</strong> {{ record.property_details.tenure|default('Freehold interest with vacant possession') }}<br>
+                            <strong>Purpose of Valuation:</strong> {{ record.purpose_of_report|default('N/A') }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Valuation Summary Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                <tr>
+                    <td colspan="2" style="font-size: 12px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; background: none; color: #333; padding-top: 8px;">Valuation Summary</td>
+                </tr>
+            </table>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <tr>
+                    <td style="width: 30%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Property Type</td>
+                    <td style="width: 70%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.property_details.property_type|default('Rural Residential')|title }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Council Area</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.town_planning.local_government_area|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Zoning</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.town_planning.zoning|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Legal Description</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.property_details.title_reference|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Date of Valuation</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.valuation_date|format_date|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Issue Date</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.report_date|format_date|default('N/A') }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Valuation</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; font-weight: 700; color: #333;">{{ record.property_valuation.market_value|format_currency|default('N/A') }} ({{ record.property_valuation.market_value|format_currency_words|default('N/A') }})</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700; vertical-align: top;">Prepared by</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">
+                        {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
+                        JUGAL SAHA, Property Valuer, AAPI, CPV<br>
+                        Certified Practicing Valuer 101474<br>
+                        QVRB no: 5429MR
+                        {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
+                        PETER LEE, Certified Practicing Valuer<br>
+                        AAPI CPV 70919
+                        {% elif sf_record.PropertyValuer__r.Name == 'Edward Aoun' %}
+                        EDWARD AOUN, AVI CPV (Certified Property Valuer 20231)<br>
+                        API RPV 111395
+                        {% elif sf_record.PropertyValuer__r.Name == 'Timothy Jang' %}
+                        TIMOTHY JANG, Certified Practicing Valuer<br>
+                        AAPI CPV 102377
+                        {% elif sf_record.PropertyValuer__r.Name == 'Martin Lam' %}
+                        MARTIN LAM, Certified Practicing Valuer<br>
+                        AAPI CPV 102146
+                        {% else %}
+                        {{ sf_record.PropertyValuer__r.Name|default('N/A') }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+
+            <!-- API Logo at bottom -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 10px;">
+                <div>
+                    <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo" style="width: 130px; object-fit: contain;">
+                </div>
+
+            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
+        </div>
+
+        <div class="page">
+            {{ render_interior_header() }}
             <h1>Table of Contents</h1>
             <div class="gap-section-content"></div>
             <div style="padding: 0 50px">
                 <table class="toc-table" style="width: 100%; border-collapse: collapse">
-                    <tr class="toc-main-row">
-                        <td style="text-align: left; width: 90%;">Instructions</td>
-                        <td style="text-align: right; width: 10%"></td>
-                    </tr>
-                    <tr class="toc-main-row">
-                        <td style="text-align: left">Valuation Summary</td>
-                        <td style="text-align: right"></td>
-                    </tr>
+                    
+                    
                     <tr class="toc-main-row">
                         <td style="text-align: left">Address</td>
                         <td style="text-align: right"></td>
@@ -805,111 +902,6 @@
                 <span class="page-num"></span>
             </div>
         </div>
-        <div class="page">
-            {{ render_interior_header() }}
-
-            <h1 style="display:none;">Instructions</h1>
-            <h1 style="display:none;">Valuation Summary</h1>
-            <!-- Property Image + Instructions side by side -->
-            <div style="display: flex; gap: 20px; margin-bottom: 5px;">
-                <div style="width: 45%;">
-                    {% if record.cover_photo and record.cover_photo.base %}
-                    <img src="{{ record.cover_photo.base }}" alt="Property Photo" style="width: 100%; height: 230px; object-fit: cover; border: 1px solid #ddd;">
-                    {% endif %}
-                </div>
-                <div style="width: 55%;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td colspan="2" style="font-size: 12px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; background: none; color: #333;">Instructions:</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" style="padding-top: 5px; font-size: 12px; line-height: 1.5; background: none; color: #333;">
-                                <strong style="font-size: 13px;">{{ record.property_details.property_type|default('Rural Residential')|title }}</strong><br>
-                                {{ record.location_details.street|default('') }} {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}<br>
-                                <strong>Instructed by</strong><br>
-                                {{ record.primary_contact.first_name|default('') }} {{ record.primary_contact.last_name|default('') }}<br>
-                                <strong>Interest Valued:</strong> {{ record.property_details.tenure|default('Freehold interest with vacant possession') }}<br>
-                                <strong>Purpose of Valuation:</strong> {{ record.purpose_of_report|default('N/A') }}
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Valuation Summary Table -->
-            <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
-                <tr>
-                    <td colspan="2" style="font-size: 12px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; background: none; color: #333; padding-top: 8px;">Valuation Summary</td>
-                </tr>
-            </table>
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <tr>
-                    <td style="width: 30%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Property Type</td>
-                    <td style="width: 70%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.property_details.property_type|default('Rural Residential')|title }}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Council Area</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.town_planning.local_government_area|default('N/A') }}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Zoning</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.town_planning.zoning|default('N/A') }}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Legal Description</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.property_details.title_reference|default('N/A') }}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Date of Valuation</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.valuation_date|format_date|default('N/A') }}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Issue Date</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.report_date|format_date|default('N/A') }}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Valuation</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; font-weight: 700; color: #333;">{{ record.property_valuation.market_value|format_currency|default('N/A') }} ({{ record.property_valuation.market_value|format_currency_words|default('N/A') }})</td>
-                </tr>
-                <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700; vertical-align: top;">Prepared by</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">
-                        {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
-                        JUGAL SAHA, Property Valuer, AAPI, CPV<br>
-                        Certified Practicing Valuer 101474<br>
-                        QVRB no: 5429MR
-                        {% elif sf_record.PropertyValuer__r.Name == 'Peter Lee' %}
-                        PETER LEE, Certified Practicing Valuer<br>
-                        AAPI CPV 70919
-                        {% elif sf_record.PropertyValuer__r.Name == 'Edward Aoun' %}
-                        EDWARD AOUN, AVI CPV (Certified Property Valuer 20231)<br>
-                        API RPV 111395
-                        {% elif sf_record.PropertyValuer__r.Name == 'Timothy Jang' %}
-                        TIMOTHY JANG, Certified Practicing Valuer<br>
-                        AAPI CPV 102377
-                        {% elif sf_record.PropertyValuer__r.Name == 'Martin Lam' %}
-                        MARTIN LAM, Certified Practicing Valuer<br>
-                        AAPI CPV 102146
-                        {% else %}
-                        {{ sf_record.PropertyValuer__r.Name|default('N/A') }}
-                        {% endif %}
-                    </td>
-                </tr>
-            </table>
-
-            <!-- API Logo at bottom -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 10px;">
-                <div>
-                    <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo" style="width: 130px; object-fit: contain;">
-                </div>
-
-            </div>
-            <div class="footer-container">
-                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
-                    <span class="page-num"></span>
-                </div>
-        </div>
-
         <!-- Duotax-style purpose & property description page -->
         <div class="page">
             <h1 style="display:none;">Address</h1>
