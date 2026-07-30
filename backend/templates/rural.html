@@ -1112,7 +1112,16 @@
                 </div>
                 {% endif %}
 
-
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 18px;">
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Locality
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {{ record.location_details.suburb_description|default('') }}
+                        </td>
+                    </tr>
+                </table>
 
                 <h1 style="font-weight: bold; font-size: 15px; margin: 18px 0 8px 0; color: #1a2a5e;">Improvements</h1>
 
