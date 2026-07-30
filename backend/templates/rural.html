@@ -716,7 +716,7 @@
             <div style="margin-bottom: 15px;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr>
-                        <td colspan="2" style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; background: none; color: #333;">Instructions:</td>
+                        <td colspan="2" style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; background: none; color: #333;">Instructions</td>
                     </tr>
                     <tr>
                         <td colspan="2" style="padding-top: 5px; font-size: 12px; line-height: 1.5; background: none; color: #333;">
@@ -1029,34 +1029,74 @@
         <div class="page">
             {{ render_interior_header() }}
             <div>
-                <h1 style="display:none;">Location</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Location:</span><br>
-                    {{ record.location_details.suburb_description|default('') }}
-                </p>
-                <h1 style="display:none;">Neighbourhood</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Neighbourhood:</span><br>
-                    This neighbourhood is part of the {{ record.property_details.zoning|default('Rural Residential') }}, Community Facilities with varying property quality in the surrounding area.
-                </p>
-                <h1 style="display:none;">Town Planning</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Town Planning:</span><br>
-                    {{ record.property_details.town_planning|default('N/A') }}
-                </p>
-                <h1 style="display:none;">Services</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Services:</span><br>
-                    {{ record.site_details.services|default('N/A') }}
-                </p>
-                <h1 style="display:none;">Topography</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Topography:</span><br>
-                    {{ record.property_details.topography|default('N/A') }}
-                </p>
-                <h1 style="display:none;">Site Description</h1>
-                <p style="white-space: pre-line; margin-bottom: 15px;"><span style="font-weight: bold; text-decoration: underline; font-size: 15px;">Site Description:</span><br>
-                    {% if record.property_details.site_area %}The site area is approximately {% if record.property_valuation.display_in_sqm %}{{ record.property_details.site_area|format_area_sqm|default('N/A') }}{% else %}{{ record.property_details.site_area|format_area_smart|default('N/A') }}{% endif %}. {% endif %}
-                    A{{ 'n' if record.property_details.land_shape|lower|default('N/A')|first in 'aeiou' else '' }} {{ record.property_details.land_shape|lower|default('N/A') }} shaped land parcel positioned at the road height position. The pedestrian access provided along {{ record.location_details.street_only|default('N/A') }} is good and the site appears to have satisfactory surface drainage. 
-                    {% if record.site_details.access %}{{ record.site_details.access }}{% else %}The subject property has good sealed roads with kerbs and improved footpaths.{% endif %}
-                    Environmental conditions: Rainfall is {{ record.property_details.rainfall|default('N/A') }}, Flood risk is {{ record.property_details.flood|default('N/A') }}, and Bushfire risk is {{ record.property_details.bushfire|default('N/A') }}.
-                    Identification: Street number, online Cadastral plan, RP Data mapping.
-                </p>
+                <h1 style="display:none;">Locality</h1>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Locality
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {{ record.location_details.suburb_description|default('') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Surrounding Development
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {% if record.location_details.surrounding_development %}
+                                {{ record.location_details.surrounding_development }}
+                            {% else %}
+                                The subject property is located in a well-established rural locality, comprising predominantly dwellings of varying age and style of complementary nature. Surrounding development includes agricultural holdings, rural-residential dwellings and open pasture land consistent with the zoning of the area.
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Infrastructure
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            The property is located close to arterial roads and local services appropriate to the rural locality.
+                        </td>
+                    </tr>
+                </table>
+
+                <h1 style="font-weight: bold; font-size: 14px; margin: 3px 0 6px 0; color: #000;">Land Description</h1>
+                {% if record.site_details.map_photo and record.site_details.map_photo.base %}
+                <div style="text-align: center; margin: 0 0 15px 0;">
+                    <img src="{{ record.site_details.map_photo.base }}" alt="Land Description" style="width: 100%; max-width: 520px; max-height: 280px; height: auto; object-fit: contain; border: 1px solid #ccc;">
+                </div>
+                {% endif %}
+
+                <h1 style="display:none;">Area</h1>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Area
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {% if record.property_details.site_area %}
+                                Approximately {{ (record.property_details.site_area / 10000)|round(2) }} Hectares or {{ '{:,}'.format(record.property_details.site_area|round(0)|int) }} sqm
+                            {% else %}N/A{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Frontage &amp; Depth
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {% if record.location_details.street_only %}frontage to {{ record.location_details.street_only }}{% else %}frontage to {{ record.location_details.street|default('the subject road') }}{% endif %}. A{{ 'n' if record.property_details.land_shape|lower|default('N/A')|first in 'aeiou' else '' }} {{ record.property_details.land_shape|lower|default('irregular') }} shaped land parcel.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Topography
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                            {{ record.property_details.topography|default('Topographically, the allotment is generally undulating to moderately sloping in contour, which is typical of the surrounding rural landscape.') }}
+                        </td>
+                    </tr>
+                </table>
             </div>
             <div class="footer-container">
                 <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
@@ -1659,7 +1699,7 @@
             {{ render_interior_header() }}
 
             <h1 style="display:none;">Valuation Remarks</h1>
-            <p style="font-weight: bold; font-size: 15px; margin: 0 0 10px 0;">VALUATION REMARKS:</p>
+            <p style="font-weight: bold; font-size: 15px; margin: 0 0 10px 0;">Valuation Remarks</p>
 
             <!-- Two-column layout matching reference format -->
             <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
