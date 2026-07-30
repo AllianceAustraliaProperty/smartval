@@ -1161,7 +1161,7 @@
                                 {% for category in record.photos_summary.categories %}
                                     {% if category.features_fixtures %}
                                         {% for item in category.features_fixtures %}
-                                            {% if 'window' in (item|lower) %}
+                                            {% if 'window' in (item|lower) and item not in window_items %}
                                                 {% set _ = window_items.append(item) %}
                                             {% endif %}
                                         {% endfor %}
