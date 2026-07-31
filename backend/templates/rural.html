@@ -1061,6 +1061,14 @@
                             {{ record.property_details.rainfall|default('None known') }}
                         </td>
                     </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Market Overview
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
+                            {{ record.general_comments.market_overview|default('') }}
+                        </td>
+                    </tr>
                 </table>
             </div>
             <div class="footer-container">
