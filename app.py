@@ -52,14 +52,20 @@ def proxy_rpp_get():
             params = [(k, v) for k in request.args for v in request.args.getlist(k) if k != "url"]
             resp = context.request.get(request_url, params=params)
 
-            # Pass-through JSON with same status code
-            try:
-                data = resp.json()
-            except Exception as ex:
-                print(ex)
-                # Fallback if body is not JSON
-                data = {"text": resp.text()}
-            return make_response(jsonify(data), resp.status)
+            content_type = resp.headers.get("content-type", "")
+            if "application/json" in content_type.lower():
+                try:
+                    data = resp.json()
+                    return make_response(jsonify(data), resp.status)
+                except Exception as ex:
+                    print(ex)
+            
+            # For non-JSON (like images) or if JSON parsing fails, return raw body
+            body = resp.body()
+            response = make_response(body, resp.status)
+            if content_type:
+                response.headers["Content-Type"] = content_type
+            return response
     except Exception as ex:
         print(ex)
         return make_response(str(ex), 500)

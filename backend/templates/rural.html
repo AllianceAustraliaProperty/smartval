@@ -1495,7 +1495,7 @@
                     <span class="page-num"></span>
                 </div>
         </div>
-        {% if record.property_valuation.show_improvements and logo_type != 'CPV' %}
+        {% if record.property_valuation.show_improvements and logo_type != 'CPV' and logo_type != 'AAP' %}
         <div class="page">
             {{ render_interior_header() }}
             <h1>
@@ -1766,7 +1766,7 @@
                         </p>
 
                         <!-- Signature block inline after GST note -->
-                        <p style="font-size: 12px; margin: 0 0 2px 0;"><strong>Valuation Firm:</strong> {% if logo_type == 'CPV' %}Certified Property Valuers{% elif logo_type == 'TAMN' %}TAMN Property Valuers{% else %}Duotax Property Valuers{% endif %}</p>
+                        <p style="font-size: 12px; margin: 0 0 2px 0;"><strong>Valuation Firm:</strong> {% if logo_type == 'CPV' %}Certified Property Valuers{% elif logo_type == 'TAMN' %}TAMN Property Valuers{% else %}AAP Property Valuers{% endif %}</p>
             <p style="font-size: 11px; margin: 1px 0; line-height: 1.8;">
                 <strong>Valuation Date:</strong> {{ record.valuation_date|format_date|default('N/A') }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Date of Issue:</strong> {{ record.report_date|format_date|default('N/A') }}
             </p>
@@ -1875,7 +1875,7 @@
                 </div>
         </div>
         {% endfor %}
-        {% set current_section = 13 if (record.property_valuation.show_improvements and logo_type != 'CPV') else 12 %}
+        {% set current_section = 13 if (record.property_valuation.show_improvements and logo_type != 'CPV' and logo_type != 'AAP') else 12 %}
 
 
 
