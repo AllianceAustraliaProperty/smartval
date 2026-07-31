@@ -930,7 +930,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "display_in_sqm": report.get("valuationDetails", {}).get("displayInSqm", False),
                     "show_land_value": report.get("valuationDetails", {}).get("showLandValue", False),
                     "land_value": report.get("valuationDetails", {}).get("landValue"),
-                    "total_improve_value_rate": report.get("valuationDetails", {}).get("totalImproveValueRate"),
+                    "total_improve_value_rate": report.get("valuationDetails", {}).get("totalImproveValueRate") or report.get("valuationDetails", {}).get("squareMeterRate"),
                     "improvements": report.get("valuationDetails", {}).get("improvements"),
                     "secondary_dwelling_value": report.get("valuationDetails", {}).get("secondaryDwellingValue"),
                     "direct_comparison": report.get("valuationDetails", {}).get("directComparison"),

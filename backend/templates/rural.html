@@ -985,7 +985,7 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Topography
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {{ record.property_details.topography|default('Topographically, the allotment is generally undulating to moderately sloping in contour, which is typical of the surrounding rural landscape.') }}
                         </td>
                     </tr>
@@ -993,7 +993,7 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Town Planning
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {{ record.property_details.town_planning|default('N/A') }}
                         </td>
                     </tr>
@@ -1001,7 +1001,7 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Frontage &amp; Depth
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {% if record.location_details.street_only %}frontage to {{ record.location_details.street_only }}{% else %}frontage to {{ record.location_details.street|default('the subject road') }}{% endif %}. A{{ 'n' if record.property_details.land_shape|lower|default('N/A')|first in 'aeiou' else '' }} {{ record.property_details.land_shape|lower|default('irregular') }} shaped land parcel.
                         </td>
                     </tr>
@@ -1009,7 +1009,7 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Property Description
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {{ record.general_comments.property_description|default('N/A') }}
                         </td>
                     </tr>
@@ -1017,7 +1017,7 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Conditions/Repairs
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             Internal Condition: {{ record.property_descriptors.internal_condition|default('Good') }}. External Condition: {{ record.property_descriptors.external_condition|default('Good') }}. Essential Repairs: {{ record.property_descriptors.repairs_requirements|default('None') }}. {{ record.general_comments.property_comments|default('The residence generally has mixed-age PC items of basic quality in average condition.') }}
                         </td>
                     </tr>
@@ -1025,7 +1025,7 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Ancillary Improvements
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             Driveway: {{ record.ancillary_improvements.driveway|default('Gravel') }}.
                         </td>
                     </tr>
@@ -1033,7 +1033,7 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Water Utilisation
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {{ record.ancillary_improvements.water_utilisation|default('None') }}
                         </td>
                     </tr>
@@ -1041,7 +1041,7 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Flood
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {{ record.property_details.flood|default('None detected') }}
                         </td>
                     </tr>
@@ -1049,7 +1049,7 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Bushfire
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {{ record.property_details.bushfire|default('None detected') }}
                         </td>
                     </tr>
@@ -1057,8 +1057,16 @@
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Rainfall
                         </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none;">
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {{ record.property_details.rainfall|default('None known') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Market Overview
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
+                            {{ record.general_comments.market_overview|default('') }}
                         </td>
                     </tr>
                 </table>
@@ -1156,7 +1164,19 @@
                             Windows
                         </td>
                         <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border-bottom: 1px solid #ddd; background: none;">
-                            Aluminium-framed
+                            {% set window_items = [] %}
+                            {% if record.photos_summary and record.photos_summary.categories %}
+                                {% for category in record.photos_summary.categories %}
+                                    {% if category.features_fixtures %}
+                                        {% for item in category.features_fixtures %}
+                                            {% if 'window' in (item|lower) and item not in window_items %}
+                                                {% set _ = window_items.append(item) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            {% if window_items %}{{ window_items|join(', ') }}{% else %}Aluminium-framed{% endif %}
                         </td>
                     </tr>
                     <tr>
