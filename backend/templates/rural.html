@@ -570,7 +570,7 @@
         {% else %}
         <style>
             .header-logo {
-                height: 115px !important;
+                height: 95px !important;
                 width: auto;
             }
             /* AAP styled page footer bar (solid blue) */
@@ -600,9 +600,9 @@
     <body>
 
 {% macro render_interior_header() %}
-<div style="display: flex; justify-content: flex-end; align-items: center; font-size: 12px; font-weight: 500; color: #333; margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 12px;">
+<div style="display: flex; justify-content: flex-end; align-items: center; font-size: 12px; font-weight: 500; color: #333; margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
     <div style="text-align: right;">
-        <img src="{{ page_logo_url }}" alt="Logo" style="height: 65px; width: auto; object-fit: contain;">
+        <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" style="height: {% if logo_type == 'CPV' %}80px{% elif logo_type == 'TAMN' %}65px{% else %}95px{% endif %}; width: auto; object-fit: contain;">
     </div>
 </div>
 {% endmacro %}
@@ -853,10 +853,8 @@
         </div>
         <!-- Duotax-style purpose & property description page -->
         <div class="page">
-            <h1 style="display:none;">Address</h1>
             {{ render_interior_header() }}
-
-            <h1 style="font-weight: bold; font-size: 15px; margin: 0 0 12px 0; color: #000;">Summary</h1>
+            <h1>Summary</h1>
 
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <tr>
@@ -979,6 +977,7 @@
 
         <div class="page">
             {{ render_interior_header() }}
+            <h1>Land & Building Description</h1>
             <div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                     <tr>
@@ -1061,12 +1060,24 @@
                             {{ record.property_details.rainfall|default('None known') }}
                         </td>
                     </tr>
+                </table>
+
+                <h1 style="margin-top: 14px; margin-bottom: 8px;">General Comments</h1>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                     <tr>
                         <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
                             Market Overview
                         </td>
                         <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {{ record.general_comments.market_overview|default('') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
+                            Property Comments
+                        </td>
+                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
+                            {{ record.general_comments.property_comments|default('') }}
                         </td>
                     </tr>
                 </table>
