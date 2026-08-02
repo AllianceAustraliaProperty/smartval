@@ -570,7 +570,7 @@
         {% else %}
         <style>
             .header-logo {
-                height: 95px !important;
+                height: 78px !important;
                 width: auto;
             }
             /* AAP styled page footer bar (solid blue) */
@@ -602,7 +602,7 @@
 {% macro render_interior_header() %}
 <div style="display: flex; justify-content: flex-end; align-items: center; font-size: 12px; font-weight: 500; color: #333; margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
     <div style="text-align: right;">
-        <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" style="height: {% if logo_type == 'CPV' %}80px{% elif logo_type == 'TAMN' %}65px{% else %}95px{% endif %}; width: auto; object-fit: contain;">
+        <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" style="height: {% if logo_type == 'CPV' %}80px{% elif logo_type == 'TAMN' %}65px{% else %}78px{% endif %}; width: auto; object-fit: contain;">
     </div>
 </div>
 {% endmacro %}
