@@ -720,7 +720,7 @@
                     </tr>
                     <tr>
                         <td colspan="2" style="padding-top: 5px; font-size: 12px; line-height: 1.5; background: none; color: #333;">
-                            <strong style="font-size: 13px;">Rural Residential</strong><br>
+                            <strong>Rural Residential</strong><br>
                             {{ record.location_details.street|default('') }} {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}<br>
                             <strong>Instructed by</strong><br>
                             {{ record.primary_contact.first_name|default('') }} {{ record.primary_contact.last_name|default('') }}<br>
@@ -734,41 +734,41 @@
             <!-- Valuation Summary Table -->
             <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                 <tr>
-                    <td colspan="2" style="font-size: 12px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; background: none; color: #333; padding-top: 8px;">Valuation Summary</td>
+                    <td colspan="2" style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; background: none; color: #333; padding-top: 8px;">Valuation Summary</td>
                 </tr>
             </table>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                 <tr>
-                    <td style="width: 30%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Property Type</td>
-                    <td style="width: 70%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">Rural Residential</td>
+                    <td style="width: 30%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-weight: 700; font-size: 12px; line-height: 1.5;">Property Type</td>
+                    <td style="width: 70%; padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-size: 12px; line-height: 1.5;">Rural Residential</td>
                 </tr>
                 <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Council Area</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.town_planning.local_government_area|default('N/A') }}</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-weight: 700; font-size: 12px; line-height: 1.5;">Council Area</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-size: 12px; line-height: 1.5;">{{ record.town_planning.local_government_area|default('N/A') }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Zoning</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.town_planning.zoning|default('N/A') }}</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-weight: 700; font-size: 12px; line-height: 1.5;">Zoning</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-size: 12px; line-height: 1.5;">{{ record.town_planning.zoning|default('N/A') }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Legal Description</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.property_details.title_reference|default('N/A') }}</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-weight: 700; font-size: 12px; line-height: 1.5;">Legal Description</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-size: 12px; line-height: 1.5;">{{ record.property_details.title_reference|default('N/A') }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Date of Valuation</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.valuation_date|format_date|default('N/A') }}</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-weight: 700; font-size: 12px; line-height: 1.5;">Date of Valuation</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-size: 12px; line-height: 1.5;">{{ record.valuation_date|format_date|default('N/A') }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Issue Date</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">{{ record.report_date|format_date|default('N/A') }}</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-weight: 700; font-size: 12px; line-height: 1.5;">Issue Date</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-size: 12px; line-height: 1.5;">{{ record.report_date|format_date|default('N/A') }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700;">Valuation</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; font-weight: 700; color: #333;">{{ record.property_valuation.market_value|format_currency|default('N/A') }} ({{ record.property_valuation.market_value|format_currency_words|default('N/A') }})</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-weight: 700; font-size: 12px; line-height: 1.5;">Valuation</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; font-weight: 700; color: #333; font-size: 12px; line-height: 1.5;">{{ record.property_valuation.market_value|format_currency|default('N/A') }} ({{ record.property_valuation.market_value|format_currency_words|default('N/A') }})</td>
                 </tr>
                 <tr>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #666; font-weight: 700; vertical-align: top;">Prepared by</td>
-                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333;">
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-weight: 700; font-size: 12px; line-height: 1.5; vertical-align: top;">Prepared by</td>
+                    <td style="padding: 4px 5px; border-bottom: 1px solid #eee; background: none; color: #333; font-size: 12px; line-height: 1.5;">
                         {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
                         JUGAL SAHA, Property Valuer, AAPI, CPV<br>
                         Certified Practicing Valuer 101474<br>
