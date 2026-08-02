@@ -814,6 +814,14 @@
                         <td style="text-align: left; width: 90%;">Summary</td>
                         <td style="text-align: right; width: 10%"></td>
                     </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">Land &amp; Building Description</td>
+                        <td style="text-align: right"></td>
+                    </tr>
+                    <tr class="toc-main-row">
+                        <td style="text-align: left">General Comments</td>
+                        <td style="text-align: right"></td>
+                    </tr>
 
                     <tr class="toc-main-row">
                         <td style="text-align: left">Location Details</td>
@@ -1070,14 +1078,6 @@
                         </td>
                         <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
                             {{ record.general_comments.market_overview|default('') }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="width: 25%; font-weight: 800; vertical-align: top; padding: 4px 12px 4px 0; color: #000; border: none; background: none; text-align: left;">
-                            Property Comments
-                        </td>
-                        <td style="width: 75%; vertical-align: top; padding: 4px 0; color: #333; border: none; background: none; text-align: justify;">
-                            {{ record.general_comments.property_comments|default('') }}
                         </td>
                     </tr>
                 </table>
