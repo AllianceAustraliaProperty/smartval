@@ -43,6 +43,7 @@ const sectionComponents = {
 
 const sections = [
   { id: 'propertyAddress', title: 'Property Address', icon: 'Navigation' },
+  { id: 'photos', title: 'Photos', icon: 'Camera' },
   { id: 'valuationDetails', title: 'Valuation Details', icon: 'DollarSign' },
   { id: 'referralDetails', title: 'Financial & Referral', icon: 'DollarSign' },
   { id: 'propertyDetails', title: 'Property Details', icon: 'Building' },
@@ -51,7 +52,6 @@ const sections = [
   { id: 'ancillaryImprovements', title: 'Ancillary Improvements', icon: 'Hammer' },
   { id: 'generalComments', title: 'General Comments', icon: 'MessageCircle' },
   { id: 'comparables', title: 'Comparables', icon: 'Scale' },
-  { id: 'photos', title: 'Photos', icon: 'Camera' },
 ];
 
 export default function ValuationReportEditPage() {

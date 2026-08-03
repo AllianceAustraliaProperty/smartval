@@ -33,16 +33,15 @@ export interface Section {
 
 const sections: Section[] = [
   { id: 'propertyAddress', title: 'Property Address', icon: NavigationIcon },
+  { id: 'photos', title: 'Photos', icon: Camera },
   { id: 'valuationDetails', title: 'Valuation Details', icon: DollarSign },
-  // { id: 'primaryContact', title: 'Primary Contact', icon: User },
+  { id: 'referralDetails', title: 'Financial & Referral', icon: DollarSign },
   { id: 'propertyDetails', title: 'Property Details', icon: Building },
   { id: 'locationDetails', title: 'Location Details', icon: MapPin },
   { id: 'propertyDescriptors', title: 'Property Descriptors', icon: ClipboardList },
   { id: 'ancillaryImprovements', title: 'Ancillary Improvements', icon: Hammer },
   { id: 'generalComments', title: 'General Comments', icon: MessageCircle },
-  { id: 'referralDetails', title: 'Financial & Referral', icon: DollarSign },
-  { id: 'comparables', title: 'Comparables', icon: Scale },
-  { id: 'photos', title: 'Photos', icon: Camera }
+  { id: 'comparables', title: 'Comparables', icon: Scale }
 ];
 
 interface NavigationProps {
