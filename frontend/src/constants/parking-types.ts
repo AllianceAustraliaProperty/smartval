@@ -2,6 +2,7 @@ export const PARKING_TYPES = [
   "Single Garage",
   "Double Garage",
   "Car Port",
+  "Car Space",
   "Lock Up Garage",
   "1 Secure Car Space",
   "2 Secure Car Space",
