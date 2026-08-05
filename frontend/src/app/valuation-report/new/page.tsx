@@ -29,7 +29,7 @@ export default function NewValuationReportPage() {
       // Create the valuation report with initial data
       const { reportId } = await apiRepository.createValuationReport(newReportData);
 
-      // Navigate to the report edit page
+      // navigate to the report edit page
       router.push(`/valuation-reports/${reportId}/edit`);
     } catch (err) {
       console.error('Failed to create valuation report:', err);

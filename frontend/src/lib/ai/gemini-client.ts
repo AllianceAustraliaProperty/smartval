@@ -56,45 +56,84 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
 
   const systemInstruction = getSystemInstruction(expectedCategory);
 
-  // 3. Make the API call to Gemini
-  const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  // 3. Make the API call to Gemini with retry & backoff
+  const payload = {
+    systemInstruction: {
+      parts: [{ text: systemInstruction }]
     },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: systemInstruction }]
-      },
-      contents: [{
-        parts: [
-          {
-            inlineData: {
-              mimeType,
-              data: base64Image
-            }
-          },
-          {
-            text: "Analyze this image and return the requested JSON data."
+    contents: [{
+      parts: [
+        {
+          inlineData: {
+            mimeType,
+            data: base64Image
           }
-        ]
-      }],
-      generationConfig: {
-        temperature: 0.1,
-        responseMimeType: "application/json",
-        responseSchema: responseSchema
-      }
-    }),
-  });
+        },
+        {
+          text: "Analyze this image and return the requested JSON data."
+        }
+      ]
+    }],
+    generationConfig: {
+      temperature: 0.1,
+      responseMimeType: "application/json",
+      responseSchema: responseSchema
+    }
+  };
 
-  if (!response.ok) {
-    const errorData = await response.text();
-    console.error("Gemini API Error:", errorData);
-    throw new Error(`Gemini API returned an error: ${response.statusText}`);
+  const maxRetries = 3;
+  let data: any = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      data = await response.json();
+      break;
+    }
+
+    const errorText = await response.text();
+    let errorMessage = response.statusText;
+    try {
+      const parsedError = JSON.parse(errorText);
+      if (parsedError.error?.message) {
+        errorMessage = parsedError.error.message;
+      }
+    } catch {}
+
+    // Retry on 429 (Rate Limit / Too Many Requests) or 503 (Service Unavailable)
+    if ((response.status === 429 || response.status === 503) && attempt < maxRetries) {
+      const retryMatch = errorMessage.match(/retry in ([0-9.]+)s/i);
+      let waitMs = Math.pow(2, attempt) * 2500 + Math.floor(Math.random() * 1000);
+      
+      if (retryMatch && retryMatch[1]) {
+        const parsedSeconds = parseFloat(retryMatch[1]);
+        if (!isNaN(parsedSeconds) && parsedSeconds > 0 && parsedSeconds <= 30) {
+          waitMs = Math.ceil(parsedSeconds * 1000) + 1000; // wait specified time + 1s buffer
+        }
+      }
+
+      console.warn(`[Gemini API] Rate limited. Retrying in ${Math.round(waitMs / 1000)}s (attempt ${attempt + 1}/${maxRetries})...`);
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      continue;
+    }
+
+    console.error("Gemini API Error:", errorText);
+    if (response.status === 429) {
+      const retryMatch = errorMessage.match(/retry in ([0-9.]+)s/i);
+      const cooldownSec = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) : 25;
+      throw new Error(`Gemini Free Tier quota exceeded (20 requests/min limit). Please wait ~${cooldownSec}s before automating again, or upgrade your API key to Pay-As-You-Go in Google AI Studio.`);
+    }
+    throw new Error(`Gemini API error: ${errorMessage}`);
   }
 
-  const data = await response.json();
-  const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  const outputText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!outputText) {
     throw new Error("No data returned from Gemini API");
@@ -108,3 +147,4 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
     throw new Error("Invalid JSON returned from Gemini.");
   }
 }
+

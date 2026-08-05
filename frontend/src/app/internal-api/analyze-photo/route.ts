@@ -17,10 +17,15 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ data: result }, { status: 200 });
   } catch (error: any) {
-    console.error("Error in /api/analyze-photo route:", error);
+    console.error("Error in /internal-api/analyze-photo route:", error);
+    const message = error.message || "Failed to analyze photo.";
+    const isRateLimit = message.toLowerCase().includes("rate limit") || message.toLowerCase().includes("too many requests") || message.includes("429");
+    const status = isRateLimit ? 429 : 500;
+
     return NextResponse.json(
-      { error: error.message || "Failed to analyze photo." },
-      { status: 500 }
+      { error: message },
+      { status }
     );
   }
 }
+
