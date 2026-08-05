@@ -3,7 +3,7 @@ export const ROOM_CATEGORIES_LIST = [
   'Bedroom 5', 'Bedroom 6', 'Deck', 'Dining', 'Ensuite', 'Ensuite 2', 'Entertainment Area', 'Family', 
   'Family And Meals', 'Formal Dining', 'General', 'Kitchen', 'Kitchen 1', 'Kitchen 2', 'Kitchen And Dining', 
   'Kitchen And Meals', 'Laundry', 'Living', 'Living And Dining', 'Lounge', 'Office Room', 'Media Room', 
-  'Patio', 'Porch', 'Powder Room', 'Retreat', 'Rumpus', 'Storage', 'Study', 'Sunroom', 'Swimming Pool', 
+  'Patio', 'Porch', 'Powder Room', 'Retreat', 'Rumpus', 'Storage', 'Study', 'Sunroom', 
   'Theatre Room', 'Toilet', 'Workshop'
 ] as const;
 
@@ -26,7 +26,7 @@ export const PRIME_COST_ITEMS_LIST = [
   'internal laundry', 'kitchenette', 'linen', 'oven', 'paths', 'pergola', 'powder room', 'rangehood', 
   'retaining walls', 'roller shutters', 'room unit air conditioning', 'separate toilet', 'shed', 'shower', 
   'single bowl sink', 'solar panels', 'spa', 'split system air conditioning', 'stainless steel laundry tub', 
-  'swimming pool', 'toilet suite', 'vanity', 'verandah', 'walk-in pantry', 'wall mounted heater', 'wood heater'
+  'toilet suite', 'vanity', 'verandah', 'walk-in pantry', 'wall mounted heater', 'wood heater'
 ] as const;
 
 export type RoomCategory = typeof ROOM_CATEGORIES_LIST[number] | string;

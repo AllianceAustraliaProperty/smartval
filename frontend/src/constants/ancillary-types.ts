@@ -19,8 +19,8 @@ export const OTHER_ITEM_TYPES = [
   'Retaining walls',
   'Pergola',
   'Solar panels',
-  'Swimming pool',
   'Verandah',
+  'Swimming pool',
   'Lift',
   'Intercom',
 ] as const;

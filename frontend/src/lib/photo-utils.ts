@@ -51,7 +51,7 @@ const CATEGORY_ORDER: string[] = [
   'Laundry',
   'Study', 'Media Room', 'Theatre Room', 'Rumpus', 'Retreat',
   'Entertainment Area', 'Sunroom', 'Storage', 'Workshop',
-  'Swimming Pool', 'Powder Room', 'Toilet', 'General', 'Backyard',
+  'Powder Room', 'Toilet', 'General', 'Backyard',
 ];
 
 /**
