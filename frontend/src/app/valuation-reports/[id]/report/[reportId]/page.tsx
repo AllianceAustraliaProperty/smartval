@@ -45,7 +45,6 @@ const sectionComponents = {
 
 const sections = [
   { id: 'propertyAddress', title: 'Property Address', icon: 'Navigation' },
-  { id: 'photos', title: 'Photos', icon: 'Camera' },
   { id: 'primaryContact', title: 'Primary Contact', icon: 'User' },
   { id: 'propertyDetails', title: 'Property Details', icon: 'Building' },
   { id: 'locationDetails', title: 'Location Details', icon: 'MapPin' },
@@ -54,6 +53,7 @@ const sections = [
   { id: 'generalComments', title: 'General Comments', icon: 'MessageCircle' },
   { id: 'valuationDetails', title: 'Valuation Details', icon: 'DollarSign' },
   { id: 'referralDetails', title: 'Referral Details', icon: 'User' },
+  { id: 'photos', title: 'Photos', icon: 'Camera' },
   { id: 'comparables', title: 'Comparables', icon: 'Scale' },
 ];
 
