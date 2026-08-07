@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormField, Input, Checkbox, FileUpload, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { Upload, X, Edit3, Wand2, ListOrdered } from 'lucide-react';
+import { Upload, X, Edit3, Wand2, ListOrdered, Clock } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { uploadMultipleFilesToS3 } from '@/lib/s3-upload';
 
@@ -125,7 +125,15 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const photoGridRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
-  const [automatingPhotos, setAutomatingPhotos] = useState<Set<number>>(new Set());
+  const [queuedPhotoUrls, setQueuedPhotoUrls] = useState<Set<string>>(new Set());
+  const [processingPhotoUrl, setProcessingPhotoUrl] = useState<string | null>(null);
+  const queueRef = useRef<{ photoUrl: string; expectedCategory?: string }[]>([]);
+  const isProcessingQueueRef = useRef(false);
+  const photosRef = useRef<any[]>(photos);
+
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
   const [isArranging, setIsArranging] = useState(false);
 
   const handleAutoArrange = async () => {
@@ -156,6 +164,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
         return rankA - rankB;
       });
 
+      photosRef.current = sorted;
       setPhotos(sorted);
       onPhotosUpdate(sorted);
 
@@ -172,125 +181,153 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
     }
   };
 
-  const handleAutomatePhoto = async (index: number, photoUrl: string, expectedCategory?: string) => {
-    console.log("Automating photo:", { index, photoUrl, expectedCategory });
-    if (!photoUrl) return;
+  const processQueue = async () => {
+    if (isProcessingQueueRef.current) return;
+    isProcessingQueueRef.current = true;
 
-    setAutomatingPhotos(prev => {
-      const newSet = new Set(prev);
-      newSet.add(index);
-      return newSet;
-    });
-    setUploadError(null);
+    while (queueRef.current.length > 0) {
+      const nextItem = queueRef.current.shift();
+      if (!nextItem) break;
 
-    try {
-      console.log("Sending request to /api/analyze-photo...");
-      const response = await fetch('/internal-api/analyze-photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          imageUrl: photoUrl, 
-          expectedCategory: expectedCategory || undefined 
-        }),
+      const { photoUrl, expectedCategory } = nextItem;
+
+      setQueuedPhotoUrls(prev => {
+        const next = new Set(prev);
+        next.delete(photoUrl);
+        return next;
       });
+      setProcessingPhotoUrl(photoUrl);
 
-      if (!response.ok) {
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch (e) {}
-        throw new Error(errorData?.error || 'Failed to analyze photo');
-      }
+      try {
+        console.log("Processing queued photo automation:", { photoUrl, expectedCategory });
+        const response = await fetch('/internal-api/analyze-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            imageUrl: photoUrl, 
+            expectedCategory: expectedCategory || undefined 
+          }),
+        });
 
-      const { data } = await response.json();
-      
-      const updatedPhotos = [...photos];
-      const photo = { ...updatedPhotos[index] };
+        if (!response.ok) {
+          let errorData;
+          try {
+            errorData = await response.json();
+          } catch (e) {}
+          throw new Error(errorData?.error || 'Failed to analyze photo');
+        }
 
-      if (data.category && !photo.category) {
-        let finalCategory = data.category;
+        const { data } = await response.json();
         
-        if (finalCategory.toLowerCase().startsWith('bedroom')) {
-          let maxBedroom = 0;
-          photos.forEach(p => {
-            if (p.category && p.category.toLowerCase().startsWith('bedroom')) {
-              if (p.category.toLowerCase() === 'bedroom') {
-                maxBedroom = Math.max(maxBedroom, 1);
-              } else {
-                const match = p.category.match(/\d+/);
-                if (match) {
-                  maxBedroom = Math.max(maxBedroom, parseInt(match[0], 10));
+        const latestPhotos = [...photosRef.current];
+        const targetIndex = latestPhotos.findIndex(p => p.photoUrl === photoUrl);
+
+        if (targetIndex === -1) {
+          console.warn("Photo was removed before automation completed:", photoUrl);
+          continue;
+        }
+
+        const photo = { ...latestPhotos[targetIndex] };
+
+        if (data.category && !photo.category) {
+          let finalCategory = data.category;
+          
+          if (finalCategory.toLowerCase().startsWith('bedroom')) {
+            let maxBedroom = 0;
+            latestPhotos.forEach(p => {
+              if (p.category && p.category.toLowerCase().startsWith('bedroom')) {
+                if (p.category.toLowerCase() === 'bedroom') {
+                  maxBedroom = Math.max(maxBedroom, 1);
+                } else {
+                  const match = p.category.match(/\d+/);
+                  if (match) {
+                    maxBedroom = Math.max(maxBedroom, parseInt(match[0], 10));
+                  }
                 }
               }
-            }
-          });
-          finalCategory = `Bedroom ${maxBedroom + 1}`;
-        } else if (finalCategory.toLowerCase().startsWith('ensuite')) {
-          let ensuiteCount = 0;
-          let maxEnsuite = 1;
-          photos.forEach(p => {
-            if (p.category && p.category.toLowerCase().startsWith('ensuite')) {
-              ensuiteCount++;
-              const match = p.category.match(/\d+/);
-              if (match) {
-                maxEnsuite = Math.max(maxEnsuite, parseInt(match[0], 10));
-              } else if (p.category.toLowerCase() === 'ensuite') {
-                maxEnsuite = Math.max(maxEnsuite, 1);
+            });
+            finalCategory = `Bedroom ${maxBedroom + 1}`;
+          } else if (finalCategory.toLowerCase().startsWith('ensuite')) {
+            let ensuiteCount = 0;
+            let maxEnsuite = 1;
+            latestPhotos.forEach(p => {
+              if (p.category && p.category.toLowerCase().startsWith('ensuite')) {
+                ensuiteCount++;
+                const match = p.category.match(/\d+/);
+                if (match) {
+                  maxEnsuite = Math.max(maxEnsuite, parseInt(match[0], 10));
+                } else if (p.category.toLowerCase() === 'ensuite') {
+                  maxEnsuite = Math.max(maxEnsuite, 1);
+                }
               }
+            });
+            if (ensuiteCount === 0) {
+              finalCategory = 'Ensuite';
+            } else {
+              finalCategory = `Ensuite ${maxEnsuite + 1}`;
             }
-          });
-          if (ensuiteCount === 0) {
-            finalCategory = 'Ensuite';
-          } else {
-            finalCategory = `Ensuite ${maxEnsuite + 1}`;
+          }
+
+          photo.category = finalCategory;
+        }
+        if (data.flooring && !photo.flooring) {
+          photo.flooring = data.flooring;
+        }
+        if (data.categorySpecificDetails) {
+          const categoryFeatures = ROOM_FEATURES[photo.category || ''] || [];
+          const categoryPrimeCostItems = ROOM_PRIME_COST_ITEMS[photo.category || ''] || [];
+
+          if (data.categorySpecificDetails.featuresAndFixtures && data.categorySpecificDetails.featuresAndFixtures.length > 0) {
+            const current = photo.featuresFixtures || [];
+            const validAiFeatures = data.categorySpecificDetails.featuresAndFixtures.filter((f: string) => categoryFeatures.includes(f));
+            photo.featuresFixtures = Array.from(new Set([...current, ...validAiFeatures]));
+          }
+          if (data.categorySpecificDetails.primeCostItems && data.categorySpecificDetails.primeCostItems.length > 0) {
+            const current = photo.primeCostItems || [];
+            const validAiItems = data.categorySpecificDetails.primeCostItems.filter((i: string) => categoryPrimeCostItems.includes(i));
+            photo.primeCostItems = Array.from(new Set([...current, ...validAiItems]));
           }
         }
 
-        photo.category = finalCategory;
+        latestPhotos[targetIndex] = photo;
+        photosRef.current = latestPhotos;
+        setPhotos(latestPhotos);
+        onPhotosUpdate(latestPhotos);
+
+        await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photos: latestPhotos }),
+        });
+
+      } catch (err: any) {
+        console.error('AI Automation error for photo:', photoUrl, err);
+        const errorMsg = err.message || 'An error occurred during AI analysis';
+        setUploadError(`Photo automation failed: ${errorMsg}`);
       }
-      if (data.flooring && !photo.flooring) {
-        photo.flooring = data.flooring;
-      }
-      if (data.categorySpecificDetails) {
-        const categoryFeatures = ROOM_FEATURES[photo.category || ''] || [];
-        const categoryPrimeCostItems = ROOM_PRIME_COST_ITEMS[photo.category || ''] || [];
-
-        if (data.categorySpecificDetails.featuresAndFixtures && data.categorySpecificDetails.featuresAndFixtures.length > 0) {
-          // Merge uniquely but filter strictly against the predefined lists for this category
-          const current = photo.featuresFixtures || [];
-          const validAiFeatures = data.categorySpecificDetails.featuresAndFixtures.filter((f: string) => categoryFeatures.includes(f));
-          photo.featuresFixtures = Array.from(new Set([...current, ...validAiFeatures]));
-        }
-        if (data.categorySpecificDetails.primeCostItems && data.categorySpecificDetails.primeCostItems.length > 0) {
-          const current = photo.primeCostItems || [];
-          const validAiItems = data.categorySpecificDetails.primeCostItems.filter((i: string) => categoryPrimeCostItems.includes(i));
-          photo.primeCostItems = Array.from(new Set([...current, ...validAiItems]));
-        }
-      }
-
-      updatedPhotos[index] = photo;
-      setPhotos(updatedPhotos);
-      onPhotosUpdate(updatedPhotos);
-
-      // Save to database
-      await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: updatedPhotos }),
-      });
-
-    } catch (err: any) {
-      console.error('AI Automation error:', err);
-      const errorMsg = err.message || 'An error occurred during AI analysis';
-      setUploadError(errorMsg);
-      alert(`AI Automation failed: ${errorMsg}`);
-    } finally {
-      setAutomatingPhotos(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(index);
-        return newSet;
-      });
     }
+
+    setProcessingPhotoUrl(null);
+    isProcessingQueueRef.current = false;
+  };
+
+  const handleAutomatePhoto = (index: number, photoUrl: string, expectedCategory?: string) => {
+    if (!photoUrl) return;
+
+    if (
+      processingPhotoUrl === photoUrl ||
+      queuedPhotoUrls.has(photoUrl) ||
+      queueRef.current.some(item => item.photoUrl === photoUrl)
+    ) {
+      return;
+    }
+
+    setUploadError(null);
+
+    queueRef.current.push({ photoUrl, expectedCategory });
+    setQueuedPhotoUrls(prev => new Set(prev).add(photoUrl));
+
+    processQueue();
   };
 
   // Fetch photos when component mounts
@@ -810,27 +847,50 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                           <div className="space-y-3 bg-gray-50 p-3 rounded-md">
                             <div className="flex justify-between items-center mb-2">
                               <h4 className="text-sm font-semibold text-gray-800">Basic Details</h4>
-                              {photo.photoUrl && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleAutomatePhoto(index, photo.photoUrl, photo.category)}
-                                  disabled={automatingPhotos.has(index)}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
-                                  title="Automate photo details with AI"
-                                >
-                                  {automatingPhotos.has(index) ? (
-                                    <>
-                                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                      Automating...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Wand2 className="w-3 h-3" />
-                                      Automate
-                                    </>
-                                  )}
-                                </button>
-                              )}
+                              {photo.photoUrl && (() => {
+                                const isAutomating = processingPhotoUrl === photo.photoUrl;
+                                const isQueued = queuedPhotoUrls.has(photo.photoUrl);
+                                const isDisabled = isAutomating || isQueued;
+
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAutomatePhoto(index, photo.photoUrl, photo.category)}
+                                    disabled={isDisabled}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors text-xs font-medium ${
+                                      isAutomating
+                                        ? 'bg-blue-600 text-white opacity-80 cursor-wait'
+                                        : isQueued
+                                        ? 'bg-amber-500 text-white opacity-90 cursor-wait'
+                                        : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                                    }`}
+                                    title={
+                                      isAutomating
+                                        ? 'Analyzing photo with AI...'
+                                        : isQueued
+                                        ? 'Queued - waiting for previous photo analysis to complete...'
+                                        : 'Automate photo details with AI'
+                                    }
+                                  >
+                                    {isAutomating ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                        <span>Automating...</span>
+                                      </>
+                                    ) : isQueued ? (
+                                      <>
+                                        <Clock className="w-3 h-3 animate-pulse" />
+                                        <span>Queued</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Wand2 className="w-3 h-3" />
+                                        <span>Automate</span>
+                                      </>
+                                    )}
+                                  </button>
+                                );
+                              })()}
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-800 mb-1">Category</label>
