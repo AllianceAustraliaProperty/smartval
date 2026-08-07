@@ -1,9 +1,9 @@
-import { AnalyzePhotoRequest, PhotoAnalysisResult } from "@/types/photo-analysis";
-import { analyzeImageWithGemini } from "./gemini-client";
+import { AnalyzePhotoRequest, PhotoAnalysisResult, CoverPhotoAnalysisResult } from "@/types/photo-analysis";
+import { analyzeImageWithGemini, analyzeCoverPhotoWithGemini } from "./gemini-client";
 
-export async function analyzePhoto(request: AnalyzePhotoRequest): Promise<PhotoAnalysisResult> {
-  // If you later want to swap to OpenAI, Anthropic, or another provider,
-  // you can easily do that here by wrapping a different client.
-  
+export async function analyzePhoto(request: AnalyzePhotoRequest): Promise<PhotoAnalysisResult | CoverPhotoAnalysisResult> {
+  if (request.isCover) {
+    return await analyzeCoverPhotoWithGemini(request.imageUrl, request.propertyType);
+  }
   return await analyzeImageWithGemini(request.imageUrl, request.expectedCategory);
 }

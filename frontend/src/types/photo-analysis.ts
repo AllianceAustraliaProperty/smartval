@@ -46,4 +46,12 @@ export interface PhotoAnalysisResult {
 export interface AnalyzePhotoRequest {
   imageUrl: string; // The URL of the image to analyze
   expectedCategory?: RoomCategory; // Context for the AI to limit scope
+  isCover?: boolean; // When true, analyzes cover photo for main building type, roofing, external walls
+  propertyType?: string; // Optional context for cover photo building classification
+}
+
+export interface CoverPhotoAnalysisResult {
+  mainBuildingType: string | null;
+  roofingType: string | null;
+  externalWalls: string[] | null;
 }
