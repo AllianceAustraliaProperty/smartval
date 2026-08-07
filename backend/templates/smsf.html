@@ -1430,6 +1430,9 @@
     {% endif %}
     <!-- End Floor Plan Pages -->
 
+    {% set survey_type = valuation_report.get("valuationDetails", {}).get("surveyType", "") %}
+    {% set is_external_desktop = valuation_report.get("valuationDetails", {}).get("externalDesktopValuation") or survey_type == "External/Desktop Valuation" or "desktop" in survey_type|lower or "external" in survey_type|lower %}
+    {% if not is_external_desktop %}
     <div class="page" id="annexure">
         <div class="header-full">
             <div class="ml-50 fs-header bold mt-45">Annexure</div>
@@ -1440,7 +1443,6 @@
             <p style="font-weight: bold; font-size: 15px; margin: 10px 0;">Appendix A: Sources of Information</p>
             <p style="margin-bottom: 10px;">The valuation was based on a range of reliable information sources, including:</p>
             <ul style="list-style-type: disc; padding-left: 25px; line-height: 1.8;">
-                {% set survey_type = valuation_report.get("valuationDetails", {}).get("surveyType", "") %}
                 {% if survey_type == "External/Desktop Valuation" %}
                 <li>An external/desktop valuation of the property.</li>
                 {% elif survey_type == "Kerbside Valuation" %}
@@ -1497,6 +1499,7 @@
     </div>
     {% endif %}
     {% endfor %}
+    {% endif %}
     {% endif %}
 
     <script>
