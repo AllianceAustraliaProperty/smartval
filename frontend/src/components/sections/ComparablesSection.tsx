@@ -2086,13 +2086,7 @@ const buildComparableFromRPItem = (item: any, fallbackAddress: string): Comparab
     comparison: '',
     rpId: core.propertyId?.toString() || rapid.id?.toString() || '',
     photoUrl: core.propertyPhotoUri || rapid.imageUrls?.mediumImageUrl || '',
-    isComparable: false,
-    propertyType: core.propertyType || rapid.type || '',
-    suburb: core.suburb || rapid.addressSuburb || '',
-    state: core.state || rapid.addressState || '',
-    postcode: core.postcode || rapid.addressPostcode || '',
-    latitude: core.latitude || rapid.addressLocation?.lat || null,
-    longitude: core.longitude || rapid.addressLocation?.lon || null,
+    isComparable: false
   };
 };
 
