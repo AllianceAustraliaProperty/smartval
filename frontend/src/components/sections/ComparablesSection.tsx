@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { FormField, Input, Textarea, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { API_BASE_URL } from '@/lib/api-config';
-import { Plus, Trash2, Edit3, Eye, EyeOff, MapPin, DollarSign, Calendar, Home, Car, Ruler, Calendar as CalendarIcon, Navigation, FileText, ExternalLink, Upload, X, Camera, Search, Filter } from 'lucide-react';
+import { apiRepository } from '@/lib/api-repository';
+import { Plus, Trash2, Edit3, Eye, EyeOff, MapPin, DollarSign, Calendar, Home, Car, Ruler, Calendar as CalendarIcon, Navigation, FileText, ExternalLink, Upload, X, Camera, Search, Filter, ListPlus, CheckCircle2, AlertTriangle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface Comparable {
   id: string;
@@ -2062,6 +2063,39 @@ const ComparableCard: React.FC<{
   );
 };
 
+const buildComparableFromRPItem = (item: any, fallbackAddress: string): Comparable => {
+  const core = item.core || {};
+  const sales = item.sales || {};
+  const rapid = item.rapid || {};
+  const listings = item.listings || {};
+
+  return {
+    id: core.propertyId?.toString() || `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    fullAddress: core.singleLineAddress || core.address?.singleLine || fallbackAddress || '',
+    saleLeasePrice: sales.lastSoldPrice || sales.salePrice || undefined,
+    imageUrl: core.propertyPhotoUri || rapid.imageUrls?.mediumImageUrl || '',
+    bedrooms: core.bedrooms || rapid.beds ? Number(core.bedrooms || rapid.beds) : undefined,
+    bathrooms: core.bathrooms || rapid.baths ? Number(core.bathrooms || rapid.baths) : undefined,
+    carSpaces: core.carSpaces || rapid.carSpaces ? Number(core.carSpaces || rapid.carSpaces) : undefined,
+    siteArea: core.landArea || rapid.landArea ? Number(core.landArea || rapid.landArea) : undefined,
+    buildingArea: core.buildingArea || core.floorArea || rapid.buildingArea || rapid.floorArea ? Number(core.buildingArea || core.floorArea || rapid.buildingArea || rapid.floorArea) : undefined,
+    buildYear: core.yearBuilt || rapid.yearBuilt ? Number(core.yearBuilt || rapid.yearBuilt) : undefined,
+    daysOnMarket: sales.daysOnMarket || listings.daysOnMarket ? Number(sales.daysOnMarket || listings.daysOnMarket) : undefined,
+    saleLeaseDate: sales.saleDate || '',
+    distance: core.distance || rapid.distance || undefined,
+    comparison: '',
+    rpId: core.propertyId?.toString() || rapid.id?.toString() || '',
+    photoUrl: core.propertyPhotoUri || rapid.imageUrls?.mediumImageUrl || '',
+    isComparable: false,
+    propertyType: core.propertyType || rapid.type || '',
+    suburb: core.suburb || rapid.addressSuburb || '',
+    state: core.state || rapid.addressState || '',
+    postcode: core.postcode || rapid.addressPostcode || '',
+    latitude: core.latitude || rapid.addressLocation?.lat || null,
+    longitude: core.longitude || rapid.addressLocation?.lon || null,
+  };
+};
+
 const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; title: string }> = ({
   register,
   errors,
@@ -2093,6 +2127,18 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
   const [isFetchingComparable, setIsFetchingComparable] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Bulk Import state
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkInput, setBulkInput] = useState('');
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [bulkLogs, setBulkLogs] = useState<Array<{
+    address: string;
+    status: 'pending' | 'loading' | 'success' | 'error';
+    message?: string;
+    propertyAddress?: string;
+    price?: number;
+  }>>([]);
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
@@ -2234,6 +2280,161 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
     }
   };
 
+  const handleBulkImport = async () => {
+    const rawAddresses = bulkInput
+      .split(/\r?\n/)
+      .map(a => a.trim())
+      .filter(a => a.length > 0);
+
+    if (rawAddresses.length === 0) {
+      alert('Please enter at least one address to import.');
+      return;
+    }
+
+    const locationDetails = watch('locationDetails');
+    const latitude = locationDetails?.latitude;
+    const longitude = locationDetails?.longitude;
+
+    if (!latitude || !longitude) {
+      alert('Please enter property location coordinates (latitude/longitude) first in Location Details.');
+      return;
+    }
+
+    setIsBulkProcessing(true);
+    const initialLogs = rawAddresses.map(addr => ({
+      address: addr,
+      status: 'pending' as const
+    }));
+    setBulkLogs(initialLogs);
+
+    const newlyResolvedComparables: Comparable[] = [];
+    const updatedLogs = [...initialLogs];
+
+    for (let i = 0; i < rawAddresses.length; i++) {
+      const addr = rawAddresses[i];
+      updatedLogs[i] = { ...updatedLogs[i], status: 'loading' };
+      setBulkLogs([...updatedLogs]);
+
+      try {
+        // 1. Search address via RP Data
+        const searchRes = await fetch(`${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(addr)}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!searchRes.ok) {
+          throw new Error(`Address lookup failed (${searchRes.status})`);
+        }
+
+        const searchData = await searchRes.json();
+        const suggestions = searchData?.data || [];
+
+        if (!suggestions || suggestions.length === 0) {
+          throw new Error('No matching property found in RP Data');
+        }
+
+        const topMatch = suggestions[0];
+        const propertyId = topMatch.propertyId || topMatch.id;
+
+        if (!propertyId) {
+          throw new Error('No property ID found for address');
+        }
+
+        // 2. Fetch sales comparables by RP Data property ID
+        const compRes = await fetch(`${API_BASE_URL}/rpdata/sales-comparables-by-id/${propertyId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            latitude: String(latitude),
+            longitude: String(longitude),
+          }),
+        });
+
+        if (!compRes.ok) {
+          throw new Error(`Details fetch failed (${compRes.status})`);
+        }
+
+        const compData = await compRes.json();
+        if (!compData.success || !compData.data) {
+          throw new Error('No details returned from server');
+        }
+
+        let results = [];
+        if (compData.data.data && Array.isArray(compData.data.data)) {
+          results = compData.data.data;
+        } else if (Array.isArray(compData.data)) {
+          results = compData.data;
+        } else if (compData.data.results && Array.isArray(compData.data.results)) {
+          results = compData.data.results;
+        } else {
+          results = [compData.data];
+        }
+
+        if (results.length === 0) {
+          throw new Error('No comparable sales records found for property');
+        }
+
+        const comparable = buildComparableFromRPItem(results[0], topMatch.singleLineAddress || addr);
+        newlyResolvedComparables.push(comparable);
+
+        updatedLogs[i] = {
+          address: addr,
+          status: 'success',
+          propertyAddress: comparable.fullAddress,
+          price: comparable.saleLeasePrice
+        };
+        setBulkLogs([...updatedLogs]);
+      } catch (err: any) {
+        console.error(`Error importing address "${addr}":`, err);
+        updatedLogs[i] = {
+          address: addr,
+          status: 'error',
+          message: err.message || 'Unknown error'
+        };
+        setBulkLogs([...updatedLogs]);
+      }
+    }
+
+    if (newlyResolvedComparables.length > 0) {
+      const currentComparables = watch(`comparables.${type}`) ?? [];
+      const startIndex = currentComparables.length;
+      const combined = [...currentComparables, ...newlyResolvedComparables];
+      setValue(`comparables.${type}`, combined, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true
+      });
+
+      // Auto-expand newly added cards
+      setExpandedCards(prev => {
+        const next = new Set(prev);
+        for (let idx = startIndex; idx < combined.length; idx++) {
+          next.add(idx);
+        }
+        return next;
+      });
+
+      // Auto-save to report if ID exists
+      const reportId = watch('id');
+      if (reportId) {
+        try {
+          const formData = watch();
+          await apiRepository.updateValuationReport(String(reportId), {
+            ...formData,
+            comparables: {
+              ...(formData.comparables || {}),
+              [type]: combined
+            }
+          } as any);
+        } catch (saveErr) {
+          console.warn('Auto-save after bulk comparables import failed:', saveErr);
+        }
+      }
+    }
+
+    setIsBulkProcessing(false);
+  };
+
   // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -2370,9 +2571,23 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
 
       {/* Address Search */}
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Search className="w-5 h-5 text-blue-600" />
-          <h4 className="text-lg font-semibold text-gray-900">Search Address</h4>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Search className="w-5 h-5 text-blue-600" />
+            <h4 className="text-lg font-semibold text-gray-900">Search Address</h4>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setBulkLogs([]);
+              setShowBulkModal(true);
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors shadow-xs"
+            title="Paste multiple addresses to batch import all of them at once"
+          >
+            <ListPlus className="w-4 h-4 text-blue-600" />
+            Bulk Paste Addresses
+          </button>
         </div>
 
         <div className="relative" ref={searchContainerRef}>
@@ -2381,6 +2596,15 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
               <Input
                 type="text"
                 value={addressSearch}
+                onPaste={(e) => {
+                  const text = e.clipboardData?.getData('text') || '';
+                  if (text.includes('\n')) {
+                    e.preventDefault();
+                    setBulkInput(text.trim());
+                    setBulkLogs([]);
+                    setShowBulkModal(true);
+                  }
+                }}
                 onChange={(e) => {
                   const value = e.target.value;
                   setAddressSearch(value);
@@ -2430,7 +2654,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                     handleAddressSearch();
                   }
                 }}
-                placeholder="Enter address to search..."
+                placeholder="Enter address to search (or paste multiple addresses)..."
                 className="w-full"
               />
             </div>
@@ -2616,6 +2840,163 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
           )}
         </div>
       </div>
+
+      {/* Bulk Import Modal */}
+      {showBulkModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-100 flex items-start justify-between bg-gradient-to-r from-blue-50/60 to-indigo-50/40">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                  <ListPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Bulk Add Comparables</h3>
+                  <p className="text-xs text-gray-500">Paste multiple addresses below (one per line). Each will be added automatically as Comparable #1, #2, etc.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isBulkProcessing) {
+                    setShowBulkModal(false);
+                  }
+                }}
+                disabled={isBulkProcessing}
+                className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-30"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-4 flex-1">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-gray-600">
+                    Address List (one address per line)
+                  </label>
+                  {bulkInput.trim() && (
+                    <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                      {bulkInput.split(/\r?\n/).filter(a => a.trim().length > 0).length} address{bulkInput.split(/\r?\n/).filter(a => a.trim().length > 0).length === 1 ? '' : 'es'} detected
+                    </span>
+                  )}
+                </div>
+                <textarea
+                  value={bulkInput}
+                  onChange={(e) => setBulkInput(e.target.value)}
+                  disabled={isBulkProcessing}
+                  rows={7}
+                  placeholder={`26 SYDNEY STREET RYE VIC 3941\n416-424 DUNDAS STREET ST ANDREWS BEACH VIC 3941\n24 BETHANY CLOSE RYE VIC 3941\n19 AVON ROAD RYE VIC 3941\n9 EGERTON STREET BLAIRGOWRIE VIC 3942`}
+                  className="w-full font-mono text-sm p-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-y disabled:bg-gray-50 disabled:text-gray-500"
+                />
+              </div>
+
+              {/* Real-time Progress Log */}
+              {bulkLogs.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-gray-100">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Import Progress</p>
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {bulkLogs.map((log, idx) => (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-xl border flex items-start justify-between gap-3 text-xs transition-all ${
+                          log.status === 'loading'
+                            ? 'bg-blue-50/70 border-blue-200 text-blue-900'
+                            : log.status === 'success'
+                            ? 'bg-green-50/70 border-green-200 text-green-900'
+                            : log.status === 'error'
+                            ? 'bg-red-50/70 border-red-200 text-red-900'
+                            : 'bg-gray-50 border-gray-200 text-gray-600'
+                        }`}
+                      >
+                        <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                          {log.status === 'loading' && (
+                            <Loader2 className="w-4 h-4 text-blue-600 animate-spin mt-0.5 flex-shrink-0" />
+                          )}
+                          {log.status === 'success' && (
+                            <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          )}
+                          {log.status === 'error' && (
+                            <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+                          )}
+                          {log.status === 'pending' && (
+                            <div className="w-4 h-4 rounded-full border-2 border-gray-300 mt-0.5 flex-shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold truncate">
+                              #{idx + 1}: {log.address}
+                            </p>
+                            {log.propertyAddress && log.propertyAddress !== log.address && (
+                              <p className="text-gray-500 text-[11px] truncate mt-0.5">
+                                Matched: {log.propertyAddress}
+                              </p>
+                            )}
+                            {log.message && (
+                              <p className="text-red-600 font-medium text-[11px] mt-0.5">
+                                {log.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        {log.price && (
+                          <span className="font-bold text-gray-900 flex-shrink-0 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs">
+                            ${Number(log.price).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  setBulkInput('');
+                  setBulkLogs([]);
+                }}
+                disabled={isBulkProcessing || !bulkInput.trim()}
+                className="px-3 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-200/60 rounded-lg transition-colors disabled:opacity-40"
+              >
+                Clear
+              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowBulkModal(false)}
+                  disabled={isBulkProcessing}
+                  className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-50"
+                >
+                  {bulkLogs.some(l => l.status === 'success') ? 'Done' : 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkImport}
+                  disabled={isBulkProcessing || !bulkInput.trim()}
+                  className="inline-flex items-center gap-2 px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isBulkProcessing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <ListPlus className="w-4 h-4" />
+                      Import Comparables
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {comparables.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">

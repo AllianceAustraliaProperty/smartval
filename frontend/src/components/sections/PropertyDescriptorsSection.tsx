@@ -7,18 +7,31 @@ import { INTERNAL_WALLS, EXTERNAL_WALLS } from '@/constants/wall-types';
 import { PARKING_TYPES } from '@/constants/parking-types';
 import { ResidentialMainBuildingTypes, CommercialMainBuildingTypes, AllMainBuildingTypes } from '@/constants/main-building-types';
 import { ResidentialPropertyTypes, CommercialPropertyTypes } from '@/constants/property-types';
-import { Wand2 } from 'lucide-react';
+import { Wand2, AlertTriangle, AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { summarizePhotos } from '@/lib/photo-utils';
 import { apiRepository } from '@/lib/api-repository';
 
+interface UiMessage {
+  type: 'error' | 'warning' | 'success' | 'info';
+  title: string;
+  message?: string;
+  details?: string[];
+}
+
 export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue, control, reportId }) => {
   const [isAutomating, setIsAutomating] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [uiMessage, setUiMessage] = useState<UiMessage | null>(null);
 
   // Watch the property type to determine which building types to show
   const propertyType = watch('propertyDetails.propertyType');
   const isGrannyFlat = watch('propertyDescriptors.isGrannyFlat');
+  const photos = watch('photos') || [];
+  
+  const hasCoverPhoto = useMemo(() => {
+    return Array.isArray(photos) && photos.some(p => p.isCover && p.photoUrl);
+  }, [photos]);
   
   // Filter building types based on property type
   const availableBuildingTypes = useMemo(() => {
@@ -40,31 +53,36 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
 
   const handleAutomate = async () => {
     setIsAutomating(true);
-    const steps: string[] = ['✓ Property descriptors automated:'];
+    setUiMessage(null);
+    const updatedFields: string[] = [];
 
     try {
       // 1. Get photos from form state or API
-      let photos = watch('photos') || [];
-      if ((!photos || photos.length === 0) && reportId && reportId !== 'temp') {
+      let currentPhotos = watch('photos') || [];
+      if ((!currentPhotos || currentPhotos.length === 0) && reportId && reportId !== 'temp') {
         try {
           const resp = await fetch(`${API_BASE_URL}/photos/list/${reportId}`);
           if (resp.ok) {
             const data = await resp.json();
-            photos = data.photos || [];
+            currentPhotos = data.photos || [];
           }
         } catch (e) {
           console.error('Error fetching photos list:', e);
         }
       }
 
-      if (!photos || photos.length === 0) {
-        alert('No photos found. Please upload photos and select a cover photo in the Photos section first.');
+      if (!currentPhotos || currentPhotos.length === 0) {
+        setUiMessage({
+          type: 'error',
+          title: 'No Photos Found',
+          message: 'Please upload property photos in the Photos section first before running automation.'
+        });
         return;
       }
 
       // 2. Count bedrooms and bathrooms from photos
       // Bathrooms and Ensuite count as 1, Toilets / Powder Room count as 0.5
-      const photosSummary = summarizePhotos(photos);
+      const photosSummary = summarizePhotos(currentPhotos);
       let bedroomCount = 0;
       let bathroomCount = 0;
 
@@ -83,15 +101,18 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
 
       if (bedroomCount > 0) {
         setValue('propertyDescriptors.bedrooms', bedroomCount, { shouldDirty: true });
-        steps.push(`  • Bedrooms: ${bedroomCount}`);
+        updatedFields.push(`Bedrooms: ${bedroomCount}`);
       }
       if (bathroomCount > 0) {
         setValue('propertyDescriptors.bathrooms', bathroomCount, { shouldDirty: true });
-        steps.push(`  • Bathrooms: ${bathroomCount}`);
+        updatedFields.push(`Bathrooms: ${bathroomCount}`);
       }
 
       // 3. Find cover photo and analyze building descriptors
-      const coverPhoto = photos.find(p => p.isCover && p.photoUrl);
+      const coverPhoto = currentPhotos.find(p => p.isCover && p.photoUrl);
+      let coverPhotoAnalyzed = false;
+      let coverPhotoError: string | null = null;
+
       if (coverPhoto?.photoUrl) {
         try {
           const response = await fetch('/internal-api/analyze-photo', {
@@ -112,13 +133,14 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
 
           const { data } = await response.json();
           if (data) {
+            coverPhotoAnalyzed = true;
             if (data.mainBuildingType) {
               setValue('propertyDescriptors.mainBuildingType', data.mainBuildingType, { shouldDirty: true });
-              steps.push(`  • Main Building Type: ${data.mainBuildingType}`);
+              updatedFields.push(`Main Building Type: ${data.mainBuildingType}`);
             }
             if (data.roofingType) {
               setValue('propertyDescriptors.roofingType', data.roofingType, { shouldDirty: true });
-              steps.push(`  • Roofing Type: ${data.roofingType}`);
+              updatedFields.push(`Roofing Type: ${data.roofingType}`);
             }
             if (data.externalWalls) {
               const wallsStr = Array.isArray(data.externalWalls)
@@ -126,16 +148,14 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
                 : String(data.externalWalls);
               if (wallsStr) {
                 setValue('propertyDescriptors.externalWalls', wallsStr, { shouldDirty: true });
-                steps.push(`  • External Walls: ${wallsStr}`);
+                updatedFields.push(`External Walls: ${wallsStr}`);
               }
             }
           }
         } catch (err: any) {
           console.error('Error analyzing cover photo:', err);
-          steps.push(`  ⚠ Cover photo analysis warning: ${err.message || 'Analysis failed'}`);
+          coverPhotoError = err.message || 'Cover photo analysis failed';
         }
-      } else {
-        steps.push('  • Note: No Cover Photo selected in Photos section (Select one to auto-detect building type, roofing, and external walls).');
       }
 
       // 4. Auto-save if reportId exists
@@ -144,18 +164,46 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           setIsAutoSaving(true);
           const formData = watch();
           await apiRepository.updateValuationReport(String(reportId), formData as any);
-          steps.push('✓ Changes saved');
         } catch (error) {
-          steps.push('⚠ Auto-save failed');
+          console.error('Auto-save error in Property Descriptors:', error);
         } finally {
           setIsAutoSaving(false);
         }
       }
 
-      alert(steps.join('\n'));
+      // 5. Display UI message with appropriate severity
+      if (!coverPhoto) {
+        setUiMessage({
+          type: 'warning',
+          title: 'Cover Photo Missing',
+          message: 'Room counts were calculated, but Main Building Type, Roofing Type, and External Walls could not be detected because no Cover Photo is selected.',
+          details: [
+            ...updatedFields.map(f => `Updated ${f}`),
+            'To detect building type, roofing, and external walls, mark an exterior photo as "Cover Photo" in the Photos section and click Automate again.'
+          ]
+        });
+      } else if (coverPhotoError) {
+        setUiMessage({
+          type: 'warning',
+          title: 'Cover Photo Analysis Warning',
+          message: coverPhotoError,
+          details: updatedFields.map(f => `Updated ${f}`)
+        });
+      } else {
+        setUiMessage({
+          type: 'success',
+          title: 'Property Descriptors Automated',
+          message: 'Successfully populated descriptor details from photos and auto-saved.',
+          details: updatedFields
+        });
+      }
     } catch (err: any) {
       console.error('Automation error:', err);
-      alert(`Automation failed: ${err.message || 'Unknown error'}`);
+      setUiMessage({
+        type: 'error',
+        title: 'Automation Failed',
+        message: err.message || 'An unexpected error occurred during automation.'
+      });
     } finally {
       setIsAutomating(false);
     }
@@ -188,6 +236,60 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           )}
         </button>
       </div>
+
+      {/* Dynamic Feedback Banner */}
+      {uiMessage && (
+        <div
+          className={`p-4 rounded-xl border flex items-start gap-3 shadow-sm transition-all duration-200 ${
+            uiMessage.type === 'error'
+              ? 'bg-red-50 border-red-200 text-red-900'
+              : uiMessage.type === 'warning'
+              ? 'bg-amber-50 border-amber-200 text-amber-900'
+              : uiMessage.type === 'success'
+              ? 'bg-green-50 border-green-200 text-green-900'
+              : 'bg-blue-50 border-blue-200 text-blue-900'
+          }`}
+        >
+          {uiMessage.type === 'error' && <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />}
+          {uiMessage.type === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />}
+          {uiMessage.type === 'success' && <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />}
+          {uiMessage.type === 'info' && <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />}
+
+          <div className="flex-1 text-sm space-y-1">
+            <p className="font-semibold">{uiMessage.title}</p>
+            {uiMessage.message && <p>{uiMessage.message}</p>}
+            {uiMessage.details && uiMessage.details.length > 0 && (
+              <ul className="list-disc list-inside space-y-0.5 text-xs opacity-90 mt-1">
+                {uiMessage.details.map((detail, idx) => (
+                  <li key={idx}>{detail}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setUiMessage(null)}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+            aria-label="Dismiss message"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Proactive Warning when photos exist but no Cover Photo is selected */}
+      {!uiMessage && photos.length > 0 && !hasCoverPhoto && (
+        <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 shadow-sm">
+          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 text-sm">
+            <p className="font-semibold text-amber-950">No Cover Photo Selected in Photos Section</p>
+            <p className="text-amber-800 mt-0.5">
+              To automatically detect <strong>Main Building Type</strong>, <strong>Roofing Type</strong>, and <strong>External Walls</strong>, please select a photo and mark it as <strong>Cover Photo</strong> in the Photos section.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <FormField
