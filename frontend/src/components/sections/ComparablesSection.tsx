@@ -31,6 +31,14 @@ interface Comparable {
   passingRent?: number;
 }
 
+interface BulkLogEntry {
+  address: string;
+  status: 'pending' | 'loading' | 'success' | 'error';
+  message?: string;
+  propertyAddress?: string;
+  price?: number;
+}
+
 interface SearchFormState {
   propertyType: string[];
   radius: string;
@@ -2126,13 +2134,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkInput, setBulkInput] = useState('');
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
-  const [bulkLogs, setBulkLogs] = useState<Array<{
-    address: string;
-    status: 'pending' | 'loading' | 'success' | 'error';
-    message?: string;
-    propertyAddress?: string;
-    price?: number;
-  }>>([]);
+  const [bulkLogs, setBulkLogs] = useState<BulkLogEntry[]>([]);
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
@@ -2295,14 +2297,14 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
     }
 
     setIsBulkProcessing(true);
-    const initialLogs = rawAddresses.map(addr => ({
+    const initialLogs: BulkLogEntry[] = rawAddresses.map(addr => ({
       address: addr,
-      status: 'pending' as const
+      status: 'pending'
     }));
     setBulkLogs(initialLogs);
 
     const newlyResolvedComparables: Comparable[] = [];
-    const updatedLogs = [...initialLogs];
+    const updatedLogs: BulkLogEntry[] = [...initialLogs];
 
     for (let i = 0; i < rawAddresses.length; i++) {
       const addr = rawAddresses[i];
