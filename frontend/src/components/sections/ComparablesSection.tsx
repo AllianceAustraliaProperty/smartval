@@ -1965,8 +1965,9 @@ const ComparableCard: React.FC<{
                   type="button"
                   onClick={() => {
                     const comp = watch(`comparables.${type}.${index}`);
-                    // Use the comparable's specific zoning if available, otherwise use a placeholder
-                    const zone = comp?.zoning || '[Zone]';
+                    // Use the comparable's specific zoning if available, otherwise fallback to the subject property's zoning, or a placeholder
+                    const subjectZone = watch('propertyDetails.zoning');
+                    const zone = comp?.zoning || subjectZone || '[Zone]';
                     const buildingArea = comp?.buildingArea || '[building area]';
                     const distance = comp?.distance || '[distance]';
                     
