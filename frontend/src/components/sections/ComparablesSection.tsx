@@ -3,7 +3,7 @@ import { FormField, Input, Textarea, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { API_BASE_URL } from '@/lib/api-config';
 import { apiRepository } from '@/lib/api-repository';
-import { Plus, Trash2, Edit3, Eye, EyeOff, MapPin, DollarSign, Calendar, Home, Car, Ruler, Calendar as CalendarIcon, Navigation, FileText, ExternalLink, Upload, X, Camera, Search, Filter, ListPlus, CheckCircle2, AlertTriangle, AlertCircle, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Edit3, Eye, EyeOff, MapPin, DollarSign, Calendar, Home, Car, Ruler, Calendar as CalendarIcon, Navigation, FileText, ExternalLink, Upload, X, Camera, Search, Filter, ListPlus, CheckCircle2, AlertTriangle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
 interface Comparable {
   id: string;
@@ -80,6 +80,7 @@ interface SearchResult {
   rentalRate?: number;
   description?: string;
   passingRent?: number;
+  zoning?: string;
   // Additional fields from RP Data API
   propertyType?: string;
   suburb?: string;
@@ -334,6 +335,7 @@ const searchComparablesAPI = async (params: {
         rpId: core.propertyId?.toString() || rapid.id?.toString() || '',
         photoUrl: core.propertyPhotoUri || rapid.imageUrls?.mediumImageUrl || '',
         isComparable: false,
+        zoning: core.zoning || rapid.zoning || core.zone || rapid.zone || '',
         // Additional useful data
         propertyType: core.propertyType || rapid.type || '',
         suburb: core.suburb || rapid.addressSuburb || '',
@@ -1947,17 +1949,36 @@ const ComparableCard: React.FC<{
               </div>
 
               {/* Description and Comparison Notes */}
-              <FormField
-                label="Description"
-                error={errors.comparables?.[type]?.[index]?.description?.message}
-              >
-                <Textarea
-                  {...register(`comparables.${type}.${index}.description` as const)}
-                  placeholder="Brief description of the property..."
-                  rows={3}
+              <div className="relative">
+                <FormField
+                  label="Description"
                   error={errors.comparables?.[type]?.[index]?.description?.message}
-                />
-              </FormField>
+                >
+                  <Textarea
+                    {...register(`comparables.${type}.${index}.description` as const)}
+                    placeholder="Brief description of the property..."
+                    rows={3}
+                    error={errors.comparables?.[type]?.[index]?.description?.message}
+                  />
+                </FormField>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const comp = watch(`comparables.${type}.${index}`);
+                    // Use the comparable's specific zoning if available, otherwise use a placeholder
+                    const zone = comp?.zoning || '[Zone]';
+                    const buildingArea = comp?.buildingArea || '[building area]';
+                    const distance = comp?.distance || '[distance]';
+                    
+                    const generatedText = `Commercial retail premises with a building area of approximately ${buildingArea} sqm, situated within the ${zone}. The property comprises a well-presented ground-floor commercial unit suitable for retail, showroom, or light commercial use, featuring an open-plan retail/display area, ancillary storage, staff amenities, and convenient on-site and street parking. The property is located approximately ${distance} km from the subject property.`;
+                    
+                    setValue(`comparables.${type}.${index}.description`, generatedText, { shouldDirty: true });
+                  }}
+                  className="absolute top-0 right-0 mt-1 mr-1 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-2 py-0.5 rounded border border-blue-200 hover:bg-blue-50 transition-colors"
+                >
+                  <Sparkles className="w-3 h-3" /> Auto-generate
+                </button>
+              </div>
 
               {/* Comparison Notes and Auto-fill side by side */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

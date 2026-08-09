@@ -357,6 +357,7 @@ export interface ComparableItem {
   isComparable?: boolean;
   residualLandValue?: number;
   landValue?: number;
+  zoning?: string;
   // Temporary client-side-only photo holder to defer uploads until save
   tempPhoto?: { file?: File; previewUrl?: string };
 }
