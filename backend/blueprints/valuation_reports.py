@@ -219,9 +219,7 @@ def generate_pdf_from_html(html: str):
             '--no-zygote',               # avoids sandbox crashes in Docker
         ])
         page = browser.new_page()
-        page.set_content(html, wait_until='domcontentloaded')
-        time.sleep(3)
-        
+        page.set_content(html, wait_until='networkidle')        
         pdf_bytes = page.pdf(
             format="A4",
             print_background=True,

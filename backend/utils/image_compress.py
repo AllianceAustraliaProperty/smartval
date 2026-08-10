@@ -62,7 +62,7 @@ def compress_image_to_data_url(image_url, preset='gallery'):
         return image_url
 
 
-def compress_report_images(report, max_workers=8):
+def compress_report_images(report, max_workers=32):
     """Walk a report dict and replace photoUrl fields with compressed data URLs.
     Skips floor plans and title searches (preserves original for fine-detail content).
     Fetches and compresses images in parallel. Mutates the report in place."""
