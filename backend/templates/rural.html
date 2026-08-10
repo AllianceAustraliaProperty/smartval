@@ -671,15 +671,15 @@
         <!-- AAP Cover Page (default) -->
         <div class="page" style="position: relative; padding: 60px 70px 30px 70px; font-family: Arial, Helvetica, sans-serif;">
             <div>
-                <h2 style="font-family: Arial, Helvetica, sans-serif; font-size: 27px; font-weight: 900; letter-spacing: 1px; margin: 0; color: #000;">AAP VALUATIONS.</h2>
+                <img src="{{ page_logo_url }}" alt="AAP VALUATIONS" style="height: 30px; width: auto; margin-left: -2px;" />
                 <p style="color: #c00000; font-size: 12px; font-style: normal; font-weight: 600; margin: 2px 0 0 8px;">Trusted property valuers</p>
             </div>
             <div style="margin-top: 140px; display: flex; font-size: 13px; font-weight: bold;">
                 <div style="width: 45%; line-height: 1.6;">
-                    <p style="margin: 0;"><a href="mailto:info@allianceaustraliaproperty.com.au" style="color: #2563eb; text-decoration: none;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span style="vertical-align: middle;">info@allianceaustraliaproperty.com.au</span></a></p>
+                    <p style="margin: 0;"><a href="mailto:admin@aapvaluations.com.au" style="color: #000; text-decoration: none;">admin@aapvaluations.com.au</a></p>
                 </div>
                 <div style="width: 55%; padding-left: 50px; line-height: 1.6;">
-                    <p style="margin: 0;"><a href="https://allianceaustraliaproperty.com.au" style="color: #000; text-decoration: none;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span style="vertical-align: middle;">allianceaustraliaproperty.com.au</span></a></p>
+                    <p style="margin: 0;"><a href="https://allianceaustraliaproperty.com.au" style="color: #000; text-decoration: none;">allianceaustraliaproperty.com.au</a></p>
                 </div>
             </div>
             <div style="margin-top: 180px; text-align: center !important;">
@@ -687,17 +687,17 @@
                 <p style="font-size: 23px; margin: 4px 0; text-align: center !important;">{{ record.location_details.street|default('') }}</p>
                 <p style="font-size: 23px; margin: 4px 0; text-align: center !important;">{{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</p>
             </div>
-            {% if aap_cover_design_url %}
-            <div style="position: absolute; bottom: 110px; left: 0; right: 0; text-align: center !important;">
-                <img src="{{ aap_cover_design_url }}" alt="" style="display: inline-block; width: 620px; height: auto;" />
-            </div>
-            {% endif %}
-            <div style="position: absolute; bottom: 30px; left: 0; right: 0; text-align: center !important;">
+            <div style="position: absolute; bottom: 190px; left: 0; right: 0; text-align: center !important; z-index: 2;">
                 <div style="display: inline-block; text-align: center;">
-                    <p style="font-size: 10.5pt; margin: 0 0 3px 0; padding-bottom: 3px; border-bottom: 1.5px solid #2563eb;">Alliance Australia Property Pty Ltd &nbsp;&nbsp;ABN 35 641 373 702&nbsp;&nbsp; Phone: 043 1300 800&nbsp;&nbsp; PO Box 195 NSW 2194</p>
-                    <p style="font-size: 9pt; font-style: italic; margin: 0;">Liability limited by a scheme approved under Professional Standards Legislation</p>
+                    <p style="font-size: 10.5pt; font-weight: bold; margin: 0 0 6px 0; color: #000;">Alliance Australia Property Pty Ltd &nbsp;&nbsp;ABN 35 641 373 702&nbsp;&nbsp; Phone: 043 1300 800&nbsp;&nbsp; PO Box 195 NSW 2194</p>
+                    <p style="font-size: 9pt; font-style: normal; margin: 0; color: #000;">Liability limited by a scheme approved under Professional Standards Legislation.</p>
                 </div>
             </div>
+            {% if aap_cover_design_url %}
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; font-size: 0; z-index: 1;">
+                <img src="{{ aap_cover_design_url }}" alt="" style="width: 100%; height: auto; display: block;" />
+            </div>
+            {% endif %}
             <span class="page-num no-display"></span>
         </div>
         {% endif %}
