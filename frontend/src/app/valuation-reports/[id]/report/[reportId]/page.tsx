@@ -467,7 +467,8 @@ export default function ValuationReportEditPage() {
         isOpen={showPreviewModal}
         onClose={handleClosePreview}
         reportId={reportId}
-        propertyAddress={property.address?.fullAddress}
+        propertyAddress={property?.address?.fullAddress}
+        fileNumber={property?.fileNumber}
       />
     </div>
   );

@@ -637,9 +637,22 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     }
 
     const buffer = fs.readFileSync(tempExcelPath);
+    
+    let finalFileName = `Valuation-Report-${id}.xlsx`;
+    const fileNumber = property?.fileNumber;
+    const propertyAddress = property?.address?.fullAddress;
+    
+    if (fileNumber && propertyAddress) {
+      finalFileName = `${fileNumber} - ${propertyAddress}.xlsx`;
+    } else if (fileNumber) {
+      finalFileName = `${fileNumber}.xlsx`;
+    } else if (propertyAddress) {
+      finalFileName = `${propertyAddress}.xlsx`;
+    }
+
     const file = {
       buffer,
-      originalname: `Valuation-Report-${id}.xlsx`,
+      originalname: finalFileName,
     };
 
     // Upload Excel to OneDrive
@@ -668,7 +681,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       reportUrl: oneDriveUrl,
       pdfUrl: pdfUrl, // Will be empty string if PDF generation failed
       download: downloadBase64,
-      filename: `Valuation-Report-${id}.xlsx`,
+      filename: finalFileName,
       pdfGenerated: pdfGenerated, // ✅ Indicate if PDF was generated
       generationMethod: 'Backend Playwright', // ✅ For debugging
       message: 'Excel report generated successfully. PDF generation handled by backend Playwright system.'

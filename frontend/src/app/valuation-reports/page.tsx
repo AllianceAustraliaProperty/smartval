@@ -65,6 +65,7 @@ export default function ValuationReportsPage() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewReportId, setPreviewReportId] = useState<string | null>(null);
   const [previewAddress, setPreviewAddress] = useState<string>('');
+  const [previewFileNumber, setPreviewFileNumber] = useState<string>('');
   
   // Duplication state
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
@@ -282,9 +283,10 @@ export default function ValuationReportsPage() {
     router.push(`/valuation-reports/${id}/edit`);
   };
 
-  const handlePreview = (id: string, address: string) => {
+  const handlePreview = (id: string, address: string, fileNumber?: string) => {
     setPreviewReportId(id);
     setPreviewAddress(address);
+    setPreviewFileNumber(fileNumber || '');
     setShowPreviewModal(true);
   };
 
@@ -292,6 +294,7 @@ export default function ValuationReportsPage() {
     setShowPreviewModal(false);
     setPreviewReportId(null);
     setPreviewAddress('');
+    setPreviewFileNumber('');
   };
 
 
@@ -687,7 +690,7 @@ export default function ValuationReportsPage() {
                   {/* Action Buttons */}
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => handlePreview(report.id, report.address)}
+                      onClick={() => handlePreview(report.id, report.address, report.fileNumber)}
                       className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                     >
                       <FileSearch className="w-4 h-4 mr-1" />
@@ -1121,6 +1124,7 @@ export default function ValuationReportsPage() {
           onClose={handleClosePreview}
           reportId={previewReportId}
           propertyAddress={previewAddress}
+          fileNumber={previewFileNumber}
         />
       )}
 

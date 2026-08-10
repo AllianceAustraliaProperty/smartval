@@ -333,7 +333,20 @@ export default function ValuationReportEditPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `valuation-report-${reportId}.pdf`;
+      
+      let downloadFilename = `valuation-report-${reportId}.pdf`;
+      const fileNumber = property?.fileNumber;
+      const propertyAddress = property?.address?.fullAddress;
+      
+      if (fileNumber && propertyAddress) {
+        downloadFilename = `${fileNumber} - ${propertyAddress}.pdf`;
+      } else if (fileNumber) {
+        downloadFilename = `${fileNumber}.pdf`;
+      } else if (propertyAddress) {
+        downloadFilename = `${propertyAddress}.pdf`;
+      }
+      
+      link.download = downloadFilename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -799,7 +812,8 @@ export default function ValuationReportEditPage() {
         isOpen={showPreviewModal}
         onClose={handleClosePreview}
         reportId={reportId}
-        propertyAddress={property.address?.fullAddress}
+        propertyAddress={property?.address?.fullAddress}
+        fileNumber={property?.fileNumber}
       />
 
       {/* Invoice Preview Modal */}
@@ -807,7 +821,8 @@ export default function ValuationReportEditPage() {
         isOpen={showInvoicePreviewModal}
         onClose={() => setShowInvoicePreviewModal(false)}
         reportId={reportId}
-        propertyAddress={property.address?.fullAddress}
+        propertyAddress={property?.address?.fullAddress}
+        fileNumber={property?.fileNumber}
         mode="invoice"
       />
 
