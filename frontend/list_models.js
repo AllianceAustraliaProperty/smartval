@@ -1,8 +1,7 @@
 const fs = require('fs');
 const dotenv = require('dotenv');
 dotenv.config({ path: 'C:/Users/agniv/Documents/Repositories/smartval/frontend/.env' });
-
-const apiKey = process.env.GEMINI_API_KEY;
+const apiKey = process.env.GEMINI_API_KEY_1;
 
 if (!apiKey) {
   console.log("No API key found in .env");

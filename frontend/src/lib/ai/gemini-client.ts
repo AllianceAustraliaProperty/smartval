@@ -6,11 +6,29 @@ import { EXTERNAL_WALLS } from "@/constants/wall-types";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
-export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?: RoomCategory): Promise<PhotoAnalysisResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set.");
+let currentKeyIndex = 0;
+function getGeminiApiKey(): string {
+  const keys: string[] = [];
+  if (process.env.GEMINI_API_KEY_1) keys.push(process.env.GEMINI_API_KEY_1);
+  if (process.env.GEMINI_API_KEY_2) keys.push(process.env.GEMINI_API_KEY_2);
+  if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3);
+  
+  if (process.env.GEMINI_API_KEYS) {
+    const splitKeys = process.env.GEMINI_API_KEYS.split(',').map(k => k.trim()).filter(k => k);
+    keys.push(...splitKeys);
   }
+
+  if (keys.length === 0) {
+    throw new Error("No GEMINI_API_KEY(s) found in environment variables.");
+  }
+
+  const key = keys[currentKeyIndex % keys.length];
+  currentKeyIndex = (currentKeyIndex + 1) % keys.length;
+  return key;
+}
+
+export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?: RoomCategory): Promise<PhotoAnalysisResult> {
+  // API key is fetched inside the retry loop to support key rotation on rate limits
 
   // 1. Fetch the image and convert it to Base64
   // Ensure the image URL is accessible from your server or proxy it if necessary.
@@ -88,7 +106,8 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
   let data: any = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const currentApiKey = getGeminiApiKey();
+    const response = await fetch(`${GEMINI_API_URL}?key=${currentApiKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -152,10 +171,7 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
 }
 
 export async function analyzeCoverPhotoWithGemini(imageUrl: string, propertyType?: string): Promise<CoverPhotoAnalysisResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set.");
-  }
+  // API key is fetched inside the retry loop to support key rotation on rate limits
 
   // 1. Fetch the image and convert it to Base64
   let base64Image = "";
@@ -234,7 +250,8 @@ export async function analyzeCoverPhotoWithGemini(imageUrl: string, propertyType
   let data: any = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const currentApiKey = getGeminiApiKey();
+    const response = await fetch(`${GEMINI_API_URL}?key=${currentApiKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
