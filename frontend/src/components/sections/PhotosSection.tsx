@@ -109,6 +109,20 @@ const ROOM_PRIME_COST_ITEMS: Record<string, string[]> = {
   'Workshop': ['shed', 'ceiling fans']
 };
 
+const getCategoryFeatures = (category: string | undefined | null) => {
+  if (!category) return [];
+  if (ROOM_FEATURES[category]) return ROOM_FEATURES[category];
+  const baseCategory = category.replace(/\s*\d+$/, '').trim();
+  return ROOM_FEATURES[baseCategory] || [];
+};
+
+const getCategoryPrimeCostItems = (category: string | undefined | null) => {
+  if (!category) return [];
+  if (ROOM_PRIME_COST_ITEMS[category]) return ROOM_PRIME_COST_ITEMS[category];
+  const baseCategory = category.replace(/\s*\d+$/, '').trim();
+  return ROOM_PRIME_COST_ITEMS[baseCategory] || [];
+};
+
 interface PhotoUploadProps {
   reportId: string;
   onPhotosUpdate: (photos: any[]) => void;
@@ -274,8 +288,8 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
           photo.flooring = data.flooring;
         }
         if (data.categorySpecificDetails) {
-          const categoryFeatures = ROOM_FEATURES[photo.category || ''] || [];
-          const categoryPrimeCostItems = ROOM_PRIME_COST_ITEMS[photo.category || ''] || [];
+          const categoryFeatures = getCategoryFeatures(photo.category);
+          const categoryPrimeCostItems = getCategoryPrimeCostItems(photo.category);
 
           if (data.categorySpecificDetails.featuresAndFixtures && data.categorySpecificDetails.featuresAndFixtures.length > 0) {
             const current = photo.featuresFixtures || [];
@@ -894,16 +908,21 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-800 mb-1">Category</label>
-                              <select
-                                value={ROOM_CATEGORIES.includes(photo.category || '') ? (photo.category || '') : ''}
-                                onChange={(e) => updatePhotoAttribute(index, 'category', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              >
-                                <option value="">Select Category</option>
-                                {ROOM_CATEGORIES.map(cat => (
-                                  <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                              </select>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  list={`category-options-${index}`}
+                                  value={photo.category || ''}
+                                  onChange={(e) => updatePhotoAttribute(index, 'category', e.target.value)}
+                                  placeholder="Select or type category..."
+                                  className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                                <datalist id={`category-options-${index}`}>
+                                  {ROOM_CATEGORIES.map(cat => (
+                                    <option key={cat} value={cat} />
+                                  ))}
+                                </datalist>
+                              </div>
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-800 mb-1">Flooring</label>
@@ -942,7 +961,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                       <div className="max-h-48 overflow-y-auto border-2 border-gray-300 rounded-lg p-4 bg-white">
                         <div className="grid grid-cols-2 gap-2">
                           {/* Predefined features */}
-                          {(ROOM_FEATURES[photo.category || ''] || []).map(feature => (
+                          {(getCategoryFeatures(photo.category)).map(feature => (
                             <label key={feature} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded">
                               <input
                                 type="checkbox"
@@ -961,7 +980,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                           ))}
                           {/* Custom features (not in predefined list) */}
                           {(photo.featuresFixtures || [])
-                            .filter((item: string) => !(ROOM_FEATURES[photo.category || ''] || []).includes(item))
+                            .filter((item: string) => !(getCategoryFeatures(photo.category)).includes(item))
                             .map((feature: string) => (
                               <label key={`custom-${feature}`} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded bg-blue-50">
                                 <input
@@ -979,7 +998,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                               </label>
                             ))}
                         </div>
-                        {(!photo.category || !ROOM_FEATURES[photo.category]) && (photo.featuresFixtures || []).length === 0 && (
+                        {(!photo.category || getCategoryFeatures(photo.category).length === 0) && (photo.featuresFixtures || []).length === 0 && (
                           <p className="text-sm text-gray-600 text-center py-4 bg-gray-100 rounded">Select a category to see features or add custom items</p>
                         )}
                       </div>
@@ -991,7 +1010,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                       <div className="max-h-48 overflow-y-auto border-2 border-gray-300 rounded-lg p-4 bg-white">
                         <div className="grid grid-cols-2 gap-2">
                           {/* Predefined prime cost items */}
-                          {(ROOM_PRIME_COST_ITEMS[photo.category || ''] || []).map(item => (
+                          {(getCategoryPrimeCostItems(photo.category)).map(item => (
                             <label key={item} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded">
                               <input
                                 type="checkbox"
@@ -1010,7 +1029,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                           ))}
                           {/* Custom prime cost items (not in predefined list) */}
                           {(photo.primeCostItems || [])
-                            .filter((item: string) => !(ROOM_PRIME_COST_ITEMS[photo.category || ''] || []).includes(item))
+                            .filter((item: string) => !(getCategoryPrimeCostItems(photo.category)).includes(item))
                             .map((item: string) => (
                               <label key={`custom-${item}`} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded bg-green-50">
                                 <input
@@ -1028,7 +1047,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                               </label>
                             ))}
                         </div>
-                        {(!photo.category || !ROOM_PRIME_COST_ITEMS[photo.category]) && (photo.primeCostItems || []).length === 0 && (
+                        {(!photo.category || getCategoryPrimeCostItems(photo.category).length === 0) && (photo.primeCostItems || []).length === 0 && (
                           <p className="text-sm text-gray-600 text-center py-4 bg-gray-100 rounded">Select a category to see prime cost items or add custom items</p>
                         )}
                       </div>
@@ -1496,16 +1515,21 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                         <h4 className="text-sm font-semibold text-gray-800 mb-2">Basic Details</h4>
                         <div>
                           <label className="block text-sm font-medium text-gray-800 mb-1">Category</label>
-                          <select
-                            value={photo.category || ''}
-                            onChange={(e) => updatePhotoAttribute(index, 'category', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="">Select Category</option>
-                            {ROOM_CATEGORIES.map(cat => (
-                              <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                          </select>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              list={`additional-category-options-${index}`}
+                              value={photo.category || ''}
+                              onChange={(e) => updatePhotoAttribute(index, 'category', e.target.value)}
+                              placeholder="Select or type category..."
+                              className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <datalist id={`additional-category-options-${index}`}>
+                              {ROOM_CATEGORIES.map(cat => (
+                                <option key={cat} value={cat} />
+                              ))}
+                            </datalist>
+                          </div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-800 mb-1">Flooring</label>
@@ -1543,7 +1567,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                   <label className="block text-sm font-semibold text-gray-800 mb-3">Features & Fixtures</label>
                   <div className="max-h-48 overflow-y-auto border-2 border-gray-300 rounded-lg p-4 bg-white">
                     <div className="grid grid-cols-2 gap-2">
-                      {(ROOM_FEATURES[photo.category || ''] || []).map(feature => (
+                      {(getCategoryFeatures(photo.category)).map(feature => (
                         <label key={feature} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded">
                           <input
                             type="checkbox"
@@ -1561,7 +1585,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                         </label>
                       ))}
                       {(photo.featuresFixtures || [])
-                        .filter((item: string) => !(ROOM_FEATURES[photo.category || ''] || []).includes(item))
+                        .filter((item: string) => !(getCategoryFeatures(photo.category)).includes(item))
                         .map((feature: string) => (
                           <label key={`custom-${feature}`} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded bg-blue-50">
                             <input
@@ -1579,7 +1603,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                           </label>
                         ))}
                     </div>
-                    {(!photo.category || !ROOM_FEATURES[photo.category]) && (photo.featuresFixtures || []).length === 0 && (
+                    {(!photo.category || getCategoryFeatures(photo.category).length === 0) && (photo.featuresFixtures || []).length === 0 && (
                       <p className="text-sm text-gray-600 text-center py-4 bg-gray-100 rounded">Select a category to see features or add custom items</p>
                     )}
                   </div>
@@ -1590,7 +1614,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                   <label className="block text-sm font-semibold text-gray-800 mb-3">Prime Cost Items</label>
                   <div className="max-h-48 overflow-y-auto border-2 border-gray-300 rounded-lg p-4 bg-white">
                     <div className="grid grid-cols-2 gap-2">
-                      {(ROOM_PRIME_COST_ITEMS[photo.category || ''] || []).map(item => (
+                      {(getCategoryPrimeCostItems(photo.category)).map(item => (
                         <label key={item} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded">
                           <input
                             type="checkbox"
@@ -1608,7 +1632,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                         </label>
                       ))}
                       {(photo.primeCostItems || [])
-                        .filter((item: string) => !(ROOM_PRIME_COST_ITEMS[photo.category || ''] || []).includes(item))
+                        .filter((item: string) => !(getCategoryPrimeCostItems(photo.category)).includes(item))
                         .map((item: string) => (
                           <label key={`custom-${item}`} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded bg-green-50">
                             <input
@@ -1626,7 +1650,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                           </label>
                         ))}
                     </div>
-                    {(!photo.category || !ROOM_PRIME_COST_ITEMS[photo.category]) && (photo.primeCostItems || []).length === 0 && (
+                    {(!photo.category || getCategoryPrimeCostItems(photo.category).length === 0) && (photo.primeCostItems || []).length === 0 && (
                       <p className="text-sm text-gray-600 text-center py-4 bg-gray-100 rounded">Select a category to see prime cost items or add custom items</p>
                     )}
                   </div>
