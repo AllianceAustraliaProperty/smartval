@@ -9,7 +9,8 @@ export const PARKING_TYPES = [
   "3 Secure Car Space",
   "1 Secure Car Space With Storage Space",
   "2 Secure Car Space With Storage Space",
-  "3 Secure Car Space With Storage Space"
+  "3 Secure Car Space With Storage Space",
+  "N/A"
 ] as const;
 
 export type ParkingType = typeof PARKING_TYPES[number];
