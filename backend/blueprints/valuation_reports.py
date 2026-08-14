@@ -471,6 +471,11 @@ def generate_html_report(report_id, template_name='residential.html'):
 
         # Process photos data
         report["photosSummary"] = summarize_photos(report.get("photos", []))
+        
+        # Filter out empty photos (tabs without photos) so they don't render broken images
+        if "photos" in report:
+            report["photos"] = [p for p in report["photos"] if p.get("photoUrl")]
+            
         gallery_photos = [photo for photo in report.get("photos", []) if photo.get("isGallery")]
         gallery_photos_groups = [gallery_photos[i:i+6] for i in range(0, len(gallery_photos), 6)]
         annexures = [photo for photo in report.get("photos", []) if photo.get("isAnnexure")]
@@ -483,6 +488,9 @@ def generate_html_report(report_id, template_name='residential.html'):
             report["additionalPhotosSummary"] = summarize_photos(report.get("additionalPhotos", []))
         else:
             report["additionalPhotosSummary"] = {"categories": []}
+            
+        if "additionalPhotos" in report:
+            report["additionalPhotos"] = [p for p in report["additionalPhotos"] if p.get("photoUrl")]
         
         # Add processed data to report
         report["gallery_photos_groups"] = gallery_photos_groups
