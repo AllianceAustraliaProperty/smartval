@@ -218,18 +218,26 @@ def generate_pdf_from_html(html: str):
             '--disable-gpu',             # no GPU in Docker
             '--no-zygote',               # avoids sandbox crashes in Docker
         ])
-        page = browser.new_page()
-        page.set_content(html, wait_until='networkidle')        
-        pdf_bytes = page.pdf(
-            format="A4",
-            print_background=True,
-            margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
-        )
-        
-        # Explicitly close the browser to ensure Playwright cleans up /tmp artifacts
-        browser.close()
-        
-        return pdf_bytes
+        try:
+            page = browser.new_page()
+            
+            try:
+                # Set content and wait for basic load
+                page.set_content(html, wait_until='load', timeout=60000)
+                # Optionally wait for network idle for images/fonts, but catch timeout if it hangs
+                page.wait_for_load_state('networkidle', timeout=15000)
+            except Exception as e:
+                print(f"Warning: Playwright wait timeout during PDF generation: {e}")
+                
+            pdf_bytes = page.pdf(
+                format="A4",
+                print_background=True,
+                margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
+            )
+            return pdf_bytes
+        finally:
+            # Explicitly close the browser to ensure Playwright cleans up /tmp artifacts
+            browser.close()
 
 @valuation_reports_bp.route('/', methods=['GET'])
 def get_all_valuation_reports():
