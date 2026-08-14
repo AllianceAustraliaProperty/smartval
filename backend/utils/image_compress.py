@@ -7,7 +7,7 @@ import base64
 import io
 from concurrent.futures import ThreadPoolExecutor
 import requests
-from PIL import Image
+from PIL import Image, ImageOps
 
 # Per-asset compression presets (max_width_px, jpeg_quality)
 PRESETS = {
@@ -34,6 +34,7 @@ def compress_image_to_data_url(image_url, preset='gallery'):
         resp = _session.get(image_url, timeout=20)
         resp.raise_for_status()
         img = Image.open(io.BytesIO(resp.content))
+        img = ImageOps.exif_transpose(img)
 
         # Flatten transparent images onto white before JPEG encode
         if img.mode in ('RGBA', 'LA'):
