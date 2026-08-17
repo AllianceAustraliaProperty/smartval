@@ -67,6 +67,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   const locationMapImageWidth = 500;
   const locationMapImageHeight = 190;
 
+  let tempExcelPath = '';
   try {
     const property: any = await PropertyValuation.findById(id).lean();
     if (!property) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
@@ -589,7 +590,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
 
     // ✅ Save Excel file to temp directory first
     // ✅ Save Excel file to temp directory with proper handling
-    const tempExcelPath = path.join(os.tmpdir(), `${id}-valuation-report-${Date.now()}.xlsx`);
+    tempExcelPath = path.join(os.tmpdir(), `${id}-valuation-report-${Date.now()}.xlsx`);
     
     // Ensure the temp directory exists and is writable
     const tempDir = path.dirname(tempExcelPath);
@@ -692,7 +693,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     
     // Clean up temp file on error
     try {
-      if (typeof tempExcelPath !== 'undefined' && fs.existsSync(tempExcelPath)) {
+      if (tempExcelPath && fs.existsSync(tempExcelPath)) {
         fs.unlinkSync(tempExcelPath);
       }
     } catch {}
