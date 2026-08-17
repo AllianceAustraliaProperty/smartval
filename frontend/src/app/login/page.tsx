@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Shield, Lock, Mail, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import aapLogo from '../aap-logo.svg';
-import { Dancing_Script, Inter } from 'next/font/google';
+import { Dancing_Script} from 'next/font/google';
 import { signIn, getCurrentUser, getIdToken } from '@/lib/auth';
 import { loginSchema, type LoginInput } from '@/lib/validation';
 import { z } from 'zod';
@@ -15,10 +15,6 @@ const dancingScript = Dancing_Script({
   subsets: ['latin'],
 });
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
 
 export default function LoginPage() {
   const router = useRouter();
@@ -116,7 +112,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className={`min-h-screen relative overflow-hidden flex items-center justify-center ${inter.className}`}
+      className={`min-h-screen relative overflow-hidden flex items-center justify-center`}
       style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
     >
 
@@ -157,7 +153,7 @@ export default function LoginPage() {
             </div>
 
             <h1 className="text-5xl tracking-wide mb-3 flex items-center justify-center">
-              <span className={`font-bold text-[#1f7cc6] ${inter.className}`}>SMART</span>
+              <span className={`font-bold text-[#1f7cc6]`}>SMART</span>
               <span className={`text-[#1f7cc6] relative -top-[0.1px] ${dancingScript.className}`} style={{ marginLeft: '2px', fontSize: '1.05em' }}>val</span>
             </h1>
             <p className="text-slate-700 tracking-wide font-medium mb-3 text-sm">A Digital Solution for Alliance Australia Property PTY LTD</p>

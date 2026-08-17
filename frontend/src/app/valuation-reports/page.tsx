@@ -8,7 +8,7 @@ import axios from 'axios';
 import { apiRepository } from '@/lib/api-repository';
 import { DEFAULT_PROPERTY_FORM, PropertyData } from '@/types/property-valuation';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
-import { Inter, Dancing_Script } from 'next/font/google';
+import { Dancing_Script } from 'next/font/google';
 import Image from 'next/image';
 import aapLogo from '../aap-logo.svg';
 
@@ -17,10 +17,6 @@ const dancingScript = Dancing_Script({
   subsets: ['latin'],
 });
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
 
 interface ValuationReportCardData {
   id: string;
@@ -458,7 +454,7 @@ export default function ValuationReportsPage() {
   if (isLoading) {
     return (
       <div
-        className={`min-h-screen relative overflow-hidden flex items-center justify-center ${inter.className}`}
+        className={`min-h-screen relative overflow-hidden flex items-center justify-center`}
         style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
       >
         <div
@@ -482,7 +478,7 @@ export default function ValuationReportsPage() {
   }
 
   return (
-    <div className={`h-screen bg-white flex flex-col font-sans ${inter.className}`}>
+    <div className={`h-screen bg-white flex flex-col font-sans`}>
       
       {/* TOP HEADER */}
       <header className="h-[80px] flex items-center justify-between pl-4 pr-6 lg:pl-4 lg:pr-8 shrink-0 relative z-20">
@@ -492,7 +488,7 @@ export default function ValuationReportsPage() {
             <Image src={aapLogo} alt="AAP Logo" width={52} height={52} className="w-[52px] h-[52px] object-contain drop-shadow-sm transform transition-transform duration-500 ease-out group-hover:scale-105" priority />
             <div className="flex flex-col justify-center">
               <h1 className="text-4xl tracking-wide flex items-center h-10">
-                <span className={`font-bold text-[#1f7cc6] ${inter.className}`}>SMART</span>
+                <span className={`font-bold text-[#1f7cc6]`}>SMART</span>
                 <span className={`text-[#1f7cc6] relative -top-[0.1px] ${dancingScript.className}`} style={{ marginLeft: '2px', fontSize: '1.05em' }}>val</span>
               </h1>
               <p className="text-gray-500 font-medium text-xs tracking-wide">Alliance Australia Property</p>

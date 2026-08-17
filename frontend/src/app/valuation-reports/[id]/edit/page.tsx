@@ -21,12 +21,7 @@ import {
 } from '@/components/sections';
 import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch, Download, AlertTriangle, Receipt, ChevronDown, Send } from 'lucide-react';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
-import { Inter } from 'next/font/google';
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
 
 const sectionComponents = {
   propertyAddress: AddressAndContactSection,
@@ -468,7 +463,7 @@ export default function ValuationReportEditPage() {
   if (isLoading) {
     return (
       <div
-        className={`min-h-screen relative overflow-hidden flex items-center justify-center ${inter.className}`}
+        className={`min-h-screen relative overflow-hidden flex items-center justify-center`}
         style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
       >
         <div

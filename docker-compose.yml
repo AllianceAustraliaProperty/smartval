@@ -11,6 +11,11 @@ services:
       - ./backend/.env
     volumes:
       - ./backend/uploads:/app/uploads
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - smartval-network
 
@@ -31,6 +36,11 @@ services:
     restart: unless-stopped
     env_file:
       - ./frontend/.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       - backend
     networks:
@@ -47,6 +57,11 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       - frontend
       - backend

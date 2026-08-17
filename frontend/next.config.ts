@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
 
   images: {
     domains: ['aap356-my.sharepoint.com'],
+    unoptimized: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

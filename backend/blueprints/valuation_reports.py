@@ -209,7 +209,27 @@ def convert_date_strings_to_datetime(data, date_fields):
     return data
 
 
+def _cleanup_old_playwright_tmp(max_age_seconds=300):
+    """Remove orphaned Playwright/Chromium temp dirs older than max_age_seconds."""
+    import glob, shutil, time as _time
+    patterns = ['/tmp/playwright*', '/tmp/.org.chromium*', '/tmp/Temp-*']
+    for pattern in patterns:
+        for d in glob.glob(pattern):
+            try:
+                age = _time.time() - os.path.getmtime(d)
+                if age > max_age_seconds:
+                    if os.path.isdir(d):
+                        shutil.rmtree(d, ignore_errors=True)
+                    else:
+                        os.remove(d)
+            except Exception:
+                pass
+
+
 def generate_pdf_from_html(html: str):
+    # Clean up any orphaned Playwright temp files before spawning a new browser
+    _cleanup_old_playwright_tmp()
+
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(args=[
             '--no-sandbox',

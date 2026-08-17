@@ -690,6 +690,13 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   } catch (err: any) {
     console.error('Excel Report Error:', err);
     
+    // Clean up temp file on error
+    try {
+      if (typeof tempExcelPath !== 'undefined' && fs.existsSync(tempExcelPath)) {
+        fs.unlinkSync(tempExcelPath);
+      }
+    } catch {}
+
     // ✅ Enhanced error handling for different error types
     if (err.message.includes('token') || err.message.includes('401') || err.message.includes('Authentication')) {
       return NextResponse.json({ 

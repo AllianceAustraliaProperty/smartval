@@ -22,13 +22,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { getCurrentUser, signOut, getAllUsers, createUser, type User } from '@/lib/auth';
-import { Inter } from 'next/font/google';
 import { SECURITY_CONFIG, SECURITY_EVENTS } from '@/lib/security-config';
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
 
 interface SecurityEvent {
   id: string;
@@ -178,7 +173,7 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div
-        className={`min-h-screen relative overflow-hidden flex items-center justify-center ${inter.className}`}
+        className={`min-h-screen relative overflow-hidden flex items-center justify-center`}
         style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
       >
         <div

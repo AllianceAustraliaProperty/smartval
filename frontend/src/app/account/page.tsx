@@ -4,12 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Building, Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2, AlertCircle, MapPin } from 'lucide-react';
 import { getCurrentUser, changePassword, type User } from '@/lib/auth';
-import { Inter } from 'next/font/google';
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
 
 export default function AccountPage() {
   const router = useRouter();
@@ -102,7 +97,7 @@ export default function AccountPage() {
   if (isLoading) {
     return (
       <div
-        className={`min-h-screen relative overflow-hidden flex items-center justify-center ${inter.className}`}
+        className={`min-h-screen relative overflow-hidden flex items-center justify-center`}
         style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
       >
         <div
