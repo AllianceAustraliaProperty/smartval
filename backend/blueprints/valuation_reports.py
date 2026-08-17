@@ -263,7 +263,17 @@ def generate_pdf_from_html(html: str):
 def get_all_valuation_reports():
     """Get all valuation reports"""
     try:
-        reports = valuation_report_model.get_all()
+        # Only fetch the fields needed for the valuation reports summary cards
+        projection = {
+            'address.fullAddress': 1,
+            'rpDataId': 1,
+            'allianceId': 1,
+            'createdAt': 1,
+            'updatedAt': 1,
+            'fileNumber': 1,
+            'propertyDetails.propertyType': 1
+        }
+        reports = valuation_report_model.get_all(projection=projection)
         return jsonify({
             'reports': reports,
             'count': len(reports)

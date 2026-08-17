@@ -51,9 +51,10 @@ class ValuationReport:
         except:
             return []
     
-    def get_all(self) -> List[Dict[str, Any]]:
+    def get_all(self, projection: Dict[str, int] = None) -> List[Dict[str, Any]]:
         """Get all valuation reports"""
-        reports = list(self.collection.find().sort('updatedAt', -1))
+        cursor = self.collection.find({}, projection).sort('updatedAt', -1)
+        reports = list(cursor)
         # Convert ObjectId to string for JSON serialization
         for report in reports:
             if '_id' in report:
