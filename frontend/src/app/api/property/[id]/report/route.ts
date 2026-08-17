@@ -309,7 +309,28 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       ...additionalPhotos.map((url: string) => ({ type: 'Additional', url })),
     ];
 
-    for (let i = 0; i < Math.min(allPhotos.length, maxRows); i++) {
+    const photosToProcess = allPhotos.slice(0, maxRows);
+    
+    // Download all images in parallel
+    const downloadedImages = await Promise.all(
+      photosToProcess.map(async (photo, i) => {
+        try {
+          const downloadUrl = await getOneDriveDownloadUrl(photo.url);
+          const response = await fetch(downloadUrl);
+          const imageBuffer = await response.arrayBuffer();
+          return { buffer: imageBuffer, type: photo.type };
+        } catch (error) {
+          console.error(`Failed to download image at position ${i}:`, error);
+          return null;
+        }
+      })
+    );
+
+    // Embed them sequentially into the workbook
+    for (let i = 0; i < downloadedImages.length; i++) {
+      const img = downloadedImages[i];
+      if (!img) continue;
+
       const rowIndex = Math.floor(i / photosPerRow);
       const colIndex = i % photosPerRow;
       
@@ -317,13 +338,8 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       const row = 5 + (rowIndex * 8);
 
       try {
-        // ✅ Use new token manager (no manual token needed)
-        const downloadUrl = await getOneDriveDownloadUrl(allPhotos[i].url);
-        const response = await fetch(downloadUrl);
-        const imageBuffer = await response.arrayBuffer();
-
         const imageId = workbook.addImage({
-          buffer: Buffer.from(imageBuffer) as any,
+          buffer: Buffer.from(img.buffer) as any,
           extension: 'png', 
         });
 
@@ -332,7 +348,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
           ext: { width: imageWidth, height: imageHeight },
         });
         
-        console.log(`✅ Photo ${i+1} embedded: ${imageBuffer.byteLength} bytes (${allPhotos[i].type})`);
+        console.log(`✅ Photo ${i+1} embedded: ${img.buffer.byteLength} bytes (${img.type})`);
       } catch (error) {
         console.error(`Failed to embed image at position ${i}:`, error);
       }
@@ -417,7 +433,29 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     // ✅ Render 6 photos in clean 3×2 grid
     console.log(`📊 Valuation Summary: Rendering ${Math.min(allPhotos1.length, maxPhotosValuationSummary)} out of ${allPhotos1.length} total photos in 3×2 grid`);
     
-    for (let i = 0; i < Math.min(allPhotos1.length, maxPhotosValuationSummary); i++) {
+    const photosToProcess1 = allPhotos1.slice(0, maxPhotosValuationSummary);
+    
+    // Download and crop all images in parallel
+    const downloadedImages1 = await Promise.all(
+      photosToProcess1.map(async (photo, i) => {
+        try {
+          const downloadUrl = await getOneDriveDownloadUrl(photo.url);
+          const response = await fetch(downloadUrl);
+          const imageBuffer = await response.arrayBuffer();
+          const croppedImageBuffer = await cropImageToFit(imageBuffer, targetImageWidth, targetImageHeight);
+          return { buffer: croppedImageBuffer, type: photo.type };
+        } catch (error) {
+          console.error(`Failed to download and crop image at position ${i}:`, error);
+          return null;
+        }
+      })
+    );
+
+    // Embed them sequentially into the workbook
+    for (let i = 0; i < downloadedImages1.length; i++) {
+      const img = downloadedImages1[i];
+      if (!img) continue;
+
       const rowIndex = Math.floor(i / photosPerRow1); // 0, 0, 1, 1, 2, 2
       const colIndex = i % photosPerRow1;             // 0, 1, 0, 1, 0, 1
       
@@ -433,16 +471,8 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       console.log(`📍 Photo ${i+1}: Position (${col}, ${row}) - Row ${rowIndex+1}, Col ${colIndex+1}`);
 
       try {
-        // ✅ Download and crop image
-        const downloadUrl = await getOneDriveDownloadUrl(allPhotos1[i].url);
-        const response = await fetch(downloadUrl);
-        const imageBuffer = await response.arrayBuffer();
-
-        // ✅ Crop image to fit perfectly in box
-        const croppedImageBuffer = await cropImageToFit(imageBuffer, targetImageWidth, targetImageHeight);
-
         const imageId = workbook.addImage({
-          buffer: croppedImageBuffer as any,
+          buffer: img.buffer as any,
           extension: 'png', 
         });
 
@@ -456,11 +486,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
           ext: { width: finalImageWidth, height: finalImageHeight },
         });
         
-        console.log(`✅ Photo ${i+1} (${allPhotos1[i].type}) added to grid position ${rowIndex+1}×${colIndex+1} with black border`);
+        console.log(`✅ Photo ${i+1} (${img.type}) added to grid position ${rowIndex+1}×${colIndex+1} with black border`);
       } catch (error) {
         console.error(`Failed to embed valuation summary image at position ${i}:`, error);
       }
     }
+
 
     // Clear remaining cells in valuation summary (based on 6 photo limit)
     const photosRenderedInValuation = Math.min(allPhotos1.length, maxPhotosValuationSummary);
@@ -494,7 +525,27 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       // Start photos grid at same row level as Photos section
       
       // Process granny flat photos with same 3x2 grid layout as main photos
-      for (let i = 0; i < Math.min(grannyFlatPhotos.length, maxGrannyFlatPhotos); i++) {
+      const grannyPhotosToProcess = grannyFlatPhotos.slice(0, maxGrannyFlatPhotos);
+      
+      const downloadedGrannyImages = await Promise.all(
+        grannyPhotosToProcess.map(async (url: string, i: number) => {
+          try {
+            const downloadUrl = await getOneDriveDownloadUrl(url);
+            const response = await fetch(downloadUrl);
+            const imageBuffer = await response.arrayBuffer();
+            const croppedImageBuffer = await cropImageToFit(imageBuffer, targetImageWidth, targetImageHeight);
+            return { buffer: croppedImageBuffer };
+          } catch (error) {
+            console.error(`Failed to download and crop granny flat image at position ${i}:`, error);
+            return null;
+          }
+        })
+      );
+
+      for (let i = 0; i < downloadedGrannyImages.length; i++) {
+        const img = downloadedGrannyImages[i];
+        if (!img) continue;
+
         const rowIndex = Math.floor(i / grannyFlatPhotosPerRow); // 0, 0, 1, 1, 2, 2  
         const colIndex = i % grannyFlatPhotosPerRow;             // 0, 1, 0, 1, 0, 1
         
@@ -508,16 +559,8 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
         console.log(`📍 Granny Flat Photo ${i+1}: LEFT PAGE Position (${col}, ${row}) - Row ${rowIndex+1}, Col ${colIndex+1}`);
 
         try {
-          // Download and crop granny flat image
-          const downloadUrl = await getOneDriveDownloadUrl(grannyFlatPhotos[i]);
-          const response = await fetch(downloadUrl);
-          const imageBuffer = await response.arrayBuffer();
-
-          // Crop image to fit perfectly in box (same as photos section)
-          const croppedImageBuffer = await cropImageToFit(imageBuffer, targetImageWidth, targetImageHeight);
-
           const imageId = workbook.addImage({
-            buffer: croppedImageBuffer as any,
+            buffer: img.buffer as any,
             extension: 'png', 
           });
 

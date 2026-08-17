@@ -735,6 +735,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                           src={`${photo.photoUrl}`}
                           alt={`Photo ${index + 1}`}
                           className="w-full h-auto max-h-96 object-contain rounded-lg border-2 border-gray-200"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-96 flex flex-col items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300">
@@ -1430,6 +1431,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                       src={`${photo.photoUrl}`}
                       alt={`Additional Photo ${index + 1}`}
                       className="w-full h-auto max-h-96 object-contain rounded-lg border-2 border-gray-200"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-96 flex flex-col items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300">
