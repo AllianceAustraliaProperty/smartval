@@ -311,16 +311,18 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
 
     const photosToProcess = allPhotos.slice(0, maxRows);
     
-    // Download all images in parallel
+    // Download all images in parallel and compress them
     const downloadedImages = await Promise.all(
       photosToProcess.map(async (photo, i) => {
         try {
           const downloadUrl = await getOneDriveDownloadUrl(photo.url);
           const response = await fetch(downloadUrl);
           const imageBuffer = await response.arrayBuffer();
-          return { buffer: imageBuffer, type: photo.type };
+          // Compress and crop image to reduce size
+          const croppedImageBuffer = await cropImageToFit(imageBuffer, imageWidth, imageHeight);
+          return { buffer: croppedImageBuffer, type: photo.type };
         } catch (error) {
-          console.error(`Failed to download image at position ${i}:`, error);
+          console.error(`Failed to download and crop image at position ${i}:`, error);
           return null;
         }
       })
