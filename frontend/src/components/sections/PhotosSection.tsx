@@ -165,7 +165,11 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
           const num = match ? parseInt(match[0], 10) : 0;
           return 50 + num;
         }
-        if (lower === 'ensuite') return 60;
+        if (lower.startsWith('ensuite')) {
+          const match = lower.match(/\d+/);
+          const num = match ? parseInt(match[0], 10) : 0;
+          return 60 + num;
+        }
         if (lower === 'balcony' || lower === 'deck' || lower === 'balcony/deck') return 70;
         if (lower === 'patio') return 80;
         return 100;

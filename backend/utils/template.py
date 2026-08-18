@@ -58,11 +58,16 @@ def summarize_photos(photos: list[dict]):
         if lower.startswith('bedroom '):
             match = re.search(r'bedroom (\d+)', lower)
             if match:
-                return (0, int(match.group(1)), category)
+                return (0, 0, int(match.group(1)), category)
+        if lower.startswith('ensuite'):
+            match = re.search(r'ensuite\s*(\d*)', lower)
+            num = int(match.group(1)) if match and match.group(1) else 0
+            base_idx = CATEGORY_ORDER.index('Ensuite') if 'Ensuite' in CATEGORY_ORDER else 2
+            return (1, base_idx, num, category)
         idx = CATEGORY_ORDER.index(category) if category in CATEGORY_ORDER else -1
         if idx != -1:
-            return (1, idx, category)
-        return (2, 0, category)
+            return (1, idx, 0, category)
+        return (2, 0, 0, category)
 
     categories.sort(key=lambda x: get_category_sort_key(x['category']))
 
