@@ -139,10 +139,9 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const photoGridRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
-  const [queuedPhotoUrls, setQueuedPhotoUrls] = useState<Set<string>>(new Set());
-  const [processingPhotoUrl, setProcessingPhotoUrl] = useState<string | null>(null);
-  const queueRef = useRef<{ photoUrl: string; expectedCategory?: string }[]>([]);
-  const isProcessingQueueRef = useRef(false);
+  const [processingPhotoUrls, setProcessingPhotoUrls] = useState<Set<string>>(new Set());
+  const updateQueueRef = useRef<{ photoUrl: string, data: any }[]>([]);
+  const isUpdatingRef = useRef(false);
   const photosRef = useRef<any[]>(photos);
 
   useEffect(() => {
@@ -195,153 +194,149 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
     }
   };
 
-  const processQueue = async () => {
-    if (isProcessingQueueRef.current) return;
-    isProcessingQueueRef.current = true;
+  const processUpdateQueue = async () => {
+    if (isUpdatingRef.current) return;
+    isUpdatingRef.current = true;
 
-    while (queueRef.current.length > 0) {
-      const nextItem = queueRef.current.shift();
-      if (!nextItem) break;
+    while (updateQueueRef.current.length > 0) {
+      const nextUpdate = updateQueueRef.current.shift();
+      if (!nextUpdate) break;
 
-      const { photoUrl, expectedCategory } = nextItem;
+      const { photoUrl, data } = nextUpdate;
 
-      setQueuedPhotoUrls(prev => {
-        const next = new Set(prev);
-        next.delete(photoUrl);
-        return next;
-      });
-      setProcessingPhotoUrl(photoUrl);
+      const latestPhotos = [...photosRef.current];
+      const targetIndex = latestPhotos.findIndex(p => p.photoUrl === photoUrl);
 
-      try {
-        console.log("Processing queued photo automation:", { photoUrl, expectedCategory });
-        const response = await fetch('/internal-api/analyze-photo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            imageUrl: photoUrl, 
-            expectedCategory: expectedCategory || undefined 
-          }),
-        });
+      if (targetIndex === -1) {
+        continue;
+      }
 
-        if (!response.ok) {
-          let errorData;
-          try {
-            errorData = await response.json();
-          } catch (e) {}
-          throw new Error(errorData?.error || 'Failed to analyze photo');
-        }
+      const photo = { ...latestPhotos[targetIndex] };
 
-        const { data } = await response.json();
+      if (data.category && !photo.category) {
+        let finalCategory = data.category;
         
-        const latestPhotos = [...photosRef.current];
-        const targetIndex = latestPhotos.findIndex(p => p.photoUrl === photoUrl);
-
-        if (targetIndex === -1) {
-          console.warn("Photo was removed before automation completed:", photoUrl);
-          continue;
-        }
-
-        const photo = { ...latestPhotos[targetIndex] };
-
-        if (data.category && !photo.category) {
-          let finalCategory = data.category;
-          
-          if (finalCategory.toLowerCase().startsWith('bedroom')) {
-            let maxBedroom = 0;
-            latestPhotos.forEach(p => {
-              if (p.category && p.category.toLowerCase().startsWith('bedroom')) {
-                if (p.category.toLowerCase() === 'bedroom') {
-                  maxBedroom = Math.max(maxBedroom, 1);
-                } else {
-                  const match = p.category.match(/\d+/);
-                  if (match) {
-                    maxBedroom = Math.max(maxBedroom, parseInt(match[0], 10));
-                  }
-                }
-              }
-            });
-            finalCategory = `Bedroom ${maxBedroom + 1}`;
-          } else if (finalCategory.toLowerCase().startsWith('ensuite')) {
-            let ensuiteCount = 0;
-            let maxEnsuite = 1;
-            latestPhotos.forEach(p => {
-              if (p.category && p.category.toLowerCase().startsWith('ensuite')) {
-                ensuiteCount++;
+        if (finalCategory.toLowerCase().startsWith('bedroom')) {
+          let maxBedroom = 0;
+          latestPhotos.forEach(p => {
+            if (p.category && p.category.toLowerCase().startsWith('bedroom')) {
+              if (p.category.toLowerCase() === 'bedroom') {
+                maxBedroom = Math.max(maxBedroom, 1);
+              } else {
                 const match = p.category.match(/\d+/);
                 if (match) {
-                  maxEnsuite = Math.max(maxEnsuite, parseInt(match[0], 10));
-                } else if (p.category.toLowerCase() === 'ensuite') {
-                  maxEnsuite = Math.max(maxEnsuite, 1);
+                  maxBedroom = Math.max(maxBedroom, parseInt(match[0], 10));
                 }
               }
-            });
-            if (ensuiteCount === 0) {
-              finalCategory = 'Ensuite';
-            } else {
-              finalCategory = `Ensuite ${maxEnsuite + 1}`;
             }
+          });
+          finalCategory = `Bedroom ${maxBedroom + 1}`;
+        } else if (finalCategory.toLowerCase().startsWith('ensuite')) {
+          let ensuiteCount = 0;
+          let maxEnsuite = 1;
+          latestPhotos.forEach(p => {
+            if (p.category && p.category.toLowerCase().startsWith('ensuite')) {
+              ensuiteCount++;
+              const match = p.category.match(/\d+/);
+              if (match) {
+                maxEnsuite = Math.max(maxEnsuite, parseInt(match[0], 10));
+              } else if (p.category.toLowerCase() === 'ensuite') {
+                maxEnsuite = Math.max(maxEnsuite, 1);
+              }
+            }
+          });
+          if (ensuiteCount === 0) {
+            finalCategory = 'Ensuite';
+          } else {
+            finalCategory = `Ensuite ${maxEnsuite + 1}`;
           }
-
-          photo.category = finalCategory;
-        }
-        if (data.flooring && !photo.flooring) {
-          photo.flooring = data.flooring;
-        }
-        if (data.categorySpecificDetails) {
-          const categoryFeatures = getCategoryFeatures(photo.category);
-          const categoryPrimeCostItems = getCategoryPrimeCostItems(photo.category);
-
-          if (data.categorySpecificDetails.featuresAndFixtures && data.categorySpecificDetails.featuresAndFixtures.length > 0) {
-            const current = photo.featuresFixtures || [];
-            const validAiFeatures = data.categorySpecificDetails.featuresAndFixtures.filter((f: string) => categoryFeatures.includes(f));
-            photo.featuresFixtures = Array.from(new Set([...current, ...validAiFeatures]));
-          }
-          if (data.categorySpecificDetails.primeCostItems && data.categorySpecificDetails.primeCostItems.length > 0) {
-            const current = photo.primeCostItems || [];
-            const validAiItems = data.categorySpecificDetails.primeCostItems.filter((i: string) => categoryPrimeCostItems.includes(i));
-            photo.primeCostItems = Array.from(new Set([...current, ...validAiItems]));
-          }
         }
 
-        latestPhotos[targetIndex] = photo;
-        photosRef.current = latestPhotos;
-        setPhotos(latestPhotos);
-        onPhotosUpdate(latestPhotos);
+        photo.category = finalCategory;
+      }
+      if (data.flooring && !photo.flooring) {
+        photo.flooring = data.flooring;
+      }
+      if (data.categorySpecificDetails) {
+        const categoryFeatures = getCategoryFeatures(photo.category);
+        const categoryPrimeCostItems = getCategoryPrimeCostItems(photo.category);
 
+        if (data.categorySpecificDetails.featuresAndFixtures && data.categorySpecificDetails.featuresAndFixtures.length > 0) {
+          const current = photo.featuresFixtures || [];
+          const validAiFeatures = data.categorySpecificDetails.featuresAndFixtures.filter((f: string) => categoryFeatures.includes(f));
+          photo.featuresFixtures = Array.from(new Set([...current, ...validAiFeatures]));
+        }
+        if (data.categorySpecificDetails.primeCostItems && data.categorySpecificDetails.primeCostItems.length > 0) {
+          const current = photo.primeCostItems || [];
+          const validAiItems = data.categorySpecificDetails.primeCostItems.filter((i: string) => categoryPrimeCostItems.includes(i));
+          photo.primeCostItems = Array.from(new Set([...current, ...validAiItems]));
+        }
+      }
+
+      latestPhotos[targetIndex] = photo;
+      photosRef.current = latestPhotos;
+      setPhotos(latestPhotos);
+      onPhotosUpdate(latestPhotos);
+
+      try {
         await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ photos: latestPhotos }),
         });
-
-      } catch (err: any) {
-        console.error('AI Automation error for photo:', photoUrl, err);
-        const errorMsg = err.message || 'An error occurred during AI analysis';
-        setUploadError(`Photo automation failed: ${errorMsg}`);
+      } catch (err) {
+        console.error("Failed to save automated photo update", err);
       }
     }
 
-    setProcessingPhotoUrl(null);
-    isProcessingQueueRef.current = false;
+    isUpdatingRef.current = false;
   };
 
-  const handleAutomatePhoto = (index: number, photoUrl: string, expectedCategory?: string) => {
+  const handleAutomatePhoto = async (index: number, photoUrl: string, expectedCategory?: string) => {
     if (!photoUrl) return;
 
-    if (
-      processingPhotoUrl === photoUrl ||
-      queuedPhotoUrls.has(photoUrl) ||
-      queueRef.current.some(item => item.photoUrl === photoUrl)
-    ) {
+    if (processingPhotoUrls.has(photoUrl)) {
       return;
     }
 
     setUploadError(null);
+    setProcessingPhotoUrls(prev => new Set(prev).add(photoUrl));
 
-    queueRef.current.push({ photoUrl, expectedCategory });
-    setQueuedPhotoUrls(prev => new Set(prev).add(photoUrl));
+    try {
+      console.log("Processing concurrent photo automation:", { photoUrl, expectedCategory });
+      const response = await fetch('/internal-api/analyze-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          imageUrl: photoUrl, 
+          expectedCategory: expectedCategory || undefined 
+        }),
+      });
 
-    processQueue();
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {}
+        throw new Error(errorData?.error || 'Failed to analyze photo');
+      }
+
+      const { data } = await response.json();
+      
+      updateQueueRef.current.push({ photoUrl, data });
+      processUpdateQueue();
+
+    } catch (err: any) {
+      console.error('AI Automation error for photo:', photoUrl, err);
+      const errorMsg = err.message || 'An error occurred during AI analysis';
+      setUploadError(`Photo automation failed: ${errorMsg}`);
+    } finally {
+      setProcessingPhotoUrls(prev => {
+        const next = new Set(prev);
+        next.delete(photoUrl);
+        return next;
+      });
+    }
   };
 
   // Fetch photos when component mounts
@@ -863,8 +858,8 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                             <div className="flex justify-between items-center mb-2">
                               <h4 className="text-sm font-semibold text-gray-800">Basic Details</h4>
                               {photo.photoUrl && (() => {
-                                const isAutomating = processingPhotoUrl === photo.photoUrl;
-                                const isQueued = queuedPhotoUrls.has(photo.photoUrl);
+                                const isAutomating = processingPhotoUrls.has(photo.photoUrl);
+                                const isQueued = false; // Queuing replaced by concurrent logic
                                 const isDisabled = isAutomating || isQueued;
 
                                 return (
