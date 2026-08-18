@@ -4,7 +4,16 @@ import { AllMainBuildingTypes } from "@/constants/main-building-types";
 import { ROOFING_TYPES } from "@/constants/roofing-types";
 import { EXTERNAL_WALLS } from "@/constants/wall-types";
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+const GEMINI_MODELS = [
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash",
+  "gemini-3.1-flash-lite"
+];
+
+const getGeminiApiUrl = (modelName: string) => `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
 
 let currentKeyIndex = 0;
 function getGeminiApiKey(): string {
@@ -102,12 +111,13 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
     }
   };
 
-  const maxRetries = 3;
+  const maxRetries = 5;
   let data: any = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const currentApiKey = getGeminiApiKey();
-    const response = await fetch(`${GEMINI_API_URL}?key=${currentApiKey}`, {
+    const currentModelName = GEMINI_MODELS[attempt % GEMINI_MODELS.length];
+    const response = await fetch(`${getGeminiApiUrl(currentModelName)}?key=${currentApiKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -129,8 +139,8 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
       }
     } catch {}
 
-    // Retry on 429 (Rate Limit / Too Many Requests) or 503 (Service Unavailable)
-    if ((response.status === 429 || response.status === 503) && attempt < maxRetries) {
+    // Retry on 429 (Rate Limit / Too Many Requests) or 500+ (Server Errors / High Demand)
+    if ((response.status === 429 || response.status >= 500) && attempt < maxRetries) {
       const retryMatch = errorMessage.match(/retry in ([0-9.]+)s/i);
       let waitMs = Math.pow(2, attempt) * 2500 + Math.floor(Math.random() * 1000);
       
@@ -141,7 +151,7 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
         }
       }
 
-      console.warn(`[Gemini API] Rate limited. Retrying in ${Math.round(waitMs / 1000)}s (attempt ${attempt + 1}/${maxRetries})...`);
+      console.warn(`[Gemini API] Rate limited/High demand. Retrying in ${Math.round(waitMs / 1000)}s (attempt ${attempt + 1}/${maxRetries})...`);
       await new Promise((resolve) => setTimeout(resolve, waitMs));
       continue;
     }
@@ -246,12 +256,13 @@ export async function analyzeCoverPhotoWithGemini(imageUrl: string, propertyType
     }
   };
 
-  const maxRetries = 3;
+  const maxRetries = 5;
   let data: any = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const currentApiKey = getGeminiApiKey();
-    const response = await fetch(`${GEMINI_API_URL}?key=${currentApiKey}`, {
+    const currentModelName = GEMINI_MODELS[attempt % GEMINI_MODELS.length];
+    const response = await fetch(`${getGeminiApiUrl(currentModelName)}?key=${currentApiKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -273,7 +284,8 @@ export async function analyzeCoverPhotoWithGemini(imageUrl: string, propertyType
       }
     } catch {}
 
-    if ((response.status === 429 || response.status === 503) && attempt < maxRetries) {
+    // Retry on 429 (Rate Limit / Too Many Requests) or 500+ (Server Errors / High Demand)
+    if ((response.status === 429 || response.status >= 500) && attempt < maxRetries) {
       const retryMatch = errorMessage.match(/retry in ([0-9.]+)s/i);
       let waitMs = Math.pow(2, attempt) * 2500 + Math.floor(Math.random() * 1000);
       
@@ -284,7 +296,7 @@ export async function analyzeCoverPhotoWithGemini(imageUrl: string, propertyType
         }
       }
 
-      console.warn(`[Gemini API] Rate limited. Retrying in ${Math.round(waitMs / 1000)}s (attempt ${attempt + 1}/${maxRetries})...`);
+      console.warn(`[Gemini API] Rate limited/High demand. Retrying in ${Math.round(waitMs / 1000)}s (attempt ${attempt + 1}/${maxRetries})...`);
       await new Promise((resolve) => setTimeout(resolve, waitMs));
       continue;
     }
