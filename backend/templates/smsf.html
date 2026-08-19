@@ -1368,9 +1368,9 @@
                 full context of the valuation report.
             </li>
         </ol>
-        {% if valuation_report.get("valuationDetails", {}).get("manualSitemapUrl") %}
+        {% if valuation_report.get("locationDetails", {}).get("map", {}).get("photo") %}
         <div class="mt-m mb-m flex jc-c ml-50 mr-70" style="height: 350px;">
-            <img src="{{ valuation_report['valuationDetails']['manualSitemapUrl'] }}" alt="Site Map" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            <img src="{{ valuation_report['locationDetails']['map']['photo'] }}" alt="Site Map" style="max-width: 100%; max-height: 100%; object-fit: contain;">
         </div>
         {% endif %}
         <div class="footer flex jc-sb">
