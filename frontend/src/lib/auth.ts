@@ -69,13 +69,10 @@ export async function signIn(email: string, password: string): Promise<User | nu
 // Sign out
 export async function signOut(): Promise<void> {
   try {
-    // Clear the authentication cookie
-    // Only set secure flag on HTTPS or production
-    const isSecure = typeof window !== 'undefined' && (window.location.protocol === 'https:' || process.env.NODE_ENV === 'production');
-    const cookieSecureFlag = isSecure ? '; secure' : '';
-    document.cookie = `val-ai-auth=; path=/; max-age=0; samesite=strict${cookieSecureFlag}`;
+    // 1. Call our API to securely clear the httpOnly session cookie
+    await fetch('/api/auth/session', { method: 'DELETE' });
 
-    // Sign out from Firebase
+    // 2. Sign out from Firebase client-side state
     await firebaseSignOut(auth);
   } catch (error) {
     console.error('Sign out error:', error);
