@@ -21,9 +21,9 @@ def seed_admin():
         firebase_admin.initialize_app(cred)
 
     # Initialize MongoDB
-    mongo_uri = os.environ.get("MONGO_URI")
+    mongo_uri = os.environ.get("MONGODB_URI")
     if not mongo_uri:
-        print("Error: MONGO_URI environment variable not found.")
+        print("Error: MONGODB_URI environment variable not found.")
         return
         
     client = MongoClient(mongo_uri)
