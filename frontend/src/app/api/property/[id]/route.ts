@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
-  
+
   console.log("📌 PUT handler triggered");
 
   await connectDB();
@@ -171,7 +171,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       console.log("📸 Final data.photos structure:", data.photos);
     }
 
-    const updated = await PropertyValuation.findByIdAndUpdate(id, data, { new: true, upsert: true });
+    const updated = await PropertyValuation.findByIdAndUpdate(id, data, { new: true });
+
+    if (!updated) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+
     console.log("✅ MongoDB update successful:", updated);
     return NextResponse.json(updated);
 
