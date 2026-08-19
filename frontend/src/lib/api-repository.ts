@@ -435,6 +435,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/photos/delete/${reportId}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -471,6 +472,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/preview`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -496,6 +498,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/generate`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -521,6 +524,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/invoice/preview`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -545,6 +549,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/invoice`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -569,6 +574,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/invoice/send`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload || {}),
       });
@@ -590,6 +596,7 @@ export const apiRepository = {
   }> {
     const response = await fetch(`${API_BASE_URL}/settings/invoice-email`, {
       method: 'GET',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
@@ -604,6 +611,7 @@ export const apiRepository = {
   }> {
     const response = await fetch(`${API_BASE_URL}/settings/invoice-email`, {
       method: 'PUT',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
@@ -619,6 +627,7 @@ export const apiRepository = {
   }> {
     const response = await fetch(`${API_BASE_URL}/settings/invoice-email/reset`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
@@ -641,6 +650,7 @@ export const apiRepository = {
   async previewInvoiceEmailTemplate(payload: { subject: string; body: string }): Promise<{ subject: string; html: string }> {
     const response = await fetch(`${API_BASE_URL}/settings/invoice-email/preview`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
@@ -658,6 +668,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/report/send`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload || {}),
       });
@@ -679,6 +690,7 @@ export const apiRepository = {
   }> {
     const response = await fetch(`${API_BASE_URL}/settings/report-email`, {
       method: 'GET',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
@@ -693,6 +705,7 @@ export const apiRepository = {
   }> {
     const response = await fetch(`${API_BASE_URL}/settings/report-email`, {
       method: 'PUT',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
@@ -708,6 +721,7 @@ export const apiRepository = {
   }> {
     const response = await fetch(`${API_BASE_URL}/settings/report-email/reset`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
@@ -720,6 +734,7 @@ export const apiRepository = {
   async previewReportEmailTemplate(payload: { subject: string; body: string }): Promise<{ subject: string; html: string }> {
     const response = await fetch(`${API_BASE_URL}/settings/report-email/preview`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
@@ -735,6 +750,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/alliance/jobs?page=${page}&per_page=${perPage}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -756,6 +772,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/alliance/jobs/${jobId}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -777,6 +794,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/alliance/jobs/transform/${jobId}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -798,6 +816,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/alliance/jobs/all?max_pages=${maxPages}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -819,6 +838,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/alliance/health`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -840,6 +860,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/alliance/jobs/import/${jobId}`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -862,6 +883,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/inspection-reports/reports?page=${page}&per_page=${perPage}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -883,6 +905,7 @@ export const apiRepository = {
     try {
       const response = await fetch(`${API_BASE_URL}/inspection-reports/reports/${reportId}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
