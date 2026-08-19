@@ -20,7 +20,7 @@ export async function GET() {
   if (adminCheck.error) return adminCheck.error;
 
   await connectDB();
-  const users = await User.find({}).sort({ createdAt: -1 }).lean();
+  const users = await User.find({}).sort({ createdAt: -1 }).lean() as any[];
   
   // Format to match the UI expected structure
   const formattedUsers = users.map((u: any) => ({

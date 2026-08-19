@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
     const username = loginId.toLowerCase().trim();
     
     // We only select the email field to prevent exposing other data to unauthenticated users
-    const user = await User.findOne({ username, isActive: true }).select('email').lean();
+    const user = await User.findOne({ username, isActive: true })
+      .select('email')
+      .lean() as { email: string } | null;
 
     if (!user || !user.email) {
       // If no username exists, return a 404
