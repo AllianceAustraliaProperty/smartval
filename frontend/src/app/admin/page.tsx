@@ -21,7 +21,7 @@ import {
   Home,
   ChevronRight
 } from 'lucide-react';
-import { getCurrentUser, signOut, getAllUsers, createUser, type User } from '@/lib/auth';
+import { getCurrentUser, signOut, getAllUsers, createUser, updateUser, type User } from '@/lib/auth';
 import { SECURITY_CONFIG, SECURITY_EVENTS } from '@/lib/security-config';
 
 
@@ -80,6 +80,39 @@ export default function AdminDashboard() {
       setCreateUserError(error.message || 'Failed to create user');
     } finally {
       setIsCreatingUser(false);
+    }
+  };
+
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editUserData, setEditUserData] = useState({ name: '', username: '', password: '', isActive: true });
+  const [isUpdatingUser, setIsUpdatingUser] = useState(false);
+  const [updateUserError, setUpdateUserError] = useState('');
+
+  const openEditModal = (user: any) => {
+    setEditingUser(user);
+    setEditUserData({ name: user.name, username: user.username || '', password: '', isActive: user.isActive !== false });
+    setIsEditUserModalOpen(true);
+    setUpdateUserError('');
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setIsUpdatingUser(true);
+    setUpdateUserError('');
+    try {
+      const updatePayload: any = { name: editUserData.name, username: editUserData.username, isActive: editUserData.isActive };
+      if (editUserData.password) updatePayload.password = editUserData.password;
+      
+      const updatedUser = await updateUser(editingUser.id, updatePayload);
+      
+      setUsers(users.map(u => u.id === editingUser.id ? { ...u, ...updatedUser } : u));
+      setIsEditUserModalOpen(false);
+    } catch (error: any) {
+      setUpdateUserError(error.message || 'Failed to update user');
+    } finally {
+      setIsUpdatingUser(false);
     }
   };
 
@@ -449,15 +482,21 @@ export default function AdminDashboard() {
                             {user.lastLogin ? formatTimeAgo(user.lastLogin) : 'Never'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                              Active
-                            </span>
+                            {user.isActive !== false ? (
+                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                Disabled
+                              </span>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                             <button className="text-blue-600 hover:text-blue-900">
                               <Eye className="w-4 h-4" />
                             </button>
-                            <button className="text-gray-600 hover:text-gray-900">
+                            <button onClick={() => openEditModal(user)} className="text-gray-600 hover:text-gray-900">
                               <Settings className="w-4 h-4" />
                             </button>
                           </td>
@@ -588,6 +627,44 @@ export default function AdminDashboard() {
                     <button type="button" onClick={() => setIsAddUserModalOpen(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-xl">Cancel</button>
                     <button type="submit" disabled={isCreatingUser} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50">
                       {isCreatingUser ? 'Creating...' : 'Create Valuer'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Edit User Modal */}
+          {isEditUserModalOpen && editingUser && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Edit User: {editingUser.email}</h3>
+                <form onSubmit={handleUpdateUser} className="space-y-4">
+                  {updateUserError && (
+                    <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-200">
+                      {updateUserError}
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input required type="text" value={editUserData.name} onChange={e => setEditUserData({...editUserData, name: e.target.value})} className="w-full px-4 py-2 border rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input required type="text" value={editUserData.username} onChange={e => setEditUserData({...editUserData, username: e.target.value})} className="w-full px-4 py-2 border rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password (leave blank to keep current)</label>
+                    <input type="password" placeholder="••••••••" value={editUserData.password} onChange={e => setEditUserData({...editUserData, password: e.target.value})} className="w-full px-4 py-2 border rounded-xl" />
+                  </div>
+                  <div className="flex items-center mt-2">
+                    <input type="checkbox" id="isActive" checked={editUserData.isActive} onChange={e => setEditUserData({...editUserData, isActive: e.target.checked})} className="w-4 h-4 text-blue-600 border-gray-300 rounded" />
+                    <label htmlFor="isActive" className="ml-2 text-sm font-medium text-gray-700">Account is Active</label>
+                  </div>
+                  <div className="flex justify-end space-x-3 mt-6">
+                    <button type="button" onClick={() => setIsEditUserModalOpen(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-xl">Cancel</button>
+                    <button type="submit" disabled={isUpdatingUser} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50">
+                      {isUpdatingUser ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 </form>

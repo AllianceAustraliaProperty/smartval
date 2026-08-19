@@ -222,3 +222,24 @@ export async function createUser(email: string, password: string, name: string, 
     throw error;
   }
 }
+
+// Update a user (calls our secure admin API)
+export async function updateUser(id: string, data: { name?: string, username?: string, password?: string, isActive?: boolean }): Promise<any> {
+  try {
+    const res = await fetch(`/api/admin/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Failed to update user');
+    }
+    
+    return await res.json();
+  } catch (error: any) {
+    console.error('Update user error:', error);
+    throw error;
+  }
+}

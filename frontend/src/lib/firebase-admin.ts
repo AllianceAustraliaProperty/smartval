@@ -47,3 +47,10 @@ export async function createFirebaseUser(email: string, password: string, displa
     
     return userRecord;
 }
+
+export async function updateFirebaseUser(uid: string, data: { displayName?: string, password?: string, disabled?: boolean }) {
+    const auth = initAdmin();
+    if (!auth) throw new Error("Firebase Admin not initialized");
+    
+    return await auth.updateUser(uid, data);
+}

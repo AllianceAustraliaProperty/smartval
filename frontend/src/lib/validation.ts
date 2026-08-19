@@ -32,10 +32,9 @@ export function sanitizeHtml(input: string): string {
 export const loginSchema = z.object({
   email: z
     .string()
-    .min(1, 'Email is required')
-    .max(254, 'Email too long')
-    .regex(emailRegex, 'Invalid email format')
-    .transform(sanitizeEmail),
+    .min(1, 'Login ID is required')
+    .max(254, 'Login ID too long')
+    .transform(v => v.trim().toLowerCase()),
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')

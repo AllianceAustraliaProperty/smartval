@@ -196,8 +196,8 @@ export default function LoginPage() {
                   <input
                     id="email"
                     name="email"
-                    type="email"
-                    autoComplete="email"
+                    type="text"
+                    autoComplete="username"
                     required
                     value={formData.email}
                     onChange={handleChange}
