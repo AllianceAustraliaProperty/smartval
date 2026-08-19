@@ -7,6 +7,11 @@ aapvaluations.com.au, www.aapvaluations.com.au {
         reverse_proxy frontend:3000
     }
 
+    # Frontend Admin routes
+    handle /api/admin/* {
+        reverse_proxy frontend:3000
+    }
+
     # Backend API routes
     handle /api/* {
       reverse_proxy backend:5000 {
