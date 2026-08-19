@@ -181,7 +181,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
           </FormField>
         )}
 
-        {valuationType === 'Commercial' && (
+        {(valuationType === 'Commercial' || valuationType === 'Commercial Short Report') && (
           <FormField
             label="Valuation SubType"
             error={(errors as any).valuationDetails?.commercialSubType?.message}
