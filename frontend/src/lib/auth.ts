@@ -14,11 +14,13 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  username?: string;
   role: 'admin' | 'valuer' | 'client';
   lastLogin?: Date;
   createdAt?: Date;
   disabled?: boolean;
   emailVerified?: boolean;
+  isActive?: boolean;
 }
 
 export interface TokenPayload {
