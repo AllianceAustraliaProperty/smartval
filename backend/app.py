@@ -1,10 +1,33 @@
 """
 Flask Application Factory
 """
+import os
+from flask import request, jsonify
+import firebase_admin
+from firebase_admin import credentials, auth
 from flask import Flask
 from flask_cors import CORS
 from config import Config
 
+# Initialize Firebase Admin lazily to prevent crash if env vars are missing
+def get_firebase_app():
+    if not firebase_admin._apps:
+        # Optional: if you use a service account JSON file
+        # cred = credentials.Certificate("path/to/serviceAccountKey.json")
+        # Or using environment variables like in Next.js:
+        if not os.environ.get("FIREBASE_PROJECT_ID"):
+            print("Warning: Firebase env vars missing.")
+            return None
+
+        cred = credentials.Certificate({
+            "type": "service_account",
+            "project_id": os.environ.get("FIREBASE_PROJECT_ID"),
+            "client_email": os.environ.get("FIREBASE_CLIENT_EMAIL"),
+            "private_key": os.environ.get("FIREBASE_PRIVATE_KEY", "").replace("\\n", "\n"),
+            "token_uri": "https://oauth2.googleapis.com/token",
+        })
+        firebase_admin.initialize_app(cred)
+    return True
 
 def create_app(config_class=Config):
     """Application factory pattern"""
@@ -68,6 +91,42 @@ def create_app(config_class=Config):
     app.register_blueprint(alliance_bp, url_prefix='/api/alliance')
     app.register_blueprint(inspection_bp, url_prefix='/api/inspection-reports')
     app.register_blueprint(settings_bp, url_prefix='/api/settings')
+
+    @app.before_request
+    def verify_auth_token():
+        # 1. Allow CORS preflight requests to pass through
+        if request.method == "OPTIONS":
+            return None
+
+        # 2. Skip authentication for public routes (like /health or file uploads)
+        if request.path.startswith('/health') or request.path.startswith('/uploads/'):
+            return None
+
+        # 3. Only protect /api/ or other specific routes you want secured
+        # You can adjust this condition based on your exact routing needs
+
+        # 4. Extract token from the Next.js cookie
+        token = request.cookies.get('val-ai-auth')
+
+        # Fallback to Authorization header if testing via Postman
+        if not token and 'Authorization' in request.headers:
+            auth_header = request.headers.get('Authorization')
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split('Bearer ')[1]
+
+        if not token:
+            return jsonify({'error': 'Unauthorized - Missing Token'}), 401
+
+        try:
+            get_firebase_app()
+            # Verify the token cryptographically
+            decoded_token = auth.verify_id_token(token, check_revoked=True)
+            # Attach user data to the request for blueprints to use
+            request.user = decoded_token
+        except Exception as e:
+            import logging
+            logging.error(f"Token verification failed: {e}")
+            return jsonify({'error': 'Invalid or expired token'}), 401
 
     # Error handlers
     @app.errorhandler(404)
