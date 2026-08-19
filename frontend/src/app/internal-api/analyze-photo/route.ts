@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { AnalyzePhotoRequest } from "@/types/photo-analysis";
 import { analyzePhoto } from "@/lib/ai/photo-analyzer";
+import { requireAuth } from '@/lib/route-auth';
 
 export async function POST(req: Request) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+  
   try {
     const body: AnalyzePhotoRequest = await req.json();
 

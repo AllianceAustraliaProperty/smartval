@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/config/db';
 import PropertyValuation from '@/models/PropertyValuation';
+import { requireAuth } from '@/lib/route-auth';
 
 export async function GET() {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   await connectDB();
   const properties = await PropertyValuation.find({});
   return NextResponse.json(properties);
 }
 export async function POST(req: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   await connectDB();
   const data = await req.json();
 
@@ -16,6 +23,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   await connectDB();
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');

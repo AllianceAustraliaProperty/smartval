@@ -4,6 +4,7 @@ import PropertyValuation from '@/models/PropertyValuation';
 import { propertyValuationValidationSchemas } from '@/models/PropertyValuationSchemas';
 import mongoose from 'mongoose';
 import { uploadToOneDrive } from '@/lib/onedrive';
+import { requireAuth } from '@/lib/route-auth';
 
 export const config = {
   api: {
@@ -21,6 +22,9 @@ function sanitizeForValidation(obj: any) {
   return cleaned;
 }
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   await connectDB();
   const { id } = await params;
   const property = await PropertyValuation.findById(id);
@@ -31,6 +35,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   await connectDB();
   const { id } = await params;
   const deleted = await PropertyValuation.findByIdAndDelete(id);
@@ -41,6 +48,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+  
   console.log("📌 PUT handler triggered");
 
   await connectDB();
