@@ -716,9 +716,7 @@
                     <div>Instructed by <br> {{
                         valuation_report["primaryContact"]["firstName"]|default('N/A') }} {{
                         valuation_report["primaryContact"]["lastName"]|default('N/A') }}</div>
-                    {% if valuation_report["valuationDetails"]["valuationType"] == "Land Valuation" %}
                     <div style="text-align: right;">Date of Valuation <br> {% if valuation_report["valuationDetails"]["valuationDate"] %}{{ valuation_report["valuationDetails"]["valuationDate"]|format_date }}{% else %}{{ now() }}{% endif %}</div>
-                    {% endif %}
                 </div>
 
                 {% if logo_type == 'CPV' %}
@@ -879,14 +877,12 @@
                     <div class="flex-6 detail-value ac-c fs-14">{{
                         valuation_report["propertyDetails"]["councilArea"]|default('N/A') }}</div>
                 </div>
-                {% if valuation_report["valuationDetails"]["valuationType"] == "Land Valuation" %}
                 <div class="flex mb-s">
                     <div class="fw-h flex-4 detail-label ac-c fs-14">Zoning</div>
                     <div class="flex-6 detail-value ac-c fs-14">{{
                         valuation_report["propertyDetails"]["zoning"]|default('N/A') }}</div>
                 </div>
-                {% endif %}
-                {% if valuation_report["propertyDetails"]["buildYear"] %}
+                {% if valuation_report["valuationDetails"]["valuationType"] == "Land Valuation" and valuation_report["propertyDetails"]["buildYear"] %}
                 <div class="flex mb-s ${this.displayAnyField(this.subjectProperty.buildYear)}">
                     <div class="fw-h flex-4 detail-label ac-c fs-14">Build Year</div>
                     <div class="flex-6 detail-value ac-c fs-14">{{
