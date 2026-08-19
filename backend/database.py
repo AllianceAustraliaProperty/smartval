@@ -15,7 +15,7 @@ def get_database():
     """Return the cached default database, lazily creating MongoClient on first call."""
     global _client, _db
     if _db is None:
-        _client = MongoClient(Config.MONGODB_URI)
+        _client = MongoClient(Config.MONGODB_URI, connect=False)
         _db = _client.get_default_database()
     return _db
 
