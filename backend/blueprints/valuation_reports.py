@@ -448,7 +448,7 @@ def update_valuation_report(report_id):
         print(f"Error updating report: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({'error': f'Failed to update: {str(e)}'}), 500
+        return jsonify({'error': 'Failed to update: An internal server error occurred'}), 500
 
 
 @valuation_reports_bp.route('/<report_id>', methods=['DELETE'])

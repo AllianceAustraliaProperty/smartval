@@ -182,6 +182,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   } catch (err: any) {
     console.error("🔥 UNHANDLED ERROR:", err.message, err.stack);
-    return NextResponse.json({ error: "Internal Server Error", details: err.message }, { status: 500 });
+    return NextResponse.json({ error: "An internal server error occurred" }, { status: 500 });
   }
 }
