@@ -600,26 +600,21 @@
         }
 
 
-        .photo-grid-2x3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-auto-rows: 270px; /* Adjusted to fit taller logo */
-            gap: 5px;
+        .photos-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            page-break-inside: avoid;
+            break-inside: avoid;
             margin-bottom: 20px;
         }
 
-        .photo-grid-item {
-            border: 2px solid black;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        .photo-grid-item img {
-            width: 100%;
-            height: 100%;
+        .photos-container img {
+            width: calc(50% - 6px);
+            height: 270px; /* Kept smsf.html's height 270px instead of residential.html's 245px to maintain consistency in this template */
             object-fit: cover;
-            display: block;
+            border-radius: 1px;
+            border: 2px solid black;
         }
 
         .section-header-grey {
@@ -1373,6 +1368,11 @@
                 full context of the valuation report.
             </li>
         </ol>
+        {% if valuation_report.get("valuationDetails", {}).get("manualSitemapUrl") %}
+        <div class="mt-m mb-m flex jc-c ml-50 mr-70" style="height: 350px;">
+            <img src="{{ valuation_report['valuationDetails']['manualSitemapUrl'] }}" alt="Site Map" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+        {% endif %}
         <div class="footer flex jc-sb">
             <p class="ml-50 mt-20 fs-s">Page <span class="page-num"></span> | #{{
                 valuation_report["fileNumber"]|default('') }} | {{
@@ -1393,11 +1393,9 @@
             <div class="ml-50 fs-m bold mt-45">Photographs{{ " (cont'd)" if loop.index > 1 else "" }}</div>
         </div>
         <div style="margin: 20px 0 0 0;">
-            <div class="photo-grid-2x3">
+            <div class="photos-container">
                 {% for photo in photos_group %}
-                <div class="photo-grid-item">
-                    <img src="{{ photo['photoUrl'] }}" alt="">
-                </div>
+                <img src="{{ photo['photoUrl'] }}" alt="">
                 {% endfor %}
             </div>
         </div>
