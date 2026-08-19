@@ -62,8 +62,8 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
     const comparables = watch('comparables');
     const valuationType = watch('valuationDetails.valuationType');
 
-    // 1. Commercial / Commercial Short Report Logic
-    if (valuationType === 'Commercial' || valuationType === 'Commercial Short Report') {
+    // 1. Commercial / Commercial Short Report / Rent Review Logic
+    if (valuationType === 'Commercial' || valuationType === 'Commercial Short Report' || valuationType === 'Rent Review') {
       const rentalComparables = comparables?.rentals || [];
       const rentalRates = rentalComparables
         .map((r: any) => Number(r.rentalRate || r.rental_rate))
@@ -150,6 +150,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             <option value="Retrospective Capital Gains">Retrospective Capital Gains</option>
             <option value="Land Valuation">Land Valuation</option>
             <option value="Commercial Short Report">Commercial Short Report</option>
+            <option value="Rent Review">Rent Review</option>
             <option value="Commercial">Commercial</option>
             <option value="Rural">Rural</option>
             <option value="Rural (2 Hectare Exemption)">Rural (2 Hectare Exemption)</option>

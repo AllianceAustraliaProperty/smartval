@@ -492,6 +492,8 @@ def generate_html_report(report_id, template_name='residential.html'):
             template_name = "smsf.html"
         elif "rural" in valuation_type:
             template_name = "rural.html"
+        elif "rent review" in valuation_type:
+            template_name = "rent_review.html"
 
         is_residential = report.get("propertyDetails", {}).get("propertyType") in RESIDENTIAL_PROPERTY_TYPES
         

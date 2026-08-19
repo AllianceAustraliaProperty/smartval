@@ -101,6 +101,7 @@ export default function NewValuationReportPage() {
                     <option value="SMSF Audit">SMSF Audit</option>
                     <option value="Land Valuation">Land Valuation</option>
                     <option value="Commercial Short Report">Commercial Short Report</option>
+                    <option value="Rent Review">Rent Review</option>
                     <option value="Commercial">Commercial</option>
                     <option value="Retrospective Capital Gains">Retrospective Capital Gains</option>
                     <option value="Rural">Rural</option>
