@@ -177,66 +177,48 @@ export async function changePassword(currentPassword: string, newPassword: strin
   await updatePassword(user, newPassword);
 }
 
-// Get all users (requires Firebase Admin SDK in production)
-// This is a placeholder - implement with Firebase Admin SDK or Firestore query
+// Get all users (calls our secure admin API)
 export async function getAllUsers(): Promise<User[]> {
   try {
-    // In production, this should call a Cloud Function or API route that uses Firebase Admin SDK
-    // For now, we'll return an empty array as a placeholder
-    console.warn('getAllUsers: This function requires Firebase Admin SDK implementation');
-
-    // You can implement this by:
-    // 1. Creating a Cloud Function that uses admin.auth().listUsers()
-    // 2. Creating a Firestore collection to store user data
-    // 3. Creating an API route that uses Firebase Admin SDK
-
-    return [];
+    const res = await fetch('/api/admin/users');
+    if (!res.ok) throw new Error('Failed to fetch users');
+    const users = await res.json();
+    
+    // Map the string dates back to Date objects
+    return users.map((u: any) => ({
+      ...u,
+      createdAt: u.createdAt ? new Date(u.createdAt) : undefined,
+      lastLogin: u.lastLogin ? new Date(u.lastLogin) : undefined
+    }));
   } catch (error) {
     console.error('Error getting all users:', error);
     return [];
   }
 }
 
-// Create a new user
-export async function createUser(email: string, password: string, name: string, role: 'admin' | 'valuer' | 'client' = 'valuer'): Promise<User | null> {
+// Create a new user (calls our secure admin API)
+export async function createUser(email: string, password: string, name: string, username: string): Promise<User | null> {
   try {
-    // Create user with Firebase Authentication
-    const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const firebaseUser = userCredential.user;
-
-    // Update user profile with display name
-    await updateProfile(firebaseUser, {
-      displayName: name,
+    const res = await fetch('/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name, username })
     });
-
-    // Note: Setting custom claims (role) requires Firebase Admin SDK
-    // In production, you should call a Cloud Function to set the role
-    // For now, we'll return the user with default role
-    console.warn('createUser: Custom claims (role) require Firebase Admin SDK. User created with default role.');
-
-    const user: User = {
-      id: firebaseUser.uid,
-      email: firebaseUser.email || '',
-      name: name,
-      role: role, // Note: This won't be set in Firebase until you use Admin SDK
-      emailVerified: firebaseUser.emailVerified,
-      createdAt: firebaseUser.metadata.creationTime ? new Date(firebaseUser.metadata.creationTime) : undefined,
-      lastLogin: firebaseUser.metadata.lastSignInTime ? new Date(firebaseUser.metadata.lastSignInTime) : undefined,
-    };
-
-    return user;
-  } catch (error: any) {
-    console.error('Firebase create user error:', error);
-
-    // Handle specific Firebase errors
-    if (error.code === 'auth/email-already-in-use') {
-      throw new Error('Email address is already in use');
-    } else if (error.code === 'auth/weak-password') {
-      throw new Error('Password is too weak');
-    } else if (error.code === 'auth/invalid-email') {
-      throw new Error('Invalid email address');
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Failed to create user');
     }
-
-    throw new Error('Failed to create user. Please try again.');
+    
+    const newUser = await res.json();
+    return {
+      id: newUser.firebaseUid,
+      email: newUser.email,
+      name: newUser.displayName,
+      role: newUser.role,
+    };
+  } catch (error: any) {
+    console.error('Create user error:', error);
+    throw error;
   }
 }

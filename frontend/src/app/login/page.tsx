@@ -74,10 +74,28 @@ export default function LoginPage() {
     setGeneralError('');
 
     try {
-      const user = await signIn(formData.email, formData.password);
+      let finalEmail = formData.email.trim();
+
+      // If they didn't type an '@', assume it's a username and look up the email
+      if (!finalEmail.includes('@')) {
+        const res = await fetch('/api/auth/lookup-username', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ loginId: finalEmail })
+        });
+        
+        if (!res.ok) {
+          throw new Error('Invalid username or password');
+        }
+        
+        const data = await res.json();
+        finalEmail = data.email;
+      }
+
+      // Now pass the resolved email to Firebase
+      const user = await signIn(finalEmail, formData.password);
 
       if (user) {
-        // Get Firebase ID token and set it via HttpOnly cookie API route
         const idToken = await getIdToken();
         if (idToken) {
           await fetch('/api/auth/session', {
@@ -87,24 +105,17 @@ export default function LoginPage() {
           });
         }
 
-        // Redirect based on user role
         switch (user.role) {
           case 'admin':
             router.push('/admin');
-            break;
-          case 'valuer':
-            router.push('/valuation-reports');
             break;
           default:
             router.push('/valuation-reports');
         }
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setGeneralError(error.message);
-      } else {
-        setGeneralError('Login failed. Please try again.');
-      }
+      // Prevent username enumeration by always showing the same generic error
+      setGeneralError('Invalid login ID or passkey. Please try again.');
     } finally {
       setIsLoading(false);
     }

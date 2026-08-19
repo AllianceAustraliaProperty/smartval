@@ -58,6 +58,31 @@ export default function AdminDashboard() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [newUserData, setNewUserData] = useState({ name: '', email: '', username: '', password: '' });
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [createUserError, setCreateUserError] = useState('');
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreatingUser(true);
+    setCreateUserError('');
+    try {
+      const newUser = await createUser(newUserData.email, newUserData.password, newUserData.name, newUserData.username);
+      if (newUser) {
+        setUsers([newUser, ...users]);
+        setIsAddUserModalOpen(false);
+        setNewUserData({ name: '', email: '', username: '', password: '' });
+        // Update total users stat locally
+        setSystemStats(prev => ({ ...prev, totalUsers: prev.totalUsers + 1 }));
+      }
+    } catch (error: any) {
+      setCreateUserError(error.message || 'Failed to create user');
+    } finally {
+      setIsCreatingUser(false);
+    }
+  };
+
   // Check admin access
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -375,7 +400,7 @@ export default function AdminDashboard() {
                   <h2 className="text-3xl font-bold text-gray-900 mb-2">User Management</h2>
                   <p className="text-gray-600">Manage user accounts and permissions</p>
                 </div>
-                <button className="inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
+                <button onClick={() => setIsAddUserModalOpen(true)} className="inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
                   <UserPlus className="w-5 h-5 mr-2" />
                   Add New User
                 </button>
@@ -529,6 +554,43 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+          {/* Add User Modal */}
+          {isAddUserModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Add New Valuer</h3>
+                <form onSubmit={handleCreateUser} className="space-y-4">
+                  {createUserError && (
+                    <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-200">
+                      {createUserError}
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input required type="text" value={newUserData.name} onChange={e => setNewUserData({...newUserData, name: e.target.value})} className="w-full px-4 py-2 border rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Username (e.g. jsmith)</label>
+                    <input required type="text" value={newUserData.username} onChange={e => setNewUserData({...newUserData, username: e.target.value})} className="w-full px-4 py-2 border rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input required type="email" value={newUserData.email} onChange={e => setNewUserData({...newUserData, email: e.target.value})} className="w-full px-4 py-2 border rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Temporary Password</label>
+                    <input required type="password" value={newUserData.password} onChange={e => setNewUserData({...newUserData, password: e.target.value})} className="w-full px-4 py-2 border rounded-xl" />
+                  </div>
+                  <div className="flex justify-end space-x-3 mt-6">
+                    <button type="button" onClick={() => setIsAddUserModalOpen(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-xl">Cancel</button>
+                    <button type="submit" disabled={isCreatingUser} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50">
+                      {isCreatingUser ? 'Creating...' : 'Create Valuer'}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}

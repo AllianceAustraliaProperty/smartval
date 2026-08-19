@@ -30,3 +30,20 @@ export async function verifyFirebaseToken(token: string) {
         return null;
     }
 }
+
+export async function createFirebaseUser(email: string, password: string, displayName: string, role: string) {
+    const auth = initAdmin();
+    if (!auth) throw new Error("Firebase Admin not initialized");
+    
+    // Create the user in Firebase Auth
+    const userRecord = await auth.createUser({
+        email,
+        password,
+        displayName,
+    });
+
+    // Set custom claims
+    await auth.setCustomUserClaims(userRecord.uid, { role });
+    
+    return userRecord;
+}
