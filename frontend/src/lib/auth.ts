@@ -174,6 +174,11 @@ export async function changePassword(currentPassword: string, newPassword: strin
     throw new Error('No authenticated user');
   }
 
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    throw new Error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.');
+  }
+
   const credential = EmailAuthProvider.credential(user.email, currentPassword);
   await reauthenticateWithCredential(user, credential);
   await updatePassword(user, newPassword);

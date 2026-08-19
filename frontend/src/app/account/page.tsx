@@ -65,9 +65,12 @@ export default function AccountPage() {
   }, []);
 
   const validate = (): string | null => {
-    if (newPassword.length < 8) return 'Password must be at least 8 characters.';
     if (newPassword !== confirmPassword) return 'New passwords do not match.';
     if (newPassword === currentPassword) return 'New password must be different.';
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
+    }
     return null;
   };
 

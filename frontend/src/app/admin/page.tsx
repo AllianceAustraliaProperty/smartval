@@ -19,7 +19,8 @@ import {
   FileText,
   LogOut,
   Home,
-  ChevronRight
+  ChevronRight,
+  Mail
 } from 'lucide-react';
 import { getCurrentUser, signOut, getAllUsers, createUser, updateUser, type User } from '@/lib/auth';
 import { SECURITY_CONFIG, SECURITY_EVENTS } from '@/lib/security-config';
@@ -298,6 +299,14 @@ export default function AdminDashboard() {
               >
                 <Building className="w-4 h-4 mr-2" />
                 Properties
+              </button>
+
+              <button
+                onClick={() => router.push('/settings')}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Email Templates
               </button>
               
               <button

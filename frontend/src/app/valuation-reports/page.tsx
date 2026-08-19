@@ -590,19 +590,12 @@ export default function ValuationReportsPage() {
                     className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors duration-200"
                   >
                     <Settings className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Admin Panel</span>
+                    <span className="truncate">
+                      {currentUser?.role === 'admin' ? 'Admin Panel' : 'Account Settings'}
+                    </span>
                   </button>
 
-                  <button
-                    onClick={() => {
-                      setIsUserMenuOpen(false);
-                      router.push('/settings');
-                    }}
-                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors duration-200"
-                  >
-                    <Mail className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Email Templates</span>
-                  </button>
+
 
                   <button
                     onClick={handleLogout}
