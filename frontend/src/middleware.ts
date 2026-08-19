@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { jwtVerify, createRemoteJWKSet } from 'jose';
+
+// Fetch Google's public keys to verify the Firebase JWT signature
+const JWKS = createRemoteJWKSet(
+  new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com')
+);
 
 // Rate limiting store (in production, use Redis or database)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -57,24 +63,19 @@ function generateCSRFToken(): string {
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-// Simple JWT payload decoder (NOT verification - use Firebase Admin SDK for production)
-function decodeFirebaseToken(token: string): TokenPayload | null {
+// Firebase Token Verification
+async function verifyFirebaseTokenEdge(token: string): Promise<TokenPayload | null> {
   try {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      return null;
-    }
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+    const { payload } = await jwtVerify(token, JWKS, {
+      issuer: `https://securetoken.google.com/${projectId}`,
+      audience: projectId,
+    });
 
-    // Check if token is expired
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
-      return null;
-    }
-
-    return payload;
+    return payload as TokenPayload;
   } catch (error) {
-    console.error('Token decode error:', error);
+    console.error('Edge token verification error:', error);
     return null;
   }
 }
@@ -140,7 +141,7 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      const payload = decodeFirebaseToken(token);
+      const payload = await verifyFirebaseTokenEdge(token);
       if (!payload) {
         // Invalid token, redirect to login
         const response = NextResponse.redirect(new URL('/login', request.url));
@@ -157,6 +158,11 @@ export async function middleware(request: NextRequest) {
       requestHeaders.set('x-user-id', userId);
       requestHeaders.set('x-user-email', userEmail);
       requestHeaders.set('x-user-role', userRole);
+
+      // Secure Admin RBAC check
+      if (pathname.startsWith('/admin') && userRole !== 'admin') {
+        return new NextResponse('Forbidden - Admin Access Required', { status: 403 });
+      }
 
       // Generate CSRF token for this session
       /*if (!csrfTokenStore.has(token)) {
@@ -178,21 +184,6 @@ export async function middleware(request: NextRequest) {
       const response = NextResponse.redirect(new URL('/login', request.url));
       response.cookies.delete('val-ai-auth');
       return response;
-    }
-  }
-
-  // Role-based access control
-  if (pathname.startsWith('/admin')) {
-    const token = request.cookies.get('val-ai-auth')?.value;
-    if (token) {
-      try {
-        const payload = decodeFirebaseToken(token);
-        if (!payload || payload.role !== 'admin') {
-          return new NextResponse('Forbidden - Admin Access Required', { status: 403 });
-        }
-      } catch (error) {
-        return NextResponse.redirect(new URL('/login', request.url));
-      }
     }
   }
 

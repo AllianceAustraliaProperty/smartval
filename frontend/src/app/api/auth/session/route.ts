@@ -1,17 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyFirebaseToken } from '@/lib/firebase-admin';
 
 export const runtime = 'nodejs';
-
-function decodePayload(token: string): any | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
-    return payload;
-  } catch {
-    return null;
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'token is required' }, { status: 400 });
     }
 
-    const payload = decodePayload(token);
+    const payload = await verifyFirebaseToken(token);
     if (!payload) {
       return NextResponse.json({ error: 'invalid token' }, { status: 400 });
     }
