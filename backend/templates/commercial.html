@@ -564,6 +564,9 @@
         <h2 style="font-size: 13px;">Method 1: Direct Comparison</h2>
         <p style="font-size: 12px; text-align: justify; white-space: pre-line;">{{ valuation_report["valuationDetails"].get("directComparison") or 'Sales evidence reflects a rate range. Referring to these rates and adjusting for size, age, condition, location, we consider an appropriate rate which when applied to the NET LETTABLE AREA equates to the assessed value.' }}</p>
 
+        <h2 style="font-size: 13px;">Method 2: Capitalisation</h2>
+        <p style="font-size: 12px; text-align: justify; white-space: pre-line;">{{ valuation_report["valuationDetails"].get("capitalisation") or 'As a secondary or check method of assessment, we have considered the income capitalisation approach. As previously detailed, our assessment as to a fair and maintainable net market rent for the subject suite is in the sum of $270,000.00 to which we have applied an appropriate yield of 5.3%, equating to the capitalised sum of $5,094,339.62. This has been rounded for practical valuation purposes in the sum of $5,000,000.00.' }}</p>
+
         {% set _company_ref = 'CPV Valuers' if logo_type == 'CPV' else ('TAMN Valuations' if logo_type == 'TAMN' else 'AAP Valuations') %}
         <h2 style="font-size: 15px; font-weight: normal; margin-top: 15px;">Assumptions and Qualification:</h2>
         <p style="font-size: 10px; text-align: justify;">{% if valuation_report["generalComments"]["assumptions"] %}{{ valuation_report["generalComments"]["assumptions"] }}{% else %}This report has been prepared for the private and confidential use of our client for the specified purpose. It should not be reproduced in whole or part without the express written authority of {{ _company_ref }} or relied upon any other party for any purpose and the valuer shall not have any liability to any party who does so. Our warning is registered here, that any party other than those specifically named in this report should obtain their own valuation before acting in any way in respect of the subject property. Where a digital copy of the report has been provided and has not been received directly from us, the report contents, especially the valuation and critical assumption should be verified by contacting the using office to ensure contents are appropriate. In particular if this report appears to be suspicious - that the report is tampered or altered, we recommend to contact the office. This valuation should be read in its entirety, inclusive of any summary and also its expiration date, 3 months from the date of valuation. The valuer and valuation firm does not accept any responsibility where part of this report has been relied upon without reference to the full context of the valuation report.{% endif %}</p>
@@ -573,7 +576,7 @@
                 Valuation)</strong> &nbsp; &nbsp; &nbsp; &nbsp; <strong>Fair Market Value: {{
                 valuation_report["valuationDetails"]["marketValue"]|format_currency|default('$640,000.00') }}</strong>
         </p>
-        <div class="signature">
+        <div class="signature" style="margin-top: 15px;">
             <p style="font-size: 12px;"><strong>Prepared By: Jugal Saha (AAPI CPV 101474)</strong></p>
             <p style="font-size: 12px;"><strong>Valuation Firm: AAP Property Valuers</strong></p> <img
                 src="https://valai.duo.tax/assets/jugal-signature.png" alt="Signature"
@@ -582,7 +585,7 @@
         </div>
         
         {% if valuation_report.get("locationDetails", {}).get("map", {}).get("photo") %}
-        <div style="margin-top: 20px; display: flex; justify-content: center; height: 350px;">
+        <div style="margin-top: 15px; display: flex; justify-content: center; height: 200px;">
             <img src="{{ valuation_report['locationDetails']['map']['photo'] }}" alt="Site Map" style="max-width: 100%; max-height: 100%; object-fit: contain;">
         </div>
         {% endif %}
