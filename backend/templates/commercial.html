@@ -562,10 +562,29 @@
 
         <h3>Valuation Remarks</h3>
         <h2 style="font-size: 13px;">Method 1: Direct Comparison</h2>
-        <p style="font-size: 12px; text-align: justify; white-space: pre-line;">{{ valuation_report["valuationDetails"].get("directComparison") or 'Sales evidence reflects a rate range. Referring to these rates and adjusting for size, age, condition, location, we consider an appropriate rate which when applied to the NET LETTABLE AREA equates to the assessed value.' }}</p>
+        {% set _custom_m1 = valuation_report["valuationDetails"].get("directComparison") %}
+        {% if _custom_m1 %}
+        <p style="font-size: 12px; text-align: justify; white-space: pre-line;">{{ _custom_m1 }}</p>
+        {% else %}
+        {% set _lowest_val = valuation_report["valuationDetails"].get("lowestValueSqm") %}
+        {% set _highest_val = valuation_report["valuationDetails"].get("highestValueSqm") %}
+        {% set _sqm_rate = valuation_report["valuationDetails"].get("squareMeterRate") %}
+        {% set _nla = valuation_report["valuationDetails"].get("nla") or valuation_report.get("propertyDetails", {}).get("buildingArea") %}
+        {% set _direct_comp_sum = (_nla|float * _sqm_rate|float) if _nla and _sqm_rate else None %}
+        <p style="font-size: 12px; text-align: justify; white-space: pre-line;">Sales evidence reflects a range of {{ _lowest_val|format_currency|default('N/A') }}/sqm area up to {{ _highest_val|format_currency|default('N/A') }}/sqm area. Referring to these rate and adjusting for size, age, condition, location, we consider an average rate of {{ _sqm_rate|format_currency|default('N/A') }}/sqm area would appropriate as well reflecting the market. Based on the above comparable sales evidence and considerations, we consider a value rate of {{ _sqm_rate|format_currency|default('N/A') }} p.sqm to be appropriate, which when applied to the NET LETTABLE AREA, equates to value as follows: NLA {{ _nla|default('N/A') }} Sqm @ {{ _sqm_rate|format_currency|default('N/A') }} p.sqm = {{ _direct_comp_sum|format_currency|default('N/A') }}</p>
+        {% endif %}
 
         <h2 style="font-size: 13px;">Method 2: Capitalisation</h2>
-        <p style="font-size: 12px; text-align: justify; white-space: pre-line;">{{ valuation_report["valuationDetails"].get("capitalisation") or 'As a secondary or check method of assessment, we have considered the income capitalisation approach. As previously detailed, our assessment as to a fair and maintainable net market rent for the subject suite is in the sum of $270,000.00 to which we have applied an appropriate yield of 5.3%, equating to the capitalised sum of $5,094,339.62. This has been rounded for practical valuation purposes in the sum of $5,000,000.00.' }}</p>
+        {% set _custom_m2 = valuation_report["valuationDetails"].get("capitalisation") %}
+        {% if _custom_m2 %}
+        <p style="font-size: 12px; text-align: justify; white-space: pre-line;">{{ _custom_m2 }}</p>
+        {% else %}
+        {% set _market_rent = valuation_report["valuationDetails"].get("assessedNetRental") or valuation_report["valuationDetails"].get("marketRent") %}
+        {% set _yield = valuation_report["valuationDetails"].get("capitalisationRate") %}
+        {% set _cap_sum = (_market_rent|float / _yield|float * 100) if _market_rent and _yield else None %}
+        {% set _cap_rounded = valuation_report["valuationDetails"].get("marketValue") %}
+        <p style="font-size: 12px; text-align: justify; white-space: pre-line;">As a secondary or check method of assessment, we have considered the income capitalisation approach. As previously detailed, our assessment as to a fair and maintainable net market rent for the subject suite is in the sum of {{ _market_rent|format_currency|default('N/A') }} to which we have applied an appropriate yield of {% if _yield is not none %}{{ _yield }}%{% else %}N/A{% endif %}, equating to the capitalised sum of {{ _cap_sum|format_currency|default('N/A') }}. This has been rounded for practical valuation purposes in the sum of {{ _cap_rounded|format_currency|default('N/A') }}.</p>
+        {% endif %}
 
         {% set _company_ref = 'CPV Valuers' if logo_type == 'CPV' else ('TAMN Valuations' if logo_type == 'TAMN' else 'AAP Valuations') %}
         <h2 style="font-size: 15px; font-weight: normal; margin-top: 15px;">Assumptions and Qualification:</h2>
@@ -585,8 +604,8 @@
         </div>
         
         {% if valuation_report.get("locationDetails", {}).get("map", {}).get("photo") %}
-        <div style="margin-top: 15px; display: flex; justify-content: center; height: 280px;">
-            <img src="{{ valuation_report['locationDetails']['map']['photo'] }}" alt="Site Map" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+        <div style="margin-top: 15px; display: flex; justify-content: center;">
+            <img src="{{ valuation_report['locationDetails']['map']['photo'] }}" alt="Site Map" style="width: 650px; height: 250px; object-fit: cover;">
         </div>
         {% endif %}
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
