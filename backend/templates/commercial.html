@@ -380,7 +380,7 @@
     </div>
     <!-- Page 2: Market Evidence (Sales Comparables) -->
     {% if valuation_report.get("comparables", {}).get("sales") %}
-    {% for chunk in valuation_report["comparables"]["sales"]|batch(3) %}
+    {% for chunk in valuation_report["comparables"]["sales"]|batch(4) %}
     <div class="page">
         <div style="text-align: right; margin-bottom: 20px;">
             <img src="{{ page_logo_url }}" alt="Logo" style="height: 70px; object-fit: contain;">
@@ -431,7 +431,7 @@
                             <td style="text-align: left;">
                                 {{ comparable.get("buildingArea", "") }}
                                 {% if comparable.get("nlaRate") %}
-                                <span style="margin-left: 30px;"><b>NLA Rate:</b> {{ comparable.get("nlaRate", "")|format_currency }}/sqm</span>
+                                <span style="margin-left: 30px;">NLA Rate: {{ comparable.get("nlaRate", "")|format_currency }}/sqm</span>
                                 {% endif %}
                             </td>
                             {% else %}
@@ -475,8 +475,8 @@
                         {% endif %}
                     </table>
                     <div style="flex-shrink: 0;">
-                        <img src="{{ comparable.get('photoUrl') or comparable.get('imageUrl') or comparable.get('image_url') or 'https://via.placeholder.com/130x130' }}" 
-                            style="object-fit: cover; width: 130px; height: 130px;" alt="">
+                        <img src="{{ comparable.get('photoUrl') or comparable.get('imageUrl') or comparable.get('image_url') or 'https://via.placeholder.com/150x95' }}" 
+                            style="object-fit: cover; width: 150px; height: 95px;" alt="">
                     </div>
                 </div>
                 
