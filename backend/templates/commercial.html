@@ -352,7 +352,15 @@
             </div>
             <div class="detail-row" style="margin-top: 10px;">
                 <div class="detail-label">Valuer:</div>
-                <div class="detail-value">JUGAL SAHA, AAPI CPV (Property Valuer)</div>
+                <div class="detail-value">
+                    {% if valuation_report.get("address", {}).get("state") == "QLD" %}
+                    Jugal Saha, Property Valuer, AAPI, CPV.<br>
+                    Certified Practicing Valuer 101474<br>
+                    QLD License no: 5429MR
+                    {% else %}
+                    JUGAL SAHA, AAPI CPV (Property Valuer)
+                    {% endif %}
+                </div>
             </div>
             <div class="detail-row" style="margin-top: 10px; display: flex;">
                 <div class="detail-label" style="float: none; width: 30%;">Declaration:</div>
@@ -372,12 +380,12 @@
     </div>
     <!-- Page 2: Market Evidence (Sales Comparables) -->
     {% if valuation_report.get("comparables", {}).get("sales") %}
-
+    {% for chunk in valuation_report["comparables"]["sales"]|batch(3) %}
     <div class="page">
         <div style="text-align: right; margin-bottom: 20px;">
             <img src="{{ page_logo_url }}" alt="Logo" style="height: 70px; object-fit: contain;">
         </div>
-        <div style="background-color: #f2f2f2; padding: 10px; font-size: 16px; font-weight: bold; margin-bottom: 20px; color: black; font-family: Arial, sans-serif;">Market Evidence</div>
+        <div style="background-color: #f2f2f2; padding: 10px; font-size: 16px; font-weight: bold; margin-bottom: 20px; color: black; font-family: Arial, sans-serif;">Market Evidence{{ " (cont'd)" if loop.index > 1 else "" }}</div>
         <style>
             #market-evidence table td {
                 padding: 2px 10px 2px 0;
@@ -390,7 +398,7 @@
             }
         </style>
         <div id="market-evidence">
-            {% for comparable in valuation_report["comparables"]["sales"][:4] %}
+            {% for comparable in chunk %}
             <div class="comparable" style="margin-bottom: 25px; page-break-inside: avoid; break-inside: avoid;">
                 <div style="display: flex; gap: 20px;">
                     <table style="flex: 1; border-collapse: collapse; font-size: 11px; line-height: 1.6;">
@@ -497,17 +505,19 @@
             <span style="float: right;" class="page-number"></span>
         </div>
     </div>
+    {% endfor %}
     {% endif %}
 
     <!-- Page 3: Rental Schedule -->
     {% if valuation_report.get("comparables", {}).get("rentals") %}
+    {% for chunk in valuation_report["comparables"]["rentals"]|batch(3) %}
     <div class="page">
         <div style="text-align: right; margin-bottom: 20px;">
             <img src="{{ page_logo_url }}" alt="Logo" style="height: 70px; object-fit: contain;">
         </div>
 
-        <h3>Rental Schedule</h3>
-        {% for comparable in valuation_report["comparables"]["rentals"][:4] %}
+        <h3>Rental Schedule{{ " (cont'd)" if loop.index > 1 else "" }}</h3>
+        {% for comparable in chunk %}
 
         <div class="comparable-box" style="margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 15px;">
             <div style="display: flex; gap: 20px;">
@@ -552,6 +562,7 @@
             <span style="float: right;" class="page-number"></span>
         </div>
     </div>
+    {% endfor %}
     {% endif %}
 
     <!-- Page 4: Valuation Remarks -->
