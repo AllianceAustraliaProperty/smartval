@@ -211,25 +211,15 @@ def update_comparable_photo(report_id, comparable_type):
         )
         current_app.logger.info(f"Generated presigned URL: {presigned_data['s3_url']}")
 
-        # Get report data and comparables
+        # Get report data and comparables to verify comparable exists, but defer DB update to /confirm-upload
         report_data = valuation_report_model.serialize(report)
         comparables = report_data.get('comparables', {})
         list_for_type = comparables.get(comparable_type, [])
 
-        # Find and update the comparable
         if comparable_id:
             found = False
             for item in list_for_type:
                 if str(item.get('id') or item.get('_id') or '') == str(comparable_id):
-                    # Delete old photo if it's from our S3 bucket
-                    if old_photo_url and _is_our_s3_url(old_photo_url):
-                        current_app.logger.info(f"Deleting old S3 photo: {old_photo_url}")
-                        _delete_old_s3_photo(old_photo_url)
-                    elif old_photo_url:
-                        current_app.logger.info(f"Skipping deletion of non-S3 photo: {old_photo_url}")
-                    
-                    # Update with new photo URL
-                    item['photoUrl'] = presigned_data['s3_url']
                     found = True
                     break
 
@@ -237,12 +227,6 @@ def update_comparable_photo(report_id, comparable_type):
                 return jsonify({'error': 'Comparable not found'}), 404
         else:
             return jsonify({'error': 'Comparable ID is required'}), 400
-
-        # Save back to report
-        comparables[comparable_type] = list_for_type
-        valuation_report_model.update(report_id, {'comparables': comparables})
-
-        current_app.logger.info(f"Comparable photo updated: {presigned_data['s3_url']} (report: {report_id}, type: {comparable_type})")
 
         return jsonify({
             'presignedUrl': presigned_data['presigned_url'],
@@ -276,9 +260,17 @@ def confirm_comparable_upload(report_id, comparable_type, index):
         s3_url = data.get('s3Url')
         file_key = data.get('fileKey')
         comparable_id = data.get('comparableId')
+        old_photo_url = data.get('oldPhotoUrl')
 
         if not s3_url or not file_key:
             return jsonify({'error': 'S3 URL and file key are required'}), 400
+
+        # Delete old photo if it's an update and from our S3 bucket
+        if old_photo_url and _is_our_s3_url(old_photo_url):
+            current_app.logger.info(f"Deleting old S3 photo: {old_photo_url}")
+            _delete_old_s3_photo(old_photo_url)
+        elif old_photo_url:
+            current_app.logger.info(f"Skipping deletion of non-S3 photo: {old_photo_url}")
 
         # Get report data and comparables
         report_data = valuation_report_model.serialize(report)
@@ -364,7 +356,8 @@ def _delete_old_s3_photo(photo_url):
         
         # Extract file key from S3 URL
         # URL format: https://bucket-name.s3.region.amazonaws.com/file-key
-        url_parts = photo_url.split('/')
+        base_url = photo_url.split('?')[0]
+        url_parts = base_url.split('/')
         if len(url_parts) >= 4:
             file_key = '/'.join(url_parts[3:])  # Everything after bucket name
             if s3_service.delete_file(file_key):

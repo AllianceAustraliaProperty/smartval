@@ -2118,7 +2118,8 @@
             </div>
           </div>
           <div class="property-content">
-            <img class="property-image" src="{{ comparable['photoUrl'] }}" alt="Property Image" />
+            {% set comp_img = comparable.get("photoUrl") or comparable.get("photo_url") or comparable.get("imageUrl") or comparable.get("image_url") %}
+            <img class="property-image" src="{{ comp_img or 'https://valai.duo.tax/assets/property-placeholder.jpg' }}" alt="Property Image" />
             <div class="property-details">
               <div class="property-specs">
                 <div class="spec-item">

@@ -1185,6 +1185,11 @@ const ComparableCard: React.FC<{
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [comparable?.photoUrl, (comparable as any)?.tempPhoto?.previewUrl]);
 
   // Convert address to proper title case but keep state abbreviations in CAPS
   const toTitleCase = (str: string | undefined) => {
@@ -1360,11 +1365,18 @@ const ComparableCard: React.FC<{
     autosaveTimerRef.current = setTimeout(async () => {
       try {
         const comparablesAll = watch('comparables') ?? {};
-        console.log('Autosaving comparables to backend:', comparablesAll);
+        
+        // Scrub tempPhoto from comparables before autosaving
+        const scrubbedComparables = {
+          sales: comparablesAll.sales?.map(({ tempPhoto, ...rest }: any) => rest) || [],
+          rentals: comparablesAll.rentals?.map(({ tempPhoto, ...rest }: any) => rest) || []
+        };
+        
+        console.log('Autosaving comparables to backend:', scrubbedComparables);
         const response = await fetch(`${API_BASE_URL}/api/valuation-reports/${reportId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ comparables: comparablesAll }),
+          body: JSON.stringify({ comparables: scrubbedComparables }),
         });
         if (response.ok) {
           console.log('✓ Comparables saved to database successfully');
@@ -1454,41 +1466,35 @@ const ComparableCard: React.FC<{
 
       console.log('S3 upload successful!');
 
-      // 3) For new photos, confirm with backend
-      if (!isUpdate) {
-        console.log('PUT to S3 successful, confirming with backend', { reportId, type, index });
-        const confirmBody: any = { s3Url: presign.s3Url, fileKey: presign.fileKey };
-        // include comparable id if available so backend can match by id
-        if (comparable && (comparable.id || comparable._id)) {
-          confirmBody.comparableId = comparable.id || comparable._id;
-        }
-
-        const confirmRes = await fetch(`${API_BASE_URL}/comparables-photos/confirm-upload/${reportId}/${type}/${index}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(confirmBody),
-        });
-
-        if (!confirmRes.ok) {
-          const err = await confirmRes.json().catch(() => ({}));
-          throw new Error(err.error || 'Failed to confirm upload');
-        }
-
-        const confirmJson = await confirmRes.json();
-        const finalUrl = confirmJson.photoUrl || presign.s3Url;
-        const separator = finalUrl.includes('?') ? '&' : '?';
-        const cacheBustedUrl = `${finalUrl}${separator}t=${Date.now()}`;
-        // Update form value with returned photoUrl
-        setValue(`comparables.${type}.${index}.photoUrl`, cacheBustedUrl, { shouldDirty: true, shouldTouch: true });
-        return cacheBustedUrl;
-      } else {
-        // For updates, the backend already updated the photoUrl, just update the form
-        console.log('Photo update completed, updating form with new URL:', presign.s3Url);
-        const separator = presign.s3Url.includes('?') ? '&' : '?';
-        const cacheBustedUrl = `${presign.s3Url}${separator}t=${Date.now()}`;
-        setValue(`comparables.${type}.${index}.photoUrl`, cacheBustedUrl, { shouldDirty: true, shouldTouch: true });
-        return cacheBustedUrl;
+      // 3) Confirm with backend
+      console.log('PUT to S3 successful, confirming with backend', { reportId, type, index });
+      const confirmBody: any = { s3Url: presign.s3Url, fileKey: presign.fileKey };
+      // include comparable id if available so backend can match by id
+      if (comparable && (comparable.id || comparable._id)) {
+        confirmBody.comparableId = comparable.id || comparable._id;
       }
+      if (isUpdate && comparable.photoUrl) {
+        confirmBody.oldPhotoUrl = comparable.photoUrl;
+      }
+
+      const confirmRes = await fetch(`${API_BASE_URL}/comparables-photos/confirm-upload/${reportId}/${type}/${index}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(confirmBody),
+      });
+
+      if (!confirmRes.ok) {
+        const err = await confirmRes.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to confirm upload');
+      }
+
+      const confirmJson = await confirmRes.json();
+      const finalUrl = confirmJson.photoUrl || presign.s3Url;
+      const separator = finalUrl.includes('?') ? '&' : '?';
+      const cacheBustedUrl = `${finalUrl}${separator}t=${Date.now()}`;
+      // Update form value with returned photoUrl
+      setValue(`comparables.${type}.${index}.photoUrl`, cacheBustedUrl, { shouldDirty: true, shouldTouch: true });
+      return cacheBustedUrl;
     } catch (err) {
       console.error('Comparable upload error:', err);
       setUploadError(err instanceof Error ? err.message : 'Upload failed');
@@ -1626,12 +1632,13 @@ const ComparableCard: React.FC<{
                   )}
 
                   {/* Photo Display */}
-                  {((comparable as any).tempPhoto?.previewUrl) || comparable.photoUrl ? (
+                  {!imageError && (((comparable as any).tempPhoto?.previewUrl) || comparable.photoUrl) ? (
                     <div className="relative group">
                       <img
                         src={((comparable as any).tempPhoto?.previewUrl) || comparable.photoUrl}
                         alt={`Comparable ${index + 1} photo`}
                         className="w-full aspect-square object-cover rounded-lg border-2 border-gray-200"
+                        onError={() => setImageError(true)}
                       />
                       <div className="absolute top-2 right-2 flex gap-2">
                         <button
@@ -1686,10 +1693,7 @@ const ComparableCard: React.FC<{
                       if (!f) return;
                       // Try presigned flow first
                       const s3Url = await uploadComparableToS3(f);
-                      if (!s3Url) {
-                        // fallback to staging local preview if upload failed
-                        handlePhotoSelect(f);
-                      } else {
+                      if (s3Url) {
                         // ensure local tempPhoto is cleared if any
                         setValue(`comparables.${type}.${index}.tempPhoto`, undefined, { shouldDirty: true, shouldTouch: true });
                       }
