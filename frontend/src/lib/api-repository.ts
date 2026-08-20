@@ -56,6 +56,32 @@ interface PropertyCardData {
 /**
  * Transform backend valuation report to frontend format (now includes property data)
  */
+function extractDateOnly(value: string): string {
+  // If the value is already YYYY-MM-DD, return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+  // If it's an ISO datetime string (e.g. "2026-08-21T00:00:00" or "2026-08-21T00:00:00Z" or
+  // "2026-08-21T00:00:00+00:00"), extract the date portion directly to avoid timezone shifts.
+  // NOTE: naive datetime strings (no Z/offset) are parsed as LOCAL time by `new Date()`,
+  // which causes a -1 day shift in timezones ahead of UTC (e.g. AEST +10:00).
+  const isoMatch = value.match(/^(\d{4}-\d{2}-\d{2})T/);
+  if (isoMatch) {
+    return isoMatch[1];
+  }
+  // For other formats (e.g. "Thu, 21 Aug 2026 00:00:00 GMT"), parse as Date but
+  // use UTC methods to extract the date to avoid local timezone interference
+  const date = new Date(value);
+  if (!isNaN(date.getTime())) {
+    const yyyy = date.getUTCFullYear();
+    const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(date.getUTCDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  // If all else fails, return the original value
+  return value;
+}
+
 function transformValuationReport(backendReport: any): ValuationReportData {
   // Convert date fields to YYYY-MM-DD format for date inputs
   const valuationDetails = backendReport.valuationDetails || {};
@@ -63,8 +89,7 @@ function transformValuationReport(backendReport: any): ValuationReportData {
   dateFields.forEach(field => {
     if (valuationDetails[field]) {
       try {
-        const date = new Date(valuationDetails[field]);
-        valuationDetails[field] = date.toISOString().split('T')[0];
+        valuationDetails[field] = extractDateOnly(valuationDetails[field]);
       } catch (e) {
         console.error(`Failed to convert ${field}:`, e);
       }
@@ -75,8 +100,7 @@ function transformValuationReport(backendReport: any): ValuationReportData {
   const convertComparableDate = (comparable: any) => {
     if (comparable.saleLeaseDate) {
       try {
-        const date = new Date(comparable.saleLeaseDate);
-        comparable.saleLeaseDate = date.toISOString().split('T')[0];
+        comparable.saleLeaseDate = extractDateOnly(comparable.saleLeaseDate);
       } catch (e) {
         console.error('Failed to convert saleLeaseDate:', e);
       }
@@ -324,8 +348,8 @@ export const apiRepository = {
         payload.valuationDetails = {
           ...DEFAULT_PROPERTY_FORM.valuationDetails,
           valuationType: initialData.valuationType,
-          // Convert date string to ISO date string for proper backend handling
-          valuationDate: initialData.valuationDate ? new Date(initialData.valuationDate).toISOString() : undefined,
+          // Send date string directly — backend handles YYYY-MM-DD format
+          valuationDate: initialData.valuationDate || undefined,
         };
       }
 
