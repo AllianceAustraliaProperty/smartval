@@ -343,7 +343,7 @@
             </div>
             <div class="detail-row">
                 <div class="detail-label">Issue Date:</div>
-                <div class="detail-value">{{ now() }}</div>
+                <div class="detail-value">{% if valuation_report.get("valuationDetails", {}).get("dateIssued") %}{{ valuation_report["valuationDetails"]["dateIssued"] | format_date }}{% else %}{{ now() }}{% endif %}</div>
             </div>
             <div class="detail-row">
                 <div class="detail-label">Market Value:</div>
@@ -491,7 +491,7 @@
             <p style="font-size: 12px;"><strong>Valuation Firm: AAP Property Valuers</strong></p> <img
                 src="https://valai.duo.tax/assets/jugal-signature.png" alt="Signature"
                 style="width: 130px; margin-top: 8px;">
-            <p style="font-size: 12px;"><strong>Issue Date: {{ now() }}</strong></p>
+            <p style="font-size: 12px;"><strong>Issue Date: {% if valuation_report.get("valuationDetails", {}).get("dateIssued") %}{{ valuation_report["valuationDetails"]["dateIssued"] | format_date }}{% else %}{{ now() }}{% endif %}</strong></p>
         </div>
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
             <span style="float: right;" class="page-number"></span>
