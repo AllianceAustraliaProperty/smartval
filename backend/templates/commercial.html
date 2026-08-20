@@ -428,28 +428,23 @@
                             <td style="text-align: left;">{{ comparable.get("saleLeasePrice", "")|format_currency|default('N/A') }}</td>
                             {% if comparable.get("buildingArea") %}
                             <td style="text-align: left;">NLA</td>
-                            <td style="text-align: left;">{{ comparable.get("buildingArea", "") }}</td>
+                            <td style="text-align: left;">
+                                {{ comparable.get("buildingArea", "") }}
+                                {% if comparable.get("nlaRate") %}
+                                <span style="margin-left: 30px;"><b>NLA Rate:</b> {{ comparable.get("nlaRate", "")|format_currency }}/sqm</span>
+                                {% endif %}
+                            </td>
                             {% else %}
                             <td></td>
                             <td></td>
                             {% endif %}
                         </tr>
-                        {% if comparable.get("netIncomeRental") or comparable.get("nlaRate") %}
+                        {% if comparable.get("netIncomeRental") %}
                         <tr>
-                            {% if comparable.get("netIncomeRental") %}
                             <td style="text-align: left;">Net Income</td>
                             <td style="text-align: left;">{{ comparable.get("netIncomeRental", "")|format_currency }} {{ comparable.get("netIncomeRentalSuffix", "") }}</td>
-                            {% else %}
                             <td></td>
                             <td></td>
-                            {% endif %}
-                            {% if comparable.get("nlaRate") %}
-                            <td style="text-align: left;">NLA Rate</td>
-                            <td style="text-align: left;">{{ comparable.get("nlaRate", "")|format_currency }}/sqm</td>
-                            {% else %}
-                            <td></td>
-                            <td></td>
-                            {% endif %}
                         </tr>
                         {% endif %}
                         {% if comparable.get("passingRent") %}
