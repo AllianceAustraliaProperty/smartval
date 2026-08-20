@@ -1475,14 +1475,19 @@ const ComparableCard: React.FC<{
         }
 
         const confirmJson = await confirmRes.json();
+        const finalUrl = confirmJson.photoUrl || presign.s3Url;
+        const separator = finalUrl.includes('?') ? '&' : '?';
+        const cacheBustedUrl = `${finalUrl}${separator}t=${Date.now()}`;
         // Update form value with returned photoUrl
-        setValue(`comparables.${type}.${index}.photoUrl`, confirmJson.photoUrl || presign.s3Url, { shouldDirty: true, shouldTouch: true });
-        return confirmJson.photoUrl || presign.s3Url;
+        setValue(`comparables.${type}.${index}.photoUrl`, cacheBustedUrl, { shouldDirty: true, shouldTouch: true });
+        return cacheBustedUrl;
       } else {
         // For updates, the backend already updated the photoUrl, just update the form
         console.log('Photo update completed, updating form with new URL:', presign.s3Url);
-        setValue(`comparables.${type}.${index}.photoUrl`, presign.s3Url, { shouldDirty: true, shouldTouch: true });
-        return presign.s3Url;
+        const separator = presign.s3Url.includes('?') ? '&' : '?';
+        const cacheBustedUrl = `${presign.s3Url}${separator}t=${Date.now()}`;
+        setValue(`comparables.${type}.${index}.photoUrl`, cacheBustedUrl, { shouldDirty: true, shouldTouch: true });
+        return cacheBustedUrl;
       }
     } catch (err) {
       console.error('Comparable upload error:', err);
@@ -1624,7 +1629,7 @@ const ComparableCard: React.FC<{
                   {((comparable as any).tempPhoto?.previewUrl) || comparable.photoUrl ? (
                     <div className="relative group">
                       <img
-                        src={comparable.photoUrl}
+                        src={((comparable as any).tempPhoto?.previewUrl) || comparable.photoUrl}
                         alt={`Comparable ${index + 1} photo`}
                         className="w-full aspect-square object-cover rounded-lg border-2 border-gray-200"
                       />
@@ -1687,6 +1692,11 @@ const ComparableCard: React.FC<{
                       } else {
                         // ensure local tempPhoto is cleared if any
                         setValue(`comparables.${type}.${index}.tempPhoto`, undefined, { shouldDirty: true, shouldTouch: true });
+                      }
+                      
+                      // Reset the file input so the same file can be selected again
+                      if (e.target) {
+                        e.target.value = '';
                       }
                     }}
                     className="sr-only"
