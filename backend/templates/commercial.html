@@ -348,7 +348,7 @@
             <div class="detail-row">
                 <div class="detail-label">Market Value:</div>
                 <div class="detail-value">{{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
-                    ({{ valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')|title }}) (Exclusive of outgoings & GST)</div>
+                    ({{ valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')|title }}) (Excluding GST)</div>
             </div>
             <div class="detail-row" style="margin-top: 10px;">
                 <div class="detail-label">Valuer:</div>
