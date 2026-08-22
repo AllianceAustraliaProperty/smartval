@@ -9,8 +9,6 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from PIL import Image, ImageOps
 from requests.adapters import HTTPAdapter
-import tempfile
-import os
 
 # Per-asset compression presets (max_width_px, jpeg_quality)
 PRESETS = {
@@ -63,12 +61,8 @@ def compress_image_to_data_url(image_url, preset='gallery'):
         buf = io.BytesIO()
         img.save(buf, format='JPEG', quality=quality, optimize=True, progressive=True)
         fd, path = tempfile.mkstemp(suffix='.jpg')
-        
-        with os.fdopen(fd, 'wb') as f:
-            f.write(buf.getvalue())
-        
-        safe_path = path.replace('\\', '/')
-        return f"file:///{safe_path}"
+        b64 = base64.b64encode(buf.getvalue()).decode('ascii')
+        return f"data:image/jpeg;base64,{b64}"
     except Exception as e:
         print(f"[image_compress] Failed for {image_url}: {e}")
         return image_url
