@@ -1455,12 +1455,7 @@
                 <div class="map-infobox">
                   {{ valuation_report["address"]["fullAddress"] }}
                 </div>
-                <img class="map" src="https://maps.googleapis.com/maps/api/staticmap?center={{
-                  valuation_report["locationDetails"]["latitude"] }},{{
-                  valuation_report["locationDetails"]["longitude"]
-                  }}&zoom=15&size=800x400&maptype=roadmap&markers=color:red%7C{{
-                  valuation_report["locationDetails"]["latitude"] }},{{ valuation_report["locationDetails"]["longitude"]
-                  }}&key={{ maps_api_key }}" alt="">
+                <img class="map" src="{{ map_roadmap_url }}" alt="">
               </div>
               {% endif %}
               <div style="margin-top: 5px; font-size: 10px">
@@ -1590,11 +1585,7 @@
           <td>
             {% if valuation_report["locationDetails"]["map"]["photo"] %} <img class="map" src="{{
               valuation_report["locationDetails"]["map"]["photo"] }}" alt=""> {%
-            else %} <img class="map" src="https://maps.googleapis.com/maps/api/staticmap?center={{
-              valuation_report["locationDetails"]["latitude"] }},{{ valuation_report["locationDetails"]["longitude"]
-              }}&zoom=20&size=800x400&maptype=hybrid&markers=color:red%7Clabel:A%7C{{
-              valuation_report["locationDetails"]["latitude"] }},{{ valuation_report["locationDetails"]["longitude"]
-              }}&key={{ maps_api_key }}" alt=""> {% endif %}
+            else %} <img class="map" src="{{ map_hybrid_url }}" alt=""> {% endif %}
           </td>
         </tr>
         <tr>

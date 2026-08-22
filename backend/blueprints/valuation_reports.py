@@ -569,40 +569,37 @@ def generate_html_report(report_id, template_name='residential.html'):
             logo_filename = 'aap-logo-final.png'
             logo_remote_url = Config.REPORT_LOGO_URL
 
-        # Inline logo as data URL to avoid remote loading failures in Playwright/PDF
-        try:
-            local_logo_path = os.path.join(os.path.dirname(__file__), '..', 'templates', logo_filename)
-            with open(local_logo_path, 'rb') as lf:
-                logo_b64 = base64.b64encode(lf.read()).decode('ascii')
-            logo_data_url = f"data:image/png;base64,{logo_b64}"
-            effective_logo_url = logo_data_url  # prefer inline for PDF reliability
-        except Exception:
-            logo_data_url = None
-            effective_logo_url = logo_remote_url
+        # Generate direct local file URLs for Chromium, bypassing Base64 entirely
+        def get_local_file_url(filename):
+            try:
+                import os
+                local_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates', filename))
+                return f"file:///{local_path.replace(chr(92), '/')}"
+            except Exception:
+                return ""
 
-        # Load TAMN per-page logo (tamn_logo_1.png) as base64
-        try:
-            tamn_page_logo_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'tamn_logo_1.png')
-            with open(tamn_page_logo_path, 'rb') as tf:
-                tamn_page_logo_b64 = f"data:image/png;base64,{base64.b64encode(tf.read()).decode('ascii')}"
-        except Exception:
-            tamn_page_logo_b64 = ""
+        effective_logo_url = get_local_file_url(logo_filename) or logo_remote_url
+        logo_data_url = effective_logo_url
+        tamn_page_logo_b64 = get_local_file_url('tamn_logo_1.png')
+        house_cover_b64 = get_local_file_url('house-cover.png')
+        aap_cover_design_b64 = get_local_file_url('design_v001_cropped.jpg-removebg-preview.png')
 
-        # Load cover house image as base64
-        try:
-            house_img_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'house-cover.png')
-            with open(house_img_path, 'rb') as hf:
-                house_cover_b64 = f"data:image/png;base64,{base64.b64encode(hf.read()).decode('ascii')}"
-        except Exception:
-            house_cover_b64 = ""
-
-        # Load AAP cover design image (cityscape) as base64
-        try:
-            aap_design_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'design_v001_cropped.jpg-removebg-preview.png')
-            with open(aap_design_path, 'rb') as df:
-                aap_cover_design_b64 = f"data:image/png;base64,{base64.b64encode(df.read()).decode('ascii')}"
-        except Exception:
-            aap_cover_design_b64 = ""
+        # Pre-fetch and compress Google Maps to save Playwright download time & PNG bloat
+        lat = report.get("locationDetails", {}).get("latitude") or report.get("address", {}).get("latitude")
+        lng = report.get("locationDetails", {}).get("longitude") or report.get("address", {}).get("longitude")
+        
+        map_roadmap_url = ""
+        map_hybrid_url = ""
+        
+        if lat and lng:
+            from utils.image_compress import compress_image_to_data_url
+            api_key = Config.GOOGLE_MAPS_API_KEY
+            # roadmap
+            raw_url_1 = f"https://maps.googleapis.com/maps/api/staticmap?center={lat},{lng}&zoom=15&size=800x400&maptype=roadmap&markers=color:red%7C{lat},{lng}&key={api_key}"
+            map_roadmap_url = compress_image_to_data_url(raw_url_1, preset='cover')
+            # hybrid
+            raw_url_2 = f"https://maps.googleapis.com/maps/api/staticmap?center={lat},{lng}&zoom=20&size=800x400&maptype=hybrid&markers=color:red%7Clabel:A%7C{lat},{lng}&key={api_key}"
+            map_hybrid_url = compress_image_to_data_url(raw_url_2, preset='cover')
 
         # Prepare data for template rendering
         template_data = {
@@ -611,6 +608,8 @@ def generate_html_report(report_id, template_name='residential.html'):
             'land_value_rounded': land_value_rounded,
             'valuation_report': report,
             'maps_api_key': Config.GOOGLE_MAPS_API_KEY,
+            'map_roadmap_url': map_roadmap_url,
+            'map_hybrid_url': map_hybrid_url,
             'base_url': Config.BASE_URL,
             'logo_url': effective_logo_url,
             'logo_data_url': logo_data_url,

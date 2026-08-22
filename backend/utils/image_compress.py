@@ -16,6 +16,7 @@ PRESETS = {
     'gallery':     (600, 65),
     'annexure':    (700, 65),
     'comparable':  (500, 60),
+    'document':    (1200, 75),
 }
 
 _session = requests.Session()
@@ -104,6 +105,14 @@ def compress_report_images(report, max_workers=32):
         if not isinstance(photo, dict) or not photo.get('photoUrl'):
             continue
         targets.append((photo, 'photoUrl', 'gallery'))
+
+    for fp in report.get('floorPlans', []) or []:
+        if isinstance(fp, dict) and fp.get('photoUrl'):
+            targets.append((fp, 'photoUrl', 'document'))
+    
+    for ts in report.get('titleSearch', []) or []:
+        if isinstance(ts, dict) and ts.get('photoUrl'):
+            targets.append((ts, 'photoUrl', 'document'))
 
     comparables = report.get('comparables', {}) or {}
     for bucket in ('sales', 'rentals'):

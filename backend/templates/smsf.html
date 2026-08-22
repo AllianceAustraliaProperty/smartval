@@ -1300,7 +1300,7 @@
             {# Subject property map #}
             {% if valuation_report.get("locationDetails", {}).get("latitude") and valuation_report.get("locationDetails", {}).get("longitude") %}
             <div style="text-align: center; margin-top: 15px;">
-                <img src="https://maps.googleapis.com/maps/api/staticmap?center={{ valuation_report.locationDetails.latitude }},{{ valuation_report.locationDetails.longitude }}&zoom=18&size=600x250&maptype=hybrid&markers=color:red%7Clabel:A%7C{{ valuation_report.locationDetails.latitude }},{{ valuation_report.locationDetails.longitude }}&key={{ maps_api_key }}"
+                <img src="{{ map_hybrid_url }}"
                      style="max-width: 80%; height: auto;" alt="Subject property map" />
             </div>
             {% endif %}
