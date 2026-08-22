@@ -71,31 +71,8 @@ def summarize_photos(photos: list[dict]):
 
     categories.sort(key=lambda x: get_category_sort_key(x['category']))
 
-    internal_conditions = [p["internalCondition"] for p in photos if p["internalCondition"]]
-    external_conditions = [p["externalCondition"] for p in photos if p["externalCondition"]]
-
-    internal_walls_types = [p["internalWallsType"] for p in photos if p["internalWallsType"]]
-    external_walls_types = [p["externalWallsType"] for p in photos if p["externalWallsType"]]
-
-    internal_condition = Counter(internal_conditions)
-    internal_condition = internal_condition.most_common(1)
-
-    external_condition = Counter(external_conditions)
-    external_condition = external_condition.most_common(1)
-
-    internal_walls_type = Counter(internal_walls_types)
-    internal_walls_type = internal_walls_type.most_common(1)
-
-    external_walls_type = Counter(external_walls_types)
-    external_walls_type = external_walls_type.most_common(1)
-
-
     new_summary = {
         "categories": categories,
-        "internalCondition": None if not internal_condition else internal_condition[0][0],
-        "externalCondition": None if not external_condition else external_condition[0][0],
-        "internalWallsType": None if not internal_walls_type else internal_walls_type[0][0],
-        "externalWallsType": None if not external_walls_type else external_walls_type[0][0],
         "floorings": list(floorings)
     }
 

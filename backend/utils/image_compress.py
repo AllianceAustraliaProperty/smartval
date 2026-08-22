@@ -8,16 +8,22 @@ import io
 from concurrent.futures import ThreadPoolExecutor
 import requests
 from PIL import Image, ImageOps
+from requests.adapters import HTTPAdapter
+import tempfile
+import os
 
 # Per-asset compression presets (max_width_px, jpeg_quality)
 PRESETS = {
-    'cover':       (1600, 88),
-    'gallery':     (1200, 85),
-    'annexure':    (1200, 85),
-    'comparable':  (800,  85),
+    'cover':       (800, 70),
+    'gallery':     (600, 65),
+    'annexure':    (700, 65),
+    'comparable':  (500, 60),
 }
 
 _session = requests.Session()
+adapter = HTTPAdapter(pool_connections=32, pool_maxsize=32)
+_session.mount('http://', adapter)
+_session.mount('https://', adapter)
 
 
 def compress_image_to_data_url(image_url, preset='gallery'):
@@ -56,8 +62,13 @@ def compress_image_to_data_url(image_url, preset='gallery'):
 
         buf = io.BytesIO()
         img.save(buf, format='JPEG', quality=quality, optimize=True, progressive=True)
-        b64 = base64.b64encode(buf.getvalue()).decode('ascii')
-        return f"data:image/jpeg;base64,{b64}"
+        fd, path = tempfile.mkstemp(suffix='.jpg')
+        
+        with os.fdopen(fd, 'wb') as f:
+            f.write(buf.getvalue())
+        
+        safe_path = path.replace('\\', '/')
+        return f"file:///{safe_path}"
     except Exception as e:
         print(f"[image_compress] Failed for {image_url}: {e}")
         return image_url
