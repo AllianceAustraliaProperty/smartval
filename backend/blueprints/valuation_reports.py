@@ -247,16 +247,14 @@ def generate_pdf_from_html(html: str):
             with os.fdopen(fd, 'w', encoding='utf-8') as f:
                 f.write(html)
                 
+            page = browser.new_page()
             try:
-                page = browser.new_page()
-                try:
-                    # Load the local file instead of raw text to allow reading local image files
-                    page.goto(f"file:///{html_path.replace(chr(92), '/')}", wait_until='load', timeout=60000)
-                    # Optionally wait for network idle for images/fonts, but catch timeout if it hangs
-                    page.wait_for_load_state('networkidle', timeout=15000)
-                except Exception as e:
-                    print(f"Warning: Playwright wait timeout during PDF generation: {e}")
-                
+                # Load the local file instead of raw text to allow reading local image files
+                page.goto(f"file:///{html_path.replace(chr(92), '/')}", wait_until='load', timeout=60000)
+                # Optionally wait for network idle for images/fonts, but catch timeout if it hangs
+                page.wait_for_load_state('networkidle', timeout=15000)
+            except Exception as e:
+                print(f"Warning: Playwright wait timeout during PDF generation: {e}")
             pdf_bytes = page.pdf(
                 format="A4",
                 print_background=True,
