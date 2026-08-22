@@ -228,6 +228,45 @@ def _cleanup_old_playwright_tmp(max_age_seconds=300):
             except Exception:
                 pass
 
+def compress_pdf(pdf_bytes, image_quality=65):
+    """Recompress Chromium's bloated FlateDecode image streams as JPEG."""
+    try:
+        import pikepdf
+        from PIL import Image
+        import io
+
+        pdf = pikepdf.open(io.BytesIO(pdf_bytes))
+
+        for page in pdf.pages:
+            if "/Resources" not in page or "/XObject" not in page["/Resources"]:
+                continue
+            for key, raw_image in page["/Resources"]["/XObject"].items():
+                if raw_image.get("/Subtype") != "/Image":
+                    continue
+                try:
+                    # Extract the bloated image from the PDF
+                    pil_image = pikepdf.PdfImage(raw_image).as_pil_image()
+                    if pil_image.mode != 'RGB':
+                        pil_image = pil_image.convert('RGB')
+
+                    # Save it as a highly compressed JPEG
+                    buf = io.BytesIO()
+                    pil_image.save(buf, format='JPEG', quality=image_quality, optimize=True)
+
+                    # Inject it back into the PDF, replacing the bloated one
+                    raw_image.write(buf.getvalue(), filter=pikepdf.Name("/DCTDecode"))
+                    raw_image["/ColorSpace"] = pikepdf.Name("/DeviceRGB")
+                except Exception:
+                    continue  # skip any specific images that fail
+
+        out = io.BytesIO()
+        pdf.save(out, compress_streams=True)
+        pdf.close()
+
+        return out.getvalue()
+    except Exception as e:
+        print(f"Warning: pikepdf compression failed: {e}")
+        return pdf_bytes  # safe fallback to original PDF if it fails
 
 def generate_pdf_from_html(html: str):
     # Clean up any orphaned Playwright temp files before spawning a new browser
@@ -260,7 +299,9 @@ def generate_pdf_from_html(html: str):
                 print_background=True,
                 margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
             )
-            return pdf_bytes
+
+            compressed_pdf_bytes = compress_pdf(pdf_bytes)
+            return compressed_pdf_bytes
         finally:
             # Explicitly close the browser to ensure Playwright cleans up /tmp artifacts
             browser.close()
