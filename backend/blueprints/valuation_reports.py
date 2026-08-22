@@ -234,9 +234,14 @@ def compress_pdf(pdf_bytes, image_quality=65):
         import pikepdf
         from PIL import Image
         import io
+        from concurrent.futures import ThreadPoolExecutor
 
         pdf = pikepdf.open(io.BytesIO(pdf_bytes))
 
+        pil_images = []
+        raw_images = []
+
+        # Step 1: Extract images sequentially (fast, safe for C++ bindings)
         for page in pdf.pages:
             if "/Resources" not in page or "/XObject" not in page["/Resources"]:
                 continue
@@ -244,20 +249,31 @@ def compress_pdf(pdf_bytes, image_quality=65):
                 if raw_image.get("/Subtype") != "/Image":
                     continue
                 try:
-                    # Extract the bloated image from the PDF
                     pil_image = pikepdf.PdfImage(raw_image).as_pil_image()
                     if pil_image.mode != 'RGB':
                         pil_image = pil_image.convert('RGB')
-
-                    # Save it as a highly compressed JPEG
-                    buf = io.BytesIO()
-                    pil_image.save(buf, format='JPEG', quality=image_quality, optimize=True)
-
-                    # Inject it back into the PDF, replacing the bloated one
-                    raw_image.write(buf.getvalue(), filter=pikepdf.Name("/DCTDecode"))
-                    raw_image["/ColorSpace"] = pikepdf.Name("/DeviceRGB")
+                    pil_images.append(pil_image)
+                    raw_images.append(raw_image)
                 except Exception:
-                    continue  # skip any specific images that fail
+                    continue
+
+        # Step 2: Encode to JPEG concurrently (CPU heavy, but PIL releases the GIL)
+        def _encode(img):
+            buf = io.BytesIO()
+            # Dropped optimize=True as it adds ~30% processing time for only ~5% size reduction
+            img.save(buf, format='JPEG', quality=image_quality)
+            return buf.getvalue()
+
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            jpeg_results = list(ex.map(_encode, pil_images))
+
+        # Step 3: Write back into PDF sequentially (safe for C++ bindings)
+        for raw_image, jpeg_bytes in zip(raw_images, jpeg_results):
+            try:
+                raw_image.write(jpeg_bytes, filter=pikepdf.Name("/DCTDecode"))
+                raw_image["/ColorSpace"] = pikepdf.Name("/DeviceRGB")
+            except Exception:
+                pass
 
         out = io.BytesIO()
         pdf.save(out, compress_streams=True)
@@ -281,16 +297,11 @@ def generate_pdf_from_html(html: str):
             '--no-zygote',               # avoids sandbox crashes in Docker
         ])
         try:
-            import tempfile, os
-            fd, html_path = tempfile.mkstemp(suffix='.html')
-            with os.fdopen(fd, 'w', encoding='utf-8') as f:
-                f.write(html)
-                
             page = browser.new_page()
             try:
-                # Load the local file instead of raw text to allow reading local image files
-                page.goto(f"file:///{html_path.replace(chr(92), '/')}", wait_until='load', timeout=60000)
-                # Optionally wait for network idle for images/fonts, but catch timeout if it hangs
+                # Set content directly
+                page.set_content(html, wait_until='load', timeout=60000)
+                # Optionally wait for network idle for external fonts/resources
                 page.wait_for_load_state('networkidle', timeout=15000)
             except Exception as e:
                 print(f"Warning: Playwright wait timeout during PDF generation: {e}")
@@ -305,10 +316,6 @@ def generate_pdf_from_html(html: str):
         finally:
             # Explicitly close the browser to ensure Playwright cleans up /tmp artifacts
             browser.close()
-            try:
-                os.remove(html_path)
-            except Exception:
-                pass
 
 @valuation_reports_bp.route('/', methods=['GET'])
 def get_all_valuation_reports():
@@ -610,20 +617,40 @@ def generate_html_report(report_id, template_name='residential.html'):
             logo_filename = 'aap-logo-final.png'
             logo_remote_url = Config.REPORT_LOGO_URL
 
-        # Generate direct local file URLs for Chromium, bypassing Base64 entirely
-        def get_local_file_url(filename):
-            try:
-                import os
-                local_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates', filename))
-                return f"file:///{local_path.replace(chr(92), '/')}"
-            except Exception:
-                return ""
+        # Inline logo as data URL to avoid remote loading failures in Playwright/PDF
+        try:
+            local_logo_path = os.path.join(os.path.dirname(__file__), '..', 'templates', logo_filename)
+            with open(local_logo_path, 'rb') as lf:
+                logo_b64 = base64.b64encode(lf.read()).decode('ascii')
+            logo_data_url = f"data:image/png;base64,{logo_b64}"
+            effective_logo_url = logo_data_url  # prefer inline for PDF reliability
+        except Exception:
+            logo_data_url = None
+            effective_logo_url = logo_remote_url
 
-        effective_logo_url = get_local_file_url(logo_filename) or logo_remote_url
-        logo_data_url = effective_logo_url
-        tamn_page_logo_b64 = get_local_file_url('tamn_logo_1.png')
-        house_cover_b64 = get_local_file_url('house-cover.png')
-        aap_cover_design_b64 = get_local_file_url('design_v001_cropped.jpg-removebg-preview.png')
+        # Load TAMN per-page logo (tamn_logo_1.png) as base64
+        try:
+            tamn_page_logo_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'tamn_logo_1.png')
+            with open(tamn_page_logo_path, 'rb') as tf:
+                tamn_page_logo_b64 = f"data:image/png;base64,{base64.b64encode(tf.read()).decode('ascii')}"
+        except Exception:
+            tamn_page_logo_b64 = ""
+
+        # Load cover house image as base64
+        try:
+            house_img_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'house-cover.png')
+            with open(house_img_path, 'rb') as hf:
+                house_cover_b64 = f"data:image/png;base64,{base64.b64encode(hf.read()).decode('ascii')}"
+        except Exception:
+            house_cover_b64 = ""
+
+        # Load AAP cover design image (cityscape) as base64
+        try:
+            aap_design_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'design_v001_cropped.jpg-removebg-preview.png')
+            with open(aap_design_path, 'rb') as df:
+                aap_cover_design_b64 = f"data:image/png;base64,{base64.b64encode(df.read()).decode('ascii')}"
+        except Exception:
+            aap_cover_design_b64 = ""
 
         # Pre-fetch and compress Google Maps to save Playwright download time & PNG bloat
         lat = report.get("locationDetails", {}).get("latitude") or report.get("address", {}).get("latitude")

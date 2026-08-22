@@ -62,19 +62,8 @@ def compress_image_to_data_url(image_url, preset='gallery'):
         buf = io.BytesIO()
         img.save(buf, format='JPEG', quality=quality, optimize=True, progressive=True)
         
-        # Save to a dedicated folder that our cleanup script watches
-        import tempfile
-        import os
-        import uuid
-        tmp_dir = os.path.join(tempfile.gettempdir(), 'smartval_images')
-        os.makedirs(tmp_dir, exist_ok=True)
-        path = os.path.join(tmp_dir, f"{uuid.uuid4()}.jpg")
-        
-        with open(path, 'wb') as f:
-            f.write(buf.getvalue())
-            
-        safe_path = path.replace('\\', '/')
-        return f"file:///{safe_path}"
+        b64 = base64.b64encode(buf.getvalue()).decode('ascii')
+        return f"data:image/jpeg;base64,{b64}"
     except Exception as e:
         print(f"[image_compress] Failed for {image_url}: {e}")
         return image_url
