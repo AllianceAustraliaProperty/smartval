@@ -211,8 +211,11 @@ def convert_date_strings_to_datetime(data, date_fields):
 
 def _cleanup_old_playwright_tmp(max_age_seconds=300):
     """Remove orphaned Playwright/Chromium temp dirs older than max_age_seconds."""
-    import glob, shutil, time as _time
-    patterns = ['/tmp/playwright*', '/tmp/.org.chromium*', '/tmp/Temp-*']
+    import glob, shutil, time as _time, tempfile, os
+    patterns = [
+        '/tmp/playwright*', '/tmp/.org.chromium*', '/tmp/Temp-*',
+        os.path.join(tempfile.gettempdir(), 'smartval_images', '*')
+    ]
     for pattern in patterns:
         for d in glob.glob(pattern):
             try:
@@ -239,15 +242,20 @@ def generate_pdf_from_html(html: str):
             '--no-zygote',               # avoids sandbox crashes in Docker
         ])
         try:
-            page = browser.new_page()
-            
+            import tempfile, os
+            fd, html_path = tempfile.mkstemp(suffix='.html')
+            with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                f.write(html)
+                
             try:
-                # Set content and wait for basic load
-                page.set_content(html, wait_until='load', timeout=60000)
-                # Optionally wait for network idle for images/fonts, but catch timeout if it hangs
-                page.wait_for_load_state('networkidle', timeout=15000)
-            except Exception as e:
-                print(f"Warning: Playwright wait timeout during PDF generation: {e}")
+                page = browser.new_page()
+                try:
+                    # Load the local file instead of raw text to allow reading local image files
+                    page.goto(f"file:///{html_path.replace(chr(92), '/')}", wait_until='load', timeout=60000)
+                    # Optionally wait for network idle for images/fonts, but catch timeout if it hangs
+                    page.wait_for_load_state('networkidle', timeout=15000)
+                except Exception as e:
+                    print(f"Warning: Playwright wait timeout during PDF generation: {e}")
                 
             pdf_bytes = page.pdf(
                 format="A4",
@@ -258,6 +266,10 @@ def generate_pdf_from_html(html: str):
         finally:
             # Explicitly close the browser to ensure Playwright cleans up /tmp artifacts
             browser.close()
+            try:
+                os.remove(html_path)
+            except Exception:
+                pass
 
 @valuation_reports_bp.route('/', methods=['GET'])
 def get_all_valuation_reports():
