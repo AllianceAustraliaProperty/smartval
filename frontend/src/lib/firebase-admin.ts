@@ -31,6 +31,17 @@ export async function verifyFirebaseToken(token: string) {
     }
 }
 
+export async function createFirebaseSessionCookie(idToken: string, expiresIn: number) {
+    try {
+        const auth = initAdmin();
+        if (!auth) return null;
+        return await auth.createSessionCookie(idToken, { expiresIn });
+    } catch (error) {
+        console.error('Error creating session cookie:', error);
+        return null;
+    }
+}
+
 export async function createFirebaseUser(email: string, password: string, displayName: string, role: string) {
     const auth = initAdmin();
     if (!auth) throw new Error("Firebase Admin not initialized");

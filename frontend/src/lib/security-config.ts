@@ -16,8 +16,8 @@ export const SECURITY_CONFIG = {
 
   // Session Configuration
   SESSION: {
-    TIMEOUT: 30 * 60 * 1000, // 30 minutes
-    CLEANUP_INTERVAL: 60 * 60 * 1000, // 1 hour
+    TIMEOUT: 6 * 60 * 60 * 1000, // 6 hours
+    CLEANUP_INTERVAL: 6 * 60 * 60 * 1000, // 6 hours
     COOKIE_NAME: 'val-ai-auth',
     COOKIE_OPTIONS: {
       httpOnly: true,

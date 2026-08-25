@@ -123,15 +123,8 @@ export default function LoginPage() {
 
   return (
     <div
-      className={`min-h-screen relative overflow-hidden flex items-center justify-center`}
-      style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
+      className={`min-h-screen relative overflow-hidden flex items-center justify-center bg-white`}
     >
-
-      {/* breathing glow of the background overlay */}
-      <div
-      className="absolute inset-0 pointer-events-none animate-breath origin-bottom"
-      style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
-      ></div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-lg min-w-0 sm:min-w-[450px]">

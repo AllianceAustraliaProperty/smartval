@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyFirebaseToken } from '@/lib/firebase-admin';
+import { verifyFirebaseToken, createFirebaseSessionCookie } from '@/lib/firebase-admin';
 
 export const runtime = 'nodejs';
 
@@ -16,21 +16,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'invalid token' }, { status: 400 });
     }
 
-    const nowSeconds = Math.floor(Date.now() / 1000);
-    const exp = typeof payload.exp === 'number' ? payload.exp : nowSeconds + 3600;
-    const secondsUntilExpiry = Math.max(0, exp - nowSeconds - 60); // buffer 60s
-
-    const maxAge = Math.min(secondsUntilExpiry, 7 * 24 * 60 * 60); // cap at 7 days
+    const expiresIn = 6 * 60 * 60 * 1000; // 6 hours
+    const sessionCookie = await createFirebaseSessionCookie(token, expiresIn);
+    if (!sessionCookie) {
+      return NextResponse.json({ error: 'failed to create session cookie' }, { status: 500 });
+    }
 
     const response = NextResponse.json({ ok: true });
     const isProd = process.env.NODE_ENV === 'production';
 
-    response.cookies.set('val-ai-auth', token, {
+    response.cookies.set('val-ai-auth', sessionCookie, {
       httpOnly: true,
       secure: isProd,
       sameSite: 'strict',
       path: '/',
-      maxAge: Math.max(0, maxAge),
+      maxAge: 6 * 60 * 60, // 6 hours in seconds
     });
 
     return response;

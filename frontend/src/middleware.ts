@@ -69,7 +69,7 @@ async function verifyFirebaseTokenEdge(token: string): Promise<TokenPayload | nu
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
     const { payload } = await jwtVerify(token, JWKS, {
-      issuer: `https://securetoken.google.com/${projectId}`,
+      issuer: [`https://securetoken.google.com/${projectId}`, `https://session.firebase.google.com/${projectId}`],
       audience: projectId,
     });
 
