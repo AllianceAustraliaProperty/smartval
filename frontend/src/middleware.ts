@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify, createRemoteJWKSet } from 'jose';
+import { jwtVerify, createRemoteJWKSet, decodeProtectedHeader, importX509 } from 'jose';
 
 // Fetch Google's public keys to verify the Firebase JWT signature
 const JWKS = createRemoteJWKSet(
   new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com')
 );
+
+let sessionKeysCache: Record<string, string> | null = null;
+let sessionKeysCacheTime = 0;
+
+async function getSessionPublicKey(kid: string) {
+  const now = Date.now();
+  if (!sessionKeysCache || now - sessionKeysCacheTime > 1000 * 60 * 60) {
+    const res = await fetch('https://www.googleapis.com/identitytoolkit/v3/relyingparty/publicKeys');
+    sessionKeysCache = await res.json();
+    sessionKeysCacheTime = now;
+  }
+  return sessionKeysCache?.[kid];
+}
 
 // Rate limiting store (in production, use Redis or database)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -68,12 +81,28 @@ async function verifyFirebaseTokenEdge(token: string): Promise<TokenPayload | nu
   try {
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-    const { payload } = await jwtVerify(token, JWKS, {
-      issuer: [`https://securetoken.google.com/${projectId}`, `https://session.firebase.google.com/${projectId}`],
-      audience: projectId,
-    });
-
-    return payload as TokenPayload;
+    try {
+      // Try ID token first
+      const { payload } = await jwtVerify(token, JWKS, {
+        issuer: `https://securetoken.google.com/${projectId}`,
+        audience: projectId,
+      });
+      return payload as TokenPayload;
+    } catch (idErr) {
+      // Fallback to Session Cookie
+      const header = decodeProtectedHeader(token);
+      if (!header.kid) throw new Error('No kid in token header');
+      
+      const cert = await getSessionPublicKey(header.kid);
+      if (!cert) throw new Error('Public key not found for session cookie');
+      
+      const publicKey = await importX509(cert, 'RS256');
+      const { payload } = await jwtVerify(token, publicKey, {
+        issuer: `https://session.firebase.google.com/${projectId}`,
+        audience: projectId,
+      });
+      return payload as TokenPayload;
+    }
   } catch (error) {
     console.error('Edge token verification error:', error);
     return null;
