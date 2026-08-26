@@ -31,6 +31,18 @@ export async function verifyFirebaseToken(token: string) {
     }
 }
 
+export async function verifyFirebaseSessionCookie(sessionCookie: string) {
+    try {
+        const auth = initAdmin();
+        if (!auth) return null;
+        const decoded = await auth.verifySessionCookie(sessionCookie, true);
+        return decoded;
+    } catch (error) {
+        console.error('Error verifying Firebase session cookie:', error);
+        return null;
+    }
+}
+
 export async function createFirebaseSessionCookie(idToken: string, expiresIn: number) {
     try {
         const auth = initAdmin();

@@ -1,6 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { verifyFirebaseToken } from './firebase-admin';
+import { verifyFirebaseSessionCookie } from './firebase-admin';
 import { NextResponse } from 'next/server';
 
 export async function requireAuth() {
@@ -11,7 +11,7 @@ export async function requireAuth() {
     return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }), user: null };                                                   
     }
 
-    const user = await verifyFirebaseToken(token);
+    const user = await verifyFirebaseSessionCookie(token);
     if (!user) {
     return { error: NextResponse.json({ error: 'Invalid token' }, { status: 401 }), user: null };                                                  
     }
