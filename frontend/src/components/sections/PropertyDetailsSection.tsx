@@ -94,6 +94,20 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
     setIsAutomatingFromRP(true);
     try {
+      const updates: any = {};
+      const setIfDefined = (path: string, value: any) => {
+        if (value !== undefined && value !== null && value !== '') {
+          updates[path] = value;
+          setValue(path as any, value, { shouldDirty: true });
+        }
+      };
+
+      const toNum = (v: any): number | undefined => {
+        if (v === null || v === undefined || v === '') return undefined;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : undefined;
+      };
+
       let data: any = null;
       try {
         const resp = await fetch(`${API_BASE_URL}/rpdata/commons/${encodeURIComponent(String(rpDataId))}`);
@@ -116,20 +130,6 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         const bathroomsRaw = data?.attrCore?.baths;
         const carSpacesRaw = data?.attrCore?.carSpaces;
         const roofingType = data?.attrAdditional?.roofMaterial;
-
-        const toNum = (v: any): number | undefined => {
-          if (v === null || v === undefined || v === '') return undefined;
-          const n = Number(v);
-          return Number.isFinite(n) ? n : undefined;
-        };
-
-        const updates: any = {};
-        const setIfDefined = (path: string, value: any) => {
-          if (value !== undefined && value !== null && value !== '') {
-            updates[path] = value;
-            setValue(path as any, value, { shouldDirty: true });
-          }
-        };
 
         setIfDefined('propertyDetails.siteArea', toNum(siteAreaRaw));
         setIfDefined('propertyDetails.buildingArea', toNum(buildingAreaRaw));
