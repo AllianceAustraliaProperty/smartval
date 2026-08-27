@@ -18,15 +18,11 @@ class RpDataAPI:
     def __init__(self):
         self.rpp_cookies = ""
         self.signature_cookies = ""
-        # Cookies are fetched lazily on first use, not at construction.
-        # Doing it at __init__ blocked Flask startup for up to 10s waiting on
-        # the cookie service.
-        self._cookies_fetched = False
 
     def _ensure_cookies(self):
-        if not self._cookies_fetched:
+        # Fetch if we don't have cookies yet, rather than just once per app lifecycle
+        if not self.rpp_cookies or not self.signature_cookies:
             self.refresh_cookies()
-            self._cookies_fetched = True
 
     def refresh_cookies(self):
         """Fetch fresh cookies from the rpdata cookie service."""

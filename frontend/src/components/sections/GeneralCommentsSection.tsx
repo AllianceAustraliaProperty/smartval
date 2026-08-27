@@ -504,27 +504,25 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
           <h2 className="text-2xl font-bold text-gray-900">General Comments</h2>
           <p className="text-gray-600">Provide narrative commentary to support the valuation conclusions and describe the property context.</p>
         </div>
-        {Boolean(watch('rpData.localityId')) && (
-          <button
-            type="button"
-            onClick={handleAutomateMarketTrends}
-            disabled={isAutomating}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-            title="Automate Market Overview from RP Data"
-          >
-            {isAutomating || isAutoSaving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                {isAutomating ? 'Automating...' : 'Saving...'}
-              </>
-            ) : (
-              <>
-                <Wand2 className="w-4 h-4" />
-                Automate
-              </>
-            )}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleAutomateMarketTrends}
+          disabled={isAutomating || isAutoSaving || !watch('rpData.localityId')}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          title={watch('rpData.localityId') ? "Automate Market Overview from RP Data" : "Run Automate in Property Details first"}
+        >
+          {isAutomating || isAutoSaving ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              {isAutomating ? 'Automating...' : 'Saving...'}
+            </>
+          ) : (
+            <>
+              <Wand2 className="w-4 h-4" />
+              Automate
+            </>
+          )}
+        </button>
       </div>
 
       <FormField

@@ -94,6 +94,26 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
     setIsAutomatingFromRP(true);
     try {
+      const resp = await fetch(`${API_BASE_URL}/rpdata/commons/${encodeURIComponent(String(rpDataId))}`);
+      if (!resp.ok) throw new Error(`Failed to fetch RP Data commons (${resp.status})`);
+      const payload = await resp.json();
+      const data = payload?.data || payload; // support both wrapped and direct
+
+      const siteAreaRaw = data?.attrCore?.landArea;
+      const buildingAreaRaw = data?.attrAdditional?.floorArea;
+      const councilArea = data?.location?.councilArea;
+      const buildYearRaw = data?.attrAdditional?.yearBuilt;
+      const bedroomsRaw = data?.attrCore?.beds;
+      const bathroomsRaw = data?.attrCore?.baths;
+      const carSpacesRaw = data?.attrCore?.carSpaces;
+      const roofingType = data?.attrAdditional?.roofMaterial;
+
+      const toNum = (v: any): number | undefined => {
+        if (v === null || v === undefined || v === '') return undefined;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : undefined;
+      };
+
       const updates: any = {};
       const setIfDefined = (path: string, value: any) => {
         if (value !== undefined && value !== null && value !== '') {
@@ -102,44 +122,14 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         }
       };
 
-      const toNum = (v: any): number | undefined => {
-        if (v === null || v === undefined || v === '') return undefined;
-        const n = Number(v);
-        return Number.isFinite(n) ? n : undefined;
-      };
-
-      let data: any = null;
-      try {
-        const resp = await fetch(`${API_BASE_URL}/rpdata/commons/${encodeURIComponent(String(rpDataId))}`);
-        if (resp.ok) {
-          const payload = await resp.json();
-          data = payload?.data || payload;
-        } else {
-          console.warn(`Failed to fetch RP Data commons (${resp.status})`);
-        }
-      } catch (err) {
-        console.warn('Error fetching RP Data commons:', err);
-      }
-
-      if (data) {
-        const siteAreaRaw = data?.attrCore?.landArea;
-        const buildingAreaRaw = data?.attrAdditional?.floorArea;
-        const councilArea = data?.location?.councilArea;
-        const buildYearRaw = data?.attrAdditional?.yearBuilt;
-        const bedroomsRaw = data?.attrCore?.beds;
-        const bathroomsRaw = data?.attrCore?.baths;
-        const carSpacesRaw = data?.attrCore?.carSpaces;
-        const roofingType = data?.attrAdditional?.roofMaterial;
-
-        setIfDefined('propertyDetails.siteArea', toNum(siteAreaRaw));
-        setIfDefined('propertyDetails.buildingArea', toNum(buildingAreaRaw));
-        setIfDefined('propertyDetails.councilArea', councilArea);
-        setIfDefined('propertyDetails.buildYear', toNum(buildYearRaw));
-        setIfDefined('propertyDescriptors.bedrooms', toNum(bedroomsRaw));
-        setIfDefined('propertyDescriptors.bathrooms', toNum(bathroomsRaw));
-        setIfDefined('propertyDescriptors.carSpaces', toNum(carSpacesRaw));
-        setIfDefined('propertyDescriptors.roofingType', roofingType);
-      }
+      setIfDefined('propertyDetails.siteArea', toNum(siteAreaRaw));
+      setIfDefined('propertyDetails.buildingArea', toNum(buildingAreaRaw));
+      setIfDefined('propertyDetails.councilArea', councilArea);
+      setIfDefined('propertyDetails.buildYear', toNum(buildYearRaw));
+      setIfDefined('propertyDescriptors.bedrooms', toNum(bedroomsRaw));
+      setIfDefined('propertyDescriptors.bathrooms', toNum(bathroomsRaw));
+      setIfDefined('propertyDescriptors.carSpaces', toNum(carSpacesRaw));
+      setIfDefined('propertyDescriptors.roofingType', roofingType);
 
       // Fetch additional information and map extra fields
       try {
@@ -231,8 +221,9 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
           setIsAutoSaving(false);
         }
       }
-    } catch (e) {
-      // no-op; user can retry
+    } catch (e: any) {
+      console.error('RP Data automation error:', e);
+      alert(`Automation failed: ${e.message || 'Unknown error'}. Please check if the RP Data service is running.`);
     } finally {
       setIsAutomatingFromRP(false);
     }
