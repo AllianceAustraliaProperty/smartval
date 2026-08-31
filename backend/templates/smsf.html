@@ -1019,14 +1019,14 @@
                         {% if comparable["siteArea"] %}
                         <div class="flex icon-component ${this.displayAnyField(comparable[" siteArea"])}">
                             <img class="icon" src="https://valai.duo.tax/assets/land-icon.svg" alt="Land Area">
-                            <div>{{ comparable["siteArea"]|format_area_smart|default('-') }}<span
+                            <div>{{ comparable["siteArea"]|format_area_smart|default('-')|replace('sqm', 'm') }}<span
                                     class="aligned-sup">2</span></div>
                         </div>
                         {% endif %}
                         {% if comparable["buildingArea"] %}
                         <div class="flex icon-component ${this.displayAnyField(comparable[" buildingArea"])}">
                             <img class="icon" src="https://valai.duo.tax/assets/floor-icon.svg" alt="Floor Area">
-                            <div>{{ comparable["buildingArea"]|default('-') }}<span class="aligned-sup">2</span></div>
+                            <div>{{ comparable["buildingArea"]|default('-') }} m<span class="aligned-sup">2</span></div>
                         </div>
                         {% endif %}
                         {% if is_residential %}
@@ -1132,14 +1132,14 @@
                         {% if comparable.site_area %}
                         <div class="flex icon-component ${this.displayAnyField(comparable.land_area)}">
                             <img class="icon" src="https://valai.duo.tax/assets/land-icon.svg" alt="Land Area">
-                            <div>{{ comparable.site_area|format_area_smart|default('-') }}<span
+                            <div>{{ comparable.site_area|format_area_smart|default('-')|replace('sqm', 'm') }}<span
                                     class="aligned-sup">2</span></div>
                         </div>
                         {% endif %}
                         {% if comparable.building_area %}
                         <div class="flex icon-component ${this.displayAnyField(comparable.floor_area)}">
                             <img class="icon" src="https://valai.duo.tax/assets/floor-icon.svg" alt="Floor Area">
-                            <div>{{ comparable.building_area|default('-') }}m<span class="aligned-sup">2</span></div>
+                            <div>{{ comparable.building_area|default('-') }} m<span class="aligned-sup">2</span></div>
                         </div>
                         {% endif %}
                         {% if record.is_residential or (record.property_details.property_type|default('')|lower ==
