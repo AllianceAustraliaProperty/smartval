@@ -804,7 +804,7 @@
                 <div class="flex icon-component mr-s ${this.displayAnyField(this.subjectProperty.siteArea)}">
                     <img src="https://valai.duo.tax/assets/land-icon.svg" alt="Land Area"
                         style="width: 22px; height: 22px; vertical-align: middle;">
-                    <div>{{ valuation_report["propertyDetails"]["siteArea"]|format_area_smart|default('N/A')|replace('sqm', 'm')|safe }}<span class="aligned-sup">2</span></div>
+                    <div>{{ valuation_report["propertyDetails"]["siteArea"]|format_area_smart|default('N/A')|replace('sqm', 'm') }}<span class="aligned-sup">2</span></div>
                 </div>
                 {% endif %}
                 {% if valuation_report["propertyDetails"]["buildingArea"] %}
