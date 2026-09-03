@@ -69,8 +69,8 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
         .map((r: any) => Number(r.rentalRate || r.rental_rate || r.nlaRate || r.nla_rate))
         .filter((val: number) => !isNaN(val) && val > 0);
 
-      const manualLowest = Number(watch('valuationDetails.lowestRentalRate')) || 0;
-      const manualHighest = Number(watch('valuationDetails.highestRentalRate')) || 0;
+      const manualLowest = Number(watch('valuationDetails.lowestRentalRate' as any)) || 0;
+      const manualHighest = Number(watch('valuationDetails.highestRentalRate' as any)) || 0;
 
       let rateRangeText = 'N/A';
       if (manualLowest > 0 && manualHighest > 0) {
