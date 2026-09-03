@@ -454,7 +454,7 @@
             </div>
             <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 12px;">
                 <p style="margin: 0; white-space: nowrap;"><b>Description</b></p>
-                <p style="margin: 0;">{{ comparable.get("description") or comparable.get("brief_comments") or comparable.get("briefComments") or 'Commercial strata building' }}</p>
+                <p style="margin: 0; text-align: justify;">{{ comparable.get("description") or comparable.get("brief_comments") or comparable.get("briefComments") or 'Commercial strata building' }}</p>
             </div>
             <div style="margin-top: 5px; font-size: 12px;">
                 <p style="margin: 0;">Comparison to Subject: <i>{{ comparable.get("comparison") or comparable.get("comparisonToSubject") or comparable.get("comparison_to_subject") or '' }}</i></p>
