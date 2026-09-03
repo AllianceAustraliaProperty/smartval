@@ -69,11 +69,16 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
         .map((r: any) => Number(r.rentalRate || r.rental_rate || r.nlaRate || r.nla_rate))
         .filter((val: number) => !isNaN(val) && val > 0);
 
+      const manualLowest = Number(watch('valuationDetails.lowestRentalRate')) || 0;
+      const manualHighest = Number(watch('valuationDetails.highestRentalRate')) || 0;
+
       let rateRangeText = 'N/A';
-      if (rentalRates.length > 0) {
-        const minRate = Math.min(...rentalRates).toFixed(2);
-        const maxRate = Math.max(...rentalRates).toFixed(2);
-        rateRangeText = `$${minRate} to $${maxRate}`;
+      if (manualLowest > 0 && manualHighest > 0) {
+        rateRangeText = `${Math.round(manualLowest)}-${Math.round(manualHighest)}`;
+      } else if (rentalRates.length > 0) {
+        const minRate = Math.round(Math.min(...rentalRates));
+        const maxRate = Math.round(Math.max(...rentalRates));
+        rateRangeText = `${minRate}-${maxRate}`;
       }
 
       const sqMeterRate = Number(watch('valuationDetails.squareMeterRate')) || 0;
