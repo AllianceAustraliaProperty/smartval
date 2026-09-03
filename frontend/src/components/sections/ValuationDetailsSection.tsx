@@ -94,12 +94,12 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
 We considered a value rate of $${sqMeterRate.toFixed(2)} per sqm appropriate for the total net lettable area of the retail space. The NLA rate of $${sqMeterRate.toFixed(2)} per sqm is noted to be within the range as supported from the rental evidence.
 
 NLA ${nla} Sqm @ $${sqMeterRate.toFixed(2)} p.sqm = ${formatCurrency(nlaTotal)} roundoff ${roundedNlaTotal.toLocaleString('en-AU')}
-Car parking space [Area] Sqm @ $[Rate] p. sqm = $[Total]
 
 Rental Valuation Amount:
-We assessed the subject property's Fair Market Rental Value on ${valuationDate}, based on the above stated comparable rental evidence, we considered a Net Market Rental Value of ${formatCurrency(marketRent)} per annum (exclusive of outgoings & GST)`;
+We assessed the subject property's Fair Market Rental Value on ${valuationDate}, based on the above stated comparable rental evidence, we considered a Net Market Rental Value of ${formatCurrency(roundedNlaTotal)} per annum (exclusive of outgoings & GST)`;
 
       setValue('valuationDetails.directComparison', autoText, { shouldDirty: true });
+      setValue('valuationDetails.marketRent', roundedNlaTotal, { shouldDirty: true });
       return;
     }
 
