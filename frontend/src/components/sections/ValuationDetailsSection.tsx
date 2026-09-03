@@ -66,7 +66,7 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
     if (valuationType === 'Commercial' || valuationType === 'Commercial Short Report' || valuationType === 'Rent Review') {
       const rentalComparables = comparables?.rentals || [];
       const rentalRates = rentalComparables
-        .map((r: any) => Number(r.rentalRate || r.rental_rate))
+        .map((r: any) => Number(r.rentalRate || r.rental_rate || r.nlaRate || r.nla_rate))
         .filter((val: number) => !isNaN(val) && val > 0);
 
       let rateRangeText = 'N/A';
