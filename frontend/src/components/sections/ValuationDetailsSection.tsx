@@ -87,7 +87,7 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
         valuationDate = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
       }
 
-      const nlaTotal = nla * sqMeterRate;
+      const nlaTotal = Math.ceil((nla * sqMeterRate) / 1000) * 1000;
       
       const autoText = `Based on the above comparable rental evidence, it suggests that the NLA rental rate ranges from ${rateRangeText} per sqm.
 We considered a value rate of $${sqMeterRate.toFixed(2)} per sqm appropriate for the total net lettable area of the retail space. The NLA rate of $${sqMeterRate.toFixed(2)} per sqm is noted to be within the range as supported from the rental evidence.
