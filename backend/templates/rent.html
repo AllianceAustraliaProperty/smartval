@@ -493,6 +493,13 @@
                 style="width: 130px; margin-top: 8px;">
             <p style="font-size: 12px;"><strong>Issue Date: {% if valuation_report.get("valuationDetails", {}).get("dateIssued") %}{{ valuation_report["valuationDetails"]["dateIssued"] | format_date }}{% else %}{{ now() }}{% endif %}</strong></p>
         </div>
+
+        {% if valuation_report.get("locationDetails", {}).get("map", {}).get("photo") %}
+        <div style="margin-top: 15px; display: flex; justify-content: center;">
+            <img src="{{ valuation_report['locationDetails']['map']['photo'] }}" alt="Site Map" style="width: 650px; height: 250px; object-fit: cover;">
+        </div>
+        {% endif %}
+
         <div class="footer"> {{ valuation_report["address"]["fullAddress"]|default('') }}
             <span style="float: right;" class="page-number"></span>
         </div>
