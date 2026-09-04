@@ -10,7 +10,7 @@ import { DEFAULT_PROPERTY_FORM, PropertyData } from '@/types/property-valuation'
 import { PreviewReportModal } from '@/components/PreviewReportModal';
 import { Dancing_Script, Poppins, Montserrat } from 'next/font/google';
 import Image from 'next/image';
-import aapLogo from '../aap-logo.svg';
+import aapLogo from '../aap-white.svg';
 
 const dancingScript = Dancing_Script({
   weight: ['700'],
@@ -426,7 +426,7 @@ export default function ValuationReportsPage() {
   };
 
   const handleGoHome = () => {
-    window.location.href = '/valuation-reports';
+    window.open("https://www.allianceaustraliaproperty.com.au/", "_blank", "noopener,noreferrer");
   };
 
   const handleLogout = () => {
@@ -534,15 +534,15 @@ export default function ValuationReportsPage() {
   }
 
   return (
-    <div className={`${montserrat.className} h-screen bg-[#F8F9FA] flex flex-col`}>
+    <div className={`${montserrat.className} min-h-screen bg-[#F8F9FA] flex flex-col`}>
       
       {/* TOP HEADER */}
-      <header className="h-[80px] flex items-center justify-between px-6 shrink-0 relative z-20 shadow-md" style={{ backgroundColor: "#006ABE" }}>
+      <header className="h-[80px] flex items-center justify-between px-8 shrink-0 sticky top-0 z-[100] shadow-md" style={{ backgroundColor: "#006ABE" }}>
         {/* logo and subtitle on the left  */}
         <div className="flex items-center space-x-3 shrink-0 cursor-pointer group" onClick={handleGoHome}>
-          <div className="brightness-0 invert opacity-95">
-            <Image src={aapLogo} alt="AAP Logo" width={40} height={40} className="w-[40px] h-[40px] object-contain transform transition-transform duration-500 ease-out group-hover:scale-105" priority />
-          </div>
+          <div>
+              <Image src={aapLogo} alt="AAP Logo" width={40} height={40} className="w-[40px] h-[40px] object-contain transform transition-transform duration-500 ease-out group-hover:scale-105" priority />
+            </div>
           <div className="flex flex-col justify-center -mt-[20px]">
               <h1 className="text-[32px] tracking-wide flex items-baseline h-8">
               <span className={`font-bold text-white ${poppins.className}`}>SMART</span>
@@ -552,9 +552,9 @@ export default function ValuationReportsPage() {
         </div>
 
         {/* search bar in the middle */}
-        <div className="flex-1 max-w-3xl px-8 hidden md:block mt-2">
-          <div className="relative flex items-center w-full border-b-[3px] border-white pb-2 transition-all duration-300 hover:border-white/90">
-            <Search className="w-6 h-6 text-white mr-4 flex-shrink-0" strokeWidth={2.5} />
+        <div className="absolute left-1/2 -translate-x-1/2 hidden md:block mt-2 z-50">
+          <div className="relative flex items-center w-[680px] border-b-[3px] border-white pb-2 transition-all duration-300 hover:border-white/90">
+            <Search className="w-6 h-6 text-white ml-2 mr-4 flex-shrink-0" strokeWidth={2.5} />
             <div className="w-[2px] h-6 bg-white/40 mr-4 flex-shrink-0"></div>
             <input
               type="text"
@@ -618,7 +618,7 @@ export default function ValuationReportsPage() {
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-y-auto relative">
+      <main className="flex-1 relative">
         
         {/* User Menu Dropdown Portal */}
         {isUserMenuOpen && currentUser && (
@@ -666,10 +666,10 @@ export default function ValuationReportsPage() {
           </div>
         )}
 
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+        <div className="w-full px-8 py-10">
           {/* Report Count Pill */}
           <div className="flex justify-center mb-10">
-            <div className="px-8 py-3.5 rounded-[18px] bg-[#e9ebed] shadow-sm">
+              <div className="px-8 py-3.5 rounded-[18px] bg-[#e9ebed] shadow-sm">
               <span className="text-[15px] font-bold text-gray-800 tracking-wide">
                 {filteredReports.length} Valuation Reports available
               </span>
@@ -678,11 +678,11 @@ export default function ValuationReportsPage() {
 
           {/* Valuation Reports Grid */}
           {filteredReports.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {filteredReports.map((report, index) => (
                 <div
                   key={report.id || index}
-                  className={`group relative bg-white rounded-[40px] border-2 p-8 pb-7 transition-all duration-300 cursor-pointer ${
+                  className={`group relative bg-white rounded-[40px] border-2 p-8 transition-all duration-300 cursor-pointer flex flex-col h-full ${
                     selectedReports.has(report.id)
                       ? 'border-[#006ABE] scale-[1.01]'
                       : 'border-[#e6eff5] hover:-translate-y-1 hover:border-[#006ABE]/30'
@@ -694,77 +694,74 @@ export default function ValuationReportsPage() {
                 >
                   
 
-                  {/* Top row: Logo + Preview */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="w-14 h-14 rounded-full bg-white shadow-md flex items-center justify-center p-1 border border-gray-50 flex-shrink-0">
-                      {report.logoType && LOGO_MAP[report.logoType] ? (
-                        <Image src={LOGO_MAP[report.logoType]} alt={`${report.logoType} logo`} width={44} height={44} className="object-contain" />
-                      ) : (
-                        <div className="w-full h-full bg-gray-50 rounded-full" />
-                      )}
-                    </div>
-                    
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handlePreview(report.id, report.address, report.fileNumber); }}
-                      className="inline-flex items-center px-7 py-2.5 text-[16px] font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                    >
-                      <Preview className="w-5 h-5 mr-2" strokeWidth={2.5} />
-                      Preview
-                    </button>
-                  </div>
-
-                  {/* Card Content */}
-                  <div>
-                    {/* File number */}
-                    <p className="text-[16px] font-extrabold text-[#222222] mb-1 tracking-wide">
-                      {report.fileNumber || report.id}
-                    </p>
-                    
-                    {/* Property type (blue, bold) */}
-                    <h3 className="text-[28px] font-bold mb-5 leading-tight min-h-[64px] line-clamp-2 pr-2" style={{ color: "#006ABE" }}>
-                      {report.propertyType || 'Property Valuation'}
-                    </h3>
-
-                    {/* Address */}
-                    <p className="text-[16px] font-bold text-gray-900 mb-6 leading-relaxed line-clamp-2 min-h-[46px] pr-2">
-                      {report.address || 'No address available'}
-                    </p>
-
-                    {/* Metadata */}
-                    <div className="space-y-2.5 mb-7">
-                      <div className="flex items-center text-[13px] text-gray-700 font-medium">
-                        <FileText className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
-                        <span>RP Data ID: <span className="font-semibold text-gray-900">{report.rpDataId || 'Not provided'}</span></span>
+                  {/* Top row: Titles + Duplicate */}
+                    <div className="flex items-start justify-between mb-5">
+                      <div className="flex flex-col pr-4">
+                        {/* File number */}
+                        <p className="text-[16px] font-semibold text-[#222222] tracking-wide leading-tight">
+                          {report.fileNumber || report.id}
+                        </p>
+                        
+                        {/* Property type (blue, bold) */}
+                        <h3 className="text-[28px] font-bold leading-tight line-clamp-2" style={{ color: "#006ABE" }}>
+                          {report.propertyType || 'Property Valuation'}
+                        </h3>
                       </div>
-                      <div className="flex items-center text-[13px] text-gray-700 font-medium">
-                        <Calendar className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
-                        <span>Date Modified: <span className="font-semibold text-gray-900">{report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-AU') : 'Unknown'}</span></span>
-                      </div>
-                    </div>
-
-                    {/* Blue divider line */}
-                    <div className="h-[2px] w-full mb-7" style={{ backgroundColor: "#006ABE" }} />
-
-                    {/* Action buttons */}
-                    <div className="flex flex-col space-y-3.5">
+                      
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDuplicateClick(report.id); }}
-                        className="w-full inline-flex items-center justify-center py-4 text-[16px] font-bold text-gray-900 bg-[#f0f0f0] rounded-full hover:bg-[#e4e4e4] transition-colors"
+                        className="w-[46px] h-[46px] rounded-2xl bg-white border-2 border-gray-100 flex items-center justify-center flex-shrink-0 hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                        title="Duplicate"
                       >
-                        <Copy className="w-[18px] h-[18px] mr-2" strokeWidth={2.5} />
-                        Duplicate
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleEdit(report.id); }}
-                        className="w-full inline-flex items-center justify-center py-4 text-[16px] font-bold text-white rounded-full transition-colors shadow-md hover:opacity-90" style={{ backgroundColor: "#006ABE" }}
-                      >
-                        <Edit3 className="w-[18px] h-[18px] mr-2" strokeWidth={2.5} />
-                        Open
+                        <Copy className="w-5 h-5 text-gray-500" strokeWidth={2.5} />
                       </button>
                     </div>
+
+                    {/* Card Content */}
+                    <div className="flex flex-col flex-1">
+                      {/* Address */}
+                      <p className="text-[16px] font-bold text-gray-900 mb-5 leading-relaxed line-clamp-2 pr-2">
+                        {report.address || 'No address available'}
+                      </p>
+
+                      {/* Metadata */}
+                      <div className="space-y-2.5">
+                        <div className="flex items-center text-[13px] text-gray-700 font-medium">
+                          <FileText className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
+                          <span>RP Data ID: <span className="font-semibold text-gray-900">{report.rpDataId || 'Not provided'}</span></span>
+                        </div>
+                        <div className="flex items-center text-[13px] text-gray-700 font-medium">
+                          <Calendar className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
+                          <span>Date Modified: <span className="font-semibold text-gray-900">{report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-AU') : 'Unknown'}</span></span>
+                        </div>
+                      </div>
+
+                      {/* Bottom Actions Container */}
+                      <div className="mt-auto pt-6">
+                        {/* Blue divider line */}
+                        <div className="h-[2px] w-full mb-5" style={{ backgroundColor: "#006ABE" }} />
+  
+                        {/* Action buttons */}
+                      <div className="flex flex-col space-y-3.5">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handlePreview(report.id, report.address, report.fileNumber); }}
+                          className="w-full inline-flex items-center justify-center py-4 text-[16px] font-bold text-gray-900 bg-[#f0f0f0] rounded-full hover:bg-[#e4e4e4] transition-colors"
+                        >
+                          <Preview className="w-[18px] h-[18px] mr-2" strokeWidth={2.5} />
+                          Preview
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleEdit(report.id); }}
+                          className="w-full inline-flex items-center justify-center py-4 text-[16px] font-bold text-white rounded-full transition-colors shadow-md hover:opacity-90" style={{ backgroundColor: "#006ABE" }}
+                        >
+                          <Edit3 className="w-[18px] h-[18px] mr-2" strokeWidth={2.5} />
+                          Open
+                        </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           ) : (
             <div className="text-center py-20">
