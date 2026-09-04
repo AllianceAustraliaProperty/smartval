@@ -7,6 +7,11 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        poppins: ["var(--font-poppins)", "sans-serif"],
+        montserrat: ["var(--font-montserrat)", "sans-serif"],
+        dancing: ["var(--font-dancing-script)", "cursive"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

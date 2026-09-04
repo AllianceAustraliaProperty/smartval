@@ -1,20 +1,29 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Shield, Lock, Mail, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import aapLogo from '../aap-logo.svg';
-import { Dancing_Script} from 'next/font/google';
-import { signIn, getCurrentUser, getIdToken } from '@/lib/auth';
+import { Dancing_Script, Poppins, Montserrat } from 'next/font/google';
+import { signIn, getIdToken } from '@/lib/auth';
 import { loginSchema, type LoginInput } from '@/lib/validation';
 import { z } from 'zod';
+import { AlertCircle } from 'lucide-react';
 
 const dancingScript = Dancing_Script({
   weight: ['700'],
   subsets: ['latin'],
 });
 
+const poppins = Poppins({
+  weight: ['700'],
+  subsets: ['latin'],
+});
+
+const montserrat = Montserrat({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+});
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,8 +33,10 @@ export default function LoginPage() {
   });
   const [errors, setErrors] = useState<Partial<LoginInput>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [generalError, setGeneralError] = useState<string>('');
+
+  // Determine if both fields have values (for button active state)
+  const isFormFilled = formData.email.trim() !== '' && formData.password.trim() !== '';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -33,8 +44,6 @@ export default function LoginPage() {
       ...prev,
       [name]: value,
     }));
-
-    // Clear errors as user types
     if (errors[name as keyof LoginInput]) {
       setErrors(prev => ({
         ...prev,
@@ -65,10 +74,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!isFormFilled) return;
+    if (!validateForm()) return;
 
     setIsLoading(true);
     setGeneralError('');
@@ -76,23 +83,19 @@ export default function LoginPage() {
     try {
       let finalEmail = formData.email.trim();
 
-      // If they didn't type an '@', assume it's a username and look up the email
       if (!finalEmail.includes('@')) {
         const res = await fetch('/api/auth/lookup-username', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ loginId: finalEmail })
+          body: JSON.stringify({ loginId: finalEmail }),
         });
-        
         if (!res.ok) {
           throw new Error('Invalid username or password');
         }
-        
         const data = await res.json();
         finalEmail = data.email;
       }
 
-      // Now pass the resolved email to Firebase
       const user = await signIn(finalEmail, formData.password);
 
       if (user) {
@@ -104,7 +107,6 @@ export default function LoginPage() {
             body: JSON.stringify({ token: idToken }),
           });
         }
-
         switch (user.role) {
           case 'admin':
             router.push('/admin');
@@ -114,7 +116,6 @@ export default function LoginPage() {
         }
       }
     } catch (error) {
-      // Prevent username enumeration by always showing the same generic error
       setGeneralError('Invalid login ID or passkey. Please try again.');
     } finally {
       setIsLoading(false);
@@ -122,166 +123,128 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className={`min-h-screen relative overflow-hidden flex items-center justify-center bg-white`}
-    >
-
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-lg min-w-0 sm:min-w-[450px]">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-6">
-              {/* Add the "group" class here so hovering triggers children */}
-              <div className="relative group cursor-pointer">
-
-                {/* The glowing aura */}
-                <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl transition-all duration-500 ease-out group-hover:scale-[1.3] group-hover:opacity-100 group-hover:blur-2xl"></div>
-                                                                                                                                                       
-                {/* The circular logo container */}                                                                                                
-                <div                                                                                                                               
-                  className="relative w-24 h-24 rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(59,130,246,0.15)] border border-white transform transition-transform duration-500 ease-out group-hover:scale-105"
-                  style={{
-                    background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 100%)'
-                  }}
-                >
-                  <Image
-                    src={aapLogo}
-                    alt="AAP Logo"
-                    width={64}
-                    height={64}
-                    className="w-16 h-16 object-contain drop-shadow-sm"
-                    priority
-                  />
-                </div>
-              </div>
-            </div>
-
-            <h1 className="text-5xl tracking-wide mb-3 flex items-center justify-center">
-              <span className={`font-bold text-[#1f7cc6]`}>SMART</span>
-              <span className={`text-[#1f7cc6] relative -top-[0.1px] ${dancingScript.className}`} style={{ marginLeft: '2px', fontSize: '1.05em' }}>val</span>
-            </h1>
-            <p className="text-slate-700 tracking-wide font-medium mb-3 text-sm">A Digital Solution for Alliance Australia Property PTY LTD</p>
-            <div className="flex items-center justify-center text-sm text-slate-500 tracking-wider">
-              <Shield className="w-4 h-4 mr-1.5 opacity-70" />
-              Secure Dashboard Portal
-            </div>
-          </div>
-
-          {/* Login Form */}
-          <div className="w-full px-4">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* General Error Message */}
-              {generalError && (
-                <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-2xl p-4">
-                  <div className="flex items-center">
-                    <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0" />
-                    <p className="text-sm text-red-700">{generalError}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Login ID Field */}
-              <div className="flex flex-col">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <input
-                    id="email"
-                    name="email"
-                    type="text"
-                    autoComplete="username"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                    className={`block w-full pl-12 pr-4 py-4 border rounded-3xl shadow-inner transition-all duration-300 ${errors.email
-                      ? 'border-red-300 bg-red-50/50'
-                      : 'border-white/40 bg-white/30 hover:bg-white/40 focus:bg-white/50 focus:border-white/60'
-                    } focus:ring-4 focus:ring-white/20 text-slate-800 placeholder-slate-400 font-medium outline-none`}
-                    placeholder="Login ID"
-                  />
-                  {errors.email && (
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <AlertCircle className="h-5 w-5 text-red-500" />
-                    </div>
-                  )}
-                </div>
-                {errors.email && (
-                  <div className="mt-2 ml-2 flex items-start gap-1.5">
-                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-600 font-medium break-words leading-snug min-w-0 flex-1">
-                      {errors.email}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Passkey Field */}
-              <div className="flex flex-col">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                    className={`block w-full pl-12 pr-12 py-4 border rounded-3xl shadow-inner transition-all duration-300 ${errors.password
-                      ? 'border-red-300 bg-red-50/50'
-                      : 'border-white/40 bg-white/30 hover:bg-white/40 focus:bg-white/50 focus:border-white/60'
-                    } focus:ring-4 focus:ring-white/20 text-slate-800 placeholder-slate-400 font-medium outline-none`}
-                    placeholder="Passkey"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                    disabled={isLoading}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-slate-500 hover:text-slate-700 transition-colors" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-slate-700 hover:text-slate-900 transition-colors" />
-                    )}
-                  </button>
-                </div>
-                {errors.password && (
-                  <div className="mt-2 ml-2 flex items-start gap-1.5">
-                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-600 font-medium break-words leading-snug flex-1">
-                      {errors.password}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Divider */}
-                  <hr className="border-t border-[#000000]/25 my-6 mx-2" />
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-[#0b70c5] text-white font-bold text-lg tracking-wide rounded-3xl py-4 transition-all duration-300 border border-white/50 disabled:opacity-50 flex items-center justify-center hover:[text-shadow:0_0_12px_rgba(255,255,255,0.9)] hover:brightness-105"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                    Signing in...
-                  </>
-                ) : (
-                  "Sign in"
-                )}
-              </button>
-            </form>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
+      {/* Card Container */}
+      <div className="w-full max-w-[460px] rounded-[48px] border border-[#006ABE]/20 bg-white px-12 py-12 shadow-[0_8px_24px_rgba(0,106,190,0.12)]">
+        
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <Image
+            src={aapLogo}
+            alt="AAP Logo"
+            width={64}
+            height={64}
+            className="object-contain"
+            priority
+          />
         </div>
+
+        {/* Brand Name */}
+        <div className="text-center mb-2">
+          <h1 className="flex items-baseline justify-center">
+            <span className={`${poppins.className} text-[2.75rem] font-bold text-[#006ABE] tracking-tight leading-none`}>
+              SMART
+            </span>
+            <span
+              className={`${dancingScript.className} text-[#006ABE] leading-none relative`}
+              style={{ fontSize: '2.5rem', marginLeft: '5px', top: '-2px' }}
+            >
+              val
+            </span>
+          </h1>
+        </div>
+
+        {/* Subtitle */}
+        <div className="text-center mb-10">
+          <p className={`${montserrat.className} text-[0.85rem] font-semibold text-gray-800 tracking-wide`}>
+            Alliance Australia Property PTY LTD
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          {/* General Error */}
+          {generalError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+              <div className="flex items-center">
+                <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0" />
+                <p className="text-sm text-red-700">{generalError}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Username / Email Field */}
+          <div className="mb-6">
+            <input
+              id="email"
+              name="email"
+              type="text"
+              autoComplete="username"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              disabled={isLoading}
+              className={`${montserrat.className} w-full border-0 border-b-[3px] bg-transparent px-0 pb-3 pt-2 text-[1.05rem] font-medium text-[#333333] outline-none transition-colors placeholder:text-[#999999] placeholder:font-normal focus:border-b-[#006ABE] focus:ring-0 ${
+                formData.email.length > 0 ? 'border-b-[#006ABE]' : 'border-b-[#BEBEBE]'
+              }`}
+              style={{ boxShadow: 'none' }}
+              placeholder="enter your username/email"
+            />
+            {errors.email && (
+              <div className="mt-2 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-600 font-medium">{errors.email}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Password Field */}
+          <div className="mb-14 relative">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={formData.password}
+              onChange={handleChange}
+              disabled={isLoading}
+              className={`${montserrat.className} w-full border-0 border-b-[3px] bg-transparent px-0 pb-3 pt-2 text-[1.05rem] font-medium text-[#333333] outline-none transition-colors placeholder:text-[#999999] placeholder:font-normal focus:border-b-[#006ABE] focus:ring-0 ${
+                formData.password.length > 0 ? 'border-b-[#006ABE]' : 'border-b-[#BEBEBE]'
+              }`}
+              style={{ boxShadow: 'none' }}
+              placeholder="enter your password"
+            />
+            {errors.password && (
+              <div className="mt-2 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-600 font-medium">{errors.password}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Sign In Button */}
+          <div className="mt-2 mb-2">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`${montserrat.className} w-full rounded-3xl py-[1.15rem] text-[1.1rem] font-semibold tracking-wide transition-all duration-300 flex items-center justify-center border ${
+                isFormFilled
+                  ? 'bg-[#006ABE] border-[#006ABE] text-white hover:bg-[#005a9e]'
+                  : 'bg-[#F2F2F2] border-[#E5E5E5] text-[#4A4A4A] cursor-not-allowed'
+              }`}
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current mr-3"></div>
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

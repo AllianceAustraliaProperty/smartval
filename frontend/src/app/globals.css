@@ -84,3 +84,59 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
   -webkit-text-fill-color: #1e293b; /* Matches the text-slate-800 color */
 }
+
+/* ========== Login Page Styles ========== */
+.login-input {
+  border: none;
+  border-bottom: 2px solid #BEBEBE;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  padding: 12px 4px;
+  width: 100%;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 1rem;
+  color: #333;
+  transition: border-color 0.3s ease;
+}
+
+.login-input::placeholder {
+  color: #BEBEBE;
+  font-family: var(--font-montserrat), sans-serif;
+}
+
+.login-input:focus {
+  border-bottom-color: #006ABE;
+}
+
+.login-input.has-value {
+  border-bottom-color: #006ABE;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px 0;
+  border-radius: 9999px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.login-btn.inactive {
+  background-color: #BEBEBE;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.login-btn.active {
+  background-color: #006ABE;
+  color: #fff;
+}
+
+.login-btn.active:hover {
+  background-color: #005a9e;
+}

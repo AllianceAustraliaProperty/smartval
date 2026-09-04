@@ -8,7 +8,7 @@ import axios from 'axios';
 import { apiRepository } from '@/lib/api-repository';
 import { DEFAULT_PROPERTY_FORM, PropertyData } from '@/types/property-valuation';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
-import { Dancing_Script } from 'next/font/google';
+import { Dancing_Script, Poppins, Montserrat } from 'next/font/google';
 import Image from 'next/image';
 import aapLogo from '../aap-logo.svg';
 
@@ -16,7 +16,8 @@ const dancingScript = Dancing_Script({
   weight: ['700'],
   subsets: ['latin'],
 });
-
+const poppins = Poppins({ weight: ['700'], subsets: ['latin'] });
+const montserrat = Montserrat({ weight: ['400', '500', '600', '700'], subsets: ['latin'] });
 
 interface ValuationReportCardData {
   id: string;
@@ -27,6 +28,7 @@ interface ValuationReportCardData {
   updatedAt?: string;
   fileNumber?: string;
   propertyType?: string;
+  logoType?: string;
 }
 
 interface AllianceJob {
@@ -46,6 +48,26 @@ interface AllianceJob {
   photos: string;
   created_at: string;
   updated_at: string;
+}
+
+
+const LOGO_MAP: Record<string, string> = {
+  AAP: '/images/logos/aap-logo.png',
+  CPV: '/images/logos/cpv-logo.png',
+  TAMN: '/images/logos/tamn-logo.png',
+};
+
+function ReportLogo({ logoType }: { logoType?: string }) {
+  const src = logoType ? LOGO_MAP[logoType] : undefined;
+  return (
+    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 shrink-0">
+      {src ? (
+        <Image src={src} alt={`${logoType || 'Client'} logo`} width={44} height={44} className="object-contain" />
+      ) : (
+        <div className="w-full h-full bg-gray-100" />
+      )}
+    </div>
+  );
 }
 
 export default function ValuationReportsPage() {
@@ -90,8 +112,8 @@ export default function ValuationReportsPage() {
     if (userButtonRef.current && isUserMenuOpen) {
       const rect = userButtonRef.current.getBoundingClientRect();
       setUserButtonPosition({
-        top: rect.top - 180, // displays above the button
-        left: rect.right + 12
+        top: rect.bottom + 12, // display below the button
+        left: rect.right - 288 // align right
       });
     }
   }, [isUserMenuOpen]);
@@ -200,7 +222,12 @@ export default function ValuationReportsPage() {
       const bundles = await apiRepository.listPropertyBundles();
       console.log('API Response bundles:', bundles);
       const cards: ValuationReportCardData[] = bundles.map(({ property }) => {
-        console.log('Processing property:', property);
+        let derivedLogoType = property.valuationDetails?.logoType;
+        if (!derivedLogoType && property.fileNumber) {
+          if (property.fileNumber.startsWith('CPV')) derivedLogoType = 'CPV';
+          else if (property.fileNumber.startsWith('TAMN')) derivedLogoType = 'TAMN';
+          else derivedLogoType = 'AAP';
+        }
         return {
           id: property.id || 'unknown',
           address: property.address?.fullAddress || 'No address',
@@ -210,6 +237,7 @@ export default function ValuationReportsPage() {
           updatedAt: property.updatedAt,
           fileNumber: property.fileNumber,
           propertyType: property.propertyDetails?.propertyType,
+          logoType: derivedLogoType,
         };
       });
       console.log('Processed cards:', cards);
@@ -317,7 +345,7 @@ export default function ValuationReportsPage() {
     }
   };
 
-  const handleSelect = (id: string) => {
+    const handleSelect = (id: string) => {
     setSelectedReports(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -329,6 +357,19 @@ export default function ValuationReportsPage() {
     });
   };
 
+  const handleCardClick = (e: React.MouseEvent, id: string) => {
+    if (e.ctrlKey || e.metaKey) {
+      handleSelect(id);
+    } else {
+      setSelectedReports(prev => {
+        if (prev.has(id) && prev.size === 1) {
+          return new Set();
+        }
+        return new Set([id]);
+      });
+    }
+  };
+
   const handleSelectAll = () => {
     if (selectedReports.size === filteredReports.length) {
       setSelectedReports(new Set());
@@ -337,14 +378,29 @@ export default function ValuationReportsPage() {
     }
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (selectedReports.size === 0) {
       alert('Please select at least one valuation report to delete.');
       return;
     }
     if (confirm(`Are you sure you want to delete ${selectedReports.size} valuation report(s)?`)) {
-      // Implement bulk delete logic here
-      alert('Bulk delete functionality coming soon...');
+      try {
+        setIsLoading(true);
+        const deletePromises = Array.from(selectedReports).map(id => 
+          apiRepository.deleteProperty(id)
+        );
+        await Promise.all(deletePromises);
+        
+        // Remove from local state
+        setValuationReports(prev => prev.filter(report => !selectedReports.has(report.id)));
+        setSelectedReports(new Set());
+      } catch (error) {
+        console.error('Failed to delete some reports:', error);
+        alert('An error occurred while deleting the reports. Please try again.');
+        fetchValuationReports();
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -478,633 +534,268 @@ export default function ValuationReportsPage() {
   }
 
   return (
-    <div className={`h-screen bg-white flex flex-col font-sans`}>
+    <div className={`${montserrat.className} h-screen bg-[#F8F9FA] flex flex-col`}>
       
       {/* TOP HEADER */}
-      <header className="h-[80px] flex items-center justify-between pl-4 pr-6 lg:pl-4 lg:pr-8 shrink-0 relative z-20">
+      <header className="h-[80px] flex items-center justify-between px-6 shrink-0 relative z-20 shadow-md" style={{ backgroundColor: "#006ABE" }}>
         {/* logo and subtitle on the left  */}
-        <div className="flex items-center space-x-3 shrink-0">
-          <div className="cursor-pointer group flex items-center space-x-3" onClick={handleGoHome}>
-            <Image src={aapLogo} alt="AAP Logo" width={52} height={52} className="w-[52px] h-[52px] object-contain drop-shadow-sm transform transition-transform duration-500 ease-out group-hover:scale-105" priority />
-            <div className="flex flex-col justify-center">
-              <h1 className="text-4xl tracking-wide flex items-center h-10">
-                <span className={`font-bold text-[#1f7cc6]`}>SMART</span>
-                <span className={`text-[#1f7cc6] relative -top-[0.1px] ${dancingScript.className}`} style={{ marginLeft: '2px', fontSize: '1.05em' }}>val</span>
-              </h1>
-              <p className="text-gray-500 font-medium text-xs tracking-wide">Alliance Australia Property</p>
-            </div>
+        <div className="flex items-center space-x-3 shrink-0 cursor-pointer group" onClick={handleGoHome}>
+          <div className="brightness-0 invert opacity-95">
+            <Image src={aapLogo} alt="AAP Logo" width={40} height={40} className="w-[40px] h-[40px] object-contain transform transition-transform duration-500 ease-out group-hover:scale-105" priority />
+          </div>
+          <div className="flex flex-col justify-center -mt-[20px]">
+              <h1 className="text-[32px] tracking-wide flex items-baseline h-8">
+              <span className={`font-bold text-white ${poppins.className}`}>SMART</span>
+              <span className={`text-white relative -top-[1px] ${dancingScript.className}`} style={{ marginLeft: '2px', fontSize: '1.05em' }}>val</span>
+            </h1>
           </div>
         </div>
 
         {/* search bar in the middle */}
-        <div className="flex-1 max-w-5xl px-12 hidden md:block">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#1f7cc6]" />
+        <div className="flex-1 max-w-3xl px-8 hidden md:block mt-2">
+          <div className="relative flex items-center w-full border-b-[3px] border-white pb-2 transition-all duration-300 hover:border-white/90">
+            <Search className="w-6 h-6 text-white mr-4 flex-shrink-0" strokeWidth={2.5} />
+            <div className="w-[2px] h-6 bg-white/40 mr-4 flex-shrink-0"></div>
             <input
               type="text"
               placeholder="Search by file number, address, valuer, client or property number..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-10 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1f7cc6] focus:border-[#1f7cc6] transition-all duration-300 placeholder-gray-400 text-gray-900 shadow-sm text-sm"
+              className="bg-transparent text-white text-[17px] w-full placeholder-white/80 focus:outline-none tracking-wide"
             />
           </div>
         </div>
 
         {/* actions on the right side */}
-        <div className="flex items-center space-x-4 shrink-0">
+        <div className="flex items-center space-x-4 shrink-0 pl-4">
+          {/* User Button */}
+          {currentUser && (
+            <button
+              ref={userButtonRef}
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center text-[#006ABE] hover:bg-gray-100 transition-colors shadow-sm"
+            >
+              <UserIcon className="w-6 h-6" strokeWidth={2.5} />
+            </button>
+          )}
+
           {/* create New Valuation Report button */}
           <button
             onClick={handleCreateNew}
-            className="group relative inline-flex items-center px-5 h-10 text-sm font-semibold rounded-xl text-white bg-[#2b7bc4] shadow-sm transition-all duration-300 hover:brightness-110 hover:[box-shadow:0_0_15px_rgba(43,123,196,0.6)]"
+            className="w-[46px] h-[46px] rounded-[14px] bg-[#28A745] flex items-center justify-center text-white hover:bg-[#218838] shadow-sm transition-colors"
           >
-            <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
-            New Report
+            <Plus className="w-7 h-7" strokeWidth={3} />
+          </button>
+          
+          {/* Bulk Delete button */}
+          <button
+            onClick={handleBulkDelete}
+            disabled={selectedReports.size === 0}
+            className={`w-[46px] h-[46px] rounded-[14px] flex items-center justify-center shadow-sm transition-colors ${
+              selectedReports.size > 0 
+                ? 'bg-red-500 text-white hover:bg-red-600 cursor-pointer' 
+                : 'bg-[#d1d5db] text-gray-500 cursor-not-allowed opacity-90'
+            }`}
+          >
+            <Trash2 className="w-6 h-6" strokeWidth={2.5} />
           </button>
         </div>
       </header>
 
       {/* Mobile Search Bar (shows only on small screens) */}
-      <div className="px-6 py-2 bg-white block md:hidden">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#1f7cc6]" />
+      <div className="px-6 py-4 bg-[#006ABE] block md:hidden border-t border-white/20">
+        <div className="relative flex items-center w-full border-b-[3px] border-white pb-2">
+          <Search className="w-5 h-5 text-white mr-3 flex-shrink-0" />
+          <div className="w-[2px] h-5 bg-white/40 mr-3 flex-shrink-0"></div>
           <input
             type="text"
             placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1f7cc6] focus:border-[#1f7cc6] transition-all duration-300 placeholder-gray-400 text-gray-900 shadow-sm"
+            className="bg-transparent text-white text-[15px] w-full placeholder-white/80 focus:outline-none"
           />
         </div>
       </div>
 
-      {/* BOTTOM SECTION */}
-      <div className="flex flex-1 overflow-hidden relative z-10">
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 overflow-y-auto relative">
         
-        {/* LEFT SIDEBAR */}
-        <aside className="w-[80px] bg-white flex flex-col justify-end items-center pb-4 shrink-0 relative z-20">
-          {currentUser && (
-            <div className="flex flex-col items-center w-full">
-              <hr className="w-8 border-t-2 border-[#94a3b8] mb-4 opacity-60" />
-              <button
-                ref={userButtonRef}
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="relative w-12 h-12 bg-[#2b7bc4] text-white rounded-[14px] flex items-center justify-center transition-all duration-300 hover:brightness-110 hover:[box-shadow:0_0_15px_rgba(43,123,196,0.6)]"
-              >
-                <div className="w-7 h-7 border-[1.5px] border-white rounded-[8px] flex items-center justify-center">
-                  <UserIcon className="w-[18px] h-[18px] text-white" strokeWidth={1.5} />
-                </div>
-              </button>
-            </div>
-          )}
-        </aside>
-
-        {/* MAIN CONTENT AREA */}
-        <main className="flex-1 bg-[#b5cddd] rounded-tl-2xl border-t border-l border-gray-300 shadow-[inset_6px_6px_20px_rgba(0,0,0,0.08)] p-8 overflow-y-auto relative">
-          
-          {/* User Menu Dropdown Portal */}
-          {isUserMenuOpen && currentUser && (
-            <div className="fixed inset-0 z-[999999] pointer-events-none">
-              <div
-                className="absolute w-72 bg-white rounded-2xl shadow-2xl border border-gray-200 pointer-events-auto"
-                style={{
-                  top: `${userButtonPosition.top}px`,
-                  left: `${userButtonPosition.left}px`
-                }}
-                ref={userMenuRef}
-              >
-                <div className="p-4 border-b border-gray-100">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-[#5b9bd5] rounded-xl flex items-center justify-center flex-shrink-0">
-                      <UserIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 truncate">{currentUser.name}</p>
-                      <p className="text-sm text-gray-500 truncate">{currentUser.email}</p>
-                    </div>
+        {/* User Menu Dropdown Portal */}
+        {isUserMenuOpen && currentUser && (
+          <div className="fixed inset-0 z-[999999] pointer-events-none">
+            <div
+              className="absolute w-72 bg-white rounded-2xl shadow-2xl border border-gray-200 pointer-events-auto"
+              style={{
+                top: `${userButtonPosition.top}px`,
+                left: `${userButtonPosition.left}px`
+              }}
+              ref={userMenuRef}
+            >
+              <div className="p-4 border-b border-gray-100">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-[#006ABE] rounded-xl flex items-center justify-center flex-shrink-0">
+                    <UserIcon className="w-5 h-5 text-white" />
                   </div>
-                </div>
-
-                <div className="p-2">
-                  <button
-                    onClick={handleAdminPanel}
-                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors duration-200"
-                  >
-                    <Settings className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">
-                      {currentUser?.role === 'admin' ? 'Admin Panel' : 'Account Settings'}
-                    </span>
-                  </button>
-
-
-
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors duration-200"
-                  >
-                    <LogOut className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Sign Out</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="max-w-7xl mx-auto">
-
-          {/* Bulk Actions */}
-          {selectedReports.size > 0 && (
-            <div className="mb-6 flex items-center justify-end space-x-2">
-              <button
-                onClick={handleBulkDelete}
-                className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors duration-200"
-              >
-                Delete ({selectedReports.size})
-              </button>
-              <button
-                onClick={handleExport}
-                className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors duration-200"
-              >
-                Export ({selectedReports.size})
-              </button>
-            </div>
-          )}
-
-          {/* Valuation Reports Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {filteredReports.map((report, index) => (
-              <div
-                key={report.id || index}
-                className="group relative bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02]"
-                onMouseEnter={() => setHoveredCard(report.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-              >
-                {/* Selection Checkbox */}
-                <div className="absolute top-3 left-3 z-10">
-                  <input
-                    type="checkbox"
-                    checked={selectedReports.has(report.id)}
-                    onChange={() => handleSelect(report.id)}
-                    className="w-4 h-4 text-blue-600 bg-white border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-1"
-                  />
-                </div>
-
-                {/* Blue Header Section */}
-                <div className="bg-gradient-to-r from-blue-500 to-blue-700 p-4 text-white relative">
-                  <div className="flex items-center space-x-3 pl-6">
-                    <Home className="w-6 h-6" />
-                    <div>
-                      <p className="text-sm font-medium opacity-90">{report.fileNumber || report.id}</p>
-                      <p className="text-lg font-bold">{report.propertyType || 'Property Valuation'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card Content */}
-                <div className="p-4">
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                      <span className="truncate">{report.address || 'No address available'}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
-                      <span>RP Data ID: {report.rpDataId || 'Not provided'}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                      <span>Modified: {report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-AU') : 'Unknown'}</span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handlePreview(report.id, report.address, report.fileNumber)}
-                      className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                    >
-                      <FileSearch className="w-4 h-4 mr-1" />
-                      Preview
-                    </button>
-                    <button
-                      onClick={() => handleEdit(report.id)}
-                      className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                    >
-                      <Edit3 className="w-4 h-4 mr-1" />
-                      Open
-                    </button>
-                    <button
-                      onClick={() => handleDuplicateClick(report.id)}
-                      title="Duplicate Report"
-                      className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(report.id)}
-                      className="px-3 py-2 text-sm font-medium text-white bg-red-600 border border-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-gray-900 truncate">{currentUser.name}</p>
+                    <p className="text-sm text-gray-500 truncate">{currentUser.email}</p>
                   </div>
                 </div>
               </div>
-            ))}
+
+              <div className="p-2">
+                <button
+                  onClick={handleAdminPanel}
+                  className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors duration-200"
+                >
+                  <Settings className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {currentUser?.role === 'admin' ? 'Admin Panel' : 'Account Settings'}
+                  </span>
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors duration-200"
+                >
+                  <LogOut className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+          {/* Report Count Pill */}
+          <div className="flex justify-center mb-10">
+            <div className="px-8 py-3.5 rounded-[18px] bg-[#e9ebed] shadow-sm">
+              <span className="text-[15px] font-bold text-gray-800 tracking-wide">
+                {filteredReports.length} Valuation Reports available
+              </span>
+            </div>
           </div>
 
-          {/* Empty State */}
-          {filteredReports.length === 0 && (
-            <div className="text-center py-16">
+          {/* Valuation Reports Grid */}
+          {filteredReports.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+              {filteredReports.map((report, index) => (
+                <div
+                  key={report.id || index}
+                  className={`group relative bg-white rounded-[40px] border-2 p-8 pb-7 transition-all duration-300 cursor-pointer ${
+                    selectedReports.has(report.id)
+                      ? 'border-[#006ABE] scale-[1.01]'
+                      : 'border-[#e6eff5] hover:-translate-y-1 hover:border-[#006ABE]/30'
+                  }`}
+                  style={{ boxShadow: selectedReports.has(report.id) ? '0 0 25px 2px rgba(0, 106, 190, 0.25)' : (hoveredCard === report.id ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' : '0 4px 20px rgba(0, 0, 0, 0.03)') }}
+                    onClick={(e) => handleCardClick(e, report.id)}
+                  onMouseEnter={() => setHoveredCard(report.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                >
+                  
+
+                  {/* Top row: Logo + Preview */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-14 h-14 rounded-full bg-white shadow-md flex items-center justify-center p-1 border border-gray-50 flex-shrink-0">
+                      {report.logoType && LOGO_MAP[report.logoType] ? (
+                        <Image src={LOGO_MAP[report.logoType]} alt={`${report.logoType} logo`} width={44} height={44} className="object-contain" />
+                      ) : (
+                        <div className="w-full h-full bg-gray-50 rounded-full" />
+                      )}
+                    </div>
+                    
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handlePreview(report.id, report.address, report.fileNumber); }}
+                      className="inline-flex items-center px-7 py-2.5 text-[16px] font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                    >
+                      <Preview className="w-5 h-5 mr-2" strokeWidth={2.5} />
+                      Preview
+                    </button>
+                  </div>
+
+                  {/* Card Content */}
+                  <div>
+                    {/* File number */}
+                    <p className="text-[16px] font-extrabold text-[#222222] mb-1 tracking-wide">
+                      {report.fileNumber || report.id}
+                    </p>
+                    
+                    {/* Property type (blue, bold) */}
+                    <h3 className="text-[28px] font-bold mb-5 leading-tight min-h-[64px] line-clamp-2 pr-2" style={{ color: "#006ABE" }}>
+                      {report.propertyType || 'Property Valuation'}
+                    </h3>
+
+                    {/* Address */}
+                    <p className="text-[16px] font-bold text-gray-900 mb-6 leading-relaxed line-clamp-2 min-h-[46px] pr-2">
+                      {report.address || 'No address available'}
+                    </p>
+
+                    {/* Metadata */}
+                    <div className="space-y-2.5 mb-7">
+                      <div className="flex items-center text-[13px] text-gray-700 font-medium">
+                        <FileText className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
+                        <span>RP Data ID: <span className="font-semibold text-gray-900">{report.rpDataId || 'Not provided'}</span></span>
+                      </div>
+                      <div className="flex items-center text-[13px] text-gray-700 font-medium">
+                        <Calendar className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
+                        <span>Date Modified: <span className="font-semibold text-gray-900">{report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-AU') : 'Unknown'}</span></span>
+                      </div>
+                    </div>
+
+                    {/* Blue divider line */}
+                    <div className="h-[2px] w-full mb-7" style={{ backgroundColor: "#006ABE" }} />
+
+                    {/* Action buttons */}
+                    <div className="flex flex-col space-y-3.5">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDuplicateClick(report.id); }}
+                        className="w-full inline-flex items-center justify-center py-4 text-[16px] font-bold text-gray-900 bg-[#f0f0f0] rounded-full hover:bg-[#e4e4e4] transition-colors"
+                      >
+                        <Copy className="w-[18px] h-[18px] mr-2" strokeWidth={2.5} />
+                        Duplicate
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleEdit(report.id); }}
+                        className="w-full inline-flex items-center justify-center py-4 text-[16px] font-bold text-white rounded-full transition-colors shadow-md hover:opacity-90" style={{ backgroundColor: "#006ABE" }}
+                      >
+                        <Edit3 className="w-[18px] h-[18px] mr-2" strokeWidth={2.5} />
+                        Open
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20">
               <div className="relative inline-block">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-700/20 rounded-full blur-2xl animate-pulse"></div>
-                <div className="relative w-24 h-24 bg-gradient-to-r from-blue-500 to-blue-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                <div className="absolute inset-0 bg-[#006ABE]/10 rounded-full blur-2xl animate-pulse"></div>
+                <div className="relative w-24 h-24 bg-[#006ABE] rounded-[30px] flex items-center justify-center mx-auto mb-8 shadow-xl">
                   <FileText className="w-12 h-12 text-white" />
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
                 {searchTerm ? 'No valuation reports found' : 'No valuation reports yet'}
               </h3>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              <p className="text-[15px] text-gray-600 mb-10 max-w-md mx-auto">
                 {searchTerm
                   ? `No valuation reports match "${searchTerm}". Try adjusting your search terms.`
                   : 'Get started by creating your first valuation report.'}
               </p>
               <button
                 onClick={handleCreateNew}
-                className="group inline-flex items-center px-6 py-3 text-base font-semibold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="group inline-flex items-center px-8 py-4 text-[15px] font-bold rounded-2xl text-white bg-[#28A745] hover:bg-[#218838] shadow-lg transition-all duration-300 transform hover:-translate-y-1"
               >
-                <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+                <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" strokeWidth={3} />
                 New Report
               </button>
             </div>
           )}
         </div>
 
-      {/* Alliance Reports Section */}
-      <div className="min-h-screen relative z-10">
-        <div className="max-w-7xl mx-auto px-8 py-12">
-          {/* Alliance Section Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <ExternalLink className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900">Alliance Reports</h2>
-                <p className="text-gray-600">Valuation reports from Alliance Australia Property</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={fetchAllianceJobs}
-                disabled={isLoadingAlliance}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingAlliance ? 'animate-spin' : ''}`} />
-                Refresh
-              </button>
-              <button
-                onClick={() => setShowAllianceSection(!showAllianceSection)}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-600 rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200"
-              >
-                {showAllianceSection ? 'Hide' : 'Show'} Reports
-              </button>
-            </div>
-          </div>
-
-          {/* Alliance Reports Content */}
-          {showAllianceSection && (
-            <div className="space-y-6">
-              {/* Error State */}
-              {allianceError && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                      <ExternalLink className="w-4 h-4 text-red-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-red-800">Connection Error</h3>
-                      <p className="text-red-600">{allianceError}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Loading State */}
-              {isLoadingAlliance && (
-                <div className="text-center py-12">
-                  <div className="inline-flex items-center space-x-3">
-                    <RefreshCw className="w-6 h-6 text-orange-500 animate-spin" />
-                    <span className="text-lg font-medium text-gray-700">Loading Alliance reports...</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Alliance Jobs Grid */}
-              {!isLoadingAlliance && !allianceError && allianceJobs.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {allianceJobs.map((job) => (
-                    <div
-                      key={job.id}
-                      className="group relative bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02]"
-                    >
-                      {/* Orange Header Section */}
-                      <div className="bg-gradient-to-r from-orange-500 to-red-600 p-4 text-white relative">
-                        <div className="flex items-center space-x-3">
-                          <ExternalLink className="w-6 h-6" />
-                          <div>
-                            <p className="text-sm font-medium opacity-90">{job.file_number}</p>
-                            <p className="text-lg font-bold">Alliance Report</p>
-                          </div>
-                        </div>
-                        <div className="absolute top-2 right-2">
-                          <span className="px-2 py-1 text-xs font-medium bg-white/20 rounded-full">
-                            {job.stage}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Card Content */}
-                      <div className="p-4">
-                        <div className="space-y-3 mb-4">
-                          <div className="flex items-center text-sm text-gray-600">
-                            <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
-                            <span>{job.first_name} {job.last_name}</span>
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                            <span className="truncate">{job.property_address}</span>
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <FileText className="w-4 h-4 mr-2 text-gray-400" />
-                            <span>{job.valuation_type}</span>
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                            <span>Created: {new Date(job.created_at).toLocaleDateString('en-AU')}</span>
-                          </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => {
-                              // TODO: Implement view functionality
-                              console.log('View Alliance job:', job.id);
-                            }}
-                            className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                          >
-                            <FileSearch className="w-4 h-4 mr-1" />
-                            View
-                          </button>
-                          <button
-                            onClick={async () => {
-                              setImportingJobId(job.id);
-                              try {
-                                const result = await apiRepository.importAllianceJob(job.id);
-
-                                if (result.success) {
-                                  alert(`Successfully imported Alliance report ${job.id}!`);
-                                  // Reload valuation reports
-                                  await fetchValuationReports();
-                                  // Optionally refresh alliance jobs
-                                  await fetchAllianceJobs();
-                                }
-                              } catch (error: any) {
-                                if (error.message.includes('already_exists') || error.message.includes('409')) {
-                                  alert('This Alliance report has already been imported.');
-                                } else {
-                                  alert(`Failed to import report: ${error.message}`);
-                                }
-                                console.error('Import error:', error);
-                              } finally {
-                                setImportingJobId(null);
-                              }
-                            }}
-                            disabled={importingJobId === job.id}
-                            className="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-600 border border-orange-500 rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {importingJobId === job.id ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
-                                Importing...
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="w-4 h-4 mr-1" />
-                                Import
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Empty State */}
-              {!isLoadingAlliance && !allianceError && allianceJobs.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="relative inline-block">
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-red-600/20 rounded-full blur-2xl animate-pulse"></div>
-                    <div className="relative w-24 h-24 bg-gradient-to-r from-orange-500 to-red-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
-                      <ExternalLink className="w-12 h-12 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">No Alliance reports found</h3>
-                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    No reports are currently available from Alliance Australia Property.
-                  </p>
-                  <button
-                    onClick={fetchAllianceJobs}
-                    className="group inline-flex items-center px-8 py-4 text-lg font-bold rounded-2xl text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110"
-                  >
-                    <RefreshCw className="w-6 h-6 mr-3 group-hover:rotate-180 transition-transform duration-300" />
-                    Refresh Alliance Reports
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Inspection Reports Section */}
-      <div className="min-h-screen relative z-10">
-        <div className="max-w-7xl mx-auto px-8 py-12">
-          {/* Inspection Section Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <FileSearch className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900">Inspection Reports</h2>
-                <p className="text-gray-600">Property inspection reports</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => {
-                  // TODO: Add backend fetch functionality
-                  setIsLoadingInspection(true);
-                  setTimeout(() => setIsLoadingInspection(false), 1000);
-                }}
-                disabled={isLoadingInspection}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingInspection ? 'animate-spin' : ''}`} />
-                Refresh
-              </button>
-              <button
-                onClick={() => setShowInspectionSection(!showInspectionSection)}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-200"
-              >
-                {showInspectionSection ? 'Hide' : 'Show'} Reports
-              </button>
-            </div>
-          </div>
-
-          {/* Inspection Reports Content */}
-          {showInspectionSection && (
-            <div className="space-y-6">
-              {/* Loading State */}
-              {isLoadingInspection && (
-                <div className="text-center py-12">
-                  <div className="inline-flex items-center space-x-3">
-                    <RefreshCw className="w-6 h-6 text-purple-500 animate-spin" />
-                    <span className="text-lg font-medium text-gray-700">Loading inspection reports...</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Empty State - No Reports Yet */}
-              {!isLoadingInspection && inspectionReports.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="relative inline-block">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-indigo-600/20 rounded-full blur-2xl animate-pulse"></div>
-                    <div className="relative w-24 h-24 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
-                      <FileSearch className="w-12 h-12 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">No inspection reports found</h3>
-                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    No inspection reports are currently available.
-                  </p>
-                  <button
-                    onClick={async () => {
-                      setIsLoadingInspection(true);
-                      setInspectionError(null);
-                      try {
-                        const response = await apiRepository.getInspectionReports(1, 20);
-                        if (response.success && response.data) {
-                          setInspectionReports(response.data);
-                        }
-                      } catch (error: any) {
-                        console.error('Error fetching inspection reports:', error);
-                        setInspectionError(error.message || 'Failed to fetch inspection reports');
-                      } finally {
-                        setIsLoadingInspection(false);
-                      }
-                    }}
-                    className="group inline-flex items-center px-8 py-4 text-lg font-bold rounded-2xl text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110"
-                  >
-                    <RefreshCw className="w-6 h-6 mr-3 group-hover:rotate-180 transition-transform duration-300" />
-                    Refresh Inspection Reports
-                  </button>
-                </div>
-              )}
-
-              {/* Reports Grid */}
-              {!isLoadingInspection && inspectionReports.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {inspectionReports.map((report: any) => (
-                    <div
-                      key={report.id}
-                      className="group bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-white/30 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                    >
-                      <div className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                              <span className="text-xs font-semibold text-purple-600 uppercase tracking-wider">
-                                Inspection Report
-                              </span>
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-900 line-clamp-2">
-                              {report.address?.fullAddress || 'No address'}
-                            </h3>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2 mb-4 text-sm">
-                          <div className="flex items-center text-gray-600">
-                            <MapPin className="w-4 h-4 mr-2 text-purple-500" />
-                            <span className="line-clamp-1">{report.address?.suburb || 'N/A'}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600">
-                            <User className="w-4 h-4 mr-2 text-purple-500" />
-                            <span>{report.primaryContact?.name || report.primaryContact?.firstName || 'No contact'}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600">
-                            <Calendar className="w-4 h-4 mr-2 text-purple-500" />
-                            <span>
-                              {report.createdAt
-                                ? new Date(report.createdAt).toLocaleDateString()
-                                : 'No date'}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                          <span className="text-xs text-gray-500">
-                            ID: {report.inspectionId || 'N/A'}
-                          </span>
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={(e) => handleDeleteInspectionReport(report.id, e)}
-                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete Report"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                router.push(`/valuation-reports/${report.id}/edit`);
-                              }}
-                              className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
-                            >
-                              View Report
-                              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
       </main>
 
-
-      {/* Floating Status Indicator */}
-      <div className="fixed bottom-8 left-[112px] z-50">
-        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 p-4 transform transition-all duration-500 hover:scale-105">
-          <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
-            <div className="text-sm font-medium text-gray-700">
-              {filteredReports.length} of {valuationReports.length} valuation reports
-            </div>
-          </div>
-        </div>
-      </div>
-
-      </div>
+      
 
       {/* Preview Modal */}
       {showPreviewModal && previewReportId && (
