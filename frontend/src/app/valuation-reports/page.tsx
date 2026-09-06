@@ -749,7 +749,7 @@ export default function ValuationReportsPage() {
                         </p>
                         
                         {/* Property type (blue, bold) */}
-                        <h3 className="text-[28px] font-bold leading-tight line-clamp-2" style={{ color: "#006ABE" }}>
+                        <h3 className="text-[28px] font-bold leading-tight line-clamp-2 min-h-[70px]" style={{ color: "#006ABE" }}>
                           {report.propertyType || 'Property Valuation'}
                         </h3>
                       </div>
@@ -766,28 +766,30 @@ export default function ValuationReportsPage() {
                     {/* Card Content */}
                     <div className="flex flex-col flex-1">
                       {/* Address */}
-                      <p className="text-[16px] font-bold text-gray-900 mb-5 leading-relaxed line-clamp-2 pr-2">
+                      <p className="text-[16px] font-bold text-gray-900 mb-5 leading-relaxed line-clamp-2 pr-2 min-h-[52px]">
                         {report.address || 'No address available'}
                       </p>
 
-                      {/* Metadata */}
-                      <div className="space-y-2.5">
-                        <div className="flex items-center text-[13px] text-gray-700 font-medium">
-                          <FileText className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
-                          <span>RP Data ID: <span className="font-semibold text-gray-900">{report.rpDataId || 'Not provided'}</span></span>
+                      {/* Metadata & Actions Group */}
+                      <div className="mt-auto">
+                        {/* Metadata */}
+                        <div className="space-y-2.5">
+                          <div className="flex items-center text-[13px] text-gray-700 font-medium">
+                            <FileText className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
+                            <span>RP Data ID: <span className="font-semibold text-gray-900">{report.rpDataId || 'Not provided'}</span></span>
+                          </div>
+                          <div className="flex items-center text-[13px] text-gray-700 font-medium">
+                            <Calendar className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
+                            <span>Date Modified: <span className="font-semibold text-gray-900">{report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-AU') : 'Unknown'}</span></span>
+                          </div>
                         </div>
-                        <div className="flex items-center text-[13px] text-gray-700 font-medium">
-                          <Calendar className="w-[18px] h-[18px] mr-3 text-gray-500" strokeWidth={2} />
-                          <span>Date Modified: <span className="font-semibold text-gray-900">{report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-AU') : 'Unknown'}</span></span>
-                        </div>
-                      </div>
 
-                      {/* Bottom Actions Container */}
-                      <div className="mt-auto pt-6">
-                        {/* Blue divider line */}
-                        <div className="h-[2px] w-full mb-5" style={{ backgroundColor: "#006ABE" }} />
-  
-                        {/* Action buttons */}
+                        {/* Bottom Actions Container */}
+                        <div className="pt-6">
+                          {/* Blue divider line */}
+                          <div className="h-[2px] w-full mb-5" style={{ backgroundColor: "#006ABE" }} />
+    
+                          {/* Action buttons */}
                       <div className="flex flex-col space-y-3.5">
                         <button
                           onClick={(e) => { e.stopPropagation(); handlePreview(report.id, report.address, report.fileNumber); }}
@@ -803,11 +805,12 @@ export default function ValuationReportsPage() {
                           <Edit3 className="w-[18px] h-[18px] mr-2" strokeWidth={2.5} />
                           Open
                         </button>
-                        </div>
-                      </div>
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+            </div>
+              ))}
             </div>
             {hasMore && (
               <div ref={observerTarget} className="h-10 w-full mt-4 flex items-center justify-center text-gray-400">
