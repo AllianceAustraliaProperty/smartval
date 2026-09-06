@@ -615,16 +615,16 @@ export default function ValuationReportsPage() {
             <button
               ref={userButtonRef}
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center text-[#006ABE] hover:bg-gray-100 transition-colors shadow-sm"
+              className="group w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center text-[#006ABE] transition-colors shadow-sm"
             >
-              <UserIcon className="w-6 h-6" strokeWidth={2.5} />
+              <UserIcon className="w-6 h-6 transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,106,190,0.6)]" strokeWidth={2.5} />
             </button>
           )}
 
           {/* create New Valuation Report button */}
           <button
             onClick={handleCreateNew}
-            className="w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center text-[#006ABE] hover:bg-gray-100 shadow-sm transition-colors"
+            className="w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center text-[#006ABE] hover:bg-[#28A745] hover:text-white shadow-sm transition-colors"
           >
             <Plus className="w-7 h-7" strokeWidth={3} />
           </button>
@@ -635,7 +635,7 @@ export default function ValuationReportsPage() {
             disabled={selectedReports.size === 0}
             className={`w-[46px] h-[46px] rounded-[14px] flex items-center justify-center shadow-sm transition-colors ${
               selectedReports.size > 0 
-                ? 'bg-red-500 text-white hover:bg-red-600 cursor-pointer' 
+                ? 'bg-white text-[#006ABE] hover:bg-red-500 hover:text-white cursor-pointer' 
                 : 'bg-[#d1d5db] text-gray-500 cursor-not-allowed opacity-90'
             }`}
           >
