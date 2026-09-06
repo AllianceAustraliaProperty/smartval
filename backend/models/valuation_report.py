@@ -33,7 +33,7 @@ class ValuationReport:
         """Get all valuation reports for a specific address"""
         try:
             # Build query based on address fields
-            query = {}
+            query = {'isDeleted': {'$ne': True}}
             if 'streetName' in address:
                 query['address.streetName'] = address['streetName']
             if 'suburb' in address:
@@ -51,9 +51,42 @@ class ValuationReport:
         except:
             return []
     
-    def get_all(self, projection: Dict[str, int] = None) -> List[Dict[str, Any]]:
-        """Get all valuation reports"""
-        cursor = self.collection.find({}, projection).sort('updatedAt', -1)
+    def get_all(self, projection: Dict[str, int] = None, skip: int = 0, limit: int = 0, search: str = None) -> tuple[List[Dict[str, Any]], int]:
+        """Get all active valuation reports with optional pagination and search"""
+        query = {'isDeleted': {'$ne': True}}
+        
+        if search:
+            regex = {'$regex': search, '$options': 'i'}
+            query['$or'] = [
+                {'address.fullAddress': regex},
+                {'fileNumber': regex},
+                {'rpDataId': regex},
+                {'propertyDetails.propertyType': regex},
+                {'address.streetName': regex},
+                {'address.suburb': regex},
+                {'address.postcode': regex}
+            ]
+
+        cursor = self.collection.find(query, projection).sort('updatedAt', -1)
+        total_count = self.collection.count_documents(query)
+        
+        if skip:
+            cursor = cursor.skip(skip)
+        if limit:
+            cursor = cursor.limit(limit)
+
+        reports = list(cursor)
+        # Convert ObjectId to string for JSON serialization
+        for report in reports:
+            if '_id' in report:
+                report['_id'] = str(report['_id'])
+                report['id'] = report['_id']
+        return reports, total_count
+        
+    def get_trashed(self, projection: Dict[str, int] = None) -> List[Dict[str, Any]]:
+        """Get all trashed valuation reports"""
+        query = {'isDeleted': True}
+        cursor = self.collection.find(query, projection).sort('deletedAt', -1)
         reports = list(cursor)
         # Convert ObjectId to string for JSON serialization
         for report in reports:
@@ -69,6 +102,8 @@ class ValuationReport:
             # Remove fields that shouldn't be updated
             data.pop('_id', None)
             data.pop('createdAt', None)
+            data.pop('isDeleted', None)
+            data.pop('deletedAt', None)
             
             result = self.collection.update_one(
                 {'_id': ObjectId(report_id)},
@@ -155,7 +190,32 @@ class ValuationReport:
             raise e
     
     def delete(self, report_id: str) -> bool:
-        """Delete valuation report"""
+        """Soft delete valuation report"""
+        try:
+            result = self.collection.update_one(
+                {'_id': ObjectId(report_id)},
+                {'$set': {'isDeleted': True, 'deletedAt': datetime.utcnow()}}
+            )
+            return result.modified_count > 0 or result.matched_count > 0
+        except:
+            return False
+            
+    def restore(self, report_id: str) -> bool:
+        """Restore soft-deleted valuation report"""
+        try:
+            result = self.collection.update_one(
+                {'_id': ObjectId(report_id)},
+                {
+                    '$unset': {'isDeleted': "", 'deletedAt': ""},
+                    '$set': {'updatedAt': datetime.utcnow()}
+                }
+            )
+            return result.modified_count > 0 or result.matched_count > 0
+        except:
+            return False
+            
+    def hard_delete(self, report_id: str) -> bool:
+        """Permanently delete valuation report"""
         try:
             result = self.collection.delete_one({'_id': ObjectId(report_id)})
             return result.deleted_count > 0

@@ -27,6 +27,7 @@ interface ApiPropertiesListResponse {
 interface ApiValuationReportsResponse {
   reports: any[];
   count: number;
+  total_count?: number;
 }
 
 interface ApiValuationReportResponse {
@@ -215,16 +216,19 @@ function transformValuationReportToBackend(report: ValuationReportData): any {
 
 export const apiRepository = {
   /**
-   * Get all valuation reports (now includes property data directly)
+   * Get valuation reports with pagination and search
    */
-  async listPropertyBundles(): Promise<PropertyBundle[]> {
+  async listPropertyBundles(page: number = 1, limit: number = 24, search: string = ''): Promise<{ bundles: PropertyBundle[], totalCount: number }> {
     try {
-      const response = await apiClient.get<ApiValuationReportsResponse>('/valuation-reports/');
+      const response = await apiClient.get<ApiValuationReportsResponse>(`/valuation-reports/?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
 
-      return response.reports.map(report => ({
-        property: transformValuationReport(report),
-        valuationReports: [], // We'll fetch reports individually when needed
-      }));
+      return {
+        bundles: response.reports.map(report => ({
+          property: transformValuationReport(report),
+          valuationReports: [], 
+        })),
+        totalCount: response.total_count || 0
+      };
     } catch (error) {
       console.error('Failed to list valuation reports:', error);
       throw error;
@@ -320,16 +324,59 @@ export const apiRepository = {
   },
 
   /**
-   * Delete valuation report
+   * Delete valuation report (Soft delete)
    */
   async deleteProperty(propertyId: string): Promise<void> {
     try {
       await apiClient.delete(`/valuation-reports/${propertyId}`);
     } catch (error) {
-      console.error('Failed to delete valuation report:', error);
+      console.error('Failed to soft delete valuation report:', error);
       throw error;
     }
   },
+
+  /**
+   * Get all trashed valuation reports
+   */
+  async getTrashedProperties(): Promise<{ property: any }[]> {
+    try {
+      const response = await apiClient.get<ApiValuationReportsResponse>('/valuation-reports/trashed');
+      if (response && response.reports) {
+        return response.reports.map((report: any) => ({
+          property: transformValuationReport(report)
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to fetch trashed properties:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Restore a soft-deleted valuation report
+   */
+  async restoreProperty(propertyId: string): Promise<void> {
+    try {
+      await apiClient.post(`/valuation-reports/${propertyId}/restore`);
+    } catch (error) {
+      console.error('Failed to restore valuation report:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Permanently delete valuation report
+   */
+  async hardDeleteProperty(propertyId: string): Promise<void> {
+    try {
+      await apiClient.delete(`/valuation-reports/${propertyId}/hard`);
+    } catch (error) {
+      console.error('Failed to hard delete valuation report:', error);
+      throw error;
+    }
+  },
+
 
   /**
    * Create a new valuation report (now creates a complete valuation report with property data)

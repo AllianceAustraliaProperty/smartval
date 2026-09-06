@@ -140,3 +140,13 @@ input:-webkit-autofill:active {
 .login-btn.active:hover {
   background-color: #005a9e;
 }
+
+/* ========== Custom Scrollbar ========== */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Firefox fallback */
+html {
+  scrollbar-width: none;
+}

@@ -319,8 +319,13 @@ def generate_pdf_from_html(html: str):
 
 @valuation_reports_bp.route('/', methods=['GET'])
 def get_all_valuation_reports():
-    """Get all valuation reports"""
+    """Get all valuation reports with optional pagination and search"""
     try:
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 0))
+        search = request.args.get('search', '')
+        skip = (page - 1) * limit if limit > 0 else 0
+        
         # Only fetch the fields needed for the valuation reports summary cards
         projection = {
             'address.fullAddress': 1,
@@ -331,10 +336,13 @@ def get_all_valuation_reports():
             'fileNumber': 1,
             'propertyDetails.propertyType': 1
         }
-        reports = valuation_report_model.get_all(projection=projection)
+        reports, total_count = valuation_report_model.get_all(projection=projection, skip=skip, limit=limit, search=search)
         return jsonify({
             'reports': reports,
-            'count': len(reports)
+            'count': len(reports),
+            'total_count': total_count,
+            'page': page,
+            'limit': limit
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -509,16 +517,60 @@ def update_valuation_report(report_id):
         return jsonify({'error': 'Failed to update: An internal server error occurred'}), 500
 
 
+@valuation_reports_bp.route('/trashed', methods=['GET'])
+def get_trashed_reports():
+    """Get all trashed valuation reports"""
+    try:
+        projection = {
+            'address.fullAddress': 1,
+            'rpDataId': 1,
+            'allianceId': 1,
+            'createdAt': 1,
+            'updatedAt': 1,
+            'deletedAt': 1,
+            'fileNumber': 1,
+            'propertyDetails.propertyType': 1
+        }
+        reports = valuation_report_model.get_trashed(projection=projection)
+        return jsonify({
+            'reports': reports,
+            'count': len(reports)
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@valuation_reports_bp.route('/<report_id>/restore', methods=['POST'])
+def restore_valuation_report(report_id):
+    """Restore a soft-deleted valuation report"""
+    try:
+        success = valuation_report_model.restore(report_id)
+        if not success:
+            return jsonify({'error': 'Valuation report not found or could not be restored'}), 404
+        return jsonify({'message': 'Valuation report restored successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@valuation_reports_bp.route('/<report_id>/hard', methods=['DELETE'])
+def hard_delete_valuation_report(report_id):
+    """Permanently delete valuation report"""
+    try:
+        success = valuation_report_model.hard_delete(report_id)
+        if not success:
+            return jsonify({'error': 'Valuation report not found'}), 404
+        return jsonify({'message': 'Valuation report permanently deleted'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @valuation_reports_bp.route('/<report_id>', methods=['DELETE'])
 def delete_valuation_report(report_id):
-    """Delete valuation report"""
+    """Soft delete valuation report"""
     try:
         success = valuation_report_model.delete(report_id)
         
         if not success:
             return jsonify({'error': 'Valuation report not found'}), 404
         
-        return jsonify({'message': 'Valuation report deleted successfully'}), 200
+        return jsonify({'message': 'Valuation report moved to trash'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

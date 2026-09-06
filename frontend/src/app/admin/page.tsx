@@ -20,11 +20,13 @@ import {
   LogOut,
   Home,
   ChevronRight,
-  Mail
+  Mail,
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 import { getCurrentUser, signOut, getAllUsers, createUser, updateUser, type User } from '@/lib/auth';
 import { SECURITY_CONFIG, SECURITY_EVENTS } from '@/lib/security-config';
-
+import { apiRepository } from '@/lib/api-repository';
 
 interface SecurityEvent {
   id: string;
@@ -47,9 +49,11 @@ interface SystemStats {
 export default function AdminDashboard() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'security' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'security' | 'settings' | 'trash'>('overview');
   const [users, setUsers] = useState<User[]>([]);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
+  const [trashedReports, setTrashedReports] = useState<any[]>([]);
+  const [isFetchingTrash, setIsFetchingTrash] = useState(false);
   const [systemStats, setSystemStats] = useState<SystemStats>({
     totalUsers: 0,
     activeUsers: 0,
@@ -116,6 +120,47 @@ export default function AdminDashboard() {
       setIsUpdatingUser(false);
     }
   };
+
+  const fetchTrashed = async () => {
+    setIsFetchingTrash(true);
+    try {
+      const results = await apiRepository.getTrashedProperties();
+      setTrashedReports(results.map(r => r.property));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsFetchingTrash(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'trash') {
+      fetchTrashed();
+    }
+  }, [activeTab]);
+
+  const handleRestore = async (id: string) => {
+    if (confirm('Restore this valuation report?')) {
+      try {
+        await apiRepository.restoreProperty(id);
+        fetchTrashed(); // refresh list
+      } catch (e) {
+        alert('Failed to restore report.');
+      }
+    }
+  };
+
+  const handleHardDelete = async (id: string) => {
+    if (confirm('Permanently delete this report? This action cannot be undone.')) {
+      try {
+        await apiRepository.hardDeleteProperty(id);
+        fetchTrashed(); // refresh list
+      } catch (e) {
+        alert('Failed to permanently delete report.');
+      }
+    }
+  };
+
 
   // Check admin access
   useEffect(() => {
@@ -330,6 +375,7 @@ export default function AdminDashboard() {
               { id: 'users', label: 'User Management', icon: Users },
               { id: 'security', label: 'Security Events', icon: Shield },
               { id: 'settings', label: 'System Settings', icon: Settings },
+              { id: 'trash', label: 'Trash / Recovery', icon: Trash2 },
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -605,9 +651,68 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
+
+          {activeTab === 'trash' && (
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Trash & Recovery</h2>
+                <p className="text-gray-600">Restore or permanently delete soft-deleted valuation reports. Note: Items in trash might be automatically purged after 30 days depending on system settings.</p>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/30 overflow-hidden">
+                <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-gray-900">Deleted Reports</h3>
+                  <button onClick={fetchTrashed} className="text-blue-600 hover:text-blue-800 flex items-center text-sm">
+                    <RefreshCw className={`w-4 h-4 mr-1 ${isFetchingTrash ? 'animate-spin' : ''}`} /> Refresh
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">File Number / ID</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deleted At</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {trashedReports.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                            No deleted reports in the trash.
+                          </td>
+                        </tr>
+                      ) : trashedReports.map((report) => (
+                        <tr key={report.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {report.fileNumber || report.id}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {report.address?.fullAddress || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {report.deletedAt ? new Date(report.deletedAt).toLocaleDateString('en-AU') : 'Unknown'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
+                            <button onClick={() => handleRestore(report.id)} className="text-green-600 hover:text-green-900 font-semibold">
+                              Restore
+                            </button>
+                            <button onClick={() => handleHardDelete(report.id)} className="text-red-600 hover:text-red-900 font-semibold">
+                              Delete Permanently
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Add User Modal */}
           {isAddUserModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Add New Valuer</h3>
                 <form onSubmit={handleCreateUser} className="space-y-4">
@@ -645,7 +750,7 @@ export default function AdminDashboard() {
 
           {/* Edit User Modal */}
           {isEditUserModalOpen && editingUser && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Edit User: {editingUser.email}</h3>
                 <form onSubmit={handleUpdateUser} className="space-y-4">

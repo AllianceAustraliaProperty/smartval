@@ -97,6 +97,91 @@ export default function ValuationReportsPage() {
   const [allianceError, setAllianceError] = useState<string | null>(null);
   const [showAllianceSection, setShowAllianceSection] = useState(true);
   const [importingJobId, setImportingJobId] = useState<number | null>(null);
+  // Intersection Observer for infinite scrolling
+  const observerTarget = React.useRef(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalReportsCount, setTotalReportsCount] = useState(0);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const fetchValuationReports = async (pageNum: number, search: string, reset: boolean = false) => {
+    try {
+      if (reset) {
+        if (!isLoading) setIsSearching(true);
+      } else {
+        setIsFetchingMore(true);
+      }
+      
+      const { bundles, totalCount } = await apiRepository.listPropertyBundles(pageNum, 24, search);
+      const cards: ValuationReportCardData[] = bundles.map(({ property }) => {
+        let derivedLogoType = property.valuationDetails?.logoType;
+        if (!derivedLogoType && property.fileNumber) {
+          if (property.fileNumber.startsWith('CPV')) derivedLogoType = 'CPV';
+          else if (property.fileNumber.startsWith('TAMN')) derivedLogoType = 'TAMN';
+          else derivedLogoType = 'AAP';
+        }
+        return {
+          id: property.id || 'unknown',
+          address: property.address?.fullAddress || 'No address',
+          rpDataId: property.rpDataId,
+          allianceId: property.allianceId,
+          createdAt: property.createdAt,
+          updatedAt: property.updatedAt,
+          fileNumber: property.fileNumber,
+          propertyType: property.propertyDetails?.propertyType,
+          logoType: derivedLogoType,
+        };
+      });
+      
+      if (reset) {
+        setValuationReports(cards);
+      } else {
+        setValuationReports(prev => {
+          // Prevent duplicates by checking id
+          const existingIds = new Set(prev.map(r => r.id));
+          const newCards = cards.filter(c => !existingIds.has(c.id));
+          return [...prev, ...newCards];
+        });
+      }
+      
+      setTotalReportsCount(totalCount);
+      setHasMore(cards.length === 24);
+    } catch (e) {
+      console.error('Failed to fetch valuation reports:', e);
+      if (reset) setValuationReports([]);
+    } finally {
+      if (reset) {
+        setIsLoading(false);
+        setIsSearching(false);
+      } else {
+        setIsFetchingMore(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isFetchingMore) {
+          const next = currentPage + 1;
+          setCurrentPage(next);
+          fetchValuationReports(next, searchTerm, false);
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [observerTarget.current, hasMore, isLoading, isFetchingMore, currentPage, searchTerm]);
 
   // Inspection state
   const [inspectionReports, setInspectionReports] = useState<any[]>([]);
@@ -216,43 +301,16 @@ export default function ValuationReportsPage() {
     loadAllianceReports();
   }, [isLoading, valuationReports]); // Run when loading state or valuation reports change
 
-  const fetchValuationReports = async () => {
-    try {
-      setIsLoading(true);
-      const bundles = await apiRepository.listPropertyBundles();
-      console.log('API Response bundles:', bundles);
-      const cards: ValuationReportCardData[] = bundles.map(({ property }) => {
-        let derivedLogoType = property.valuationDetails?.logoType;
-        if (!derivedLogoType && property.fileNumber) {
-          if (property.fileNumber.startsWith('CPV')) derivedLogoType = 'CPV';
-          else if (property.fileNumber.startsWith('TAMN')) derivedLogoType = 'TAMN';
-          else derivedLogoType = 'AAP';
-        }
-        return {
-          id: property.id || 'unknown',
-          address: property.address?.fullAddress || 'No address',
-          rpDataId: property.rpDataId,
-          allianceId: property.allianceId,
-          createdAt: property.createdAt,
-          updatedAt: property.updatedAt,
-          fileNumber: property.fileNumber,
-          propertyType: property.propertyDetails?.propertyType,
-          logoType: derivedLogoType,
-        };
-      });
-      console.log('Processed cards:', cards);
-      setValuationReports(cards);
-    } catch (e) {
-      console.error('Failed to fetch valuation reports:', e);
-      setValuationReports([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   useEffect(() => {
-    fetchValuationReports();
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      setCurrentPage(1);
+      fetchValuationReports(1, searchTerm, true);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   const fetchAllianceJobs = async () => {
     try {
@@ -334,7 +392,8 @@ export default function ValuationReportsPage() {
     setIsDuplicating(true);
     try {
       await apiRepository.duplicateProperty(duplicateReportId, numCopies);
-      await fetchValuationReports(); // Refresh the list
+      setCurrentPage(1);
+      await fetchValuationReports(1, searchTerm, true); // Refresh the list
       setShowDuplicateModal(false);
       setDuplicateReportId(null);
     } catch (error) {
@@ -370,11 +429,11 @@ export default function ValuationReportsPage() {
     }
   };
 
-  const handleSelectAll = () => {
-    if (selectedReports.size === filteredReports.length) {
+  const toggleAllReports = () => {
+    if (selectedReports.size === valuationReports.length) {
       setSelectedReports(new Set());
     } else {
-      setSelectedReports(new Set(filteredReports.map(report => report.id)));
+      setSelectedReports(new Set(valuationReports.map(report => report.id)));
     }
   };
 
@@ -397,7 +456,8 @@ export default function ValuationReportsPage() {
       } catch (error) {
         console.error('Failed to delete some reports:', error);
         alert('An error occurred while deleting the reports. Please try again.');
-        fetchValuationReports();
+        setCurrentPage(1);
+        await fetchValuationReports(1, searchTerm, true);
       } finally {
         setIsLoading(false);
       }
@@ -483,29 +543,7 @@ export default function ValuationReportsPage() {
     }
   };
 
-  const filteredReports = valuationReports.filter((report) => {
-    if (!searchTerm.trim()) return true;
-    const dateStr = report.updatedAt ? new Date(report.updatedAt) : null;
-    const dateFormatted = dateStr
-      ? [
-          dateStr.toLocaleDateString('en-AU'),                                             // 08/05/2026
-          dateStr.toLocaleDateString('en-AU', { day: '2-digit', month: '2-digit', year: '2-digit' }), // 08/05/26
-          dateStr.toLocaleDateString('en-GB'),                                             // 08/05/2026
-          dateStr.toISOString().slice(0, 10),                                              // 2026-05-08
-        ].join(' ')
-      : '';
-    const searchable = [
-      report.address,
-      report.rpDataId,
-      report.fileNumber,
-      report.propertyType,
-      dateFormatted,
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
-    return searchable.includes(searchTerm.toLowerCase());
-  });
+
 
   if (isLoading) {
     return (
@@ -554,7 +592,11 @@ export default function ValuationReportsPage() {
         {/* search bar in the middle */}
         <div className="absolute left-1/2 -translate-x-1/2 hidden md:block mt-2 z-50">
           <div className="relative flex items-center w-[680px] border-b-[3px] border-white pb-2 transition-all duration-300 hover:border-white/90">
-            <Search className="w-6 h-6 text-white ml-2 mr-4 flex-shrink-0" strokeWidth={2.5} />
+            {isSearching ? (
+              <div className="w-6 h-6 ml-2 mr-4 flex-shrink-0 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <Search className="w-6 h-6 text-white ml-2 mr-4 flex-shrink-0" strokeWidth={2.5} />
+            )}
             <div className="w-[2px] h-6 bg-white/40 mr-4 flex-shrink-0"></div>
             <input
               type="text"
@@ -582,7 +624,7 @@ export default function ValuationReportsPage() {
           {/* create New Valuation Report button */}
           <button
             onClick={handleCreateNew}
-            className="w-[46px] h-[46px] rounded-[14px] bg-[#28A745] flex items-center justify-center text-white hover:bg-[#218838] shadow-sm transition-colors"
+            className="w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center text-[#006ABE] hover:bg-gray-100 shadow-sm transition-colors"
           >
             <Plus className="w-7 h-7" strokeWidth={3} />
           </button>
@@ -605,7 +647,11 @@ export default function ValuationReportsPage() {
       {/* Mobile Search Bar (shows only on small screens) */}
       <div className="px-6 py-4 bg-[#006ABE] block md:hidden border-t border-white/20">
         <div className="relative flex items-center w-full border-b-[3px] border-white pb-2">
-          <Search className="w-5 h-5 text-white mr-3 flex-shrink-0" />
+          {isSearching ? (
+            <div className="w-5 h-5 mr-3 flex-shrink-0 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            <Search className="w-5 h-5 text-white mr-3 flex-shrink-0" />
+          )}
           <div className="w-[2px] h-5 bg-white/40 mr-3 flex-shrink-0"></div>
           <input
             type="text"
@@ -671,15 +717,16 @@ export default function ValuationReportsPage() {
           <div className="flex justify-center mb-10">
               <div className="px-8 py-3.5 rounded-[18px] bg-[#e9ebed] shadow-sm">
               <span className="text-[15px] font-bold text-gray-800 tracking-wide">
-                {filteredReports.length} Valuation Reports available
+                {totalReportsCount} Valuation Reports available
               </span>
             </div>
           </div>
 
           {/* Valuation Reports Grid */}
-          {filteredReports.length > 0 ? (
+          {valuationReports.length > 0 ? (
+            <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filteredReports.map((report, index) => (
+              {valuationReports.map((report, index) => (
                 <div
                   key={report.id || index}
                   className={`group relative bg-white rounded-[40px] border-2 p-8 transition-all duration-300 cursor-pointer flex flex-col h-full ${
@@ -693,7 +740,6 @@ export default function ValuationReportsPage() {
                   onMouseLeave={() => setHoveredCard(null)}
                 >
                   
-
                   {/* Top row: Titles + Duplicate */}
                     <div className="flex items-start justify-between mb-5">
                       <div className="flex flex-col pr-4">
@@ -763,6 +809,12 @@ export default function ValuationReportsPage() {
                   </div>
                 ))}
             </div>
+            {hasMore && (
+              <div ref={observerTarget} className="h-10 w-full mt-4 flex items-center justify-center text-gray-400">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500" />
+              </div>
+            )}
+            </>
           ) : (
             <div className="text-center py-20">
               <div className="relative inline-block">
@@ -807,7 +859,7 @@ export default function ValuationReportsPage() {
 
       {/* Duplicate Modal */}
       {showDuplicateModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-in fade-in zoom-in duration-200">
             <h3 className="text-xl font-bold text-gray-900 mb-2">Duplicate Report</h3>
             <p className="text-sm text-gray-500 mb-6">
