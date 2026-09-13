@@ -62,6 +62,7 @@ class ValuationReport:
                 {'fileNumber': regex},
                 {'rpDataId': regex},
                 {'propertyDetails.propertyType': regex},
+                {'valuationDetails.logoType': regex},
                 {'address.streetName': regex},
                 {'address.suburb': regex},
                 {'address.postcode': regex}

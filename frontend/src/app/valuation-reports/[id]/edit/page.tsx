@@ -132,6 +132,21 @@ export default function ValuationReportEditPage() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [isReportMenuOpen]);
 
+  // Auto-update logo type when fileNumber starts with TAMN or CPV
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === 'fileNumber' && value.fileNumber) {
+        const upper = value.fileNumber.toUpperCase();
+        if (upper.startsWith('CPV')) {
+          setValue('valuationDetails.logoType', 'CPV', { shouldDirty: true });
+        } else if (upper.startsWith('TAMN')) {
+          setValue('valuationDetails.logoType', 'TAMN', { shouldDirty: true });
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, setValue]);
+
   // Check for completed sections
   useEffect(() => {
     const subscription = watch((value) => {

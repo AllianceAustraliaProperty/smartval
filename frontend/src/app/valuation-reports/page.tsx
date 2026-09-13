@@ -116,10 +116,13 @@ export default function ValuationReportsPage() {
       const { bundles, totalCount } = await apiRepository.listPropertyBundles(pageNum, 24, search);
       const cards: ValuationReportCardData[] = bundles.map(({ property }) => {
         let derivedLogoType = property.valuationDetails?.logoType;
-        if (!derivedLogoType && property.fileNumber) {
-          if (property.fileNumber.startsWith('CPV')) derivedLogoType = 'CPV';
-          else if (property.fileNumber.startsWith('TAMN')) derivedLogoType = 'TAMN';
-          else derivedLogoType = 'AAP';
+        if (property.fileNumber) {
+          const upperFile = property.fileNumber.toUpperCase();
+          if (upperFile.startsWith('CPV')) derivedLogoType = 'CPV';
+          else if (upperFile.startsWith('TAMN')) derivedLogoType = 'TAMN';
+          else if (!derivedLogoType) derivedLogoType = 'AAP';
+        } else if (!derivedLogoType) {
+          derivedLogoType = 'AAP';
         }
         return {
           id: property.id || 'unknown',
@@ -743,9 +746,9 @@ export default function ValuationReportsPage() {
                   {/* Top row: Titles + Duplicate */}
                     <div className="flex items-start justify-between mb-5">
                       <div className="flex flex-col pr-4">
-                        {/* File number */}
+                        {/* File number & Logo type */}
                         <p className="text-[16px] font-semibold text-[#222222] tracking-wide leading-tight">
-                          {report.fileNumber || report.id}
+                          {report.fileNumber || report.id}{report.logoType ? ` | ${report.logoType}` : ''}
                         </p>
                         
                         {/* Property type (blue, bold) */}

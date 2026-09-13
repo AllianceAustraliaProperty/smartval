@@ -334,7 +334,8 @@ def get_all_valuation_reports():
             'createdAt': 1,
             'updatedAt': 1,
             'fileNumber': 1,
-            'propertyDetails.propertyType': 1
+            'propertyDetails.propertyType': 1,
+            'valuationDetails.logoType': 1
         }
         reports, total_count = valuation_report_model.get_all(projection=projection, skip=skip, limit=limit, search=search)
         return jsonify({
