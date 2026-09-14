@@ -3,6 +3,7 @@ Valuation Reports blueprint for valuation report endpoints
 """
 from flask import Blueprint, jsonify, request, render_template_string
 # CORS is handled globally in app.py
+from werkzeug.local import LocalProxy
 from database import get_database
 from models.valuation_report import ValuationReport
 from models.settings import Settings
@@ -36,11 +37,9 @@ RESIDENTIAL_PROPERTY_TYPES = [
     "Unit"
 ]
 
-# Initialize MongoDB connection
-client = MongoClient(Config.MONGODB_URI)
-db = client.get_default_database()
-valuation_report_model = ValuationReport(db)
-settings_model = Settings(db)
+# Initialize models dynamically per-request to prevent PyMongo Gunicorn deadlocks
+valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
+settings_model = LocalProxy(lambda: Settings(get_database()))
 
 # Template filter functions
 def _is_missing(value):

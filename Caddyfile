@@ -16,8 +16,8 @@ aapvaluations.com.au, www.aapvaluations.com.au {
     handle /api/* {
       reverse_proxy backend:5000 {
         transport http {
-            response_header_timeout 5m
-            dial_timeout 5m
+            response_header_timeout 60s
+            dial_timeout 10s
         }
     }
 
