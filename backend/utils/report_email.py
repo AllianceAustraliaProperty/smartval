@@ -1,6 +1,6 @@
-from jinja2 import Environment, select_autoescape
-
-_env = Environment(autoescape=select_autoescape(default=True, default_for_string=True))
+from jinja2 import select_autoescape
+from jinja2.sandbox import SandboxedEnvironment
+_env = SandboxedEnvironment(autoescape=select_autoescape(default=True, default_for_string=True))
 
 REPORT_EMAIL_VARIABLES = [
     {'token': '{{ client_name }}', 'label': 'Client name'},

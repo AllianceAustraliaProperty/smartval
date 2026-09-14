@@ -125,7 +125,8 @@ def title_address(value):
     return ' '.join(w.upper() if w in AU_STATE_ABBREVS else w for w in words)
 
 # Create the environment with custom filters
-jinja_env = Environment(loader=TemplateLoader())
+from jinja2 import select_autoescape
+jinja_env = Environment(loader=TemplateLoader(), autoescape=select_autoescape(['html', 'xml']))
 jinja_env.filters['format_currency'] = format_currency
 jinja_env.filters['format_currency_no_decimal'] = format_currency_no_decimal
 jinja_env.filters['format_currency_words'] = format_currency_words
