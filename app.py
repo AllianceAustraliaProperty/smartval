@@ -40,6 +40,12 @@ def proxy_rpp_get():
     if not request_url:
         return jsonify({"error": "Missing 'url' query parameter"}), 400
 
+    # Only allow proxying to CoreLogic domains
+    parsed = urlparse(request_url)
+    allowed_domains = ["rpp.corelogic.com.au", "signature.corelogic.asia"]
+    if parsed.netloc not in allowed_domains:
+        return jsonify({"error": "SSRF Blocked: Unauthorized domain"}), 403
+
     # Basic format validation akin to UrlParser; ensure host matches expected domain
     parsed = urlparse(request_url)
     if not parsed.scheme or not parsed.netloc:
@@ -76,6 +82,11 @@ def proxy_rpp_post():
     request_url = request.args.get("url", type=str)
     if not request_url:
         return jsonify({"error": "Missing 'url' query parameter"}), 400
+
+    parsed = urlparse(request_url)
+    allowed_domains = ["rpp.corelogic.com.au", "signature.corelogic.asia"]
+    if parsed.netloc not in allowed_domains:
+        return jsonify({"error": "SSRF Blocked: Unauthorized domain"}), 403
 
     try:
         params = [(k, v if v is not None else "") for k in request.args for v in request.args.getlist(k) if k != "url"]
