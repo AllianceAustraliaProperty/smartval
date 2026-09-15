@@ -779,7 +779,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "description": comp.get("description"),
                     "comparison": comp.get("comparison"),
                 })
-            sales_comparables = chunk_list(mapped_sales, 2)
+            sales_comparables = chunk_list(mapped_sales, 3)
 
             # Process rental comparables
             rental_comps = report.get("comparables", {}).get("rentals", [])
@@ -797,7 +797,7 @@ def generate_html_report(report_id, template_name='residential.html'):
                     "description": comp.get("description"),
                     "comparison": comp.get("comparison"),
                 })
-            listing_comparables = chunk_list(mapped_rentals, 2)
+            listing_comparables = chunk_list(mapped_rentals, 3)
 
             _unit = report.get("address", {}).get("unitNumber") or ""
             _street_name = report.get("address", {}).get("streetName") or ""

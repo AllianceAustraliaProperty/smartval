@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from bson import ObjectId
+import re
 
 
 class ValuationReport:
@@ -56,7 +57,8 @@ class ValuationReport:
         query = {'isDeleted': {'$ne': True}}
         
         if search:
-            regex = {'$regex': search, '$options': 'i'}
+            safe_search = re.escape(search)
+            regex = {'$regex': safe_search, '$options': 'i'}
             query['$or'] = [
                 {'address.fullAddress': regex},
                 {'fileNumber': regex},

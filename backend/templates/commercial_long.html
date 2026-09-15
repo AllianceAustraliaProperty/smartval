@@ -511,8 +511,10 @@
 
 
         .comparable {
-            margin-top: 28px;
-            margin-bottom: 28px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .comparable td {
@@ -581,7 +583,7 @@
     {% else %}
     <style>
         .header-logo {
-            height: 115px !important;
+            height: 75px !important;
         }
         /* AAP styled page footer bar (solid blue) */
         .footer-container {
@@ -1254,19 +1256,19 @@
             <div style="width: 78%;">
                 <div style="display: flex; padding: 4px 0;">
                     <div style="width: 30%; flex-shrink: 0;">Physical Location</div>
-                    <div style="flex: 1; white-space: pre-line;">{{ record.location_details.suburb_description|default('N/A') }}</div>
+                    <div style="flex: 1; white-space: pre-line; text-align: justify;">{{ record.location_details.suburb_description|default('N/A') }}</div>
                 </div>
                 <div style="display: flex; padding: 4px 0;">
                     <div style="width: 30%; flex-shrink: 0;">Surrounding Development</div>
-                    <div style="flex: 1; white-space: pre-line;">{{ record.location_details.surrounding_development|default('N/A') }}</div>
+                    <div style="flex: 1; white-space: pre-line; text-align: justify;">{{ record.location_details.surrounding_development|default('N/A') }}</div>
                 </div>
                 <div style="display: flex; padding: 4px 0;">
                     <div style="width: 30%; flex-shrink: 0;">Services</div>
-                    <div style="flex: 1;">{{ record.location_details.services|default('The following major services are connected: reticulated water, sewerage, telephone, electricity.') }}</div>
+                    <div style="flex: 1; text-align: justify;">{{ record.location_details.services|default('The following major services are connected: reticulated water, sewerage, telephone, electricity.') }}</div>
                 </div>
                 <div style="display: flex; padding: 4px 0;">
                     <div style="width: 30%; flex-shrink: 0;">Access</div>
-                    <div style="flex: 1;">{{ record.location_details.access|default('Vehicular access is easy and direct.') }}</div>
+                    <div style="flex: 1; text-align: justify;">{{ record.location_details.access|default('Vehicular access is easy and direct.') }}</div>
                 </div>
             </div>
         </div>
