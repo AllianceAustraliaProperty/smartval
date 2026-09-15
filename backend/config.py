@@ -18,7 +18,7 @@ class Config:
     MONGODB_URI = os.environ.get('MONGODB_URI') or 'mongodb://localhost:27017/flask_app'
     
     # CORS configuration
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*').split(',')
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'https://aapvaluations.com.au,https://www.aapvaluations.com.au').split(',')
     
     # API configuration
     API_TITLE = 'Flask API'

@@ -40,6 +40,13 @@ class S3Service:
         Returns:
             dict: Contains presigned URL, file key, and S3 URL
         """
+
+        # Restrict S3 uploads to safe image/document types
+        allowed_extensions = {'jpg', 'jpeg', 'png', 'pdf', 'heic', 'gif'}
+        clean_ext = file_extension.lower().lstrip('.')
+        if clean_ext not in allowed_extensions:
+            raise ValueError(f"File type '.{clean_ext}' is not allowed for upload.")
+
         try:
             s3_client = self._get_s3_client()
             
