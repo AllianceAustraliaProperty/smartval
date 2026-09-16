@@ -769,6 +769,8 @@
         <p style="font-size: 22px; margin: 4px 0; text-align: center !important;">{{
           valuation_report["address"]["suburb"]|default('') }} {{ valuation_report["address"]["state"]|default('') }} {{
           valuation_report["address"]["postcode"]|default('') }}</p>
+        <p style="font-size: 22px; margin-top: 20px; text-align: center !important;">Ref #{{
+          valuation_report["fileNumber"]|default('') }}</p>
       </div>
     </div>
 
