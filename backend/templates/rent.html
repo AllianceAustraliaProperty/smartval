@@ -346,7 +346,7 @@
                 <div class="detail-value">{% if valuation_report.get("valuationDetails", {}).get("dateIssued") %}{{ valuation_report["valuationDetails"]["dateIssued"] | format_date }}{% else %}{{ now() }}{% endif %}</div>
             </div>
             <div class="detail-row">
-                <div class="detail-label">Rental Value:</div>
+                <div class="detail-label">Annual Rental Value:</div>
                 <div class="detail-value">{{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A') }}
                     ({{ valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')|title }}) (Exclusive of outgoings & GST)</div>
             </div>
