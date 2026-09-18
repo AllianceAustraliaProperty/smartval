@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from config import Config
+from werkzeug.local import LocalProxy
 from database import get_database
 from models.settings import Settings
 from utils.graph_mail import GraphMailError, list_users
@@ -19,7 +20,7 @@ from utils.report_email import (
 )
 
 settings_bp = Blueprint('settings', __name__)
-settings_model = Settings(get_database())
+settings_model = LocalProxy(lambda: Settings(get_database()))
 
 
 def _current_invoice_email_template():
@@ -249,3 +250,4 @@ def preview_report_email_template():
     except Exception as e:
         print(f"Error previewing report email template: {str(e)}")
         return jsonify({'error': f'Failed to preview report email template: {str(e)}'}), 500
+

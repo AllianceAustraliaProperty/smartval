@@ -2,6 +2,7 @@
 Inspection Reports blueprint for handling mobile app inspection submissions
 """
 from flask import Blueprint, jsonify, request, current_app
+from werkzeug.local import LocalProxy
 from database import get_database
 from models.valuation_report import ValuationReport
 from datetime import datetime
@@ -12,8 +13,7 @@ logger = logging.getLogger(__name__)
 inspection_bp = Blueprint('inspection', __name__)
 
 # Initialize MongoDB connection
-db = get_database()
-valuation_report_model = ValuationReport(db)
+valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
 
 
 def parse_address(full_address):
@@ -331,4 +331,5 @@ def get_inspection_presigned_url(inspection_id):
             'success': False,
             'error': str(e)
         }), 500
+
 

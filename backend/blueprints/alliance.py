@@ -3,6 +3,7 @@ Alliance blueprint for handling Alliance website integration
 """
 from flask import Blueprint, jsonify, request
 from utils.alliance_service import AllianceService
+from werkzeug.local import LocalProxy
 from database import get_database
 from models.valuation_report import ValuationReport
 import logging
@@ -15,8 +16,7 @@ alliance_bp = Blueprint('alliance', __name__)
 alliance_service = AllianceService()
 
 # Initialize MongoDB connection
-db = get_database()
-valuation_report_model = ValuationReport(db)
+valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
 
 
 @alliance_bp.route('/jobs', methods=['GET'])
@@ -223,3 +223,4 @@ def import_alliance_job(job_id):
             'error': str(e),
             'message': f'Failed to import Alliance job {job_id}'
         }), 500
+

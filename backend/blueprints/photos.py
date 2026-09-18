@@ -6,13 +6,14 @@ import uuid
 from flask import Blueprint, request, jsonify, current_app
 # CORS is handled globally in app.py
 from werkzeug.utils import secure_filename
+from werkzeug.local import LocalProxy
 from database import get_database
 from models.valuation_report import ValuationReport
 from utils.s3_service import s3_service
 
 photos_bp = Blueprint('photos', __name__)
 
-valuation_report_model = ValuationReport(get_database())
+valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'tiff'}
@@ -399,3 +400,4 @@ def update_photos(report_id):
     except Exception as e:
         current_app.logger.error(f"Error updating photos: {str(e)}")
         return jsonify({'error': f'Failed to update photos: {str(e)}'}), 500
+

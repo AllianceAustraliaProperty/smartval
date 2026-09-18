@@ -648,10 +648,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       const buffer = await workbook.xlsx.writeBuffer() as any;
 
       // Save buffer to file
-      fs.writeFileSync(tempExcelPath, buffer);
-      
-      // Wait a bit for file system to settle
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await fs.promises.writeFile(tempExcelPath, buffer);
       
       // Verify the file was written correctly
       if (!fs.existsSync(tempExcelPath)) {
@@ -682,7 +679,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       }
     }
 
-    const buffer = fs.readFileSync(tempExcelPath);
+    const buffer = await fs.promises.readFile(tempExcelPath);
     
     let finalFileName = `Valuation-Report-${id}.xlsx`;
     const fileNumber = property?.fileNumber;

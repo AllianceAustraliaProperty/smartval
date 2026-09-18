@@ -6,19 +6,26 @@ so before this consolidation each of the ~10 blueprints that called
 """
 from pymongo import MongoClient
 from config import Config
+import threading
 
 _client = None
 _db = None
-
+_lock = threading.Lock()
 
 def get_database():
     """Return the cached default database, lazily creating MongoClient on first call."""
     global _client, _db
-    if _db is None:
-        _client = MongoClient(Config.MONGODB_URI, connect=False)
-        _db = _client.get_default_database()
+    with _lock:
+        if _db is None:
+            _client = MongoClient(
+                Config.MONGODB_URI, 
+                connect=False,
+                socketTimeoutMS=15000,
+                connectTimeoutMS=10000,
+                serverSelectionTimeoutMS=10000
+            )
+            _db = _client.get_default_database()
     return _db
-
 
 def get_valuation_reports_collection():
     """Get valuation reports collection"""

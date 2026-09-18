@@ -8,6 +8,7 @@ import uuid
 from flask import Blueprint, request, jsonify, current_app
 # CORS is handled globally in app.py
 from werkzeug.utils import secure_filename
+from werkzeug.local import LocalProxy
 from database import get_database
 from models.valuation_report import ValuationReport
 from utils.s3_service import s3_service
@@ -15,7 +16,7 @@ from utils.s3_service import s3_service
 # Initialize blueprint
 comparables_photos_bp = Blueprint('comparables_photos', __name__)
 
-valuation_report_model = ValuationReport(get_database())
+valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -369,4 +370,5 @@ def _delete_old_s3_photo(photo_url):
             
     except Exception as e:
         current_app.logger.error(f"Error deleting old S3 photo {photo_url}: {str(e)}")
+
 

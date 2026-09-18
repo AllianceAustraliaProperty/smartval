@@ -4,6 +4,7 @@ such as granny flat, studio, etc. Stored under the `additionalPhotos`
 array on the valuation report document.
 """
 from flask import Blueprint, request, jsonify, current_app
+from werkzeug.local import LocalProxy
 from database import get_database
 from models.valuation_report import ValuationReport
 from utils.s3_service import s3_service
@@ -11,7 +12,7 @@ from utils.s3_service import s3_service
 
 additional_photos_bp = Blueprint('additional_photos', __name__)
 
-valuation_report_model = ValuationReport(get_database())
+valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
 
 
 @additional_photos_bp.route('/presigned-url/<report_id>', methods=['POST'])
@@ -202,5 +203,6 @@ def update_additional_photos(report_id):
     except Exception as e:
         current_app.logger.error(f"Error updating additional photos: {str(e)}")
         return jsonify({'error': f'Failed to update photos: {str(e)}'}), 500
+
 
 

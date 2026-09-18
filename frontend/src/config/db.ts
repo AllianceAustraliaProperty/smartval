@@ -6,7 +6,10 @@ const connectDB = async () => {
   }
   const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/property-valuation';
   try {
-    await mongoose.connect(uri);
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: 10
+    });
     console.log('MongoDB connected');
   } catch (error) {
     console.error('MongoDB connection error:', error);

@@ -3,19 +3,22 @@ Properties blueprint - now works with valuation reports directly
 """
 from flask import Blueprint, jsonify, request
 # CORS is handled globally in app.py
+from werkzeug.local import LocalProxy
 from database import get_database
 from models.valuation_report import ValuationReport
 
 properties_bp = Blueprint('properties', __name__)
 
-valuation_report_model = ValuationReport(get_database())
-
+valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
 
 @properties_bp.route('/', methods=['GET'])
 def get_properties():
     """Get all valuation reports (now serving as properties)"""
     try:
-        reports = valuation_report_model.get_all()
+        page = request.args.get('page', 1, type=int)
+        limit = request.args.get('limit', 100, type=int)
+        skip = (page - 1) * limit
+        reports, _ = valuation_report_model.get_all(skip=skip, limit=limit)
         
         # Transform reports to property-like format for frontend compatibility
         properties = []

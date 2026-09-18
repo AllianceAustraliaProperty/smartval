@@ -3,6 +3,7 @@ Title Search blueprint for uploading and managing a single title search image.
 Stored under the `titleSearch` array (max 1 item) on the valuation report document.
 """
 from flask import Blueprint, request, jsonify, current_app
+from werkzeug.local import LocalProxy
 from database import get_database
 from models.valuation_report import ValuationReport
 from utils.s3_service import s3_service
@@ -10,7 +11,7 @@ from utils.s3_service import s3_service
 
 title_search_bp = Blueprint('title_search', __name__)
 
-valuation_report_model = ValuationReport(get_database())
+valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
 
 
 @title_search_bp.route('/presigned-url/<report_id>', methods=['POST'])
@@ -160,3 +161,4 @@ def delete_title_search(report_id):
     except Exception as e:
         current_app.logger.error(f"Error deleting title search: {str(e)}")
         return jsonify({'error': f'Failed to delete photo: {str(e)}'}), 500
+

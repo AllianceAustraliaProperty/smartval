@@ -55,7 +55,7 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
     base64Image = parts[1];
   } else {
     try {
-      const response = await fetch(imageUrl);
+      const response = await fetch(imageUrl, { signal: AbortSignal.timeout(15000) });
       if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
       mimeType = response.headers.get("content-type") || "image/jpeg";
       const arrayBuffer = await response.arrayBuffer();
@@ -116,19 +116,31 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
     }
   };
 
-  const maxRetries = 5;
+  const maxRetries = 2;
   let data: any = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const currentApiKey = getGeminiApiKey();
     const currentModelName = GEMINI_MODELS[attempt % GEMINI_MODELS.length];
-    const response = await fetch(`${getGeminiApiUrl(currentModelName)}?key=${currentApiKey}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    
+    let response;
+    try {
+      response = await fetch(`${getGeminiApiUrl(currentModelName)}?key=${currentApiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000),
+      });
+    } catch (fetchErr: any) {
+      console.error("Gemini fetch failed:", fetchErr);
+      if (attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        continue;
+      }
+      throw new Error(`Gemini API connection error: ${fetchErr.message}`);
+    }
 
     if (response.ok) {
       data = await response.json();
@@ -151,10 +163,11 @@ export async function analyzeImageWithGemini(imageUrl: string, expectedCategory?
       
       if (retryMatch && retryMatch[1]) {
         const parsedSeconds = parseFloat(retryMatch[1]);
-        if (!isNaN(parsedSeconds) && parsedSeconds > 0 && parsedSeconds <= 30) {
+        if (!isNaN(parsedSeconds) && parsedSeconds > 0 && parsedSeconds <= 5) {
           waitMs = Math.ceil(parsedSeconds * 1000) + 1000; // wait specified time + 1s buffer
         }
       }
+      if (waitMs > 5000) waitMs = 5000;
 
       console.warn(`[Gemini API] Rate limited/High demand. Retrying in ${Math.round(waitMs / 1000)}s (attempt ${attempt + 1}/${maxRetries})...`);
       await new Promise((resolve) => setTimeout(resolve, waitMs));
@@ -198,7 +211,7 @@ export async function analyzeCoverPhotoWithGemini(imageUrl: string, propertyType
     base64Image = parts[1];
   } else {
     try {
-      const response = await fetch(imageUrl);
+      const response = await fetch(imageUrl, { signal: AbortSignal.timeout(15000) });
       if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
       mimeType = response.headers.get("content-type") || "image/jpeg";
       const arrayBuffer = await response.arrayBuffer();
@@ -261,19 +274,31 @@ export async function analyzeCoverPhotoWithGemini(imageUrl: string, propertyType
     }
   };
 
-  const maxRetries = 5;
+  const maxRetries = 2;
   let data: any = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const currentApiKey = getGeminiApiKey();
     const currentModelName = GEMINI_MODELS[attempt % GEMINI_MODELS.length];
-    const response = await fetch(`${getGeminiApiUrl(currentModelName)}?key=${currentApiKey}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    
+    let response;
+    try {
+      response = await fetch(`${getGeminiApiUrl(currentModelName)}?key=${currentApiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000),
+      });
+    } catch (fetchErr: any) {
+      console.error("Gemini fetch failed:", fetchErr);
+      if (attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        continue;
+      }
+      throw new Error(`Gemini API connection error: ${fetchErr.message}`);
+    }
 
     if (response.ok) {
       data = await response.json();
@@ -296,10 +321,11 @@ export async function analyzeCoverPhotoWithGemini(imageUrl: string, propertyType
       
       if (retryMatch && retryMatch[1]) {
         const parsedSeconds = parseFloat(retryMatch[1]);
-        if (!isNaN(parsedSeconds) && parsedSeconds > 0 && parsedSeconds <= 30) {
+        if (!isNaN(parsedSeconds) && parsedSeconds > 0 && parsedSeconds <= 5) {
           waitMs = Math.ceil(parsedSeconds * 1000) + 1000;
         }
       }
+      if (waitMs > 5000) waitMs = 5000;
 
       console.warn(`[Gemini API] Rate limited/High demand. Retrying in ${Math.round(waitMs / 1000)}s (attempt ${attempt + 1}/${maxRetries})...`);
       await new Promise((resolve) => setTimeout(resolve, waitMs));
