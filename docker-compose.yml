@@ -83,6 +83,15 @@ services:
     networks:
       - smartval-network
 
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: smartval-autoheal
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=all
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
 networks:
   smartval-network:
     driver: bridge
