@@ -121,9 +121,9 @@ def create_app(config_class=Config):
             get_firebase_app()
             # Verify the token cryptographically
             try:
-                decoded_token = auth.verify_session_cookie(token, check_revoked=True)
+                decoded_token = auth.verify_session_cookie(token, check_revoked=False)
             except Exception:
-                decoded_token = auth.verify_id_token(token, check_revoked=True)
+                decoded_token = auth.verify_id_token(token, check_revoked=False)
             # Attach user data to the request for blueprints to use
             request.user = decoded_token
         except Exception as e:

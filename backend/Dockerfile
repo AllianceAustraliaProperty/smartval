@@ -62,4 +62,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health')" || exit 1
 
 # Use gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--worker-class", "gthread", "--workers", "2", "--threads", "4", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "--keep-alive", "2", "--max-requests", "1000", "--max-requests-jitter", "100", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--worker-class", "gthread", "--workers", "3", "--threads", "8", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "--keep-alive", "2", "--max-requests", "1000", "--max-requests-jitter", "100", "app:app"]

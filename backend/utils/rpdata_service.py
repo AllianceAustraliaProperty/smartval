@@ -64,14 +64,14 @@ class RpDataAPI:
     def proxy_get(self, url: str):
         cookies = self._get_cookies_for_url(url)
         headers = {"Cookie": cookies}
-        response = requests.get(url, headers=headers, verify=False)
+        response = requests.get(url, headers=headers, verify=False, timeout=(5, 20))
         if not response.ok:
             # Retry once with refreshed cookies on auth failure
             if response.status_code in (401, 403):
                 self.refresh_cookies()
                 cookies = self._get_cookies_for_url(url)
                 headers = {"Cookie": cookies}
-                response = requests.get(url, headers=headers, verify=False)
+                response = requests.get(url, headers=headers, verify=False, timeout=(5, 20))
             if not response.ok:
                 raise Exception(f"RP Data request failed ({response.status_code}): {url}")
         return response.json()
@@ -82,7 +82,7 @@ class RpDataAPI:
         headers = {"Cookie": cookies, "Content-Type": "application/json"}
         if xsrf_token:
             headers["X-Xsrf-Token"] = xsrf_token
-        response = requests.post(url, json=data, headers=headers, verify=False)
+        response = requests.post(url, json=data, headers=headers, verify=False, timeout=(5, 20))
         if not response.ok:
             if response.status_code in (401, 403):
                 self.refresh_cookies()
@@ -91,7 +91,7 @@ class RpDataAPI:
                 headers = {"Cookie": cookies, "Content-Type": "application/json"}
                 if xsrf_token:
                     headers["X-Xsrf-Token"] = xsrf_token
-                response = requests.post(url, json=data, headers=headers, verify=False)
+                response = requests.post(url, json=data, headers=headers, verify=False, timeout=(5, 20))
             if not response.ok:
                 raise Exception(f"RP Data request failed ({response.status_code}): {url}")
         return response.json()

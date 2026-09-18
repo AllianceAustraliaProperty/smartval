@@ -23,7 +23,7 @@ export async function verifyFirebaseToken(token: string) {
     try {
         const auth = initAdmin();
         if (!auth) return null;
-        const decoded = await auth.verifyIdToken(token, true);
+        const decoded = await auth.verifyIdToken(token, false);
         return decoded;
     } catch (error) {
         console.error('Error verifying Firebase token:', error);
@@ -35,7 +35,7 @@ export async function verifyFirebaseSessionCookie(sessionCookie: string) {
     try {
         const auth = initAdmin();
         if (!auth) return null;
-        const decoded = await auth.verifySessionCookie(sessionCookie, true);
+        const decoded = await auth.verifySessionCookie(sessionCookie, false);
         return decoded;
     } catch (error) {
         console.error('Error verifying Firebase session cookie:', error);
