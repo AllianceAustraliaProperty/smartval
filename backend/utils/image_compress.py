@@ -19,11 +19,18 @@ PRESETS = {
     'document':    (1200, 75),
 }
 
-_session = requests.Session()
-adapter = HTTPAdapter(pool_connections=32, pool_maxsize=32)
-_session.mount('http://', adapter)
-_session.mount('https://', adapter)
+import threading
 
+_local = threading.local()
+
+def get_session():
+    if not hasattr(_local, 'session'):
+        s = requests.Session()
+        adapter = HTTPAdapter(pool_connections=10, pool_maxsize=10)
+        s.mount('http://', adapter)
+        s.mount('https://', adapter)
+        _local.session = s
+    return _local.session
 
 def compress_image_to_data_url(image_url, preset='gallery'):
     """Fetch an image URL, resize + recompress as JPEG, return data URL.
@@ -36,7 +43,7 @@ def compress_image_to_data_url(image_url, preset='gallery'):
     max_width, quality = PRESETS.get(preset, PRESETS['gallery'])
 
     try:
-        resp = _session.get(image_url, timeout=20)
+        resp = get_session().get(image_url, timeout=20)
         resp.raise_for_status()
         img = Image.open(io.BytesIO(resp.content))
         img = ImageOps.exif_transpose(img)

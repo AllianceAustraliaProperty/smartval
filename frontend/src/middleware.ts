@@ -12,7 +12,7 @@ let sessionKeysCacheTime = 0;
 async function getSessionPublicKey(kid: string) {
   const now = Date.now();
   if (!sessionKeysCache || now - sessionKeysCacheTime > 1000 * 60 * 60) {
-    const res = await fetch('https://www.googleapis.com/identitytoolkit/v3/relyingparty/publicKeys');
+    const res = await fetch('https://www.googleapis.com/identitytoolkit/v3/relyingparty/publicKeys', { signal: AbortSignal.timeout(10000) });
     sessionKeysCache = await res.json();
     sessionKeysCacheTime = now;
   }
@@ -43,6 +43,16 @@ interface RateLimitOptions {
 function rateLimit(keyId: string, options: RateLimitOptions): boolean {
   const now = Date.now();
   const key = `rate_limit_${keyId}`;
+  
+  // Evict expired entries if Map gets too large to prevent memory leak
+  if (rateLimitStore.size > 5000) {
+    for (const [k, v] of rateLimitStore.entries()) {
+      if (now > v.resetTime) {
+        rateLimitStore.delete(k);
+      }
+    }
+  }
+
   const record = rateLimitStore.get(key);
 
   if (!record || now > record.resetTime) {
