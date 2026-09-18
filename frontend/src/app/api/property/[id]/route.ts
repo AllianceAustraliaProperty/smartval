@@ -25,26 +25,34 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const auth = await requireAuth();
   if (auth.error) return auth.error;
 
-  await connectDB();
-  const { id } = await params;
-  const property = await PropertyValuation.findById(id);
-  if (!property) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  try {
+    await connectDB();
+    const { id } = await params;
+    const property = await PropertyValuation.findById(id);
+    if (!property) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return NextResponse.json(property);
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-  return NextResponse.json(property);
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
 
-  await connectDB();
-  const { id } = await params;
-  const deleted = await PropertyValuation.findByIdAndDelete(id);
-  if (!deleted) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  try {
+    await connectDB();
+    const { id } = await params;
+    const deleted = await PropertyValuation.findByIdAndDelete(id);
+    if (!deleted) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-  return NextResponse.json({ success: true });
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

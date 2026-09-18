@@ -19,21 +19,25 @@ export async function GET() {
   const adminCheck = await requireAdmin();
   if (adminCheck.error) return adminCheck.error;
 
-  await connectDB();
-  const users = await User.find({}).sort({ createdAt: -1 }).lean() as any[];
-  
-  // Format to match the UI expected structure
-  const formattedUsers = users.map((u: any) => ({
-    id: u.firebaseUid,
-    name: u.displayName,
-    email: u.email,
-    username: u.username,
-    role: u.role,
-    lastLogin: u.lastLoginAt,
-    isActive: u.isActive
-  }));
+  try {
+    await connectDB();
+    const users = await User.find({}).sort({ createdAt: -1 }).lean() as any[];
+    
+    // Format to match the UI expected structure
+    const formattedUsers = users.map((u: any) => ({
+      id: u.firebaseUid,
+      name: u.displayName,
+      email: u.email,
+      username: u.username,
+      role: u.role,
+      lastLogin: u.lastLoginAt,
+      isActive: u.isActive
+    }));
 
-  return NextResponse.json(formattedUsers);
+    return NextResponse.json(formattedUsers);
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }
 
 // POST to create a new valuer

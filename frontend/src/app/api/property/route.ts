@@ -15,11 +15,16 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
 
-  await connectDB();
-  const data = await req.json();
+  try {
+    await connectDB();
+    const data = await req.json();
 
-  const created = await PropertyValuation.create(data);
-  return NextResponse.json(created);
+    const created = await PropertyValuation.create(data);
+    return NextResponse.json(created);
+  } catch (error: any) {
+    console.error('Error in property POST route:', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
 }
 
 export async function DELETE(req: NextRequest) {
