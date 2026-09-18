@@ -1,6 +1,12 @@
 import { PhotoAnalysisResult, RoomCategory, ROOM_CATEGORIES_LIST, FLOORING_TYPES_LIST, FEATURE_FIXTURES_LIST, PRIME_COST_ITEMS_LIST, CoverPhotoAnalysisResult } from "@/types/photo-analysis";
 import { getSystemInstruction, getCoverPhotoSystemInstruction } from "./prompts";
 import { AllMainBuildingTypes } from "@/constants/main-building-types";
+import * as dns from "node:dns";
+
+// Force Node.js to use IPv4 first to prevent IPv6 hanging issues on AWS EC2
+if (typeof dns.setDefaultResultOrder === "function") {
+  dns.setDefaultResultOrder("ipv4first");
+}
 import { ROOFING_TYPES } from "@/constants/roofing-types";
 import { EXTERNAL_WALLS } from "@/constants/wall-types";
 
