@@ -1,9 +1,9 @@
 import { AnalyzePhotoRequest, PhotoAnalysisResult, CoverPhotoAnalysisResult } from "@/types/photo-analysis";
-import { analyzeImageWithGemini, analyzeCoverPhotoWithGemini } from "./gemini-client";
+import { analyzeImageWithGroq, analyzeCoverPhotoWithGroq } from "./groq-client";
 
 export async function analyzePhoto(request: AnalyzePhotoRequest): Promise<PhotoAnalysisResult | CoverPhotoAnalysisResult> {
   if (request.isCover) {
-    return await analyzeCoverPhotoWithGemini(request.imageUrl, request.propertyType);
+    return await analyzeCoverPhotoWithGroq(request.imageUrl, request.propertyType);
   }
-  return await analyzeImageWithGemini(request.imageUrl, request.expectedCategory);
+  return await analyzeImageWithGroq(request.imageUrl, request.expectedCategory);
 }
