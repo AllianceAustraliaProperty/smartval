@@ -68,6 +68,8 @@ export default function ValuationReportEditPage() {
   const [isSendingReport, setIsSendingReport] = useState(false);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const [isSendingInvoice, setIsSendingInvoice] = useState(false);
+  const [showSendReportModal, setShowSendReportModal] = useState(false);
+  const [sendReportRecipientType, setSendReportRecipientType] = useState<'client' | 'poc'>('client');
   const [isInvoiceMenuOpen, setIsInvoiceMenuOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
@@ -346,14 +348,9 @@ export default function ValuationReportEditPage() {
       
       let downloadFilename = `valuation-report-${reportId}.pdf`;
       const fileNumber = property?.fileNumber;
-      const propertyAddress = property?.address?.fullAddress;
       
-      if (fileNumber && propertyAddress) {
-        downloadFilename = `${fileNumber} - ${propertyAddress}.pdf`;
-      } else if (fileNumber) {
+      if (fileNumber) {
         downloadFilename = `${fileNumber}.pdf`;
-      } else if (propertyAddress) {
-        downloadFilename = `${propertyAddress}.pdf`;
       }
       
       link.download = downloadFilename;
@@ -372,15 +369,27 @@ export default function ValuationReportEditPage() {
   const handleSendReport = async () => {
     if (!validatePhotosAndComparables()) return;
     const recipient = (watch('primaryContact.email') || watch('primaryContact.email2') || '').trim();
-    if (!recipient) {
-      alert('No client email address found. Please add an email in the Property Address section before sending the report.');
-      return;
+    
+    const logoType = watch('valuationDetails.logoType');
+    if (logoType === 'CPV' || logoType === 'TAMN') {
+      setShowSendReportModal(true);
+      setSendReportRecipientType('poc');
+    } else {
+      if (!recipient) {
+        alert('No client email address found. Please add an email in the Property Address section before sending the report.');
+        return;
+      }
+      if (!confirm(`Send the valuation report to ${recipient}?`)) return;
+      executeSendReport(recipient, 'client');
     }
-    if (!confirm(`Send the valuation report to ${recipient}?`)) return;
+  };
+
+  const executeSendReport = async (recipientEmail: string, type: 'client' | 'poc') => {
     try {
       setIsSendingReport(true);
-      const result = await apiRepository.sendReport(reportId, { to: recipient });
-      alert(`Report sent to ${result.recipient || recipient}.`);
+      setShowSendReportModal(false);
+      const result = await apiRepository.sendReport(reportId, { to: recipientEmail, recipientType: type });
+      alert(`Report sent to ${result.recipient || recipientEmail}.`);
     } catch (err) {
       console.error('Failed to send report:', err);
       alert(err instanceof Error ? err.message : 'Failed to send report. Please try again.');
@@ -816,6 +825,97 @@ export default function ValuationReportEditPage() {
           </div>
         </div>
       </div>
+
+      {/* Send Report Modal */}
+      {showSendReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={() => setShowSendReportModal(false)} />
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md relative z-10 overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">Send Valuation Report</h3>
+              <button onClick={() => setShowSendReportModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-600 mb-4">
+                This report is configured for <strong>{watch('valuationDetails.logoType')}</strong>. Who would you like to send it to?
+              </p>
+              
+              <div className="space-y-3">
+                <label className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${sendReportRecipientType === 'client' ? 'border-blue-500 bg-blue-50/50 ring-1 ring-blue-500' : 'border-gray-200 hover:bg-gray-50'}`}>
+                  <div className="flex items-center h-5">
+                    <input
+                      type="radio"
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      checked={sendReportRecipientType === 'client'}
+                      onChange={() => setSendReportRecipientType('client')}
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <span className="block text-sm font-medium text-gray-900">Client</span>
+                    <span className="block text-xs text-gray-500 mt-1">{(watch('primaryContact.email') || watch('primaryContact.email2') || '').trim()}</span>
+                  </div>
+                </label>
+
+                <label className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${sendReportRecipientType === 'poc' ? 'border-blue-500 bg-blue-50/50 ring-1 ring-blue-500' : 'border-gray-200 hover:bg-gray-50'}`}>
+                  <div className="flex items-center h-5">
+                    <input
+                      type="radio"
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      checked={sendReportRecipientType === 'poc'}
+                      onChange={() => setSendReportRecipientType('poc')}
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <span className="block text-sm font-medium text-gray-900">{watch('valuationDetails.logoType')} POC</span>
+                    <span className="block text-xs text-gray-500 mt-1">
+                      {watch('valuationDetails.logoType') === 'CPV' ? 'info@certifiedpropertyvaluer.com.au' : 'info@tamn.com.au'}
+                    </span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSendReportModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const clientEmail = (watch('primaryContact.email') || watch('primaryContact.email2') || '').trim();
+                  if (sendReportRecipientType === 'client' && !clientEmail) {
+                    alert('No client email address found. Please add an email in the Property Address section.');
+                    return;
+                  }
+                  const targetEmail = sendReportRecipientType === 'poc' 
+                    ? (watch('valuationDetails.logoType') === 'CPV' ? 'info@certifiedpropertyvaluer.com.au' : 'info@tamn.com.au')
+                    : clientEmail;
+                  executeSendReport(targetEmail, sendReportRecipientType);
+                }}
+                disabled={isSendingReport}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSendingReport ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Report
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Preview Modal */}
       <PreviewReportModal

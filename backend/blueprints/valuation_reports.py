@@ -1522,6 +1522,15 @@ def send_report_email(report_id):
         )
 
         email_ctx = build_report_email_context(report, Config.REPORT_LOGO_URL)
+        
+        recipient_type = body.get('recipientType', 'client')
+        logo_type = report.get('valuationDetails', {}).get('logoType', 'AAP')
+        
+        if recipient_type == 'poc':
+            if logo_type == 'CPV':
+                email_ctx['client_name'] = 'Falak'
+            elif logo_type == 'TAMN':
+                email_ctx['client_name'] = 'Ashi'
 
         subject_tmpl = settings_model.get('reportEmailSubject') or DEFAULT_REPORT_EMAIL_SUBJECT
         body_tmpl = settings_model.get('reportEmailBody') or DEFAULT_REPORT_EMAIL_BODY

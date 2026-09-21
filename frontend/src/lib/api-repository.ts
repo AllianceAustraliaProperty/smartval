@@ -734,7 +734,7 @@ export const apiRepository = {
 
   async sendReport(
     reportId: string,
-    payload?: { to?: string; subject?: string; message?: string }
+    payload?: { to?: string; subject?: string; message?: string; recipientType?: 'client' | 'poc' }
   ): Promise<{ message: string; recipient: string; file_number?: string }> {
     try {
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/report/send`, {

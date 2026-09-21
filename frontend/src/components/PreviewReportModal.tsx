@@ -26,12 +26,8 @@ export function PreviewReportModal({
   const heading = isInvoice ? 'Invoice Preview' : 'Report Preview';
   
   let downloadFilename = isInvoice ? `invoice-${reportId}.pdf` : `valuation-report-${reportId}.pdf`;
-  if (fileNumber && propertyAddress) {
-    downloadFilename = isInvoice ? `Invoice - ${fileNumber} - ${propertyAddress}.pdf` : `${fileNumber} - ${propertyAddress}.pdf`;
-  } else if (fileNumber) {
+  if (fileNumber) {
     downloadFilename = isInvoice ? `Invoice - ${fileNumber}.pdf` : `${fileNumber}.pdf`;
-  } else if (propertyAddress) {
-    downloadFilename = isInvoice ? `Invoice - ${propertyAddress}.pdf` : `${propertyAddress}.pdf`;
   }
   const pdfPath = isInvoice
     ? `/valuation-reports/${reportId}/invoice`
