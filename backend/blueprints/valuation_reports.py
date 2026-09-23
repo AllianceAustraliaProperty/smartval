@@ -1512,7 +1512,8 @@ def send_report_email(report_id):
 
         pdf_content = generate_pdf_from_html(html_content)
         file_number = (report.get('fileNumber') or report_id[-8:].upper()).strip()
-        filename = f"AAP-{file_number}.pdf"
+        logo_type = report.get('valuationDetails', {}).get('logoType', 'AAP')
+        filename = f"AAP-{file_number}.pdf" if logo_type == 'AAP' else f"{file_number}.pdf"
 
         from utils.report_email import (
             DEFAULT_REPORT_EMAIL_BODY,
