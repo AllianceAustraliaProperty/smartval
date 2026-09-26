@@ -109,8 +109,15 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
     }
 
     // 2. Residential Logic (Default)
-    const salesComparables = comparables?.sales || [];
-    const evidence = salesComparables.find((comp: any) => comp.isComparable === true || String(comp.isComparable) === 'true');
+    const salesComparables = watch('comparables.sales') || (comparables?.sales) || [];
+    const rentalComparables = watch('comparables.rentals') || (comparables?.rentals) || [];
+    const allComparables = [...salesComparables, ...rentalComparables];
+    
+    const evidence = allComparables.find((comp: any) => 
+      comp.isComparable === true || 
+      String(comp.isComparable) === 'true' || 
+      String(comp.isComparable) === 'on'
+    );
 
     if (evidence) {
       const toTitleCase = (str: string) => {
