@@ -12,12 +12,9 @@ import { Dancing_Script, Poppins, Montserrat } from 'next/font/google';
 import Image from 'next/image';
 import aapLogo from '../aap-white.svg';
 
-const dancingScript = Dancing_Script({
-  weight: ['700'],
-  subsets: ['latin'],
-});
-const poppins = Poppins({ weight: ['700'], subsets: ['latin'] });
-const montserrat = Montserrat({ weight: ['400', '500', '600', '700'], subsets: ['latin'] });
+const dancingScript = Dancing_Script({ subsets: ['latin'] });
+const poppins = Poppins({ weight: '700', subsets: ['latin'] });
+const montserrat = Montserrat({ subsets: ['latin'] });
 
 interface ValuationReportCardData {
   id: string;
