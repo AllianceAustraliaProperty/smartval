@@ -110,7 +110,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
 
     // 2. Residential Logic (Default)
     const salesComparables = comparables?.sales || [];
-    const evidence = salesComparables.find((comp: any) => comp.isComparable === true);
+    const evidence = salesComparables.find((comp: any) => comp.isComparable === true || String(comp.isComparable) === 'true');
 
     if (evidence) {
       const toTitleCase = (str: string) => {
