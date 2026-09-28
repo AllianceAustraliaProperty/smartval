@@ -1283,12 +1283,15 @@ def _build_invoice_context(report):
     valuation_type = (valuation_details.get('valuationType') or '').strip()
     purpose = (valuation_details.get('purposeOfReport') or '').strip()
 
-    if valuation_type and purpose:
-        item_description = f"{valuation_type} Property Valuation for {purpose} purpose"
-    elif valuation_type:
-        item_description = f"{valuation_type} Property Valuation"
+    if valuation_type:
+        desc_base = valuation_type if valuation_type.lower().endswith("valuation") else f"{valuation_type} Property Valuation"
     else:
-        item_description = "Property Valuation"
+        desc_base = "Property Valuation"
+
+    if purpose:
+        item_description = f"{desc_base} for {purpose} purpose"
+    else:
+        item_description = desc_base
 
     invoice_details = report.get('invoiceDetails', {}) or {}
     try:
