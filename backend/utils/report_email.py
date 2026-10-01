@@ -14,7 +14,7 @@ REPORT_EMAIL_VARIABLES = [
 DEFAULT_REPORT_EMAIL_SUBJECT = 'Valuation Report - {{ property_address }}'
 
 # Footer image hosted on S3
-FOOTER_IMAGE_URL = 'https://smartval-bucket-copy.s3.ap-southeast-2.amazonaws.com/assets/footer_report_automation.jpeg'
+FOOTER_IMAGE_URL = 'https://smartval-bucket-copy.s3.ap-southeast-2.amazonaws.com/assets/aap-sign-footer-new.png'
 
 DEFAULT_REPORT_EMAIL_BODY = (
     '<div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px;'
