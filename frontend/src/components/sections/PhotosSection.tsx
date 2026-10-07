@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormField, Input, Checkbox, FileUpload, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { Upload, X, Edit3, Wand2, ListOrdered, Clock } from 'lucide-react';
+import { Upload, X, Edit3, Wand2, ListOrdered, Clock, ImageOff } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { uploadMultipleFilesToS3 } from '@/lib/s3-upload';
 
@@ -424,6 +424,29 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
     }
   };
 
+  const removeImageOnly = async (photoUrl: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/photos/remove-image/${reportId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ photoUrl }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Remove image failed');
+      }
+
+      // Refresh photos
+      await fetchPhotos();
+    } catch (error) {
+      console.error('Remove image error:', error);
+      setUploadError(error instanceof Error ? error.message : 'Remove image failed');
+    }
+  };
+
   const updatePhotoAttribute = (photoIndex: number, attribute: string, value: any) => {
     const updatedPhotos = [...photos];
     const updatedPhoto = {
@@ -776,6 +799,16 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                               onChange={(e) => handleIndividualFileUpload(index, e.target.files)}
                               disabled={uploading}
                             />
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await removeImageOnly(photo.photoUrl);
+                              }}
+                              className="bg-orange-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-orange-600"
+                              title="Remove picture (keep category)"
+                            >
+                              <ImageOff className="w-4 h-4" />
+                            </button>
                           </>
                         )}
                         <button

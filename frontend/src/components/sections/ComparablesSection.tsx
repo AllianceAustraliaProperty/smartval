@@ -1186,6 +1186,7 @@ const ComparableCard: React.FC<{
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageError, setImageError] = useState(false);
+  const [generatingDescId, setGeneratingDescId] = useState<string | null>(null);
 
   useEffect(() => {
     setImageError(false);
@@ -1977,21 +1978,53 @@ const ComparableCard: React.FC<{
                 </FormField>
                 <button
                   type="button"
-                  onClick={() => {
-                    const comp = watch(`comparables.${type}.${index}`);
-                    // Use the comparable's specific zoning if available, otherwise fallback to the subject property's zoning, or a placeholder
-                    const subjectZone = watch('propertyDetails.zoning');
-                    const zone = comp?.zoning || subjectZone || '[Zone]';
-                    const buildingArea = comp?.buildingArea || '[building area]';
-                    const distance = comp?.distance || '[distance]';
-                    
-                    const generatedText = `Commercial retail premises with a building area of approximately ${buildingArea} sqm, situated within the ${zone}. The property comprises a well-presented ground-floor commercial unit suitable for retail, showroom, or light commercial use, featuring an open-plan retail/display area, ancillary storage, staff amenities, and convenient on-site and street parking. The property is located approximately ${distance} km from the subject property.`;
-                    
-                    setValue(`comparables.${type}.${index}.description`, generatedText, { shouldDirty: true });
+                  onClick={async () => {
+                    const compId = `${type}-${index}`;
+                    setGeneratingDescId(compId);
+                    try {
+                      const comp = watch(`comparables.${type}.${index}`);
+                      const subjectZone = watch('propertyDetails.zoning');
+                      const zone = comp?.zoning || subjectZone || '[Zone]';
+                      const buildingArea = comp?.buildingArea || '[building area]';
+                      const distance = comp?.distance || '[distance]';
+                      
+                      const promptText = `Generate a professional, concise property description for a comparable property used in a real estate valuation report.
+Property Details:
+- Building Area: ${buildingArea} sqm
+- Zoning: ${zone}
+- Distance from subject property: ${distance} km
+
+The description should be in a similar format to: "Commercial retail premises with a building area of approximately [building area] sqm, situated within the [Zone]. The property comprises a well-presented ground-floor commercial unit suitable for retail, showroom, or light commercial use, featuring an open-plan retail/display area, ancillary storage, staff amenities, and convenient on-site and street parking. The property is located approximately [distance] km from the subject property."
+Make it professional and adapt it appropriately based on typical commercial retail premises. Do not include introductory phrases like "Here is a description". Return only the description text.`;
+
+                      const response = await fetch('/internal-api/generate-text', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: promptText })
+                      });
+                      
+                      if (response.ok) {
+                        const { data } = await response.json();
+                        setValue(`comparables.${type}.${index}.description`, data, { shouldDirty: true });
+                      } else {
+                        throw new Error('Failed to generate description');
+                      }
+                    } catch (error) {
+                      console.error(error);
+                      alert('Failed to generate description');
+                    } finally {
+                      setGeneratingDescId(null);
+                    }
                   }}
-                  className="absolute top-0 right-0 mt-1 mr-1 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-2 py-0.5 rounded border border-blue-200 hover:bg-blue-50 transition-colors"
+                  disabled={generatingDescId === `${type}-${index}`}
+                  className="absolute top-0 right-0 mt-1 mr-1 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-2 py-0.5 rounded border border-blue-200 hover:bg-blue-50 transition-colors disabled:opacity-50"
                 >
-                  <Sparkles className="w-3 h-3" /> Auto-generate
+                  {generatingDescId === `${type}-${index}` ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3 h-3" />
+                  )}
+                  {generatingDescId === `${type}-${index}` ? 'Generating...' : 'Auto-generate'}
                 </button>
               </div>
 

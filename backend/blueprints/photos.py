@@ -307,6 +307,56 @@ def delete_photo(report_id):
         current_app.logger.error(f"Error deleting photo: {str(e)}")
         return jsonify({'error': f'Failed to delete photo: {str(e)}'}), 500
 
+@photos_bp.route('/remove-image/<report_id>', methods=['POST'])
+def remove_image(report_id):
+    """Remove the image file but keep the photo category/metadata object"""
+    try:
+        data = request.get_json()
+        photo_url = data.get('photoUrl')
+        
+        if not photo_url:
+            return jsonify({'error': 'Photo URL is required'}), 400
+        
+        report = valuation_report_model.get_by_id(report_id)
+        if not report:
+            return jsonify({'error': 'Valuation report not found'}), 404
+            
+        report_data = valuation_report_model.serialize(report)
+        existing_photos = report_data.get('photos', [])
+        
+        found = False
+        for photo in existing_photos:
+            if photo.get('photoUrl') == photo_url:
+                photo['photoUrl'] = None
+                found = True
+                break
+                
+        if not found:
+            return jsonify({'error': 'Photo not found'}), 404
+            
+        valuation_report_model.update(report_id, {'photos': existing_photos})
+        
+        try:
+            if photo_url.startswith('https://') and 's3' in photo_url:
+                url_parts = photo_url.split('/')
+                if len(url_parts) >= 4:
+                    file_key = '/'.join(url_parts[3:])
+                    s3_service.delete_file(file_key)
+            else:
+                import os
+                filename = photo_url.split('/')[-1]
+                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], str(report_id), filename)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+        except Exception as file_error:
+            current_app.logger.warning(f"Could not delete file {photo_url}: {str(file_error)}")
+            
+        return jsonify({'message': 'Image removed successfully', 'photos': existing_photos}), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Error removing image: {str(e)}")
+        return jsonify({'error': f'Failed to remove image: {str(e)}'}), 500
+
 @photos_bp.route('/list/<report_id>', methods=['GET'])
 def list_photos(report_id):
     """Get all photos for a valuation report"""

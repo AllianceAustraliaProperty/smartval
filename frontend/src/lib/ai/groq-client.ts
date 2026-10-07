@@ -222,3 +222,66 @@ export async function analyzeCoverPhotoWithGroq(imageUrl: string, propertyType?:
     throw new Error("Invalid JSON returned from Groq.");
   }
 }
+
+export async function generateTextWithGroq(prompt: string, systemInstruction: string = "You are a helpful AI assistant."): Promise<string> {
+  const maxRetries = 2;
+  let data: any = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const apiKey = getGroqApiKey();
+    const currentModelName = GROQ_MODELS[attempt % GROQ_MODELS.length];
+    
+    const payload = {
+      model: currentModelName,
+      messages: [
+        { role: "system", content: systemInstruction },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+    };
+
+    try {
+      const response = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(20000),
+      });
+
+      if (response.ok) {
+        data = await response.json();
+        break;
+      }
+
+      const errorText = await response.text();
+      console.error(`Groq API Error (${response.status}):`, errorText);
+      
+      if (response.status === 429 && attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+        continue;
+      }
+      
+      if (attempt >= maxRetries) {
+        throw new Error(`Groq API error: ${response.statusText}`);
+      }
+    } catch (fetchErr: any) {
+      console.error("Groq fetch failed:", fetchErr);
+      if (attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        continue;
+      }
+      throw new Error(`Groq API connection error: ${fetchErr.message}`);
+    }
+  }
+
+  const outputText = data?.choices?.[0]?.message?.content;
+  if (!outputText) {
+    throw new Error("No data returned from Groq API");
+  }
+
+  return outputText;
+}
+
