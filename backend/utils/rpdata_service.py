@@ -73,7 +73,7 @@ class RpDataAPI:
                 headers = {"Cookie": cookies}
                 response = requests.get(url, headers=headers, verify=False, timeout=(5, 20))
             if not response.ok:
-                raise Exception(f"RP Data request failed ({response.status_code}): {url}")
+                raise Exception(f"RP Data request failed ({response.status_code}): {url} - {response.text}")
         return response.json()
 
     def proxy_post(self, url: str, data: dict):
@@ -93,7 +93,7 @@ class RpDataAPI:
                     headers["X-Xsrf-Token"] = xsrf_token
                 response = requests.post(url, json=data, headers=headers, verify=False, timeout=(5, 20))
             if not response.ok:
-                raise Exception(f"RP Data request failed ({response.status_code}): {url}")
+                raise Exception(f"RP Data request failed ({response.status_code}): {url} - {response.text}")
         return response.json()
 
     def get_additional_information(self, rp_id: str):

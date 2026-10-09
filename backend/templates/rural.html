@@ -1846,7 +1846,7 @@
                 Declaration
                 {% endif %}
             </h1>
-            <div style="display: flex; justify-content: center; margin-top: 20px;">
+            <div style="display: flex; justify-content: center; margin-top: 5px;">
                 <p style="font-size: 14px; font-weight: bold;">
                     {% if record.property_valuation.current_day_valuation %}
                     Certificate of Property Valuation
@@ -1855,12 +1855,12 @@
                     {% endif %}
                 </p>
             </div>
-            <div style="text-align: center; width: 60%; margin: 10px auto;">
+            <div style="text-align: center; width: 60%; margin: 5px auto;">
                 <hr />
             </div>
             
             {% if not record.property_valuation.current_day_valuation %}
-            <div style="font-size: 12px; margin-bottom: 20px;">
+            <div style="font-size: 12px; margin-bottom: 10px;">
                 <p>
                     I hereby certify that I have carried out the assessments of the above
                     property as at that valuation on date of inspection. Neither I, nor to
@@ -1872,24 +1872,24 @@
             </div>
             {% endif %}
             
-            <div style="font-size: 13px; line-height: 1.6;">
-                <p>We certify the subject property:</p>
-                <p style="font-weight: bold; margin-bottom: 20px;">
+            <div style="font-size: 13px; line-height: 1.4;">
+                <p style="margin-bottom: 2px;">We certify the subject property:</p>
+                <p style="font-weight: bold; margin-bottom: 10px; margin-top: 0;">
                     {{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}
                 </p>
-                <p>
+                <p style="margin-bottom: 2px;">
                     We assess the subject property's Fair Market Value in its present
                     condition and on a vacant possession basis to be:
                 </p>
-                <p style="font-weight: bold; margin-bottom: 20px;">
+                <p style="font-weight: bold; margin-bottom: 10px; margin-top: 0;">
                     As at {{ record.valuation_date|format_date|default('N/A') }} (Date of Valuation)
                 </p>
-                <p style="font-weight: bold;">Fair Market Value -</p>
-                <p style="font-weight: bold; margin-bottom: 30px;">
+                <p style="font-weight: bold; margin-bottom: 2px;">Fair Market Value -</p>
+                <p style="font-weight: bold; margin-bottom: 10px; margin-top: 0;">
                     {{ record.property_valuation.market_value|format_currency|default('N/A') }} ({{ record.property_valuation.market_value|format_currency_words|default('N/A') }})
                 </p>
                 
-                <div style="margin-top: 40px;">
+                <div style="margin-top: 15px;">
                     {% if sf_record.PropertyValuer__r.Name == 'Jugal Saha' %}
                     <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="" style="height: 30px; width: auto; display: block; margin: 2px 0;" />
                     <p>
