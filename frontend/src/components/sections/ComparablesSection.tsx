@@ -2316,13 +2316,25 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
     try {
       const response = await fetch(`${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(addressSearch)}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+        let errorMsg = `API request failed: ${response.status}`;
+        try {
+          const errData = await response.json();
+          if (errData.message) {
+            errorMsg = errData.message;
+          } else if (errData.error) {
+            errorMsg = errData.error;
+          }
+        } catch (e) {
+          // ignore
+        }
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
@@ -2384,6 +2396,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
         // 1. Search address via RP Data
         const searchRes = await fetch(`${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(addr)}`, {
           method: 'GET',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         });
 
@@ -2408,6 +2421,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
         // 2. Fetch sales comparables by RP Data property ID
         const compRes = await fetch(`${API_BASE_URL}/rpdata/sales-comparables-by-id/${propertyId}`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             latitude: String(latitude),
@@ -2685,7 +2699,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                         setIsSearchingAddress(true);
                         const response = await fetch(
                           `${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(value)}`,
-                          { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+                          { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json' } }
                         );
                         if (!response.ok) throw new Error(`API request failed: ${response.status}`);
                         const data = await response.json();

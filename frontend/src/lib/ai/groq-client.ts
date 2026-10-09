@@ -15,8 +15,10 @@ const GROQ_MODELS = [
   "qwen/qwen3.8-27b"
 ];
 
-function getGroqApiKey(): string {
-  if (process.env.GROQ_API_KEY) return process.env.GROQ_API_KEY;
+function getGroqApiKeys(): string[] {
+  if (process.env.GROQ_API_KEY) {
+    return process.env.GROQ_API_KEY.split(',').map(k => k.trim()).filter(k => k.length > 0);
+  }
   throw new Error("GROQ_API_KEY environment variable is missing.");
 }
 
@@ -77,11 +79,12 @@ export async function analyzeImageWithGroq(imageUrl: string, expectedCategory?: 
 
   const systemInstruction = getSystemInstruction(expectedCategory);
   
-  const maxRetries = 2;
+  const maxRetries = 5;
   let data: any = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const apiKey = getGroqApiKey();
+    const apiKeys = getGroqApiKeys();
+    const apiKey = apiKeys[attempt % apiKeys.length];
     const currentModelName = GROQ_MODELS[attempt % GROQ_MODELS.length];
     const payload = buildGroqPayload(systemInstruction, base64Image, mimeType, JSON.stringify(responseSchema, null, 2), currentModelName);
 
@@ -102,10 +105,14 @@ export async function analyzeImageWithGroq(imageUrl: string, expectedCategory?: 
       }
 
       const errorText = await response.text();
-      console.error(`Groq API Error (${response.status}):`, errorText);
+      console.error(`Groq API Error (${response.status}) using key index ${attempt % apiKeys.length}:`, errorText);
       
       if (response.status === 429 && attempt < maxRetries) {
-        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+        if (apiKeys.length > 1 && attempt < apiKeys.length - 1) {
+          continue;
+        }
+        const delayMs = 3000 * Math.pow(2, attempt) + Math.random() * 1000;
+        await new Promise(r => setTimeout(r, delayMs));
         continue;
       }
       
@@ -164,11 +171,12 @@ export async function analyzeCoverPhotoWithGroq(imageUrl: string, propertyType?:
   };
 
   const systemInstruction = getCoverPhotoSystemInstruction(propertyType);
-  const maxRetries = 2;
+  const maxRetries = 5;
   let data: any = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const apiKey = getGroqApiKey();
+    const apiKeys = getGroqApiKeys();
+    const apiKey = apiKeys[attempt % apiKeys.length];
     const currentModelName = GROQ_MODELS[attempt % GROQ_MODELS.length];
     const payload = buildGroqPayload(systemInstruction, base64Image, mimeType, JSON.stringify(responseSchema, null, 2), currentModelName);
 
@@ -189,10 +197,14 @@ export async function analyzeCoverPhotoWithGroq(imageUrl: string, propertyType?:
       }
 
       const errorText = await response.text();
-      console.error(`Groq API Error (${response.status}):`, errorText);
+      console.error(`Groq API Error (${response.status}) using key index ${attempt % apiKeys.length}:`, errorText);
       
       if (response.status === 429 && attempt < maxRetries) {
-        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+        if (apiKeys.length > 1 && attempt < apiKeys.length - 1) {
+          continue;
+        }
+        const delayMs = 3000 * Math.pow(2, attempt) + Math.random() * 1000;
+        await new Promise(r => setTimeout(r, delayMs));
         continue;
       }
       
@@ -224,11 +236,12 @@ export async function analyzeCoverPhotoWithGroq(imageUrl: string, propertyType?:
 }
 
 export async function generateTextWithGroq(prompt: string, systemInstruction: string = "You are a helpful AI assistant."): Promise<string> {
-  const maxRetries = 2;
+  const maxRetries = 5;
   let data: any = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const apiKey = getGroqApiKey();
+    const apiKeys = getGroqApiKeys();
+    const apiKey = apiKeys[attempt % apiKeys.length];
     const currentModelName = GROQ_MODELS[attempt % GROQ_MODELS.length];
     
     const payload = {
@@ -257,10 +270,14 @@ export async function generateTextWithGroq(prompt: string, systemInstruction: st
       }
 
       const errorText = await response.text();
-      console.error(`Groq API Error (${response.status}):`, errorText);
+      console.error(`Groq API Error (${response.status}) using key index ${attempt % apiKeys.length}:`, errorText);
       
       if (response.status === 429 && attempt < maxRetries) {
-        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+        if (apiKeys.length > 1 && attempt < apiKeys.length - 1) {
+          continue;
+        }
+        const delayMs = 3000 * Math.pow(2, attempt) + Math.random() * 1000;
+        await new Promise(r => setTimeout(r, delayMs));
         continue;
       }
       
