@@ -1839,13 +1839,6 @@
                 </tr>
             </table>
 
-            <div class="footer-container">
-                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
-                    <span class="page-num"></span>
-                </div>
-        </div>
-        <div class="page">
-            {{ render_interior_header() }}
             <h1 style="display:none;">
                 {% if record.property_valuation.current_day_valuation %}
                 Certificate of Property Valuation
@@ -1991,6 +1984,32 @@
                 </div>
         </div>
         {% endfor %}
+        
+        {% set has_additional_photos = valuation_report.get("additionalPhotos", [])|length > 0 %}
+        {% if has_additional_photos %}
+        {% set additional_photos_groups = valuation_report.get("additionalPhotos", [])|batch(6) %}
+        {% set additional_photos_type = valuation_report.get("additionalPhotosType", "") %}
+        {% set type_suffix = " (" + additional_photos_type + ")" if additional_photos_type else "" %}
+        {% for photos_group in additional_photos_groups %}
+        <div class="page">
+            {{ render_interior_header() }}
+            <h1>
+                    Photographs{{ type_suffix }} {{ "(cont'd)" if
+                    loop.index > 1 else "" }}
+                </h1>
+            <div class="gap-section-content"></div>
+            <div class="photos-container">
+                {% for photo in photos_group %}
+                <img src="{{ photo.photoUrl }}" alt="" />
+                {% endfor %}
+            </div>
+            <div class="footer-container">
+                    <span>{{ record.location_details.street|default('') }}, {{ record.location_details.suburb|default('') }} {{ record.location_details.state|default('') }} {{ record.location_details.postcode|default('') }}</span>
+                    <span class="page-num"></span>
+                </div>
+        </div>
+        {% endfor %}
+        {% endif %}
         {% set current_section = 13 if (record.property_valuation.show_improvements and logo_type != 'CPV' and logo_type != 'AAP') else 12 %}
 
 
