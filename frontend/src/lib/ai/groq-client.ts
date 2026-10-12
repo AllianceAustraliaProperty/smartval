@@ -47,6 +47,104 @@ function buildGroqPayload(systemInstruction: string, base64Image: string, mimeTy
   };
 }
 
+async function callGroqWithRetry(
+  payloadBuilder: (modelName: string) => Record<string, any>,
+  options: { timeoutMs?: number } = {}
+): Promise<string> {
+  const timeoutMs = options.timeoutMs ?? 20000;
+  const apiKeys = getGroqApiKeys();
+  const maxRetries = Math.max(5, apiKeys.length * 2);
+  let lastErrorText = "";
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const apiKey = apiKeys[attempt % apiKeys.length];
+    // Decouple model selection from key rotation:
+    // Try all keys on primary model first before shifting models if multiple are configured
+    const modelIndex = Math.min(Math.floor(attempt / apiKeys.length), GROQ_MODELS.length - 1);
+    const currentModelName = GROQ_MODELS[modelIndex];
+    const payload = payloadBuilder(currentModelName);
+
+    try {
+      const response = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const content = data?.choices?.[0]?.message?.content;
+        if (!content) {
+          throw new Error("No content returned from Groq API choices.");
+        }
+        return content;
+      }
+
+      lastErrorText = await response.text();
+      console.error(`Groq API Error (${response.status}) using key index ${attempt % apiKeys.length}:`, lastErrorText);
+
+      // Fast-fail on non-recoverable client request errors (e.g. 400 Bad Request, 422 Unprocessable)
+      if (response.status === 400 || response.status === 422) {
+        throw new Error(`Groq API rejected request (${response.status}): ${lastErrorText}`);
+      }
+
+      // 401 Unauthorized / 403 Forbidden: Key is invalid. If other keys exist, try them; otherwise fail fast
+      if (response.status === 401 || response.status === 403) {
+        if (apiKeys.length > 1 && attempt < apiKeys.length - 1) {
+          continue;
+        }
+        throw new Error(`Groq API authentication failed (${response.status}). Please check your API keys.`);
+      }
+
+      // 429 Too Many Requests: Rate limited
+      if (response.status === 429 && attempt < maxRetries) {
+        // If we have alternative keys to try immediately, switch key without waiting
+        if (apiKeys.length > 1 && attempt < apiKeys.length - 1) {
+          continue;
+        }
+        // Otherwise, apply exponential backoff + jitter
+        const delayMs = Math.min(10000, 2000 * Math.pow(1.5, attempt) + Math.random() * 1000);
+        await new Promise(r => setTimeout(r, delayMs));
+        continue;
+      }
+
+      // 5xx Server Errors: Upstream gateway/server temporary glitch
+      if (response.status >= 500 && attempt < maxRetries) {
+        const delayMs = 1500 * (attempt + 1) + Math.random() * 500;
+        await new Promise(r => setTimeout(r, delayMs));
+        continue;
+      }
+
+      if (attempt >= maxRetries) {
+        throw new Error(`Groq API error (${response.status}): ${response.statusText}`);
+      }
+    } catch (fetchErr: any) {
+      if (fetchErr.name === "AbortError" || fetchErr.message?.includes("aborted")) {
+        console.error("Groq request timed out");
+      } else {
+        console.error("Groq fetch failed:", fetchErr.message || fetchErr);
+      }
+
+      // If it's a client rejection error thrown from inside the loop, propagate immediately
+      if (fetchErr.message?.startsWith("Groq API rejected request") || fetchErr.message?.startsWith("Groq API authentication failed")) {
+        throw fetchErr;
+      }
+
+      if (attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        continue;
+      }
+      throw new Error(`Groq API connection error: ${fetchErr.message || 'unknown network error'}`);
+    }
+  }
+
+  throw new Error(`Groq API request failed after ${maxRetries} attempts. Last error: ${lastErrorText}`);
+}
+
 export async function analyzeImageWithGroq(imageUrl: string, expectedCategory?: RoomCategory): Promise<PhotoAnalysisResult> {
   let base64Image = "";
   let mimeType = "image/jpeg";
@@ -78,61 +176,11 @@ export async function analyzeImageWithGroq(imageUrl: string, expectedCategory?: 
   };
 
   const systemInstruction = getSystemInstruction(expectedCategory);
-  
-  const maxRetries = 5;
-  let data: any = null;
+  const schemaString = JSON.stringify(responseSchema, null, 2);
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const apiKeys = getGroqApiKeys();
-    const apiKey = apiKeys[attempt % apiKeys.length];
-    const currentModelName = GROQ_MODELS[attempt % GROQ_MODELS.length];
-    const payload = buildGroqPayload(systemInstruction, base64Image, mimeType, JSON.stringify(responseSchema, null, 2), currentModelName);
-
-    try {
-      const response = await fetch(GROQ_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(20000),
-      });
-
-      if (response.ok) {
-        data = await response.json();
-        break;
-      }
-
-      const errorText = await response.text();
-      console.error(`Groq API Error (${response.status}) using key index ${attempt % apiKeys.length}:`, errorText);
-      
-      if (response.status === 429 && attempt < maxRetries) {
-        if (apiKeys.length > 1 && attempt < apiKeys.length - 1) {
-          continue;
-        }
-        const delayMs = 3000 * Math.pow(2, attempt) + Math.random() * 1000;
-        await new Promise(r => setTimeout(r, delayMs));
-        continue;
-      }
-      
-      if (attempt >= maxRetries) {
-        throw new Error(`Groq API error: ${response.statusText}`);
-      }
-    } catch (fetchErr: any) {
-      console.error("Groq fetch failed:", fetchErr);
-      if (attempt < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        continue;
-      }
-      throw new Error(`Groq API connection error: ${fetchErr.message}`);
-    }
-  }
-
-  const outputText = data?.choices?.[0]?.message?.content;
-  if (!outputText) {
-    throw new Error("No data returned from Groq API");
-  }
+  const outputText = await callGroqWithRetry((model) =>
+    buildGroqPayload(systemInstruction, base64Image, mimeType, schemaString, model)
+  );
 
   try {
     const parsedData = JSON.parse(outputText) as PhotoAnalysisResult;
@@ -171,60 +219,11 @@ export async function analyzeCoverPhotoWithGroq(imageUrl: string, propertyType?:
   };
 
   const systemInstruction = getCoverPhotoSystemInstruction(propertyType);
-  const maxRetries = 5;
-  let data: any = null;
+  const schemaString = JSON.stringify(responseSchema, null, 2);
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const apiKeys = getGroqApiKeys();
-    const apiKey = apiKeys[attempt % apiKeys.length];
-    const currentModelName = GROQ_MODELS[attempt % GROQ_MODELS.length];
-    const payload = buildGroqPayload(systemInstruction, base64Image, mimeType, JSON.stringify(responseSchema, null, 2), currentModelName);
-
-    try {
-      const response = await fetch(GROQ_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(20000),
-      });
-
-      if (response.ok) {
-        data = await response.json();
-        break;
-      }
-
-      const errorText = await response.text();
-      console.error(`Groq API Error (${response.status}) using key index ${attempt % apiKeys.length}:`, errorText);
-      
-      if (response.status === 429 && attempt < maxRetries) {
-        if (apiKeys.length > 1 && attempt < apiKeys.length - 1) {
-          continue;
-        }
-        const delayMs = 3000 * Math.pow(2, attempt) + Math.random() * 1000;
-        await new Promise(r => setTimeout(r, delayMs));
-        continue;
-      }
-      
-      if (attempt >= maxRetries) {
-        throw new Error(`Groq API error: ${response.statusText}`);
-      }
-    } catch (fetchErr: any) {
-      console.error("Groq fetch failed:", fetchErr);
-      if (attempt < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        continue;
-      }
-      throw new Error(`Groq API connection error: ${fetchErr.message}`);
-    }
-  }
-
-  const outputText = data?.choices?.[0]?.message?.content;
-  if (!outputText) {
-    throw new Error("No data returned from Groq API");
-  }
+  const outputText = await callGroqWithRetry((model) =>
+    buildGroqPayload(systemInstruction, base64Image, mimeType, schemaString, model)
+  );
 
   try {
     const parsedData = JSON.parse(outputText) as CoverPhotoAnalysisResult;
@@ -236,69 +235,13 @@ export async function analyzeCoverPhotoWithGroq(imageUrl: string, propertyType?:
 }
 
 export async function generateTextWithGroq(prompt: string, systemInstruction: string = "You are a helpful AI assistant."): Promise<string> {
-  const maxRetries = 5;
-  let data: any = null;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const apiKeys = getGroqApiKeys();
-    const apiKey = apiKeys[attempt % apiKeys.length];
-    const currentModelName = GROQ_MODELS[attempt % GROQ_MODELS.length];
-    
-    const payload = {
-      model: currentModelName,
-      messages: [
-        { role: "system", content: systemInstruction },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.7,
-    };
-
-    try {
-      const response = await fetch(GROQ_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(20000),
-      });
-
-      if (response.ok) {
-        data = await response.json();
-        break;
-      }
-
-      const errorText = await response.text();
-      console.error(`Groq API Error (${response.status}) using key index ${attempt % apiKeys.length}:`, errorText);
-      
-      if (response.status === 429 && attempt < maxRetries) {
-        if (apiKeys.length > 1 && attempt < apiKeys.length - 1) {
-          continue;
-        }
-        const delayMs = 3000 * Math.pow(2, attempt) + Math.random() * 1000;
-        await new Promise(r => setTimeout(r, delayMs));
-        continue;
-      }
-      
-      if (attempt >= maxRetries) {
-        throw new Error(`Groq API error: ${response.statusText}`);
-      }
-    } catch (fetchErr: any) {
-      console.error("Groq fetch failed:", fetchErr);
-      if (attempt < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        continue;
-      }
-      throw new Error(`Groq API connection error: ${fetchErr.message}`);
-    }
-  }
-
-  const outputText = data?.choices?.[0]?.message?.content;
-  if (!outputText) {
-    throw new Error("No data returned from Groq API");
-  }
-
-  return outputText;
+  return await callGroqWithRetry((model) => ({
+    model,
+    messages: [
+      { role: "system", content: systemInstruction },
+      { role: "user", content: prompt }
+    ],
+    temperature: 0.7,
+  }));
 }
 

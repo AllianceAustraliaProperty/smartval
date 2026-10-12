@@ -235,6 +235,133 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
     }
   };
 
+  const checkIsUnit = (): boolean => {
+    const propertyType = (watch('propertyDetails.propertyType') || '').toLowerCase().trim();
+    const mainBuildingType = (watch('propertyDescriptors.mainBuildingType') || '').toLowerCase().trim();
+    const valuationType = (watch('valuationDetails.valuationType') || '').toLowerCase().trim();
+    const unitNumber = (watch('address.unitNumber') || '').trim();
+
+    const unitKeywords = ['unit', 'apartment', 'studio', 'dual key apartment', 'flat'];
+    return (
+      unitKeywords.some((keyword) => propertyType.includes(keyword)) ||
+      unitKeywords.some((keyword) => mainBuildingType.includes(keyword)) ||
+      unitKeywords.some((keyword) => valuationType.includes(keyword)) ||
+      Boolean(unitNumber)
+    );
+  };
+
+  const fetchAndBuildMarketOverview = async (localityId: number | string): Promise<string> => {
+    const isUnit = checkIsUnit();
+    const propertyTypeId = isUnit ? '2' : '1';
+    const propertyLabel = isUnit ? 'unit' : 'house';
+
+    let response = await fetch(
+      `${API_BASE_URL}/rpdata/market-trends?locality_id=${localityId}&property_type_id=${propertyTypeId}`,
+      { credentials: 'include' }
+    );
+
+    // If unit query fails or returns non-ok, attempt fallback to house query
+    if (!response.ok && isUnit) {
+      try {
+        const fallbackRes = await fetch(
+          `${API_BASE_URL}/rpdata/market-trends?locality_id=${localityId}&property_type_id=1`,
+          { credentials: 'include' }
+        );
+        if (fallbackRes.ok) {
+          response = fallbackRes;
+        }
+      } catch (_) {
+        // Ignore fallback error
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch market trends (${response.status})`);
+    }
+
+    const data = await response.json();
+
+    // Extract market trends from response
+    let marketTrendsData = data?.data?.seriesResponseList || [];
+
+    // If unit query returned empty seriesData, fallback to house data as safety
+    if (isUnit && (!marketTrendsData.length || !marketTrendsData.some((item: any) => item.seriesDataList?.length))) {
+      try {
+        const fallbackRes = await fetch(
+          `${API_BASE_URL}/rpdata/market-trends?locality_id=${localityId}&property_type_id=1`,
+          { credentials: 'include' }
+        );
+        if (fallbackRes.ok) {
+          const fallbackData = await fallbackRes.json();
+          const fallbackSeries = fallbackData?.data?.seriesResponseList || [];
+          if (fallbackSeries.length) {
+            marketTrendsData = fallbackSeries;
+          }
+        }
+      } catch (_) {
+        // Ignore fallback error
+      }
+    }
+
+    const marketTrendsRaw = {
+      growth_rate: 0,
+      median_price: 0,
+      weekly_rent: 0,
+      rental_yield: 0
+    };
+
+    const marketTrendsFormatted = {
+      growth_rate: 'N/A',
+      median_price: 'N/A',
+      weekly_rent: 'N/A',
+      rental_yield: 'N/A'
+    };
+
+    const formatNumber = (value: number): string => {
+      const rounded = Math.round(value / 1000) * 1000;
+      return rounded.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    };
+
+    // Process market trends
+    for (const item of marketTrendsData) {
+      const metricType = item.metricType;
+      const seriesValue = item.seriesDataList?.[0]?.value || 0;
+
+      if (metricType === "Change in Median Value (12 months)") {
+        marketTrendsFormatted.growth_rate = `${(seriesValue * 100).toFixed(2)}%`;
+        marketTrendsRaw.growth_rate = seriesValue;
+      } else if (metricType === "Median Value (monthly)") {
+        marketTrendsFormatted.median_price = `$${formatNumber(seriesValue)}`;
+        marketTrendsRaw.median_price = seriesValue;
+      } else if (metricType === "Median Asking Rent (12 months)") {
+        marketTrendsFormatted.weekly_rent = `$${seriesValue}/w`;
+        marketTrendsRaw.weekly_rent = seriesValue;
+      }
+    }
+
+    // Calculate rental yield
+    if (marketTrendsRaw.weekly_rent && marketTrendsRaw.median_price) {
+      const yearlyAmount = marketTrendsRaw.weekly_rent * 52;
+      marketTrendsRaw.rental_yield = yearlyAmount / marketTrendsRaw.median_price;
+      marketTrendsFormatted.rental_yield = `${(marketTrendsRaw.rental_yield * 100).toFixed(2)}%`;
+    }
+
+    // Get property data from form
+    const suburb = watch('address.suburb') || 'N/A';
+    const state = watch('address.state') || 'N/A';
+    const councilArea = watch('propertyDetails.councilArea') || 'N/A';
+
+    // Generate market overview dynamically for unit or house
+    return (
+      `${suburb} in ${state} belongs to the LGA of the ${councilArea}. ` +
+      `Over the past 12 months, the growth of ${marketTrendsFormatted.growth_rate} ` +
+      `for median ${propertyLabel} prices in ${suburb}. ` +
+      `The current median ${propertyLabel} price is ${marketTrendsFormatted.median_price}. ` +
+      `The average weekly rental is ${marketTrendsFormatted.weekly_rent} ` +
+      `based on the current median ${propertyLabel} price, with a gross rental yield of ${marketTrendsFormatted.rental_yield}.`
+    );
+  };
+
   const handleGenerateMarketOverview = async () => {
     const localityId = watch('rpData.localityId');
 
@@ -245,77 +372,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
 
     setIsGeneratingOverview(true);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/rpdata/market-trends?locality_id=${localityId}&property_type_id=1`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch market trends (${response.status})`);
-      }
-
-      const data = await response.json();
-
-      // Extract market trends from response
-      const marketTrendsData = data?.data?.seriesResponseList || [];
-
-      const marketTrendsRaw = {
-        growth_rate: 0,
-        median_house_price: 0,
-        weekly_rent: 0,
-        rental_yield: 0
-      };
-
-      const marketTrendsFormatted = {
-        growth_rate: 'N/A',
-        median_house_price: 'N/A',
-        weekly_rent: 'N/A',
-        rental_yield: 'N/A'
-      };
-
-      const formatNumber = (value: number): string => {
-        const rounded = Math.round(value / 1000) * 1000;
-        return rounded.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-      };
-
-      // Process market trends
-      for (const item of marketTrendsData) {
-        const metricType = item.metricType;
-        const seriesValue = item.seriesDataList?.[0]?.value || 0;
-
-        if (metricType === "Change in Median Value (12 months)") {
-          marketTrendsFormatted.growth_rate = `${(seriesValue * 100).toFixed(2)}%`;
-          marketTrendsRaw.growth_rate = seriesValue;
-        } else if (metricType === "Median Value (monthly)") {
-          marketTrendsFormatted.median_house_price = `$${formatNumber(seriesValue)}`;
-          marketTrendsRaw.median_house_price = seriesValue;
-        } else if (metricType === "Median Asking Rent (12 months)") {
-          marketTrendsFormatted.weekly_rent = `$${seriesValue}/w`;
-          marketTrendsRaw.weekly_rent = seriesValue;
-        }
-      }
-
-      // Calculate rental yield
-      if (marketTrendsRaw.weekly_rent && marketTrendsRaw.median_house_price) {
-        const yearlyAmount = marketTrendsRaw.weekly_rent * 52;
-        marketTrendsRaw.rental_yield = yearlyAmount / marketTrendsRaw.median_house_price;
-        marketTrendsFormatted.rental_yield = `${(marketTrendsRaw.rental_yield * 100).toFixed(2)}%`;
-      }
-
-      // Get property data from form
-      const suburb = watch('address.suburb') || 'N/A';
-      const state = watch('address.state') || 'N/A';
-      const councilArea = watch('propertyDetails.councilArea') || 'N/A';
-
-      // Generate market overview
-      const marketOverview = (
-        `${suburb} in ${state} belongs to the LGA of the ${councilArea}. ` +
-        `Over the past 12 months, the growth of ${marketTrendsFormatted.growth_rate} ` +
-        `for median house prices in ${suburb}. ` +
-        `The current median house price is ${marketTrendsFormatted.median_house_price}. ` +
-        `The average weekly rental is ${marketTrendsFormatted.weekly_rent} ` +
-        `based on the current median house price, with a gross rental yield of ${marketTrendsFormatted.rental_yield}.`
-      );
-
+      const marketOverview = await fetchAndBuildMarketOverview(localityId);
       setValue('generalComments.marketOverview', marketOverview, { shouldDirty: true });
     } catch (error) {
       console.error('Error fetching market trends:', error);
@@ -347,78 +404,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
 
     setIsAutomating(true);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/rpdata/market-trends?locality_id=${localityId}&property_type_id=1`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch market trends (${response.status})`);
-      }
-
-      const data = await response.json();
-      console.log('Market Trends Data:', data);
-
-      // Extract market trends from response
-      const marketTrendsData = data?.data?.seriesResponseList || [];
-
-      const marketTrendsRaw = {
-        growth_rate: 0,
-        median_house_price: 0,
-        weekly_rent: 0,
-        rental_yield: 0
-      };
-
-      const marketTrendsFormatted = {
-        growth_rate: 'N/A',
-        median_house_price: 'N/A',
-        weekly_rent: 'N/A',
-        rental_yield: 'N/A'
-      };
-
-      const formatNumber = (value: number): string => {
-        const rounded = Math.round(value / 1000) * 1000;
-        return rounded.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-      };
-
-      // Process market trends
-      for (const item of marketTrendsData) {
-        const metricType = item.metricType;
-        const seriesValue = item.seriesDataList?.[0]?.value || 0;
-
-        if (metricType === "Change in Median Value (12 months)") {
-          marketTrendsFormatted.growth_rate = `${(seriesValue * 100).toFixed(2)}%`;
-          marketTrendsRaw.growth_rate = seriesValue;
-        } else if (metricType === "Median Value (monthly)") {
-          marketTrendsFormatted.median_house_price = `$${formatNumber(seriesValue)}`;
-          marketTrendsRaw.median_house_price = seriesValue;
-        } else if (metricType === "Median Asking Rent (12 months)") {
-          marketTrendsFormatted.weekly_rent = `$${seriesValue}/w`;
-          marketTrendsRaw.weekly_rent = seriesValue;
-        }
-      }
-
-      // Calculate rental yield
-      if (marketTrendsRaw.weekly_rent && marketTrendsRaw.median_house_price) {
-        const yearlyAmount = marketTrendsRaw.weekly_rent * 52;
-        marketTrendsRaw.rental_yield = yearlyAmount / marketTrendsRaw.median_house_price;
-        marketTrendsFormatted.rental_yield = `${(marketTrendsRaw.rental_yield * 100).toFixed(2)}%`;
-      }
-
-      // Get property data from form
-      const suburb = watch('address.suburb') || 'N/A';
-      const state = watch('address.state') || 'N/A';
-      const councilArea = watch('propertyDetails.councilArea') || 'N/A';
-
-      // Generate market overview
-      const marketOverview = (
-        `${suburb} in ${state} belongs to the LGA of the ${councilArea}. ` +
-        `Over the past 12 months, the growth of ${marketTrendsFormatted.growth_rate} ` +
-        `for median house prices in ${suburb}. ` +
-        `The current median house price is ${marketTrendsFormatted.median_house_price}. ` +
-        `The average weekly rental is ${marketTrendsFormatted.weekly_rent} ` +
-        `based on the current median house price, with a gross rental yield of ${marketTrendsFormatted.rental_yield}.`
-      );
-
+      const marketOverview = await fetchAndBuildMarketOverview(localityId);
       console.log('Generated Market Overview:', marketOverview);
       setValue('generalComments.marketOverview', marketOverview, { shouldDirty: true });
 
