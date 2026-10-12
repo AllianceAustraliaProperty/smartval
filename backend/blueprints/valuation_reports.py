@@ -18,6 +18,12 @@ from jinja2 import Environment, BaseLoader, Undefined
 from playwright.sync_api import sync_playwright
 
 import time
+import threading
+
+# Global semaphore lock: serialize heavy Chromium PDF generation across requests
+# to prevent memory spikes, OOM killer crashes, and thread deadlocks.
+pdf_generation_lock = threading.Semaphore(1)
+
 valuation_reports_bp = Blueprint('valuation_reports', __name__)
 
 # Residential property types constant
@@ -264,7 +270,7 @@ def compress_pdf(pdf_bytes, image_quality=65):
             img.save(buf, format='JPEG', quality=image_quality)
             return buf.getvalue()
 
-        with ThreadPoolExecutor(max_workers=8) as ex:
+        with ThreadPoolExecutor(max_workers=4) as ex:
             jpeg_results = list(ex.map(_encode, pil_images))
 
         # Step 3: Write back into PDF sequentially (safe for C++ bindings)
@@ -285,37 +291,47 @@ def compress_pdf(pdf_bytes, image_quality=65):
         return pdf_bytes  # safe fallback to original PDF if it fails
 
 def generate_pdf_from_html(html: str):
-    # Clean up any orphaned Playwright temp files before spawning a new browser
-    _cleanup_old_playwright_tmp()
+    # Serialize PDF generation across threads with a 120s queue timeout
+    acquired = pdf_generation_lock.acquire(timeout=120)
+    if not acquired:
+        raise TimeoutError("PDF rendering engine is busy processing another report. Please retry in a few moments.")
 
-    with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(args=[
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',   # critical for Docker: prevents /dev/shm exhaustion
-            '--disable-gpu',             # no GPU in Docker
-            '--no-zygote',               # avoids sandbox crashes in Docker
-        ])
-        try:
-            page = browser.new_page()
+    try:
+        # Clean up any orphaned Playwright temp files before spawning a new browser
+        _cleanup_old_playwright_tmp()
+
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(args=[
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',   # critical for Docker: prevents /dev/shm exhaustion
+                '--disable-gpu',             # no GPU in Docker
+                '--no-zygote',               # avoids sandbox crashes in Docker
+                '--single-process',          # limits renderer process overhead
+                '--js-flags=--max-old-space-size=512', # cap V8 heap to prevent memory bloat
+            ])
             try:
-                # Set content directly
-                page.set_content(html, wait_until='load', timeout=60000)
-                # Optionally wait for network idle for external fonts/resources
-                page.wait_for_load_state('networkidle', timeout=15000)
-            except Exception as e:
-                print(f"Warning: Playwright wait timeout during PDF generation: {e}")
-            pdf_bytes = page.pdf(
-                format="A4",
-                print_background=True,
-                margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
-            )
+                page = browser.new_page()
+                try:
+                    # Set content directly
+                    page.set_content(html, wait_until='load', timeout=60000)
+                    # Optionally wait for network idle for external fonts/resources
+                    page.wait_for_load_state('networkidle', timeout=15000)
+                except Exception as e:
+                    print(f"Warning: Playwright wait timeout during PDF generation: {e}")
+                pdf_bytes = page.pdf(
+                    format="A4",
+                    print_background=True,
+                    margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
+                )
 
-            compressed_pdf_bytes = compress_pdf(pdf_bytes)
-            return compressed_pdf_bytes
-        finally:
-            # Explicitly close the browser to ensure Playwright cleans up /tmp artifacts
-            browser.close()
+                compressed_pdf_bytes = compress_pdf(pdf_bytes)
+                return compressed_pdf_bytes
+            finally:
+                # Explicitly close the browser to ensure Playwright cleans up /tmp artifacts
+                browser.close()
+    finally:
+        pdf_generation_lock.release()
 
 @valuation_reports_bp.route('/', methods=['GET'])
 def get_all_valuation_reports():
