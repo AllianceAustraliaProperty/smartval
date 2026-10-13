@@ -7,10 +7,14 @@ Gunicorn process count: each process would create another queue and renderer.
 The worker has its own network shared only with the backend, no public ports,
 no application env_file or uploads mount, a read-only root, and 2 CPU / 2 GiB limits.
 
-Typical production deployment (from repository root):
-  /usr/local/bin/docker-compose build backend
-  /usr/local/bin/docker-compose run --rm --no-deps backend python ensure_performance_indexes.py
-  /usr/local/bin/docker-compose up -d --no-build pdf-worker backend
+Current production deployment (existing host, from repository root):
+  python3 scripts/deploy-release.py
+
+The README is the current deployment/handoff guide. The release script updates
+both application services and the PDF worker, verifies health, and attempts
+rollback on activation failure. To ensure the report index on an existing
+running backend (already completed for this deployment):
+  docker exec smartval-backend python ensure_performance_indexes.py
 
 The index step is idempotent and never changes report data. The dashboard's
 paginated listing now returns page and exact count in one aggregate. Unbounded
@@ -52,7 +56,12 @@ and changed source files are saved in the private performance backup directory
 on the server before deployment. Restore those files and recreate backend using
 the rollback image; the extra Mongo index is harmless and can remain.
 
-Recovery commit 0a90bc3 precedes this work. The legacy GitHub main-push deployment
-uses an obsolete systemd/npm deployment path. These Docker releases use [skip ci]
-and manual deployment until that workflow is replaced. Dashboard/Alliance errors
-and provider credential rotation remain separate follow-up work.
+Recovery commit 0a90bc3 precedes this performance work (fc74b53).
+Later commits 53eb633 and b3e7663 fixed dashboard requests and inspection/Alliance
+database references, improved the editor, and replaced the legacy GitHub workflow
+with Docker deployment and rollback. The releases were deployed directly and
+pushed with [skip ci]; the GitHub-triggered path still needs verification.
+Alliance upstream configuration and credential rotation remain outstanding.
+See README.md for the complete change summary, limitations and owner/developer TODOs.
+The historical before-performance image above is not the preferred rollback for
+the latest release; use that release's recorded previous images/configuration.
