@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from PIL import Image, ImageOps
 from requests.adapters import HTTPAdapter
+from utils.render_cache import image_cache
 
 # Per-asset compression presets (max_width_px, jpeg_quality)
 PRESETS = {
@@ -40,6 +41,22 @@ def compress_image_to_data_url(image_url, preset='gallery'):
     if image_url.startswith('data:'):
         return image_url
 
+    key = image_url + ':' + repr(PRESETS.get(preset, PRESETS['gallery']))
+    cached = image_cache.get(key)
+    if cached is not None:
+        return cached.decode('ascii')
+    with image_cache.lock(key, timeout=25):
+        cached = image_cache.get(key)
+        if cached is not None:
+            return cached.decode('ascii')
+        result = _compress_image(image_url, preset)
+        # Never cache download failures or the original URL fallback.
+        if result.startswith('data:image/jpeg;base64,'):
+            image_cache.put(key, result.encode('ascii'))
+        return result
+
+
+def _compress_image(image_url, preset):
     max_width, quality = PRESETS.get(preset, PRESETS['gallery'])
 
     try:
@@ -72,7 +89,7 @@ def compress_image_to_data_url(image_url, preset='gallery'):
         b64 = base64.b64encode(buf.getvalue()).decode('ascii')
         return f"data:image/jpeg;base64,{b64}"
     except Exception as e:
-        print(f"[image_compress] Failed for {image_url}: {e}")
+        print(f"[image_compress] Download/compression failed ({type(e).__name__})")
         return image_url
 
 

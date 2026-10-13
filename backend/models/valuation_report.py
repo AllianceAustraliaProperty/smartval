@@ -70,15 +70,30 @@ class ValuationReport:
                 {'address.postcode': regex}
             ]
 
-        cursor = self.collection.find(query, projection).sort('updatedAt', -1)
-        total_count = self.collection.count_documents(query)
-        
-        if skip:
-            cursor = cursor.skip(skip)
-        if limit:
-            cursor = cursor.limit(limit)
-
-        reports = list(cursor)
+        # The dashboard needs both a page and its exact total. A facet returns
+        # both in one network round trip; sort before the facet uses our index.
+        # Keep the streaming cursor for unbounded/full-document callers so they
+        # cannot exceed the aggregate result's 16 MiB document limit.
+        if 0 < limit <= 100 and projection:
+            page_pipeline = ([{'$skip': skip}] if skip else []) + [{'$limit': limit}]
+            pipeline = [
+                {'$match': query},
+                {'$sort': {'updatedAt': -1, '_id': -1}},
+                {'$project': projection},
+                {'$facet': {'reports': page_pipeline, 'total': [{'$count': 'count'}]}},
+            ]
+            result = next(self.collection.aggregate(pipeline), {})
+            reports = result.get('reports', [])
+            totals = result.get('total', [])
+            total_count = totals[0]['count'] if totals else 0
+        else:
+            cursor = self.collection.find(query, projection).sort([('updatedAt', -1), ('_id', -1)])
+            total_count = self.collection.count_documents(query)
+            if skip:
+                cursor = cursor.skip(skip)
+            if limit:
+                cursor = cursor.limit(limit)
+            reports = list(cursor)
         # Convert ObjectId to string for JSON serialization
         for report in reports:
             if '_id' in report:

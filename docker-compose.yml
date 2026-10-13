@@ -5,6 +5,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: smartval-backend:performance-20261013
+    environment:
+      PDF_WORKER_URL: http://pdf-worker:5001
+    depends_on:
+      pdf-worker:
+        condition: service_healthy
     container_name: smartval-backend
     restart: unless-stopped
     env_file:
@@ -20,6 +26,7 @@ services:
         max-file: "3"
     networks:
       - smartval-network
+      - pdf-network
     init: true
     deploy:
       resources:
@@ -31,6 +38,40 @@ services:
       timeout: 15s
       retries: 5
       start_period: 60s
+
+  pdf-worker:
+    image: smartval-backend:performance-20261013
+    container_name: smartval-pdf-worker
+    command: ["gunicorn", "--bind", "0.0.0.0:5001", "--worker-class", "gthread", "--workers", "1", "--threads", "6", "--timeout", "120", "--max-requests", "500", "--max-requests-jitter", "50", "--access-logfile", "-", "pdf_worker:app"]
+    restart: unless-stopped
+    init: true
+    read_only: true
+    pids_limit: 256
+    cpus: 2.0
+    memswap_limit: 2G
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:size=512M,mode=1777
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - pdf-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+          pids: 256
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health')\" || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   frontend:
     build:
@@ -102,6 +143,8 @@ services:
 
 networks:
   smartval-network:
+    driver: bridge
+  pdf-network:
     driver: bridge
 
 volumes:

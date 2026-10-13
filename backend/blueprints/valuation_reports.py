@@ -15,14 +15,12 @@ import os
 from utils.template import summarize_photos, format_currency_words, format_owners, format_rental_frequency, format_date_v2
 from utils.image_compress import compress_report_images
 from jinja2 import Environment, BaseLoader, Undefined
-from playwright.sync_api import sync_playwright
+from utils.pdf_client import generate_pdf_from_html, PdfServiceError
+from utils.render_cache import html_cache
+from bson import json_util
+from pathlib import Path
 
 import time
-import threading
-
-# Global semaphore lock: serialize heavy Chromium PDF generation across requests
-# to prevent memory spikes, OOM killer crashes, and thread deadlocks.
-pdf_generation_lock = threading.Semaphore(1)
 
 valuation_reports_bp = Blueprint('valuation_reports', __name__)
 
@@ -214,124 +212,6 @@ def convert_date_strings_to_datetime(data, date_fields):
                         convert_date_strings_to_datetime(item, date_fields)
     return data
 
-
-def _cleanup_old_playwright_tmp(max_age_seconds=300):
-    """Remove orphaned Playwright/Chromium temp dirs older than max_age_seconds."""
-    import glob, shutil, time as _time, tempfile, os
-    patterns = [
-        '/tmp/playwright*', '/tmp/.org.chromium*', '/tmp/Temp-*',
-        os.path.join(tempfile.gettempdir(), 'smartval_images', '*')
-    ]
-    for pattern in patterns:
-        for d in glob.glob(pattern):
-            try:
-                age = _time.time() - os.path.getmtime(d)
-                if age > max_age_seconds:
-                    if os.path.isdir(d):
-                        shutil.rmtree(d, ignore_errors=True)
-                    else:
-                        os.remove(d)
-            except Exception:
-                pass
-
-def compress_pdf(pdf_bytes, image_quality=65):
-    """Recompress Chromium's bloated FlateDecode image streams as JPEG."""
-    try:
-        import pikepdf
-        from PIL import Image
-        import io
-        from concurrent.futures import ThreadPoolExecutor
-
-        pdf = pikepdf.open(io.BytesIO(pdf_bytes))
-
-        pil_images = []
-        raw_images = []
-
-        # Step 1: Extract images sequentially (fast, safe for C++ bindings)
-        for page in pdf.pages:
-            if "/Resources" not in page or "/XObject" not in page["/Resources"]:
-                continue
-            for key, raw_image in page["/Resources"]["/XObject"].items():
-                if raw_image.get("/Subtype") != "/Image":
-                    continue
-                try:
-                    pil_image = pikepdf.PdfImage(raw_image).as_pil_image()
-                    if pil_image.mode != 'RGB':
-                        pil_image = pil_image.convert('RGB')
-                    pil_images.append(pil_image)
-                    raw_images.append(raw_image)
-                except Exception:
-                    continue
-
-        # Step 2: Encode to JPEG concurrently (CPU heavy, but PIL releases the GIL)
-        def _encode(img):
-            buf = io.BytesIO()
-            # Dropped optimize=True as it adds ~30% processing time for only ~5% size reduction
-            img.save(buf, format='JPEG', quality=image_quality)
-            return buf.getvalue()
-
-        with ThreadPoolExecutor(max_workers=4) as ex:
-            jpeg_results = list(ex.map(_encode, pil_images))
-
-        # Step 3: Write back into PDF sequentially (safe for C++ bindings)
-        for raw_image, jpeg_bytes in zip(raw_images, jpeg_results):
-            try:
-                raw_image.write(jpeg_bytes, filter=pikepdf.Name("/DCTDecode"))
-                raw_image["/ColorSpace"] = pikepdf.Name("/DeviceRGB")
-            except Exception:
-                pass
-
-        out = io.BytesIO()
-        pdf.save(out, compress_streams=True)
-        pdf.close()
-
-        return out.getvalue()
-    except Exception as e:
-        print(f"Warning: pikepdf compression failed: {e}")
-        return pdf_bytes  # safe fallback to original PDF if it fails
-
-def generate_pdf_from_html(html: str):
-    # Serialize PDF generation across threads with a 120s queue timeout
-    acquired = pdf_generation_lock.acquire(timeout=120)
-    if not acquired:
-        raise TimeoutError("PDF rendering engine is busy processing another report. Please retry in a few moments.")
-
-    try:
-        # Clean up any orphaned Playwright temp files before spawning a new browser
-        _cleanup_old_playwright_tmp()
-
-        with sync_playwright() as playwright:
-            browser = playwright.chromium.launch(args=[
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',   # critical for Docker: prevents /dev/shm exhaustion
-                '--disable-gpu',             # no GPU in Docker
-                '--no-zygote',               # avoids sandbox crashes in Docker
-                '--single-process',          # limits renderer process overhead
-                '--js-flags=--max-old-space-size=512', # cap V8 heap to prevent memory bloat
-            ])
-            try:
-                page = browser.new_page()
-                try:
-                    # Set content directly
-                    page.set_content(html, wait_until='load', timeout=60000)
-                    # Optionally wait for network idle for external fonts/resources
-                    page.wait_for_load_state('networkidle', timeout=15000)
-                except Exception as e:
-                    print(f"Warning: Playwright wait timeout during PDF generation: {e}")
-                pdf_bytes = page.pdf(
-                    format="A4",
-                    print_background=True,
-                    margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
-                )
-
-                compressed_pdf_bytes = compress_pdf(pdf_bytes)
-                return compressed_pdf_bytes
-            finally:
-                # Explicitly close the browser to ensure Playwright cleans up /tmp artifacts
-                browser.close()
-    finally:
-        pdf_generation_lock.release()
 
 @valuation_reports_bp.route('/', methods=['GET'])
 def get_all_valuation_reports():
@@ -593,21 +473,31 @@ def delete_valuation_report(report_id):
 
 
 def generate_html_report(report_id, template_name='residential.html'):
-    """
-    Generate HTML report using Jinja template
-    
-    Args:
-        report_id (str): The valuation report ID
-        template_name (str): The template file name (default: 'residential.html')
-    
-    Returns:
-        tuple: (html_content, success, error_message)
-    """
+    report = valuation_report_model.get_by_id(report_id)
+    if not report:
+        return None, False, 'Valuation report not found'
+    assets = Path(__file__).resolve().parent.parent / 'templates'
+    versions = [(str(p.relative_to(assets)), p.stat().st_mtime_ns, p.stat().st_size)
+                for p in sorted(assets.rglob('*')) if p.is_file()]
+    key = json_util.dumps([report, template_name, versions, datetime.now().date().isoformat(),
+                           Config.REPORT_LOGO_URL, Config.BASE_URL,
+                           Config.S3_BUCKET_NAME, Config.AWS_REGION,
+                           Config.GOOGLE_MAPS_API_KEY], sort_keys=True)
+    cached = html_cache.get(key)
+    if cached is not None:
+        return cached.decode('utf-8'), True, None
+    with html_cache.lock(key):
+        cached = html_cache.get(key)
+        if cached is not None:
+            return cached.decode('utf-8'), True, None
+        html, success, error = _render_html_report(report, template_name)
+        if success:
+            html_cache.put(key, html.encode('utf-8'))
+        return html, success, error
+
+
+def _render_html_report(report, template_name):
     try:
-        # Get the valuation report
-        report = valuation_report_model.get_by_id(report_id)
-        if not report:
-            return None, False, 'Valuation report not found'
         # Be defensive about missing fields
         valuation_type = (report.get("valuationDetails", {}).get("valuationType") or "").lower()
 
@@ -1214,9 +1104,6 @@ def generate_html_report(report_id, template_name='residential.html'):
             template_data['record'] = record
             template_data['sf_record'] = sf_record
 
-        # Set the template content in the loader
-        jinja_env.loader.template_content = template_content
-        
         # Render the template using the pre-initialized environment
         template = jinja_env.from_string(template_content)
         html_content = template.render(**template_data)
@@ -1233,7 +1120,10 @@ def generate_html_report(report_id, template_name='residential.html'):
 @valuation_reports_bp.route('/<report_id>/preview', methods=['POST'])
 def generate_report_preview(report_id):
     """Generate HTML report preview using Jinja template"""
-    html_content, success, error_message = generate_html_report(report_id)
+    try:
+        html_content, success, error_message = generate_html_report(report_id)
+    except TimeoutError as e:
+        return jsonify({'error': str(e)}), 503, {'Retry-After': '5'}
     
     if not success:
         return jsonify({'error': error_message}), 404 if 'not found' in error_message else 500
@@ -1268,6 +1158,8 @@ def generate_report_pdf(report_id):
             }
         )
         
+    except (PdfServiceError, TimeoutError) as e:
+        return jsonify({'error': str(e)}), 503, {'Retry-After': '5'}
     except Exception as e:
         print(f"Error generating PDF report: {str(e)}")
         import traceback
@@ -1402,6 +1294,8 @@ def generate_invoice_pdf(report_id):
             },
         )
 
+    except (PdfServiceError, TimeoutError) as e:
+        return jsonify({'error': str(e)}), 503, {'Retry-After': '5'}
     except Exception as e:
         print(f"Error generating invoice PDF: {str(e)}")
         import traceback
@@ -1502,6 +1396,8 @@ def send_invoice_email(report_id):
             'invoice_number': context['invoice_number'],
         }), 200
 
+    except (PdfServiceError, TimeoutError) as e:
+        return jsonify({'error': str(e)}), 503, {'Retry-After': '5'}
     except Exception as e:
         print(f"Error sending invoice email: {str(e)}")
         import traceback
@@ -1604,6 +1500,8 @@ def send_report_email(report_id):
             'file_number': file_number,
         }), 200
 
+    except (PdfServiceError, TimeoutError) as e:
+        return jsonify({'error': str(e)}), 503, {'Retry-After': '5'}
     except Exception as e:
         print(f"Error sending report email: {str(e)}")
         import traceback
