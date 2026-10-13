@@ -67,8 +67,14 @@ def deploy(repo, frontend_image=None, backend_image=None):
         if not frontend_image:
             frontend_image = 'smartval-frontend:release-' + revision
             args = ['docker', 'build', '-t', frontend_image]
-            for value in inspect(SERVICES['frontend'])['Config']['Env']:
-                if value.startswith('NEXT_PUBLIC_'): args.extend(['--build-arg', value])
+            env_vars = dict(e.split('=', 1) for e in inspect(SERVICES['frontend'])['Config']['Env'] if '=' in e)
+            for key, val in env_vars.items():
+                if key.startswith('NEXT_PUBLIC_'):
+                    if key == 'NEXT_PUBLIC_API_URL' and ('localhost' in val or '127.0.0.1' in val):
+                        val = '/api'
+                    args.extend(['--build-arg', f'{key}={val}'])
+            if 'NEXT_PUBLIC_API_URL' not in env_vars:
+                args.extend(['--build-arg', 'NEXT_PUBLIC_API_URL=/api'])
             args.append(str(repo / 'frontend'))
             with (release / 'frontend-build.log').open('w') as log:
                 run(args, stdout=log, stderr=subprocess.STDOUT)

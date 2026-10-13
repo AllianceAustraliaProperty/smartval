@@ -14,10 +14,23 @@ const nextConfig: NextConfig = {
   // Security headers
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
-    // Only include the API URL in connect-src when it is an absolute URL
-    // (CSP rejects bare paths like "/api" — same-origin is already covered by 'self').
+    // extract origin from absolute apiUrl if provided, avoiding csp path-matching restriction
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    const apiSource = /^https?:\/\//.test(apiUrl) ? apiUrl : '';
+    let apiOrigin = '';
+    if (/^https?:\/\//.test(apiUrl)) {
+      try {
+        const parsed = new URL(apiUrl);
+        if (!isProd || (parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1')) {
+          apiOrigin = parsed.origin;
+        }
+      } catch {
+        apiOrigin = '';
+      }
+    }
+
+    const prodConnectOrigins = isProd
+      ? ' https://aapvaluations.com.au https://*.aapvaluations.com.au'
+      : ' ws: wss: http://localhost:5000';
 
     const csp = [
       "default-src 'self'",
@@ -25,7 +38,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' fonts.googleapis.com https://cdnjs.cloudflare.com",
       `img-src 'self' data: blob: https:${isProd ? '' : ' http://localhost:5000'}`,
       "font-src 'self' fonts.gstatic.com https://cdnjs.cloudflare.com",
-      `connect-src 'self'${apiSource ? ` ${apiSource}` : ''}${isProd ? '' : ' ws: wss: http://localhost:5000'} https://*.sharepoint.com https://*.microsoftonline.com https://*.googleapis.com https://*.firebaseapp.com https://*.firebase.google.com https://*.s3.amazonaws.com https://maps.googleapis.com`,
+      `connect-src 'self'${apiOrigin ? ` ${apiOrigin}` : ''}${prodConnectOrigins} https://*.sharepoint.com https://*.microsoftonline.com https://*.googleapis.com https://*.firebaseapp.com https://*.firebase.google.com https://*.s3.amazonaws.com https://maps.googleapis.com`,
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

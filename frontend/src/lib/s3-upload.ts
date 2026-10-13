@@ -4,8 +4,7 @@
  */
 
 import { resizeImageIfNeeded, resizeAll } from './image-resize';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+import { API_BASE_URL } from './api-config';
 
 export interface PresignedUrlResponse {
   presignedUrl: string;

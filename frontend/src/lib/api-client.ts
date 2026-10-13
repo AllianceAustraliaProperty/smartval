@@ -21,7 +21,17 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+    let base = this.baseUrl.replace(/\/+$/, '');
+    if (typeof window !== 'undefined') {
+      const isLocalhostHost =
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
+      if (!isLocalhostHost && (base.includes('localhost') || base.includes('127.0.0.1'))) {
+        base = '/api';
+      }
+    }
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${base}${cleanEndpoint}`;
     
     const config: RequestInit = {
       ...options,
