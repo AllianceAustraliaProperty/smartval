@@ -16,6 +16,7 @@ alliance_bp = Blueprint('alliance', __name__)
 alliance_service = AllianceService()
 
 # Initialize MongoDB connection
+db = LocalProxy(get_database)
 valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
 
 

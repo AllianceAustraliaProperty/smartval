@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: smartval-backend:performance-20261013
+    image: smartval-backend:reliability-20261013
     environment:
       PDF_WORKER_URL: http://pdf-worker:5001
     depends_on:
@@ -40,7 +40,7 @@ services:
       start_period: 60s
 
   pdf-worker:
-    image: smartval-backend:performance-20261013
+    image: smartval-backend:reliability-20261013
     container_name: smartval-pdf-worker
     command: ["gunicorn", "--bind", "0.0.0.0:5001", "--worker-class", "gthread", "--workers", "1", "--threads", "6", "--timeout", "120", "--max-requests", "500", "--max-requests-jitter", "50", "--access-logfile", "-", "pdf_worker:app"]
     restart: unless-stopped
@@ -86,7 +86,7 @@ services:
         NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
         NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
-    image: smartval-frontend:editor-20261013
+    image: smartval-frontend:reliability-20261013
     container_name: smartval-frontend
     init: true
     read_only: true

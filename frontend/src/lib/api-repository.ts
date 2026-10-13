@@ -3,10 +3,19 @@
  * Replaces localStorage with real API calls to the backend
  */
 
+import { ReportEditSession } from './report-edit-session';
 import { apiClient } from './api-client';
 import { flushAdditionalPhotoSaves, saveReportAfterPhotos } from './additional-photo-saves';
 import { API_BASE_URL } from './api-config';
 import { PropertyData, ValuationReportData, DEFAULT_PROPERTY_FORM } from '@/types/property-valuation';
+
+const editSessions = new Map<string, ReportEditSession>();
+async function saveReportChanges(id: string, data: ValuationReportData) {
+  const session = editSessions.get(id);
+  if (!session) throw new Error('Please reload this report before saving. Your current edits have not been discarded.');
+  await session.save(transformValuationReportToBackend(data), payload =>
+    apiClient.patch(`/valuation-reports/${id}`, payload));
+}
 
 // PropertyBundle is now just a single ValuationReportData since property data is included
 export interface PropertyBundle {
@@ -241,11 +250,12 @@ export const apiRepository = {
    */
   async getPropertyBundle(propertyId: string): Promise<PropertyBundle | null> {
     try {
-      const response = await apiClient.get<ApiValuationReportResponse>(`/valuation-reports/${propertyId}`);
+      const report = await this.getValuationReport(propertyId);
+      if (!report) return null;
 
       return {
-        property: transformValuationReport(response),
-        valuationReports: [transformValuationReport(response)], // Single report now
+        property: report,
+        valuationReports: [report], // Single report now
       };
     } catch (error) {
       console.error('Failed to get valuation report:', error);
@@ -263,13 +273,14 @@ export const apiRepository = {
     hasValuationReport: boolean;
   } | null> {
     try {
-      const response = await apiClient.get<ApiValuationReportResponse>(`/valuation-reports/${propertyId}`);
+      const report = await this.getValuationReport(propertyId);
+      if (!report) return null;
 
-      const property = transformValuationReport(response);
+      const property = report;
       const hasValuationReport = true; // Always true since we're getting a valuation report
 
       // For the unified structure, property and valuationReport are the same
-      const valuationReport = transformValuationReport(response);
+      const valuationReport = report;
 
       return {
         property,
@@ -287,8 +298,13 @@ export const apiRepository = {
    */
   async getValuationReport(reportId: string): Promise<ValuationReportData | null> {
     try {
-      const response = await apiClient.get<{ report: any }>(`/valuation-reports/${reportId}`);
-      return transformValuationReport(response.report);
+      const response = await apiClient.get<{ report: any; fieldVersions: Record<string, string> }>(`/valuation-reports/${reportId}`);
+      const report = transformValuationReport(response.report);
+      if (!editSessions.has(reportId) && editSessions.size >= 16) {
+        editSessions.delete(editSessions.keys().next().value!);
+      }
+      editSessions.set(reportId, new ReportEditSession(transformValuationReportToBackend(report), response.fieldVersions));
+      return report;
     } catch (error) {
       console.error('Failed to get valuation report:', error);
       return null;
@@ -317,7 +333,7 @@ export const apiRepository = {
   async updateProperty(propertyId: string, propertyData: ValuationReportData): Promise<void> {
     try {
       await saveReportAfterPhotos(propertyId, propertyData, async latest => {
-        await apiClient.put(`/valuation-reports/${propertyId}`, transformValuationReportToBackend(latest));
+        await saveReportChanges(propertyId, latest);
       });
     } catch (error) {
       console.error('Failed to update valuation report:', error);
@@ -397,7 +413,7 @@ export const apiRepository = {
         payload.valuationDetails = {
           ...DEFAULT_PROPERTY_FORM.valuationDetails,
           valuationType: initialData.valuationType,
-          // Send date string directly — backend handles YYYY-MM-DD format
+          // Send date string directly â€” backend handles YYYY-MM-DD format
           valuationDate: initialData.valuationDate || undefined,
         };
       }
@@ -419,7 +435,7 @@ export const apiRepository = {
   async updateValuationReport(reportId: string, data: ValuationReportData): Promise<void> {
     try {
       await saveReportAfterPhotos(reportId, data, async latest => {
-        await apiClient.put(`/valuation-reports/${reportId}`, transformValuationReportToBackend(latest));
+        await saveReportChanges(reportId, latest);
       });
     } catch (error) {
       console.error('Failed to update valuation report:', error);

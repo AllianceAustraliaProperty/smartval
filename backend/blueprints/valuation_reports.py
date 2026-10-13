@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, request, render_template_string
 from werkzeug.local import LocalProxy
 from database import get_database
 from models.valuation_report import ValuationReport
+from utils.report_edits import field_versions, save_changes, clean_nulls, EditConflict
 from models.settings import Settings
 from pymongo import MongoClient
 from config import Config
@@ -258,7 +259,8 @@ def get_valuation_report(report_id):
         report = valuation_report_model.serialize(report)
         
         return jsonify({
-            'report': report
+            'report': report,
+            'fieldVersions': field_versions(report)
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -363,6 +365,36 @@ def duplicate_valuation_report(report_id):
         }), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@valuation_reports_bp.route('/<report_id>', methods=['PATCH'])
+def patch_valuation_report(report_id):
+    """Save changed editor fields with optimistic conflict protection."""
+    try:
+        payload = request.get_json() or {}
+        changes = payload.get('changes')
+        expected = payload.get('expected')
+        if not isinstance(changes, dict) or not isinstance(expected, dict):
+            return jsonify({'error': 'Changes and field versions are required'}), 400
+        date_fields = ['valuationDate', 'inspectionDate', 'reportDate', 'conversionDate', 'deadlineDate', 'dateIssued']
+        if isinstance(changes.get('valuationDetails'), dict):
+            convert_date_strings_to_datetime(changes['valuationDetails'], date_fields)
+        if isinstance(changes.get('comparables'), dict):
+            for kind in ('sales', 'rentals'):
+                for comparable in changes['comparables'].get(kind, []):
+                    convert_date_strings_to_datetime(comparable, ['saleLeaseDate'])
+        changes = clean_nulls(changes)
+        expected = {key: value for key, value in expected.items() if key in changes}
+        versions = save_changes(valuation_report_model.collection, report_id, changes, expected)
+        return jsonify({'message': 'Valuation report updated successfully', 'fieldVersions': versions}), 200
+    except EditConflict as error:
+        return jsonify({'error': str(error), 'code': 'EDIT_CONFLICT'}), 409
+    except LookupError as error:
+        return jsonify({'error': str(error)}), 404
+    except (ValueError, TypeError) as error:
+        return jsonify({'error': str(error)}), 400
+    except Exception:
+        return jsonify({'error': 'Unable to save report. Your edits are still here. Please retry.'}), 500
 
 
 @valuation_reports_bp.route('/<report_id>', methods=['PUT'])

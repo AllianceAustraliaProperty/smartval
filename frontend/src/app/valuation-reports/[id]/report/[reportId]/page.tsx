@@ -1,5 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+import { useSectionStatus } from '@/lib/use-section-status';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
@@ -7,22 +9,23 @@ import { apiRepository } from '@/lib/api-repository';
 import { PropertyValuationData, PropertyData, DEFAULT_PROPERTY_FORM } from '@/types/property-valuation';
 import { API_BASE_URL } from '@/lib/api-config';
 import { Navigation } from '@/components/Navigation';
-import {
-  PropertyAddressSection,
-  PrimaryContactSection,
-  PropertyDetailsSection,
-  LocationDetailsSection,
-  PropertyDescriptorsSection,
-  AncillaryImprovementsSection,
-  GeneralCommentsSection,
-  ValuationDetailsSection,
-  ReferralDetailsSection,
-  PhotosSection,
-  ComparablesSection,
-} from '@/components/sections';
+
 import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch } from 'lucide-react';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
 
+
+const SectionLoading = () => <p role="status" className="p-6 text-gray-600">Loading section…</p>;
+const PropertyAddressSection = dynamic(() => import('@/components/sections/PropertyAddressSection').then(module => module.PropertyAddressSection), { loading: SectionLoading });
+const PrimaryContactSection = dynamic(() => import('@/components/sections/PrimaryContactSection').then(module => module.PrimaryContactSection), { loading: SectionLoading });
+const PropertyDetailsSection = dynamic(() => import('@/components/sections/PropertyDetailsSection').then(module => module.PropertyDetailsSection), { loading: SectionLoading });
+const LocationDetailsSection = dynamic(() => import('@/components/sections/LocationDetailsSection').then(module => module.LocationDetailsSection), { loading: SectionLoading });
+const PropertyDescriptorsSection = dynamic(() => import('@/components/sections/PropertyDescriptorsSection').then(module => module.PropertyDescriptorsSection), { loading: SectionLoading });
+const AncillaryImprovementsSection = dynamic(() => import('@/components/sections/AncillaryImprovementsSection').then(module => module.AncillaryImprovementsSection), { loading: SectionLoading });
+const GeneralCommentsSection = dynamic(() => import('@/components/sections/GeneralCommentsSection').then(module => module.GeneralCommentsSection), { loading: SectionLoading });
+const ValuationDetailsSection = dynamic(() => import('@/components/sections/ValuationDetailsSection').then(module => module.ValuationDetailsSection), { loading: SectionLoading });
+const ReferralDetailsSection = dynamic(() => import('@/components/sections/ReferralDetailsSection').then(module => module.ReferralDetailsSection), { loading: SectionLoading });
+const PhotosSection = dynamic(() => import('@/components/sections/PhotosSection').then(module => module.PhotosSection), { loading: SectionLoading });
+const ComparablesSection = dynamic(() => import('@/components/sections/ComparablesSection').then(module => module.ComparablesSection), { loading: SectionLoading });
 
 const sectionComponents = {
   propertyAddress: PropertyAddressSection,
@@ -51,81 +54,6 @@ const sections = [
   { id: 'photos', title: 'Photos', icon: 'Camera' },
   { id: 'comparables', title: 'Comparables', icon: 'Scale' },
 ];
-
-export default function ValuationReportEditPage() {
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const reportId = params.reportId as string;
-  const propertyId = params.id as string;
-
-  const [property, setProperty] = useState<PropertyValuationData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentSection, setCurrentSection] = useState('propertyAddress');
-  const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
-  const [sectionsWithErrors, setSectionsWithErrors] = useState<Set<string>>(new Set());
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-
-  const { register, control, watch, setValue, handleSubmit, formState: { errors, isDirty }, reset } = useForm<PropertyValuationData>({
-    defaultValues: DEFAULT_PROPERTY_FORM,
-  });
-
-  // Load property data
-  useEffect(() => {
-    async function loadProperty() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Load the valuation report directly
-        const report = await apiRepository.getValuationReport(reportId);
-        if (!report) {
-          setError('Valuation report not found');
-          return;
-        }
-
-        setProperty(report);
-        reset(report);
-      } catch (err) {
-        console.error('Failed to load valuation report:', err);
-        setError('Failed to load valuation report');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (reportId) {
-      loadProperty();
-    }
-  }, [reportId, reset]);
-
-  // Check for completed sections
-  useEffect(() => {
-    const subscription = watch((value) => {
-      const completed = new Set<string>();
-      const withErrors = new Set<string>();
-
-      sections.forEach(section => {
-        const sectionData = getSectionData(value, section.id);
-        const hasData = checkSectionCompletion(sectionData, section.id);
-        const hasErrors = checkSectionErrors(errors, section.id);
-        
-        if (hasData) {
-          completed.add(section.id);
-        }
-        if (hasErrors) {
-          withErrors.add(section.id);
-        }
-      });
-
-      setCompletedSections(completed);
-      setSectionsWithErrors(withErrors);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [watch, errors]);
 
   const getSectionData = (formData: any, sectionId: string) => {
     switch (sectionId) {
@@ -218,31 +146,107 @@ export default function ValuationReportEditPage() {
     }
   };
 
+const sectionIds = sections.map(section => section.id);
+
+export default function ValuationReportEditPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const reportId = params.reportId as string;
+  const propertyId = params.id as string;
+
+  const [property, setProperty] = useState<PropertyValuationData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const pendingSave = React.useRef<Promise<void> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [currentSection, setCurrentSection] = useState('propertyAddress');
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+  const { register, control, watch, getValues, setValue, handleSubmit, formState: { errors, isDirty }, reset } = useForm<PropertyValuationData>({
+    defaultValues: DEFAULT_PROPERTY_FORM,
+  });
+
+  // Load property data
+  useEffect(() => {
+    async function loadProperty() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Load the valuation report directly
+        const report = await apiRepository.getValuationReport(reportId);
+        if (!report) {
+          setError('Valuation report not found');
+          return;
+        }
+
+        setProperty(report);
+        reset(report);
+      } catch (err) {
+        console.error('Failed to load valuation report:', err);
+        setError('Failed to load valuation report');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (reportId) {
+      loadProperty();
+    }
+  }, [reportId, reset]);
+
+  const { completedSections, sectionsWithErrors } = useSectionStatus(
+    watch, getValues, errors, sectionIds, getSectionData, checkSectionCompletion, checkSectionErrors);
+
+  const saveForm = (data: PropertyValuationData): Promise<void> => {
+    if (pendingSave.current) return pendingSave.current;
+    setIsSaving(true);
+    setSaveError(null);
+    const snapshot = JSON.parse(JSON.stringify(data));
+    const operation = apiRepository.updateValuationReport(reportId, snapshot)
+      .catch(err => {
+        setSaveError(err instanceof Error ? err.message : 'Unable to save. Your edits are still here. Please retry.');
+        throw err;
+      }).finally(() => {
+        pendingSave.current = null;
+        setIsSaving(false);
+      });
+    pendingSave.current = operation;
+    return operation;
+  };
+
   const onSubmit = async (data: PropertyValuationData) => {
     try {
-      setIsSaving(true);
-      setError(null);
-      
-      console.log('Form data being submitted:', data);
-      
-      // Update the valuation report
-      await apiRepository.updateValuationReport(reportId, data);
-      
-      // Show success message
+      await saveForm(data);
       alert('Valuation report updated successfully!');
-    } catch (err) {
-      console.error('Failed to update valuation report:', err);
-      setError('Failed to update valuation report. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
+    } catch { /* Keep the form and its draft visible for retry. */ }
+  };
+
+  const prepareReport = async (): Promise<boolean> => {
+    let saved = false;
+    try {
+      await handleSubmit(async data => { await saveForm(data); saved = true; }, () => {
+        setSaveError('Please correct the highlighted fields before generating this document.');
+      })();
+    } catch { /* A failed save must never generate a stale document. */ }
+    return saved;
+  };
+
+  const downloadDraft = () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(getValues(), null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url; link.download = `valuation-draft-${reportId}.json`; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const handleSectionChange = (sectionId: string) => {
     setCurrentSection(sectionId);
   };
 
-  const handlePreview = () => {
+  const handlePreview = async () => {
+    if (!await prepareReport()) return;
     setShowPreviewModal(true);
   };
 
@@ -399,7 +403,12 @@ export default function ValuationReportEditPage() {
             )}
 
             {/* Form Content */}
+            {saveError && <div role="alert" className="mb-4 rounded border border-red-300 bg-red-50 p-4 text-red-800">
+              <p>{saveError}</p>
+              <button type="button" onClick={downloadDraft} className="mt-2 underline font-semibold">Download unsaved draft</button>
+            </div>}
             <form onSubmit={handleSubmit(onSubmit)}>
+              <fieldset disabled={isSaving} className="min-w-0">
               <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8">
                 {CurrentSectionComponent && (
                   <CurrentSectionComponent
@@ -412,6 +421,7 @@ export default function ValuationReportEditPage() {
                   />
                 )}
               </div>
+              </fieldset>
             </form>
 
             {/* Section Navigation */}

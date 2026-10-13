@@ -2,6 +2,8 @@
 
 import { flushAdditionalPhotoSaves } from '@/lib/additional-photo-saves';
 
+import dynamic from 'next/dynamic';
+import { useSectionStatus } from '@/lib/use-section-status';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
@@ -9,21 +11,22 @@ import { apiRepository } from '@/lib/api-repository';
 import { PropertyValuationData, PropertyData, DEFAULT_PROPERTY_FORM } from '@/types/property-valuation';
 import { API_BASE_URL } from '@/lib/api-config';
 import { Navigation } from '@/components/Navigation';
-import {
-  AddressAndContactSection,
-  PropertyDetailsSection,
-  LocationDetailsSection,
-  PropertyDescriptorsSection,
-  AncillaryImprovementsSection,
-  GeneralCommentsSection,
-  ValuationDetailsSection,
-  ReferralDetailsSection,
-  PhotosSection,
-  ComparablesSection,
-} from '@/components/sections';
+
 import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch, Download, AlertTriangle, Receipt, ChevronDown, Send } from 'lucide-react';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
 
+
+const SectionLoading = () => <p role="status" className="p-6 text-gray-600">Loading section…</p>;
+const AddressAndContactSection = dynamic(() => import('@/components/sections/AddressAndContactSection').then(module => module.AddressAndContactSection), { loading: SectionLoading });
+const PropertyDetailsSection = dynamic(() => import('@/components/sections/PropertyDetailsSection').then(module => module.PropertyDetailsSection), { loading: SectionLoading });
+const LocationDetailsSection = dynamic(() => import('@/components/sections/LocationDetailsSection').then(module => module.LocationDetailsSection), { loading: SectionLoading });
+const PropertyDescriptorsSection = dynamic(() => import('@/components/sections/PropertyDescriptorsSection').then(module => module.PropertyDescriptorsSection), { loading: SectionLoading });
+const AncillaryImprovementsSection = dynamic(() => import('@/components/sections/AncillaryImprovementsSection').then(module => module.AncillaryImprovementsSection), { loading: SectionLoading });
+const GeneralCommentsSection = dynamic(() => import('@/components/sections/GeneralCommentsSection').then(module => module.GeneralCommentsSection), { loading: SectionLoading });
+const ValuationDetailsSection = dynamic(() => import('@/components/sections/ValuationDetailsSection').then(module => module.ValuationDetailsSection), { loading: SectionLoading });
+const ReferralDetailsSection = dynamic(() => import('@/components/sections/ReferralDetailsSection').then(module => module.ReferralDetailsSection), { loading: SectionLoading });
+const PhotosSection = dynamic(() => import('@/components/sections/PhotosSection').then(module => module.PhotosSection), { loading: SectionLoading });
+const ComparablesSection = dynamic(() => import('@/components/sections/ComparablesSection').then(module => module.ComparablesSection), { loading: SectionLoading });
 
 const sectionComponents = {
   propertyAddress: AddressAndContactSection,
@@ -51,6 +54,98 @@ const sections = [
   { id: 'photos', title: 'Photos', icon: 'Camera' },
 ];
 
+  const getSectionData = (formData: any, sectionId: string) => {
+    switch (sectionId) {
+      case 'propertyAddress':
+      return { address: formData.address, primaryContact: formData.primaryContact };
+      case 'propertyDetails':
+        return formData.propertyDetails;
+      case 'locationDetails':
+        return formData.locationDetails;
+      case 'propertyDescriptors':
+        return formData.propertyDescriptors;
+      case 'ancillaryImprovements':
+        return formData.ancillaryImprovements;
+      case 'generalComments':
+        return formData.generalComments;
+      case 'valuationDetails':
+        return formData.valuationDetails;
+      case 'referralDetails':
+        return formData.referralDetails;
+      case 'photos':
+        return formData.photos;
+      case 'comparables':
+        return formData.comparables;
+      default:
+        return null;
+    }
+  };
+
+  const checkSectionCompletion = (sectionData: any, sectionId: string): boolean => {
+    if (!sectionData) return false;
+
+    switch (sectionId) {
+      case 'propertyAddress':
+      // Consider address completion only; contact optional within combined section
+      const addr = sectionData.address || {};
+      return !!(addr.streetName && addr.suburb && addr.state && addr.postcode);
+      case 'propertyDetails':
+        return !!(sectionData.titleReference && sectionData.zoning);
+      case 'locationDetails':
+        return !!(sectionData.suburbDescription);
+      case 'propertyDescriptors':
+        // Check if at least some key fields are filled
+        return !!(sectionData.bedrooms || sectionData.bathrooms || sectionData.carSpaces ||
+                  sectionData.mainBuildingType || sectionData.roofingType || sectionData.externalWalls);
+      case 'ancillaryImprovements':
+        return true; // This section is optional
+      case 'generalComments':
+        // Check if at least one of the comment fields is filled
+        return !!(sectionData.propertyDescription || sectionData.marketOverview || sectionData.propertyComments);
+      case 'valuationDetails':
+        return !!(sectionData.valuationType && sectionData.valuationDate && sectionData.marketValue);
+      case 'referralDetails':
+        return !!(sectionData.referrerName);
+      case 'photos':
+        return !!(sectionData && sectionData.length > 0);
+      case 'comparables':
+        return !!(sectionData && (sectionData.sales?.length > 0 || sectionData.rentals?.length > 0));
+      default:
+        return false;
+    }
+  };
+
+  const checkSectionErrors = (formErrors: any, sectionId: string): boolean => {
+    if (!formErrors) return false;
+
+    switch (sectionId) {
+      case 'propertyAddress':
+      return !!(formErrors.address || formErrors.primaryContact);
+      case 'propertyDetails':
+        return !!(formErrors.propertyDetails);
+      case 'locationDetails':
+        return !!(formErrors.locationDetails);
+      case 'propertyDescriptors':
+        return !!(formErrors.propertyDescriptors);
+      case 'ancillaryImprovements':
+        return !!(formErrors.ancillaryImprovements);
+      case 'generalComments':
+        return !!(formErrors.generalComments);
+      case 'valuationDetails':
+        return !!(formErrors.valuationDetails);
+      case 'referralDetails':
+        return !!(formErrors.referralDetails);
+      case 'photos':
+        return !!(formErrors.photos);
+      case 'comparables':
+        return !!(formErrors.comparables);
+      default:
+        return false;
+    }
+  };
+
+const sectionIds = sections.map(section => section.id);
+
 export default function ValuationReportEditPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -60,10 +155,10 @@ export default function ValuationReportEditPage() {
   const [property, setProperty] = useState<PropertyValuationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const pendingSave = React.useRef<Promise<void> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [currentSection, setCurrentSection] = useState('propertyAddress');
-  const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
-  const [sectionsWithErrors, setSectionsWithErrors] = useState<Set<string>>(new Set());
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showInvoicePreviewModal, setShowInvoicePreviewModal] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
@@ -77,7 +172,7 @@ export default function ValuationReportEditPage() {
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [missingRequirements, setMissingRequirements] = useState<string[]>([]);
 
-  const { register, control, watch, setValue, handleSubmit, formState: { errors, isDirty }, reset } = useForm<PropertyValuationData>({
+  const { register, control, watch, getValues, setValue, handleSubmit, formState: { errors, isDirty }, reset } = useForm<PropertyValuationData>({
     defaultValues: DEFAULT_PROPERTY_FORM,
   });
 
@@ -151,140 +246,48 @@ export default function ValuationReportEditPage() {
     return () => subscription.unsubscribe();
   }, [watch, setValue]);
 
-  // Check for completed sections
-  useEffect(() => {
-    const subscription = watch((value) => {
-      const completed = new Set<string>();
-      const withErrors = new Set<string>();
+  const { completedSections, sectionsWithErrors } = useSectionStatus(
+    watch, getValues, errors, sectionIds, getSectionData, checkSectionCompletion, checkSectionErrors);
 
-      sections.forEach(section => {
-        const sectionData = getSectionData(value, section.id);
-        const hasData = checkSectionCompletion(sectionData, section.id);
-        const hasErrors = checkSectionErrors(errors, section.id);
-        
-        if (hasData) {
-          completed.add(section.id);
-        }
-        if (hasErrors) {
-          withErrors.add(section.id);
-        }
+  const saveForm = (data: PropertyValuationData): Promise<void> => {
+    if (pendingSave.current) return pendingSave.current;
+    setIsSaving(true);
+    setSaveError(null);
+    const snapshot = JSON.parse(JSON.stringify(data));
+    const operation = apiRepository.updateValuationReport(reportId, snapshot)
+      .catch(err => {
+        setSaveError(err instanceof Error ? err.message : 'Unable to save. Your edits are still here. Please retry.');
+        throw err;
+      }).finally(() => {
+        pendingSave.current = null;
+        setIsSaving(false);
       });
-
-      setCompletedSections(completed);
-      setSectionsWithErrors(withErrors);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [watch, errors]);
-
-  const getSectionData = (formData: any, sectionId: string) => {
-    switch (sectionId) {
-      case 'propertyAddress':
-      return { address: formData.address, primaryContact: formData.primaryContact };
-      case 'propertyDetails':
-        return formData.propertyDetails;
-      case 'locationDetails':
-        return formData.locationDetails;
-      case 'propertyDescriptors':
-        return formData.propertyDescriptors;
-      case 'ancillaryImprovements':
-        return formData.ancillaryImprovements;
-      case 'generalComments':
-        return formData.generalComments;
-      case 'valuationDetails':
-        return formData.valuationDetails;
-      case 'referralDetails':
-        return formData.referralDetails;
-      case 'photos':
-        return formData.photos;
-      case 'comparables':
-        return formData.comparables;
-      default:
-        return null;
-    }
-  };
-
-  const checkSectionCompletion = (sectionData: any, sectionId: string): boolean => {
-    if (!sectionData) return false;
-
-    switch (sectionId) {
-      case 'propertyAddress':
-      // Consider address completion only; contact optional within combined section
-      const addr = sectionData.address || {};
-      return !!(addr.streetName && addr.suburb && addr.state && addr.postcode);
-      case 'propertyDetails':
-        return !!(sectionData.titleReference && sectionData.zoning);
-      case 'locationDetails':
-        return !!(sectionData.suburbDescription);
-      case 'propertyDescriptors':
-        // Check if at least some key fields are filled
-        return !!(sectionData.bedrooms || sectionData.bathrooms || sectionData.carSpaces || 
-                  sectionData.mainBuildingType || sectionData.roofingType || sectionData.externalWalls);
-      case 'ancillaryImprovements':
-        return true; // This section is optional
-      case 'generalComments':
-        // Check if at least one of the comment fields is filled
-        return !!(sectionData.propertyDescription || sectionData.marketOverview || sectionData.propertyComments);
-      case 'valuationDetails':
-        return !!(sectionData.valuationType && sectionData.valuationDate && sectionData.marketValue);
-      case 'referralDetails':
-        return !!(sectionData.referrerName);
-      case 'photos':
-        return !!(sectionData && sectionData.length > 0);
-      case 'comparables':
-        return !!(sectionData && (sectionData.sales?.length > 0 || sectionData.rentals?.length > 0));
-      default:
-        return false;
-    }
-  };
-
-  const checkSectionErrors = (formErrors: any, sectionId: string): boolean => {
-    if (!formErrors) return false;
-
-    switch (sectionId) {
-      case 'propertyAddress':
-      return !!(formErrors.address || formErrors.primaryContact);
-      case 'propertyDetails':
-        return !!(formErrors.propertyDetails);
-      case 'locationDetails':
-        return !!(formErrors.locationDetails);
-      case 'propertyDescriptors':
-        return !!(formErrors.propertyDescriptors);
-      case 'ancillaryImprovements':
-        return !!(formErrors.ancillaryImprovements);
-      case 'generalComments':
-        return !!(formErrors.generalComments);
-      case 'valuationDetails':
-        return !!(formErrors.valuationDetails);
-      case 'referralDetails':
-        return !!(formErrors.referralDetails);
-      case 'photos':
-        return !!(formErrors.photos);
-      case 'comparables':
-        return !!(formErrors.comparables);
-      default:
-        return false;
-    }
+    pendingSave.current = operation;
+    return operation;
   };
 
   const onSubmit = async (data: PropertyValuationData) => {
     try {
-      setIsSaving(true);
-      setError(null);
-      
-      console.log('Form data being submitted:', data);
-      
-      // Update the valuation report
-      await apiRepository.updateValuationReport(reportId, data);
-      
-      // Show success message
+      await saveForm(data);
       alert('Valuation report updated successfully!');
-    } catch (err) {
-      console.error('Failed to update valuation report:', err);
-      setError('Failed to update valuation report. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
+    } catch { /* Keep the form and its draft visible for retry. */ }
+  };
+
+  const prepareReport = async (): Promise<boolean> => {
+    let saved = false;
+    try {
+      await handleSubmit(async data => { await saveForm(data); saved = true; }, () => {
+        setSaveError('Please correct the highlighted fields before generating this document.');
+      })();
+    } catch { /* A failed save must never generate a stale document. */ }
+    return saved;
+  };
+
+  const downloadDraft = () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(getValues(), null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url; link.download = `valuation-draft-${reportId}.json`; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const handleSectionChange = (sectionId: string) => {
@@ -314,8 +317,9 @@ export default function ValuationReportEditPage() {
     return true;
   };
 
-  const handlePreview = () => {
+  const handlePreview = async () => {
     if (!validatePhotosAndComparables()) return;
+    if (!await prepareReport()) return;
     setShowPreviewModal(true);
   };
 
@@ -328,6 +332,7 @@ export default function ValuationReportEditPage() {
     try {
       setIsGeneratingReport(true);
       
+      if (!await prepareReport()) return;
       // Generate the PDF report using the correct endpoint
       await flushAdditionalPhotoSaves(reportId);
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/generate`, {
@@ -350,7 +355,7 @@ export default function ValuationReportEditPage() {
       link.href = url;
       
       let downloadFilename = `valuation-report-${reportId}.pdf`;
-      const fileNumber = property?.fileNumber;
+      const fileNumber = getValues('fileNumber');
       
       if (fileNumber) {
         downloadFilename = `${fileNumber}.pdf`;
@@ -391,6 +396,7 @@ export default function ValuationReportEditPage() {
     try {
       setIsSendingReport(true);
       setShowSendReportModal(false);
+      if (!await prepareReport()) return;
       const result = await apiRepository.sendReport(reportId, { to: recipientEmail, recipientType: type });
       alert(`Report sent to ${result.recipient || recipientEmail}.`);
     } catch (err) {
@@ -401,12 +407,13 @@ export default function ValuationReportEditPage() {
     }
   };
 
-  const handlePreviewInvoice = () => {
+  const handlePreviewInvoice = async () => {
     const reportFee = watch('invoiceDetails.reportFee');
     if (reportFee === undefined || reportFee === null || isNaN(Number(reportFee)) || Number(reportFee) <= 0) {
       alert('Please enter a Report Fee in the Financial & Referral Details section before previewing an invoice.');
       return;
     }
+    if (!await prepareReport()) return;
     setShowInvoicePreviewModal(true);
   };
 
@@ -420,6 +427,7 @@ export default function ValuationReportEditPage() {
     try {
       setIsGeneratingInvoice(true);
 
+      if (!await prepareReport()) return;
       const blob = await apiRepository.generateInvoice(reportId);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -451,6 +459,7 @@ export default function ValuationReportEditPage() {
     if (!confirm(`Send the invoice to ${recipient}?`)) return;
     try {
       setIsSendingInvoice(true);
+      if (!await prepareReport()) return;
       const result = await apiRepository.sendInvoice(reportId, { to: recipient });
       alert(`Invoice sent to ${result.recipient || recipient}.`);
     } catch (err) {
@@ -635,7 +644,7 @@ export default function ValuationReportEditPage() {
                   <div className="relative" data-report-menu>
                     <button
                       onClick={() => setIsReportMenuOpen((open) => !open)}
-                      disabled={isGeneratingReport || isSendingReport}
+                      disabled={isSaving || isGeneratingReport || isSendingReport}
                       className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-green-700 bg-green-50 border-2 border-green-200 hover:border-green-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {(isGeneratingReport || isSendingReport) ? (
@@ -693,7 +702,7 @@ export default function ValuationReportEditPage() {
                   <div className="relative" data-invoice-menu>
                     <button
                       onClick={() => setIsInvoiceMenuOpen((open) => !open)}
-                      disabled={isGeneratingInvoice || isSendingInvoice}
+                      disabled={isSaving || isGeneratingInvoice || isSendingInvoice}
                       className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-amber-700 bg-amber-50 border-2 border-amber-200 hover:border-amber-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {(isGeneratingInvoice || isSendingInvoice) ? (
@@ -771,7 +780,12 @@ export default function ValuationReportEditPage() {
             )}
 
             {/* Form Content */}
+            {saveError && <div role="alert" className="mb-4 rounded border border-red-300 bg-red-50 p-4 text-red-800">
+              <p>{saveError}</p>
+              <button type="button" onClick={downloadDraft} className="mt-2 underline font-semibold">Download unsaved draft</button>
+            </div>}
             <form onSubmit={handleSubmit(onSubmit)}>
+              <fieldset disabled={isSaving} className="min-w-0">
               <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8">
                 {CurrentSectionComponent && (
                   <CurrentSectionComponent
@@ -784,6 +798,7 @@ export default function ValuationReportEditPage() {
                   />
                 )}
               </div>
+              </fieldset>
             </form>
 
             {/* Section Navigation */}

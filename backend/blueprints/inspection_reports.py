@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 inspection_bp = Blueprint('inspection', __name__)
 
 # Initialize MongoDB connection
+db = LocalProxy(get_database)
 valuation_report_model = LocalProxy(lambda: ValuationReport(get_database()))
 
 
