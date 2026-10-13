@@ -50,8 +50,8 @@ class ApiClient {
   }
 
   // GET request
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  async get<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
+    return this.request<T>(endpoint, { method: 'GET', signal });
   }
 
   // POST request

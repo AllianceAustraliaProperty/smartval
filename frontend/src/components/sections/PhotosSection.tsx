@@ -4,6 +4,7 @@ import { SectionProps } from '@/types/property-valuation';
 import { Upload, X, Edit3, Wand2, ListOrdered, Clock, ImageOff } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { uploadMultipleFilesToS3 } from '@/lib/s3-upload';
+import { getAdditionalPhotoSaves } from '@/lib/additional-photo-saves';
 
 // Import the constants
 const ROOM_CATEGORIES = [
@@ -1113,6 +1114,22 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<any[]>([]);
+  const photosRef = useRef<any[]>([]);
+  const mounted = useRef(true);
+  const onUpdateRef = useRef(onPhotosUpdate);
+  onUpdateRef.current = onPhotosUpdate;
+  const saves = React.useMemo(() => getAdditionalPhotoSaves(reportId), [reportId]);
+  const [, refreshSaveStatus] = useState(0);
+  const [photosLoaded, setPhotosLoaded] = useState(false);
+
+  const publishPhotos = (list: any[], saved = false) => {
+    photosRef.current = list;
+    if (saved) saves.queue.setSaved(list);
+    if (mounted.current) {
+      setPhotos(list);
+      onUpdateRef.current(list);
+    }
+  };
   const [editingPhoto, setEditingPhoto] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const individualFileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
@@ -1123,22 +1140,40 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
   const isDraggingRef = useRef(false);
 
   useEffect(() => {
-    if (reportId && reportId !== 'temp') {
-      fetchPhotos();
+    mounted.current = true;
+    setPhotosLoaded(false);
+    const unsubscribe = saves.subscribe(() => refreshSaveStatus(value => value + 1));
+    // Recover unsaved edits when a section is remounted after a failed request.
+    if (saves.queue.pending && saves.queue.latest) {
+      publishPhotos(saves.queue.latest);
+    } else {
+      // A failed initial fetch must not replace the parent form's photos with
+      // an empty list or a snapshot from an earlier visit to this report.
+      saves.queue.forgetSaved();
+      photosRef.current = [];
+      setPhotos([]);
     }
-  }, [reportId]);
+    if (reportId && reportId !== 'temp') {
+      void saves.run(fetchPhotos, false).catch(error => {
+        if (mounted.current) setUploadError(error.message || 'Unable to load additional photos');
+      });
+    }
+    return () => {
+      mounted.current = false;
+      unsubscribe();
+      // Keep the shared queue alive while navigating between report sections.
+      void saves.flush().catch(() => {});
+    };
+  }, [reportId, saves]);
 
   const fetchPhotos = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/additional-photos/list/${reportId}`);
-      if (res.ok) {
-        const data = await res.json();
-        const list = data.photos || [];
-        setPhotos(list);
-        onPhotosUpdate(list);
-      }
-    } catch (e) {
-      console.error('Error fetching additional photos:', e);
+    const res = await fetch(`${API_BASE_URL}/additional-photos/list/${reportId}`);
+    if (!res.ok) throw new Error('Unable to load additional photos. Please retry.');
+    const data = await res.json();
+    publishPhotos(data.photos || [], true);
+    if (mounted.current) {
+      setPhotosLoaded(true);
+      setUploadError(null);
     }
   };
 
@@ -1151,6 +1186,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
     setUploading(true);
     setUploadError(null);
     try {
+      await saves.run(async () => {
       const { successful, failed } = await uploadMultipleFilesToS3(reportId, files, { maxConcurrent: 15, maxFiles: 15 }, '/additional-photos');
       if (successful.length > 0) {
         await fetchPhotos();
@@ -1159,6 +1195,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
         const errorMessages = failed.map(f => f.error).join(', ');
         setUploadError(`Failed to upload ${failed.length} files: ${errorMessages}`);
       }
+      });
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : 'Upload failed');
     } finally {
@@ -1168,50 +1205,41 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
 
   const deletePhoto = async (photoUrl: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/additional-photos/delete/${reportId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoUrl })
+      await saves.run(async () => {
+        const response = await fetch(`${API_BASE_URL}/additional-photos/delete/${reportId}`, {
+          method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photoUrl }),
+        });
+        if (!response.ok) throw new Error('Failed to delete photo');
+        await fetchPhotos();
       });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Delete failed');
-      }
-      await fetchPhotos();
-    } catch (e: any) {
-      setUploadError(e?.message || 'Delete failed');
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Delete failed');
     }
   };
 
-  const updatePhotoAttribute = async (photoIndex: number, attribute: string, value: any) => {
-    const updatedPhotos = [...photos];
-    const updatedPhoto = {
-      ...updatedPhotos[photoIndex],
-      [attribute]: value
-    };
-
-    // If category is changing, clear features and prime cost items since they're category-specific
+  const updatePhotoAttribute = (photoIndex: number, attribute: string, value: any) => {
+    if (saves.busy || !photosLoaded) return;
+    const updatedPhotos = [...photosRef.current];
+    const updatedPhoto = { ...updatedPhotos[photoIndex], [attribute]: value };
     if (attribute === 'category') {
       updatedPhoto.featuresFixtures = [];
       updatedPhoto.primeCostItems = [];
     }
-
     updatedPhotos[photoIndex] = updatedPhoto;
-    setPhotos(updatedPhotos);
+    // Update both the editor and its parent form immediately. Persistence is
+    // coalesced, and only one network write may be active for this report.
+    publishPhotos(updatedPhotos);
+    saves.queue.enqueue(updatedPhotos);
+  };
 
-    // Save to database
-    try {
-      const response = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: updatedPhotos })
-      });
-      if (response.ok) {
-        onPhotosUpdate(updatedPhotos);
-      }
-    } catch (error) {
-      console.error('Error updating photo:', error);
-    }
+  const savePhotosNow = async (list: any[]) => {
+    const response = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ photos: list }),
+    });
+    if (!response.ok) throw new Error('Photo changes could not be saved. Please retry.');
+    publishPhotos(list, true);
   };
 
   const addEmptyPhoto = async () => {
@@ -1233,21 +1261,11 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
         extraItems: []
       };
 
-      // Add to local state and save to database
-      const updatedPhotos = [...photos, newPhoto];
+      await saves.run(async () => {
+      const updatedPhotos = [...photosRef.current, newPhoto];
 
-      const response = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: updatedPhotos })
+      await savePhotosNow(updatedPhotos);
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to create photo');
-      }
-
-      setPhotos(updatedPhotos);
-      onPhotosUpdate(updatedPhotos);
     } catch (error) {
       console.error('Error creating empty photo:', error);
       setUploadError(error instanceof Error ? error.message : 'Failed to create photo');
@@ -1268,6 +1286,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
     setUploadError(null);
 
     try {
+      await saves.run(async () => {
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
       if (!fileExtension) {
         throw new Error('Invalid file: no extension found');
@@ -1301,26 +1320,14 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
       }
 
       // Update the photo in local state with the new URL
-      const updatedPhotos = [...photos];
+      const updatedPhotos = [...photosRef.current];
       updatedPhotos[photoIndex] = {
         ...updatedPhotos[photoIndex],
         photoUrl: presignedData.s3Url
       };
 
-      // Save updated photos to database
-      const updateResponse = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: updatedPhotos }),
+      await savePhotosNow(updatedPhotos);
       });
-
-      if (!updateResponse.ok) {
-        throw new Error('Failed to update photo in database');
-      }
-
-      setPhotos(updatedPhotos);
-      onPhotosUpdate(updatedPhotos);
-
     } catch (error) {
       console.error('Upload error:', error);
       setUploadError(error instanceof Error ? error.message : 'Upload failed');
@@ -1330,6 +1337,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
   };
 
   const handleDragStart = (index: number, e: React.DragEvent<HTMLDivElement>) => {
+    if (saves.busy || uploading || !photosLoaded) { e.preventDefault(); return; }
     setDragIndex(index);
     isDraggingRef.current = true;
     e.dataTransfer.effectAllowed = 'move';
@@ -1375,39 +1383,47 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
     e.preventDefault();
     e.stopPropagation();
 
-    if (dragIndex === null || dragIndex === dropIndex) {
+    if (saves.busy || uploading || !photosLoaded || dragIndex === null || dragIndex === dropIndex) {
       handleDragEnd();
       return;
     }
 
-    const reordered = [...photos];
-    const [moved] = reordered.splice(dragIndex, 1);
-    reordered.splice(dropIndex, 0, moved);
-
-    setPhotos(reordered);
-    onPhotosUpdate(reordered);
+    const sourceIndex = dragIndex;
     handleDragEnd();
-
     try {
-      await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: reordered }),
+      await saves.run(async () => {
+        const reordered = [...photosRef.current];
+        const [moved] = reordered.splice(sourceIndex, 1);
+        reordered.splice(dropIndex, 0, moved);
+        await savePhotosNow(reordered);
       });
     } catch (error) {
-      console.error('Error saving reordered additional photos:', error);
-      setUploadError('Failed to save new photo order');
+      setUploadError(error instanceof Error ? error.message : 'Failed to save new photo order');
     }
   };
 
   return (
     <div className="space-y-6">
+      <div aria-live="polite" className="text-sm text-gray-600">
+        {saves.queue.error ? (
+          <span role="alert" className="text-red-700">
+            {saves.queue.error.message}{' '}
+            <button type="button" className="underline font-semibold" onClick={() => {
+              void saves.run(fetchPhotos, false).catch(() => {});
+            }}>Retry save</button>
+          </span>
+        ) : saves.pending ? (photosLoaded ? 'Saving additional photo changes…' : 'Loading additional photos…') : photosLoaded ? 'Additional photo changes saved automatically.' : 'Additional photos have not loaded.'}
+      </div>
       {uploadError && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-md p-4">
           <p className="text-red-600 text-sm">{uploadError}</p>
+          {!photosLoaded && <button type="button" className="underline text-sm font-semibold" disabled={saves.busy} onClick={() => {
+            void saves.run(fetchPhotos, false).catch(error => setUploadError(error.message));
+          }}>Retry loading photos</button>}
         </div>
       )}
 
+      <fieldset disabled={uploading || saves.busy || !photosLoaded} className="space-y-6 min-w-0">
       {/* Upload Section */}
       <div className="space-y-4">
         <div className="flex gap-4">
@@ -1444,7 +1460,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
           {photos.map((photo, index) => (
             <div
               key={`additional_photo_${photo.id || photo.photoUrl || index}_${index}`}
-              draggable
+              draggable={!uploading && !saves.busy && photosLoaded}
               onDragStart={(e) => handleDragStart(index, e)}
               onDrop={(e) => handleDrop(index, e)}
               onDragEnd={handleDragEnd}
@@ -1513,18 +1529,8 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                         if (photo.photoUrl) {
                           await deletePhoto(photo.photoUrl);
                         } else {
-                          // Empty photo - remove from array
                           try {
-                            const updatedPhotos = photos.filter((_, i) => i !== index);
-                            const response = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
-                              method: 'PUT',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ photos: updatedPhotos }),
-                            });
-                            if (response.ok) {
-                              setPhotos(updatedPhotos);
-                              onPhotosUpdate(updatedPhotos);
-                            }
+                            await saves.run(() => savePhotosNow(photosRef.current.filter((_, i) => i !== index)));
                           } catch (error) {
                             console.error('Delete error:', error);
                             setUploadError(error instanceof Error ? error.message : 'Failed to delete photo');
@@ -1555,6 +1561,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                               list={`additional-category-options-${index}`}
                               value={photo.category || ''}
                               onChange={(e) => updatePhotoAttribute(index, 'category', e.target.value)}
+                              onBlur={() => { void saves.flush().catch(() => {}); }}
                               placeholder="Select or type category..."
                               className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
@@ -1584,6 +1591,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                             type="text"
                             value={photo.annexureHeader || ''}
                             onChange={(e) => updatePhotoAttribute(index, 'annexureHeader', e.target.value)}
+                            onBlur={() => { void saves.flush().catch(() => {}); }}
                             className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Enter annexure header"
                           />
@@ -1701,6 +1709,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
           <span className="ml-2 text-sm text-gray-600">Uploading...</span>
         </div>
       )}
+      </fieldset>
     </div>
   );
 };
@@ -1963,7 +1972,7 @@ export const PhotosSection: React.FC<SectionProps> = ({ register, errors, watch,
 
   const handleAdditionalPhotosUpdate = (newPhotos: any[]) => {
     setAdditionalPhotos(newPhotos);
-    // Persisted immediately on upload/delete; do not mark as dirty
+    // Keep the parent form current while the shared autosave queue persists edits.
     setValue('additionalPhotos', newPhotos, {
       shouldDirty: false,
       shouldTouch: true,

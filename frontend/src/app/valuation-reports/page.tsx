@@ -6,6 +6,7 @@ import { getCurrentUser, signOut, type User as AuthUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { apiRepository } from '@/lib/api-repository';
+import { LatestRequest } from '@/lib/latest-request';
 import { DEFAULT_PROPERTY_FORM, PropertyData } from '@/types/property-valuation';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
 import { Dancing_Script, Poppins, Montserrat } from 'next/font/google';
@@ -27,26 +28,6 @@ interface ValuationReportCardData {
   propertyType?: string;
   logoType?: string;
 }
-
-interface AllianceJob {
-  id: number;
-  file_number: string;
-  first_name: string;
-  last_name: string;
-  conversion_date: string | null;
-  property_address: string;
-  valuation_type: string;
-  requested_valuation_target: string;
-  survey_type: string;
-  valuation_notes: string;
-  deadline_date: string | null;
-  stage: string;
-  fillout_by: string | null;
-  photos: string;
-  created_at: string;
-  updated_at: string;
-}
-
 
 const LOGO_MAP: Record<string, string> = {
   AAP: '/images/logos/aap-logo.png',
@@ -88,12 +69,6 @@ export default function ValuationReportsPage() {
   const [numCopies, setNumCopies] = useState<number>(1);
   const [isDuplicating, setIsDuplicating] = useState(false);
 
-  // Alliance state
-  const [allianceJobs, setAllianceJobs] = useState<AllianceJob[]>([]);
-  const [isLoadingAlliance, setIsLoadingAlliance] = useState(false);
-  const [allianceError, setAllianceError] = useState<string | null>(null);
-  const [showAllianceSection, setShowAllianceSection] = useState(true);
-  const [importingJobId, setImportingJobId] = useState<number | null>(null);
   // Intersection Observer for infinite scrolling
   const observerTarget = React.useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -102,15 +77,27 @@ export default function ValuationReportsPage() {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
+  const requests = React.useRef(new LatestRequest());
+  const searchRef = React.useRef(searchTerm);
+  const loadedSearchRef = React.useRef<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const fetchValuationReports = async (pageNum: number, search: string, reset: boolean = false) => {
+    if (search !== searchRef.current) return;
+    if (!reset && (requests.current.busy || loadedSearchRef.current !== search)) return;
+    const request = requests.current.start();
+    setLoadError(null);
     try {
       if (reset) {
+        loadedSearchRef.current = null;
+        setIsFetchingMore(false);
         if (!isLoading) setIsSearching(true);
       } else {
         setIsFetchingMore(true);
       }
       
-      const { bundles, totalCount } = await apiRepository.listPropertyBundles(pageNum, 24, search);
+      const { bundles, totalCount } = await apiRepository.listPropertyBundles(pageNum, 24, search, request.signal);
+      if (!request.current()) return;
       const cards: ValuationReportCardData[] = bundles.map(({ property }) => {
         let derivedLogoType = property.valuationDetails?.logoType;
         if (property.fileNumber) {
@@ -146,11 +133,16 @@ export default function ValuationReportsPage() {
       }
       
       setTotalReportsCount(totalCount);
-      setHasMore(cards.length === 24);
+      loadedSearchRef.current = search;
+      setCurrentPage(pageNum);
+      setHasMore(pageNum * 24 < totalCount);
     } catch (e) {
+      if (!request.current()) return;
       console.error('Failed to fetch valuation reports:', e);
-      if (reset) setValuationReports([]);
+      setLoadError('Unable to load reports. Please retry.');
     } finally {
+      if (!request.current()) return;
+      request.finish();
       if (reset) {
         setIsLoading(false);
         setIsSearching(false);
@@ -163,9 +155,8 @@ export default function ValuationReportsPage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && hasMore && !isLoading && !isFetchingMore) {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isSearching && !isFetchingMore && !loadError) {
           const next = currentPage + 1;
-          setCurrentPage(next);
           fetchValuationReports(next, searchTerm, false);
         }
       },
@@ -177,17 +168,9 @@ export default function ValuationReportsPage() {
     }
 
     return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
+      observer.disconnect();
     };
-  }, [observerTarget.current, hasMore, isLoading, isFetchingMore, currentPage, searchTerm]);
-
-  // Inspection state
-  const [inspectionReports, setInspectionReports] = useState<any[]>([]);
-  const [isLoadingInspection, setIsLoadingInspection] = useState(false);
-  const [inspectionError, setInspectionError] = useState<string | null>(null);
-  const [showInspectionSection, setShowInspectionSection] = useState(true);
+  }, [hasMore, isLoading, isSearching, isFetchingMore, currentPage, searchTerm, loadError]);
 
   // Track user button position for dropdown placement
   const userButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -202,45 +185,6 @@ export default function ValuationReportsPage() {
       });
     }
   }, [isUserMenuOpen]);
-
-  // Auto-fetch inspection reports on mount
-  useEffect(() => {
-    const fetchInspectionReports = async () => {
-      setIsLoadingInspection(true);
-      try {
-        const response = await apiRepository.getInspectionReports(1, 20);
-        if (response.success && response.data) {
-          setInspectionReports(response.data);
-        }
-      } catch (error) {
-        console.error('Error auto-fetching inspection reports:', error);
-      } finally {
-        setIsLoadingInspection(false);
-      }
-    };
-
-    fetchInspectionReports();
-  }, []);
-
-  const handleDeleteInspectionReport = async (reportId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent navigation
-    if (!confirm('Are you sure you want to delete this inspection report? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      await apiRepository.deleteInspectionReport(reportId);
-
-      // Remove from state
-      setInspectionReports(prev => prev.filter(report => report.id !== reportId));
-
-      // Show success feedback (optional, could use a toast)
-      alert('Report deleted successfully');
-    } catch (error: any) {
-      console.error('Error deleting report:', error);
-      alert(error.message || 'Failed to delete report');
-    }
-  };
 
   // Check authentication
   useEffect(() => {
@@ -260,88 +204,21 @@ export default function ValuationReportsPage() {
     checkAuth();
   }, [router]);
 
-  // Auto-load Alliance reports after valuation reports are loaded
   useEffect(() => {
-    // Only fetch alliance reports after valuation reports are loaded
-    if (isLoading) {
-      return;
-    }
-
-    const loadAllianceReports = async () => {
-      try {
-        setIsLoadingAlliance(true);
-        setAllianceError(null);
-        const response = await apiRepository.getAllianceJobs(1, 20);
-        if (response.success && response.data?.data) {
-          // Get all existing alliance IDs from valuation reports
-          const existingAllianceIds = new Set(
-            valuationReports
-              .map(report => report.allianceId?.toString())
-              .filter(Boolean)
-          );
-
-          // Filter out alliance reports that already exist in valuation reports
-          const filteredJobs = response.data.data.filter((job: AllianceJob) => {
-            const jobIdStr = job.id.toString();
-            return !existingAllianceIds.has(jobIdStr);
-          });
-
-          setAllianceJobs(filteredJobs);
-        } else {
-          setAllianceError('Failed to fetch Alliance jobs');
-        }
-      } catch (error) {
-        console.error('Error fetching Alliance jobs:', error);
-        setAllianceError('Failed to load Alliance reports');
-      } finally {
-        setIsLoadingAlliance(false);
-      }
-    };
-
-    loadAllianceReports();
-  }, [isLoading, valuationReports]); // Run when loading state or valuation reports change
-
-
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      setCurrentPage(1);
-      fetchValuationReports(1, searchTerm, true);
+    searchRef.current = searchTerm;
+    requests.current.cancel();
+    loadedSearchRef.current = null;
+    setIsSearching(true);
+    setIsFetchingMore(false);
+    setLoadError(null);
+    const timer = setTimeout(() => {
+      void fetchValuationReports(1, searchTerm, true);
     }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
+    return () => {
+      clearTimeout(timer);
+      requests.current.cancel();
+    };
   }, [searchTerm]);
-
-  const fetchAllianceJobs = async () => {
-    try {
-      setIsLoadingAlliance(true);
-      setAllianceError(null);
-      const response = await apiRepository.getAllianceJobs(1, 20);
-      if (response.success && response.data?.data) {
-        // Get all existing alliance IDs from valuation reports
-        const existingAllianceIds = new Set(
-          valuationReports
-            .map(report => report.allianceId?.toString())
-            .filter(Boolean)
-        );
-
-        // Filter out alliance reports that already exist in valuation reports
-        const filteredJobs = response.data.data.filter((job: AllianceJob) => {
-          const jobIdStr = job.id.toString();
-          return !existingAllianceIds.has(jobIdStr);
-        });
-
-        setAllianceJobs(filteredJobs);
-      } else {
-        setAllianceError('Failed to fetch Alliance jobs');
-      }
-    } catch (error) {
-      console.error('Failed to fetch Alliance jobs:', error);
-      setAllianceError('Failed to connect to Alliance service');
-    } finally {
-      setIsLoadingAlliance(false);
-    }
-  };
 
   const handleCreateNew = () => {
     // Navigate to the new valuation report page
@@ -602,7 +479,12 @@ export default function ValuationReportsPage() {
               type="text"
               placeholder="Search by file number, address, valuer, client or property number..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                  searchRef.current = e.target.value;
+                  loadedSearchRef.current = null;
+                  requests.current.cancel();
+                  setSearchTerm(e.target.value);
+                }}
               className="bg-transparent text-white text-[17px] w-full placeholder-white/80 focus:outline-none tracking-wide"
             />
           </div>
@@ -657,7 +539,12 @@ export default function ValuationReportsPage() {
             type="text"
             placeholder="Search..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+                  searchRef.current = e.target.value;
+                  loadedSearchRef.current = null;
+                  requests.current.cancel();
+                  setSearchTerm(e.target.value);
+                }}
             className="bg-transparent text-white text-[15px] w-full placeholder-white/80 focus:outline-none"
           />
         </div>
@@ -665,6 +552,15 @@ export default function ValuationReportsPage() {
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 relative">
+              {loadError && (
+              <div role="alert" className="my-4 text-center text-red-700">
+                {loadError}{' '}
+                <button type="button" className="underline font-semibold" onClick={() => {
+                  void fetchValuationReports(loadedSearchRef.current === searchTerm ? currentPage + 1 : 1, searchTerm, loadedSearchRef.current !== searchTerm);
+                }}>Retry</button>
+              </div>
+            )}
+
         
         {/* User Menu Dropdown Portal */}
         {isUserMenuOpen && currentUser && (
@@ -812,8 +708,8 @@ export default function ValuationReportsPage() {
             </div>
               ))}
             </div>
-            {hasMore && (
-              <div ref={observerTarget} className="h-10 w-full mt-4 flex items-center justify-center text-gray-400">
+            {hasMore && !loadError && (
+            <div ref={observerTarget} className="h-10 w-full mt-4 flex items-center justify-center text-gray-400">
                 <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500" />
               </div>
             )}

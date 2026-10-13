@@ -1,5 +1,7 @@
 'use client';
 
+import { flushAdditionalPhotoSaves } from '@/lib/additional-photo-saves';
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
@@ -327,6 +329,7 @@ export default function ValuationReportEditPage() {
       setIsGeneratingReport(true);
       
       // Generate the PDF report using the correct endpoint
+      await flushAdditionalPhotoSaves(reportId);
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/generate`, {
         method: 'POST',
         headers: {

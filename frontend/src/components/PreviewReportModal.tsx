@@ -1,5 +1,7 @@
 'use client';
 
+import { flushAdditionalPhotoSaves } from '@/lib/additional-photo-saves';
+
 import React, { useState } from 'react';
 import { X, Download, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
 
@@ -67,6 +69,7 @@ export function PreviewReportModal({
       const { API_BASE_URL } = await import('@/lib/api-config');
       
       // Call the PDF generation endpoint
+      await flushAdditionalPhotoSaves(reportId);
       const response = await fetch(`${API_BASE_URL}${pdfPath}`, {
         method: 'POST',
         headers: {

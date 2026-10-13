@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from './api-client';
+import { flushAdditionalPhotoSaves, saveReportAfterPhotos } from './additional-photo-saves';
 import { API_BASE_URL } from './api-config';
 import { PropertyData, ValuationReportData, DEFAULT_PROPERTY_FORM } from '@/types/property-valuation';
 
@@ -218,9 +219,9 @@ export const apiRepository = {
   /**
    * Get valuation reports with pagination and search
    */
-  async listPropertyBundles(page: number = 1, limit: number = 24, search: string = ''): Promise<{ bundles: PropertyBundle[], totalCount: number }> {
+  async listPropertyBundles(page: number = 1, limit: number = 24, search: string = '', signal?: AbortSignal): Promise<{ bundles: PropertyBundle[], totalCount: number }> {
     try {
-      const response = await apiClient.get<ApiValuationReportsResponse>(`/valuation-reports/?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
+      const response = await apiClient.get<ApiValuationReportsResponse>(`/valuation-reports/?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, signal);
 
       return {
         bundles: response.reports.map(report => ({
@@ -230,7 +231,7 @@ export const apiRepository = {
         totalCount: response.total_count || 0
       };
     } catch (error) {
-      console.error('Failed to list valuation reports:', error);
+      if (!signal?.aborted) console.error('Failed to list valuation reports:', error);
       throw error;
     }
   },
@@ -315,8 +316,9 @@ export const apiRepository = {
    */
   async updateProperty(propertyId: string, propertyData: ValuationReportData): Promise<void> {
     try {
-      const backendData = transformValuationReportToBackend(propertyData);
-      await apiClient.put(`/valuation-reports/${propertyId}`, backendData);
+      await saveReportAfterPhotos(propertyId, propertyData, async latest => {
+        await apiClient.put(`/valuation-reports/${propertyId}`, transformValuationReportToBackend(latest));
+      });
     } catch (error) {
       console.error('Failed to update valuation report:', error);
       throw error;
@@ -416,8 +418,9 @@ export const apiRepository = {
    */
   async updateValuationReport(reportId: string, data: ValuationReportData): Promise<void> {
     try {
-      const backendData = transformValuationReportToBackend(data);
-      await apiClient.put(`/valuation-reports/${reportId}`, backendData);
+      await saveReportAfterPhotos(reportId, data, async latest => {
+        await apiClient.put(`/valuation-reports/${reportId}`, transformValuationReportToBackend(latest));
+      });
     } catch (error) {
       console.error('Failed to update valuation report:', error);
       throw error;
@@ -541,6 +544,7 @@ export const apiRepository = {
    */
   async generateReportPreview(reportId: string): Promise<string> {
     try {
+      await flushAdditionalPhotoSaves(reportId);
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/preview`, {
         method: 'POST',
         credentials: 'include',
@@ -567,6 +571,7 @@ export const apiRepository = {
    */
   async generateReport(reportId: string): Promise<Blob> {
     try {
+      await flushAdditionalPhotoSaves(reportId);
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/generate`, {
         method: 'POST',
         credentials: 'include',
@@ -593,6 +598,7 @@ export const apiRepository = {
    */
   async generateInvoicePreview(reportId: string): Promise<string> {
     try {
+      await flushAdditionalPhotoSaves(reportId);
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/invoice/preview`, {
         method: 'POST',
         credentials: 'include',
@@ -618,6 +624,7 @@ export const apiRepository = {
    */
   async generateInvoice(reportId: string): Promise<Blob> {
     try {
+      await flushAdditionalPhotoSaves(reportId);
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/invoice`, {
         method: 'POST',
         credentials: 'include',
@@ -643,6 +650,7 @@ export const apiRepository = {
     payload?: { to?: string; subject?: string; message?: string }
   ): Promise<{ message: string; recipient: string; invoice_number?: string }> {
     try {
+      await flushAdditionalPhotoSaves(reportId);
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/invoice/send`, {
         method: 'POST',
         credentials: 'include',
@@ -737,6 +745,7 @@ export const apiRepository = {
     payload?: { to?: string; subject?: string; message?: string; recipientType?: 'client' | 'poc' }
   ): Promise<{ message: string; recipient: string; file_number?: string }> {
     try {
+      await flushAdditionalPhotoSaves(reportId);
       const response = await fetch(`${API_BASE_URL}/valuation-reports/${reportId}/report/send`, {
         method: 'POST',
         credentials: 'include',
