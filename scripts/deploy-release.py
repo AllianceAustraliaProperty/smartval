@@ -10,7 +10,7 @@ import subprocess
 import time
 import urllib.request
 
-SERVICES = {'frontend': 'smartval-frontend', 'backend': 'smartval-backend', 'pdf-worker': 'smartval-pdf-worker'}
+SERVICES = {'frontend': 'smartval-frontend', 'backend': 'smartval-backend', 'pdf-worker': 'smartval-pdf-worker', 'email-worker': 'smartval-email-worker'}
 
 def run(args, **kwargs):
     return subprocess.run(args, check=True, **kwargs)
@@ -19,7 +19,9 @@ def inspect(name):
     return json.loads(subprocess.check_output(['docker', 'inspect', name]))[0]
 
 def wait_healthy(service):
-    if service == 'frontend':
+    if service == 'email-worker':
+        command = ['python', 'email_scheduler.py', '--healthcheck']
+    elif service == 'frontend':
         command = ['node', '-e', "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"]
     else:
         port = 5001 if service == 'pdf-worker' else 5000
@@ -34,7 +36,9 @@ def wait_healthy(service):
     raise RuntimeError(service + ' did not become healthy')
 
 def activate(compose, base, images, repo=None):
-    for service in ('pdf-worker', 'backend', 'frontend'):
+    selected = json.loads(images.read_text())['services']
+    for service in ('pdf-worker', 'email-worker', 'backend', 'frontend'):
+        if service not in selected: continue
         run([compose, '--project-directory', str(repo or base.parent), '-p', 'smartval', '-f', str(base), '-f', str(images), 'up', '-d', '--no-deps', '--no-build', service])
         wait_healthy(service)
 
@@ -48,7 +52,12 @@ def deploy(repo, frontend_image=None, backend_image=None):
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         release = releases / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S') + '-' + revision)
         release.mkdir(mode=0o700)
-        previous = {service: inspect(name)['Image'] for service, name in SERVICES.items()}
+        previous = {}
+        for service, name in SERVICES.items():
+            try:
+                previous[service] = inspect(name)['Image']
+            except subprocess.CalledProcessError:
+                if service != 'email-worker': raise
         rollback = release / 'rollback-images.json'
         rollback.write_text(json.dumps({'services': {s: {'image': image} for s, image in previous.items()}}))
         shutil.copy2(base, release / 'compose.yml')
@@ -68,13 +77,15 @@ def deploy(repo, frontend_image=None, backend_image=None):
             with (release / 'backend-build.log').open('w') as log:
                 run(['docker', 'build', '-t', backend_image, str(repo / 'backend')], stdout=log, stderr=subprocess.STDOUT)
         images = release / 'images.json'
-        images.write_text(json.dumps({'services': {'frontend': {'image': frontend_image}, 'backend': {'image': backend_image}, 'pdf-worker': {'image': backend_image}}}))
+        images.write_text(json.dumps({'services': {'frontend': {'image': frontend_image}, 'backend': {'image': backend_image}, 'pdf-worker': {'image': backend_image}, 'email-worker': {'image': backend_image}}}))
         run([compose, '--project-directory', str(repo), '-p', 'smartval', '-f', str(base), '-f', str(images), 'config', '--quiet'], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         try:
             activate(compose, base, images)
             assert urllib.request.urlopen('https://aapvaluations.com.au/login', timeout=20).status == 200
         except Exception:
             print('Release failed; restoring previous service images.', flush=True)
+            if 'email-worker' not in previous:
+                subprocess.run(['docker', 'rm', '-f', SERVICES['email-worker']], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             activate(compose, rollback_base, rollback, repo)
             shutil.copy2(rollback_base, base)
             print('Rollback services are healthy.', flush=True)

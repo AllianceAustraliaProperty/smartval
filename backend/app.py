@@ -57,6 +57,9 @@ def create_app(config_class=Config):
         }
     })
     
+    from blueprints.email_schedules import email_schedules_bp
+    app.register_blueprint(email_schedules_bp, url_prefix='/api/valuation-reports')
+
     # Register blueprints
     from blueprints.main import main_bp
     from blueprints.api import api_bp

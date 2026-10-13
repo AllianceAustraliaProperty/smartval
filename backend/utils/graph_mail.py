@@ -113,7 +113,7 @@ def list_users(search=None, top=15):
 
 
 def send_mail(to_recipients, subject, html_body, attachments=None,
-              cc_recipients=None, sender=None, save_to_sent=True):
+              cc_recipients=None, sender=None, save_to_sent=True, before_send=None):
     sender = sender or Config.MS_GRAPH_SENDER_EMAIL
     if not sender:
         raise GraphMailError('Sender mailbox is not configured (MS_GRAPH_SENDER_EMAIL).')
@@ -137,6 +137,8 @@ def send_mail(to_recipients, subject, html_body, attachments=None,
 
     token = _get_access_token()
     send_url = f'{GRAPH_BASE}/users/{sender}/sendMail'
+    if before_send is not None:
+        before_send()
     try:
         resp = requests.post(
             send_url,

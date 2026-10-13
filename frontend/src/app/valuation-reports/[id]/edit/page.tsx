@@ -1,5 +1,7 @@
 'use client';
 
+import { ReportSchedule } from '@/components/ReportSchedule';
+
 import { flushAdditionalPhotoSaves } from '@/lib/additional-photo-saves';
 
 import dynamic from 'next/dynamic';
@@ -569,8 +571,8 @@ export default function ValuationReportEditPage() {
           <div className="p-8">
             {/* Header */}
             <div className="mb-8">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+              <div className="flex flex-col gap-5 2xl:flex-row 2xl:items-center 2xl:justify-between">
+                <div className="flex flex-wrap items-center gap-4">
                   <button
                     onClick={handleCancel}
                     className="group flex items-center space-x-3 px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors duration-300"
@@ -640,7 +642,7 @@ export default function ValuationReportEditPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-wrap items-center gap-3">
                   <div className="relative" data-report-menu>
                     <button
                       onClick={() => setIsReportMenuOpen((open) => !open)}
@@ -698,6 +700,11 @@ export default function ValuationReportEditPage() {
                       </div>
                     )}
                   </div>
+
+                  <ReportSchedule reportId={String(params.id)} onPrepare={async () => {
+                    if (!validatePhotosAndComparables()) return false;
+                    return prepareReport();
+                  }} />
 
                   <div className="relative" data-invoice-menu>
                     <button

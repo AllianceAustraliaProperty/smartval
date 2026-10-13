@@ -7,12 +7,87 @@ how the app now runs, and what the team still needs to do.
 ## Current status
 
 - The recovery and performance changes are deployed and pushed to `main`.
-- The frontend, backend and PDF worker passed their latest health checks, with no container restarts recorded after deployment.
+- The frontend, backend, PDF worker and email worker passed their latest health checks, with no container restarts recorded after deployment.
 - Login, JavaScript assets, protected routes, report reads, inspection-report reads and a synthetic PDF render were checked.
 - Alliance connectivity is still unresolved and is left for the developer, as requested.
 - Credential rotation is still outstanding; the owner asked their team to handle it separately.
 
 These are results from the deployment checks, not a promise of continuous monitoring.
+
+## Schedule a report email
+
+1. Open a report in the editor and select **Schedule email**, beside the Report actions.
+2. Check **To**, optional **Cc**, the greeting, send date/time and time zone. Sydney is the default.
+3. Select **Prepare email preview**. This saves the report and generates the attachment; it does not send an email.
+4. Review the email and open **Review attached PDF**, then select **Schedule email**.
+5. The button shows the current status. Open it to change the time, cancel, refresh status or view recent history.
+
+You can close the browser after confirmation. The server keeps the schedule across restarts.
+Only the person who created a schedule can change it. One active schedule is allowed per report;
+manual **Send Report** is blocked while that schedule is active.
+
+The email uses the existing report email template, sender and signature. Recipients, rendered
+email and PDF are frozen when you prepare the preview. Later report edits do **not** update
+that attachment. The scheduling screen warns about changes; cancel and prepare again to use
+the latest report. Changing only the send time keeps the approved attachment.
+
+### Delivery rules
+
+- Choose a time at least **2 minutes ahead**, up to one year in advance. Ambiguous or missing daylight-saving times are rejected.
+- Unconfirmed previews expire after **one hour**. Confirmation checks that the report has not changed.
+- The PDF must be **2.5 MB or smaller**. Larger attachment support is a developer follow-up below.
+- A separate email worker claims each due job atomically. It processes one send at a time and checks idle queues every 15 seconds.
+- Jobs survive restarts. A crash before submission can recover; a crash/timeout after submission becomes **Needs review** and is never automatically resent.
+- **Accepted by Microsoft** means Microsoft accepted the request, not that the recipient received it. Check the sender mailbox for delivery failures.
+- A missing/deleted report or a send more than one hour late pauses for review instead of sending unexpectedly.
+- A configuration failure before submission is marked **Failed**. Fix the cause and prepare a new schedule.
+- For **Needs review**, check the sender's Sent Items before selecting **Review and close**. A new schedule may duplicate an email already submitted.
+- Cancellation cannot recall a submitted email. A job already being submitted cannot be cancelled or rescheduled.
+- Frozen PDFs and email bodies are removed 30 days after accepted, cancelled or failed jobs finish. Audit/status metadata remains. Unresolved review jobs retain their attachment.
+
+### Developer and operations notes
+
+`backend/blueprints/email_schedules.py` provides authenticated scheduling endpoints.
+`backend/utils/email_schedule.py` contains the state machine and date validation.
+`backend/email_scheduler.py` is the separate worker; `frontend/src/components/ReportSchedule.tsx`
+contains the responsive scheduling dialog. Existing immediate email delivery remains available.
+
+MongoDB collections: `reportEmailSchedules` and `reportEmailSchedulerState`. The worker creates
+an atomic uniqueness guard for active jobs per report, queue/history indexes and a TTL index
+for unconfirmed previews. It starts before the API/frontend release switches, so indexes exist
+before schedules can be confirmed. API list responses exclude attachment and email-body payloads.
+All scheduling endpoints require the existing Firebase login; mutation endpoints also validate
+Origin and job ownership/version. PDFs are served through authenticated endpoints, not public links.
+
+The `email-worker` Compose service reuses the backend image, MongoDB and Graph configuration.
+It requires `SCHEDULED_EMAILS_ENABLED=true`, has a read-only filesystem, no exposed port,
+0.5 CPU and 512 MB memory limit. Health checks use a heartbeat written only after a successful
+worker cycle. The scheduler screen warns if this heartbeat is stale. To pause sends operationally,
+stop the email worker; do not delete the MongoDB jobs. Review overdue jobs before restarting.
+
+```sh
+docker exec smartval-email-worker python email_scheduler.py --healthcheck
+docker logs --tail 50 smartval-email-worker
+```
+
+Deployment records include the email worker. Rollback restores its previous image, or removes
+it when rolling back the first release that introduced it. Existing report/PDF services retain
+their health checks and rollback behavior.
+
+Tests use synthetic records and fake mail transport; no production email is sent. Install
+`backend/requirements-test.txt` in a test environment to run scheduling unit tests. The browser
+fixture uses the real scheduling component with a fake API and includes desktop/mobile checks.
+The scheduling release passed 53 backend/deployment tests, 16 frontend unit tests, 13 browser
+workflow checks, and a disposable real-MongoDB concurrent-claim/duplicate test.
+
+Microsoft documents inline attachments and the distinction between acceptance and delivery
+in its [sendMail reference](https://learn.microsoft.com/en-us/graph/api/user-sendmail?view=graph-rest-1.0).
+
+Developer TODOs for scheduling:
+- [ ] Support larger attachments using a Graph draft/upload session after reviewing required mailbox permissions; preserve the no-duplicate submission rules.
+- [ ] Add delivery reconciliation/webhooks and operational alerts for failed or review-required jobs. Do not treat Graph acceptance as confirmed delivery.
+- [ ] Consider a team-wide schedule dashboard and delegated management permissions if required; currently management belongs to the creator.
+- [ ] Review long-term audit retention and move old metadata to an agreed archive policy.
 
 ## What was done
 

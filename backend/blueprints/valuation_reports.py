@@ -1440,6 +1440,8 @@ def send_invoice_email(report_id):
 @valuation_reports_bp.route('/<report_id>/report/send', methods=['POST'])
 def send_report_email(report_id):
     try:
+        if get_database().reportEmailSchedules.find_one({'reportId': report_id, 'active': True}, {'_id': 1}):
+            return jsonify({'error': 'This report has an active scheduled email. Cancel or review that schedule before sending now.'}), 409
         report = valuation_report_model.get_by_id(report_id)
         if not report:
             return jsonify({'error': 'Valuation report not found'}), 404
