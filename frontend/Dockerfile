@@ -1,5 +1,5 @@
 # Multi-stage build for Next.js application
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_FIREBASE_API_KEY
 ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
@@ -29,7 +29,7 @@ RUN apk add --no-cache python3 py3-pip make g++ && ln -sf python3 /usr/bin/pytho
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev --no-audit --no-fund
 
 # --- Build Stage ---
 FROM base AS builder
@@ -42,7 +42,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Install all dependencies (including dev dependencies) for build
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
 # Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -82,4 +82,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
 # Start the Next.js standalone server
-CMD ["sh", "-c", "NODE_OPTIONS='--dns-result-order=ipv4first' node server.js"]
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
+CMD ["node", "server.js"]

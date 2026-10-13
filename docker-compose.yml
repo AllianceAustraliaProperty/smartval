@@ -45,7 +45,20 @@ services:
         NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
         NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+    image: smartval-frontend:recovered-20261013
     container_name: smartval-frontend
+    init: true
+    read_only: true
+    pids_limit: 256
+    cpus: 2.0
+    memswap_limit: 2G
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m,mode=1777
+      - /app/.next/cache:rw,noexec,nosuid,size=128m,uid=1001,gid=1001,mode=0700
     restart: unless-stopped
     env_file:
       - ./frontend/.env
@@ -62,6 +75,8 @@ services:
       resources:
         limits:
           memory: 2G
+          cpus: "2.0"
+          pids: 256
 
   caddy:
     image: caddy:2.8
