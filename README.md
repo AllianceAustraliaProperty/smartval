@@ -338,3 +338,22 @@ authentication scheme has been guessed, and the integration has not been disable
 | `b3e7663` | Editor loading/status improvements, conflict-safe editor saves, save-before-document actions, database references and Docker deployment/rollback |
 
 All four code changes were pushed to `main` and deployed before this documentation update.
+
+### Scheduled email worker maintenance cadence
+
+The worker checks due emails every 15 seconds when idle and continues after one
+second when a job was processed. MongoDB heartbeats are written once per minute;
+expired-lease recovery runs at startup and every five minutes. A crashed job can
+therefore wait up to five additional minutes after its lease expires before
+recovery. Ambiguous deliveries still require manual review and are never retried
+automatically. Payload cleanup remains hourly.
+
+Docker checks the worker once per minute using a local, atomically replaced
+health file. Both Docker and the schedule API reject heartbeats aged three
+minutes or more. Failed worker cycles do not refresh local health. The expected
+idle database traffic is approximately 7,800 commands/day (5,760 claim attempts,
+1,440 heartbeats, 576 lease-recovery updates and 24 cleanup updates), excluding
+MongoDB driver monitoring, startup index checks, UI reads and actual deliveries.
+
+Regression checks: `python -m unittest tests.test_email_scheduler tests.test_email_schedule`.
+Tests use synthetic records and mocked transport; they do not send email.

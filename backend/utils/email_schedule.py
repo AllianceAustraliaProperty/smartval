@@ -60,8 +60,8 @@ def transition(collection, query, status, **fields):
     }, return_document=ReturnDocument.AFTER)
 
 
-def run_once(db, transport):
-    """Only explicit confirmation creates a scheduled job. Ambiguous sends never retry."""
+def recover_expired_jobs(db):
+    """Recover expired claims; ambiguous sends always require human review."""
     collection = db.reportEmailSchedules
     timestamp = now()
     # A crash before the send boundary is safe to retry; after it needs a person.
@@ -69,6 +69,12 @@ def run_once(db, transport):
         {'$set': {'status': 'scheduled', 'nextAttemptAt': timestamp}, '$inc': {'version': 1}})
     collection.update_many({'status': 'sending', 'leaseUntil': {'$lt': timestamp}},
         {'$set': {'status': 'needs_review', 'reason': 'Delivery uncertain. Check the sender’s Sent Items before closing this schedule.'}, '$inc': {'version': 1}})
+
+
+def run_once(db, transport):
+    """Claim one due job atomically. Ambiguous sends never retry."""
+    collection = db.reportEmailSchedules
+    timestamp = now()
     job = collection.find_one_and_update({'status': 'scheduled', 'nextAttemptAt': {'$lte': timestamp}},
         {'$set': {'status': 'processing', 'leaseUntil': timestamp + timedelta(minutes=5)}, '$inc': {'version': 1, 'attempts': 1}},
         sort=[('nextAttemptAt', 1)], return_document=ReturnDocument.AFTER)
