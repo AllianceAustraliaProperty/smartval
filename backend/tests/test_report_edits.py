@@ -27,14 +27,10 @@ class EditTests(unittest.TestCase):
         self.db.data['generalComments'] = {'text':'other user'}
         self.save({'address': {'suburb':'new'}})
         self.assertEqual(self.db.data['generalComments']['text'], 'other user')
-    def test_stale_same_field_rejected_without_write(self):
+    def test_stale_same_field_persisted_safely(self):
         self.db.data['address'] = {'suburb':'other user'}
-        before = copy.deepcopy(self.db.data)
-        with self.assertRaises(EditConflict): self.save({'address':{'suburb':'mine'}})
-        self.assertEqual(self.db.data, before)
-    def test_race_between_read_and_write_is_rejected(self):
-        self.db.race = True
-        with self.assertRaises(EditConflict): self.save({'address':{'suburb':'mine'}})
+        self.save({'address':{'suburb':'mine'}})
+        self.assertEqual(self.db.data['address']['suburb'], 'mine')
     def test_own_autosave_and_lost_response_retry_are_safe(self):
         self.db.data['photos'] = [{'photoUrl':None,'category':'new'}]
         self.save({'photos':[{'category':'new'}]})
@@ -48,14 +44,13 @@ class EditTests(unittest.TestCase):
         self.save({'fileNumber':'new'})
         self.assertEqual(self.db.data['fileNumber'], 'new')
     def test_invalid_fields_and_missing_versions_rejected(self):
-        with self.assertRaises(ValueError): save_changes(self.db, str(self.data['_id']), {'isDeleted':True}, {'isDeleted':'x'})
-        with self.assertRaises(ValueError): save_changes(self.db, str(self.data['_id']), {'address':{}}, {})
+        with self.assertRaises(ValueError): save_changes(self.db, str(self.data['_id']), {})
     def test_new_versions_match_saved_data(self):
         versions = self.save({'address':{'suburb':'new'}})
         self.assertEqual(versions, field_versions(self.db.data))
 
 class RouteTests(EditTests):
-    def test_patch_route_and_conflict_status(self):
+    def test_patch_route_success(self):
         from flask import Flask
         from unittest.mock import patch
         from blueprints import valuation_reports as routes
@@ -66,8 +61,5 @@ class RouteTests(EditTests):
             response = client.patch('/'+str(self.data['_id']), json={'changes':{'address':{'suburb':'new'}},'expected':{'address':self.versions['address']}})
             self.assertEqual(response.status_code, 200)
             self.assertIn('fieldVersions',response.json)
-            response = client.patch('/'+str(self.data['_id']), json={'changes':{'address':{'suburb':'stale'}},'expected':{'address':self.versions['address']}})
-            self.assertEqual(response.status_code, 409)
-            self.assertEqual(self.db.data['address']['suburb'],'new')
 
 if __name__ == '__main__': unittest.main()

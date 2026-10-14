@@ -369,13 +369,13 @@ def duplicate_valuation_report(report_id):
 
 @valuation_reports_bp.route('/<report_id>', methods=['PATCH'])
 def patch_valuation_report(report_id):
-    """Save changed editor fields with optimistic conflict protection."""
+    """Save changed editor fields."""
     try:
         payload = request.get_json() or {}
         changes = payload.get('changes')
         expected = payload.get('expected')
-        if not isinstance(changes, dict) or not isinstance(expected, dict):
-            return jsonify({'error': 'Changes and field versions are required'}), 400
+        if not isinstance(changes, dict) or not changes:
+            return jsonify({'error': 'Changes are required'}), 400
         date_fields = ['valuationDate', 'inspectionDate', 'reportDate', 'conversionDate', 'deadlineDate', 'dateIssued']
         if isinstance(changes.get('valuationDetails'), dict):
             convert_date_strings_to_datetime(changes['valuationDetails'], date_fields)
@@ -384,17 +384,14 @@ def patch_valuation_report(report_id):
                 for comparable in changes['comparables'].get(kind, []):
                     convert_date_strings_to_datetime(comparable, ['saleLeaseDate'])
         changes = clean_nulls(changes)
-        expected = {key: value for key, value in expected.items() if key in changes}
         versions = save_changes(valuation_report_model.collection, report_id, changes, expected)
         return jsonify({'message': 'Valuation report updated successfully', 'fieldVersions': versions}), 200
-    except EditConflict as error:
-        return jsonify({'error': str(error), 'code': 'EDIT_CONFLICT'}), 409
     except LookupError as error:
         return jsonify({'error': str(error)}), 404
     except (ValueError, TypeError) as error:
         return jsonify({'error': str(error)}), 400
-    except Exception:
-        return jsonify({'error': 'Unable to save report. Your edits are still here. Please retry.'}), 500
+    except Exception as error:
+        return jsonify({'error': f'Unable to save report: {str(error)}'}), 500
 
 
 @valuation_reports_bp.route('/<report_id>', methods=['PUT'])

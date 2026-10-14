@@ -168,22 +168,34 @@ export default function ValuationReportEditPage() {
     defaultValues: DEFAULT_PROPERTY_FORM,
   });
 
-  // Load property data
+  // load property data and restore session draft if exists
   useEffect(() => {
     async function loadProperty() {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Load the valuation report directly
+        // load the valuation report directly
         const report = await apiRepository.getValuationReport(reportId);
         if (!report) {
           setError('Valuation report not found');
           return;
         }
 
-        setProperty(report);
-        reset(report);
+        // restore local session draft if valuer had uncommitted edits
+        let initialData = report;
+        try {
+          const cached = sessionStorage.getItem(`smartval-draft-${reportId}`);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && typeof parsed === 'object') {
+              initialData = { ...report, ...parsed };
+            }
+          }
+        } catch {}
+
+        setProperty(initialData);
+        reset(initialData);
       } catch (err) {
         console.error('Failed to load valuation report:', err);
         setError('Failed to load valuation report');
@@ -196,6 +208,18 @@ export default function ValuationReportEditPage() {
       loadProperty();
     }
   }, [reportId, reset]);
+
+  // preserve in-progress edits in session storage so page reload never wipes progress
+  useEffect(() => {
+    const subscription = watch((value) => {
+      try {
+        if (value && reportId) {
+          sessionStorage.setItem(`smartval-draft-${reportId}`, JSON.stringify(value));
+        }
+      } catch {}
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, reportId]);
 
   const { completedSections, sectionsWithErrors } = useSectionStatus(
     watch, getValues, errors, sectionIds, getSectionData, checkSectionCompletion, checkSectionErrors);
@@ -220,6 +244,9 @@ export default function ValuationReportEditPage() {
   const onSubmit = async (data: PropertyValuationData) => {
     try {
       await saveForm(data);
+      try {
+        sessionStorage.removeItem(`smartval-draft-${reportId}`);
+      } catch {}
       alert('Valuation report updated successfully!');
     } catch { /* Keep the form and its draft visible for retry. */ }
   };

@@ -9,7 +9,10 @@ import os
 from pathlib import Path
 import tempfile
 import time
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
 from contextlib import contextmanager
 
 log = logging.getLogger(__name__)
@@ -79,6 +82,9 @@ class RenderCache:
 
         Fixed lock stripes avoid an unbounded collection of lock files.
         """
+        if fcntl is None:
+            yield
+            return
         try:
             self.path.mkdir(parents=True, exist_ok=True, mode=0o700)
             lock_file = open(self.path / ('.key-%02x.lock' % (int(self.digest(key)[:4], 16) % 64)), 'a')

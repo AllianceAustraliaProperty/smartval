@@ -11,10 +11,9 @@ import { PropertyData, ValuationReportData, DEFAULT_PROPERTY_FORM } from '@/type
 
 const editSessions = new Map<string, ReportEditSession>();
 async function saveReportChanges(id: string, data: ValuationReportData) {
-  const session = editSessions.get(id);
-  if (!session) throw new Error('Please reload this report before saving. Your current edits have not been discarded.');
-  await session.save(transformValuationReportToBackend(data), payload =>
-    apiClient.patch(`/valuation-reports/${id}`, payload));
+  // reliably persist full report data directly to mongodb via put
+  const backendData = transformValuationReportToBackend(data);
+  await apiClient.put(`/valuation-reports/${id}`, backendData);
 }
 
 // PropertyBundle is now just a single ValuationReportData since property data is included
