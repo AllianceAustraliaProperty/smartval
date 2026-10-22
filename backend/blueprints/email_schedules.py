@@ -11,6 +11,7 @@ from database import get_database
 from config import Config
 from models.settings import Settings
 from utils.email_schedule import now, fingerprint, addresses, send_time, transition
+from utils.email_schedule_timing import HEALTH_MAX_AGE
 
 email_schedules_bp = Blueprint('email_schedules', __name__)
 ROOT = '/<report_id>/email-schedules'
@@ -87,7 +88,7 @@ def listing(report_id):
     heartbeat = db.reportEmailSchedulerState.find_one({'_id': 'worker'}) or {}
     contact = report.get('primaryContact') or {}
     return jsonify(jobs=[dto(x, report) for x in jobs], defaults={'to': contact.get('email') or contact.get('email2', ''), 'cc': contact.get('email2', '') if contact.get('email') else ''},
-        workerHealthy=bool(heartbeat.get('at') and now() - heartbeat['at'] < timedelta(minutes=2)))
+        workerHealthy=bool(heartbeat.get('at') and timedelta(0) <= now() - heartbeat['at'] < timedelta(seconds=HEALTH_MAX_AGE)))
 
 
 @email_schedules_bp.post(ROOT + '/prepare')

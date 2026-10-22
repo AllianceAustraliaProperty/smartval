@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 from bson import ObjectId
 import mongomock
 from flask import Flask, request
-from utils.email_schedule import now, send_time, addresses, ensure_indexes, run_once, fingerprint
+from utils.email_schedule import now, send_time, addresses, ensure_indexes, run_once, fingerprint, recover_expired_jobs
 from blueprints.email_schedules import email_schedules_bp
 
 
@@ -77,12 +77,13 @@ class ScheduleTests(unittest.TestCase):
 
     def test_crashed_send_requires_review(self):
         self.add(status='sending', leaseUntil=now() - timedelta(seconds=1))
-        transport = Mock(); run_once(self.db, transport)
+        transport = Mock(); recover_expired_jobs(self.db); run_once(self.db, transport)
         transport.assert_not_called()
         self.assertEqual(self.collection.find_one()['status'], 'needs_review')
 
     def test_crash_before_send_can_recover(self):
         self.add(status='processing', leaseUntil=now() - timedelta(seconds=1))
+        recover_expired_jobs(self.db)
         transport = Mock(side_effect=lambda **kwargs: kwargs['before_send']())
         run_once(self.db, transport)
         self.assertEqual(self.collection.find_one()['status'], 'accepted')
@@ -134,6 +135,15 @@ class ScheduleTests(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         self.assertNotIn('pdf', result.json['jobs'][0]); self.assertNotIn('html', result.json['jobs'][0])
         self.assertFalse(result.json['jobs'][0]['reportChanged'])
+
+    def test_worker_health_allows_three_minutes_but_rejects_stale_or_future(self):
+        reference = now()
+        for age, expected in [(0, True), (119, True), (179, True), (180, False), (240, False), (-1, False)]:
+            self.db.reportEmailSchedulerState.update_one({'_id': 'worker'},
+                {'$set': {'at': reference - timedelta(seconds=age)}}, upsert=True)
+            with patch('blueprints.email_schedules.now', return_value=reference):
+                result = self.client.get(self.path.rsplit('/', 2)[0])
+            self.assertEqual(result.json['workerHealthy'], expected, age)
 
     def test_reschedule_preserves_approved_payload(self):
         self.add()
