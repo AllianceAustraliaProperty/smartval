@@ -236,24 +236,52 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
   };
 
   const checkIsUnit = (): boolean => {
+    const isUnitValuation = watch('valuationDetails.isUnit');
     const propertyType = (watch('propertyDetails.propertyType') || '').toLowerCase().trim();
     const mainBuildingType = (watch('propertyDescriptors.mainBuildingType') || '').toLowerCase().trim();
-    const valuationType = (watch('valuationDetails.valuationType') || '').toLowerCase().trim();
-    const unitNumber = (watch('address.unitNumber') || '').trim();
 
-    const unitKeywords = ['unit', 'apartment', 'studio', 'dual key apartment', 'flat'];
-    return (
-      unitKeywords.some((keyword) => propertyType.includes(keyword)) ||
-      unitKeywords.some((keyword) => mainBuildingType.includes(keyword)) ||
-      unitKeywords.some((keyword) => valuationType.includes(keyword)) ||
-      Boolean(unitNumber)
-    );
+    // 1. Explicit house property types take highest precedence
+    const explicitHouseTypes = [
+      'house',
+      'house & granny flat',
+      'duplex',
+      'triplex',
+      'semi-detached',
+      'terrace',
+      'terrace house',
+      'granny flat',
+      'rural',
+      'land',
+    ];
+    if (explicitHouseTypes.some((type) => propertyType === type || propertyType.startsWith(type))) {
+      return false;
+    }
+
+    // 2. If valuationDetails.isUnit is explicitly set as a boolean, respect it
+    if (typeof isUnitValuation === 'boolean') {
+      return isUnitValuation;
+    }
+
+    // 3. Explicit unit property types
+    const explicitUnitTypes = ['unit', 'apartment', 'studio', 'dual key apartment'];
+    if (explicitUnitTypes.some((type) => propertyType === type || propertyType.startsWith(type))) {
+      return true;
+    }
+
+    // 4. Check main building type
+    const unitBuildingTypes = ['residential apartment', 'residential studio'];
+    if (unitBuildingTypes.some((type) => mainBuildingType.includes(type))) {
+      return true;
+    }
+
+    // Default to house (false)
+    return false;
   };
 
   const fetchAndBuildMarketOverview = async (localityId: number | string): Promise<string> => {
     const isUnit = checkIsUnit();
     const propertyTypeId = isUnit ? '2' : '1';
-    const propertyLabel = isUnit ? 'unit' : 'house';
+    let propertyLabel = isUnit ? 'unit' : 'house';
 
     let response = await fetch(
       `${API_BASE_URL}/rpdata/market-trends?locality_id=${localityId}&property_type_id=${propertyTypeId}`,
@@ -269,6 +297,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
         );
         if (fallbackRes.ok) {
           response = fallbackRes;
+          propertyLabel = 'house';
         }
       } catch (_) {
         // Ignore fallback error
@@ -294,8 +323,9 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
         if (fallbackRes.ok) {
           const fallbackData = await fallbackRes.json();
           const fallbackSeries = fallbackData?.data?.seriesResponseList || [];
-          if (fallbackSeries.length) {
+          if (fallbackSeries.length && fallbackSeries.some((item: any) => item.seriesDataList?.length)) {
             marketTrendsData = fallbackSeries;
+            propertyLabel = 'house';
           }
         }
       } catch (_) {
