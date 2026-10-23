@@ -8,7 +8,7 @@ type Job = { id: string; version: number; status: string; active: boolean; canMa
 type Listing = { jobs: Job[]; defaults: { to: string; cc: string }; workerHealthy: boolean };
 const zones = ['Australia/Sydney', 'Australia/Melbourne', 'Australia/Brisbane', 'Australia/Adelaide', 'Australia/Perth', 'Australia/Darwin', 'Australia/Hobart', 'UTC'];
 const labels: Record<string, string> = { scheduled: 'Scheduled', processing: 'Preparing to send', sending: 'Submitting email', accepted: 'Accepted by Microsoft', cancelled: 'Cancelled / closed', failed: 'Failed', needs_review: 'Needs review' };
-const button = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50';
+const button = 'inline-flex h-11 items-center justify-center gap-2 rounded-xl border-2 px-4 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50';
 const input = 'mt-1 min-h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-base text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100';
 function localTime(date: Date, zone: string) {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(date);

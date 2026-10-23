@@ -56,7 +56,6 @@ export default function ValuationReportsPage() {
   const [valuationReports, setValuationReports] = useState<ValuationReportCardData[]>([]);
   const [selectedReports, setSelectedReports] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [userButtonPosition, setUserButtonPosition] = useState({ top: 0, left: 0 });
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewReportId, setPreviewReportId] = useState<string | null>(null);
@@ -625,15 +624,12 @@ export default function ValuationReportsPage() {
               {valuationReports.map((report, index) => (
                 <div
                   key={report.id || index}
-                  className={`group relative bg-white rounded-[40px] border-2 p-8 transition-all duration-300 cursor-pointer flex flex-col h-full ${
+                  className={`group relative bg-white rounded-[40px] border-2 p-8 transition-all duration-200 cursor-pointer flex flex-col h-full ${
                     selectedReports.has(report.id)
-                      ? 'border-[#006ABE] scale-[1.01]'
-                      : 'border-[#e6eff5] hover:-translate-y-1 hover:border-[#006ABE]/30'
+                      ? 'border-[#006ABE] shadow-[0_4px_16px_rgba(0,106,190,0.14)]'
+                      : 'border-[#e6eff5] hover:border-[#006ABE]/40 active:border-[#006ABE]'
                   }`}
-                  style={{ boxShadow: selectedReports.has(report.id) ? '0 0 25px 2px rgba(0, 106, 190, 0.25)' : (hoveredCard === report.id ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' : '0 4px 20px rgba(0, 0, 0, 0.03)') }}
-                    onClick={(e) => handleCardClick(e, report.id)}
-                  onMouseEnter={() => setHoveredCard(report.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
+                  onClick={(e) => handleCardClick(e, report.id)}
                 >
                   
                   {/* Top row: Titles + Duplicate */}

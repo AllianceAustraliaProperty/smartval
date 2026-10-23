@@ -3,7 +3,7 @@
  * Handles all HTTP requests to the Flask backend
  */
 
-import { API_BASE_URL } from './api-config';
+import { API_BASE_URL, resolveApiBaseUrl } from './api-config';
 
 interface ApiResponse<T> {
   data?: T;
@@ -21,7 +21,7 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    let base = this.baseUrl.replace(/\/+$/, '');
+    let base = (typeof window !== 'undefined' ? resolveApiBaseUrl() : this.baseUrl).replace(/\/+$/, '');
     if (typeof window !== 'undefined') {
       const isLocalhostHost =
         window.location.hostname === 'localhost' ||

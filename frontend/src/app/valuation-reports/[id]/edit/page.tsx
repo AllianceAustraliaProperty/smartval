@@ -597,84 +597,31 @@ export default function ValuationReportEditPage() {
         <div className="flex-1 ml-80">
           <div className="p-8">
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex flex-col gap-5 2xl:flex-row 2xl:items-center 2xl:justify-between">
-                <div className="flex flex-wrap items-center gap-4">
+            <div className="mb-8 space-y-4">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="flex items-center space-x-4 min-w-0">
                   <button
                     onClick={handleCancel}
-                    className="group flex items-center space-x-3 px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors duration-300"
+                    className="group flex items-center space-x-3 px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors duration-300 shrink-0"
                   >
                     <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
                     <span className="font-medium">Back to Valuation Reports</span>
                   </button>
                   
-                  <div className="h-8 w-px bg-gray-300"></div>
+                  <div className="h-8 w-px bg-gray-300 shrink-0"></div>
                   
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Edit Valuation Report</h1>
-                    <p className="text-gray-600">{property.address?.fullAddress || 'No address available'}</p>
-                  </div>
-                  
-                  <div className="h-8 w-px bg-gray-300"></div>
-                  
-                  {/* File Number */}
-                  <div className="flex flex-col">
-                    <label className="text-xs font-medium text-gray-500 mb-1">File Number</label>
-                    <input
-                      type="text"
-                      value={watch('fileNumber') || ''}
-                      onChange={(e) => setValue('fileNumber', e.target.value, { shouldDirty: true })}
-                      placeholder="Enter file number"
-                      className="px-3 py-2 text-sm font-semibold text-gray-900 bg-white border-2 border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors w-32"
-                    />
-                  </div>
-                  
-                  <div className="h-8 w-px bg-gray-300"></div>
-                  
-                  {/* Stage Dropdown */}
-                  <div className="flex flex-col">
-                    <label className="text-xs font-medium text-gray-500 mb-1">Stage</label>
-                    <select
-                      value={watch('valuationDetails.stage') || ''}
-                      onChange={(e) => setValue('valuationDetails.stage', e.target.value, { shouldDirty: true })}
-                      className="px-3 py-2 text-sm font-semibold text-gray-900 bg-white border-2 border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    >
-                      <option value="">Select Stage</option>
-                      <option value="Booking">Booking</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Review">Review</option>
-                      <option value="Completed">Completed</option>
-                      <option value="On Hold">On Hold</option>
-                    </select>
-                  </div>
-
-                  <div className="h-8 w-px bg-gray-300"></div>
-
-                  {/* RP Data Link */}
-                  <div className="flex flex-col">
-                    <label className="text-xs font-medium text-gray-500 mb-1">RP Data</label>
-                    {watch('rpDataId') ? (
-                      <a
-                        href={`https://rpp.corelogic.com.au/property/${watch('rpDataId')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-700 underline"
-                        title="Open in RP Data"
-                      >
-                        {watch('rpDataId')}
-                      </a>
-                    ) : (
-                      <span className="text-sm font-semibold text-gray-500">Not set</span>
-                    )}
+                  <div className="min-w-0">
+                    <h1 className="text-3xl font-bold text-gray-900 truncate">Edit Valuation Report</h1>
+                    <p className="text-gray-600 truncate">{property.address?.fullAddress || 'No address available'}</p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0 flex-nowrap">
                   <div className="relative" data-report-menu>
                     <button
                       onClick={() => setIsReportMenuOpen((open) => !open)}
                       disabled={isSaving || isGeneratingReport || isSendingReport}
-                      className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-green-700 bg-green-50 border-2 border-green-200 hover:border-green-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-11 inline-flex items-center justify-center px-4 text-sm font-semibold rounded-xl text-green-700 bg-green-50 border-2 border-green-200 hover:border-green-300 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {(isGeneratingReport || isSendingReport) ? (
                         <>
@@ -737,7 +684,7 @@ export default function ValuationReportEditPage() {
                     <button
                       onClick={() => setIsInvoiceMenuOpen((open) => !open)}
                       disabled={isSaving || isGeneratingInvoice || isSendingInvoice}
-                      className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-amber-700 bg-amber-50 border-2 border-amber-200 hover:border-amber-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-11 inline-flex items-center justify-center px-4 text-sm font-semibold rounded-xl text-amber-700 bg-amber-50 border-2 border-amber-200 hover:border-amber-300 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {(isGeneratingInvoice || isSendingInvoice) ? (
                         <>
@@ -794,11 +741,65 @@ export default function ValuationReportEditPage() {
                   <button
                     onClick={handleSubmit(onSubmit)}
                     disabled={isSaving}
-                    className="group inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-11 group inline-flex items-center justify-center px-6 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Save className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+                    <Save className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-200" />
                     {isSaving ? 'Saving...' : 'Save Changes'}
                   </button>
+                </div>
+              </div>
+
+              {/* Metadata Bar */}
+              <div className="flex items-center gap-4 pt-1">
+                {/* File Number */}
+                <div className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-500 mb-1">File Number</label>
+                  <input
+                    type="text"
+                    value={watch('fileNumber') || ''}
+                    onChange={(e) => setValue('fileNumber', e.target.value, { shouldDirty: true })}
+                    placeholder="Enter file number"
+                    className="px-3 py-2 text-sm font-semibold text-gray-900 bg-white border-2 border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors w-32"
+                  />
+                </div>
+                
+                <div className="h-8 w-px bg-gray-300"></div>
+                
+                {/* Stage Dropdown */}
+                <div className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-500 mb-1">Stage</label>
+                  <select
+                    value={watch('valuationDetails.stage') || ''}
+                    onChange={(e) => setValue('valuationDetails.stage', e.target.value, { shouldDirty: true })}
+                    className="px-3 py-2 text-sm font-semibold text-gray-900 bg-white border-2 border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Select Stage</option>
+                    <option value="Booking">Booking</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Review">Review</option>
+                    <option value="Completed">Completed</option>
+                    <option value="On Hold">On Hold</option>
+                  </select>
+                </div>
+
+                <div className="h-8 w-px bg-gray-300"></div>
+
+                {/* RP Data Link */}
+                <div className="flex flex-col">
+                  <label className="text-xs font-medium text-gray-500 mb-1">RP Data</label>
+                  {watch('rpDataId') ? (
+                    <a
+                      href={`https://rpp.corelogic.com.au/property/${watch('rpDataId')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-700 underline text-sm font-semibold py-2"
+                      title="Open in RP Data"
+                    >
+                      {watch('rpDataId')}
+                    </a>
+                  ) : (
+                    <span className="text-sm font-semibold text-gray-500 py-2">Not set</span>
+                  )}
                 </div>
               </div>
             </div>
