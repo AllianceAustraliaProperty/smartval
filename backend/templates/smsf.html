@@ -1297,8 +1297,14 @@
                 <p>“Market value” in this report is the same as this definition.</p>
             </div>
 
-            {# Subject property map #}
-            {% if valuation_report.get("locationDetails", {}).get("latitude") and valuation_report.get("locationDetails", {}).get("longitude") %}
+            {# Subject property site map / map #}
+            {% set site_map_url = (((valuation_report.get("locationDetails") or {}).get("map") or {}).get("photo") or (valuation_report.get("valuationDetails") or {}).get("manualSitemapUrl") or valuation_report.get("siteMapUrl") or "")|trim %}
+            {% if site_map_url %}
+            <div style="text-align: center; margin-top: 15px; height: 250px;">
+                <img src="{{ site_map_url }}"
+                     style="max-width: 80%; max-height: 100%; object-fit: contain;" alt="Site Map" />
+            </div>
+            {% elif valuation_report.get("locationDetails", {}).get("latitude") and valuation_report.get("locationDetails", {}).get("longitude") and map_hybrid_url %}
             <div style="text-align: center; margin-top: 15px; height: 250px;">
                 <img src="{{ map_hybrid_url }}"
                      style="max-width: 80%; max-height: 100%; object-fit: contain;" alt="Subject property map" />
@@ -1368,9 +1374,10 @@
                 full context of the valuation report.
             </li>
         </ol>
-        {% if valuation_report.get("locationDetails", {}).get("map", {}).get("photo") %}
+        {% set p9_site_map_url = (((valuation_report.get("locationDetails") or {}).get("map") or {}).get("photo") or (valuation_report.get("valuationDetails") or {}).get("manualSitemapUrl") or valuation_report.get("siteMapUrl") or "")|trim %}
+        {% if p9_site_map_url %}
         <div class="mt-m mb-m flex jc-c ml-50 mr-70" style="height: 350px;">
-            <img src="{{ valuation_report['locationDetails']['map']['photo'] }}" alt="Site Map" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            <img src="{{ p9_site_map_url }}" alt="Site Map" style="max-width: 100%; max-height: 100%; object-fit: contain;">
         </div>
         {% endif %}
         <div class="footer flex jc-sb">

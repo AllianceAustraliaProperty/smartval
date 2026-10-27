@@ -127,6 +127,19 @@ def compress_report_images(report, max_workers=6):
         if isinstance(ts, dict) and ts.get('photoUrl'):
             targets.append((ts, 'photoUrl', 'document'))
 
+    loc_details = report.get('locationDetails')
+    if isinstance(loc_details, dict):
+        loc_map = loc_details.get('map')
+        if isinstance(loc_map, dict) and loc_map.get('photo'):
+            targets.append((loc_map, 'photo', 'document'))
+
+    val_details = report.get('valuationDetails')
+    if isinstance(val_details, dict) and val_details.get('manualSitemapUrl'):
+        targets.append((val_details, 'manualSitemapUrl', 'document'))
+
+    if report.get('siteMapUrl'):
+        targets.append((report, 'siteMapUrl', 'document'))
+
     comparables = report.get('comparables', {}) or {}
     for bucket in ('sales', 'rentals'):
         for comp in comparables.get(bucket, []) or []:
