@@ -530,16 +530,19 @@ def _render_html_report(report, template_name):
         # Be defensive about missing fields
         valuation_type = (report.get("valuationDetails", {}).get("valuationType") or "").lower()
 
-        if valuation_type == "commercial":
-            template_name = "commercial_long.html"
-        elif "commercial" in valuation_type:
-            template_name = "commercial.html"
-        elif "smsf" in valuation_type or "land valuation" in valuation_type:
-            template_name = "smsf.html"
-        elif "rural" in valuation_type:
-            template_name = "rural.html"
-        elif "rent review" in valuation_type:
-            template_name = "rent.html"
+        if template_name != "cgt_short.html":
+            if "cgt 2027" in valuation_type or "cgt short" in valuation_type or "short report (cgt" in valuation_type or "short cgt" in valuation_type or ("short" in valuation_type and "cgt" in valuation_type) or ("short" in valuation_type and "capital gains" in valuation_type):
+                template_name = "cgt_short.html"
+            elif valuation_type == "commercial":
+                template_name = "commercial_long.html"
+            elif "commercial" in valuation_type:
+                template_name = "commercial.html"
+            elif "smsf" in valuation_type or "land valuation" in valuation_type:
+                template_name = "smsf.html"
+            elif "rural" in valuation_type:
+                template_name = "rural.html"
+            elif "rent review" in valuation_type:
+                template_name = "rent.html"
 
         is_residential = report.get("propertyDetails", {}).get("propertyType") in RESIDENTIAL_PROPERTY_TYPES
         

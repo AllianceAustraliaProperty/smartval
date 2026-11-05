@@ -45,7 +45,8 @@ class RenderCache:
             self.path.mkdir(parents=True, exist_ok=True, mode=0o700)
             # One write lock bounds space even when multiple processes finish together.
             with open(self.path / '.write.lock', 'a') as lock:
-                fcntl.flock(lock, fcntl.LOCK_EX)
+                if fcntl:
+                    fcntl.flock(lock, fcntl.LOCK_EX)
                 files = []
                 now = time.time()
                 for path in self.path.glob('*.cache'):

@@ -155,6 +155,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
           >
             <option value="">Select valuation type</option>
+            <option value="CGT 2027">CGT 2027</option>
             <option value="Capital Gains">Capital Gains</option>
             <option value="Market Assessment">Market Assessment</option>
             <option value="Stamp Duty">Stamp Duty</option>
