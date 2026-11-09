@@ -666,6 +666,7 @@ def _render_html_report(report, template_name):
             'land_value': land_value,
             'land_value_rounded': land_value_rounded,
             'valuation_report': report,
+            'cover_photo': cover_photo,
             'maps_api_key': Config.GOOGLE_MAPS_API_KEY,
             'map_roadmap_url': map_roadmap_url,
             'map_hybrid_url': map_hybrid_url,

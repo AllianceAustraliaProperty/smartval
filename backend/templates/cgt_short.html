@@ -298,11 +298,11 @@
             padding-top: 3px;
         }
 
-        /* Photos grid */
+        /* Photos grid (2x2) */
         .photos-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
             margin-top: 4px;
         }
 
@@ -317,7 +317,7 @@
 
         .grid-photo {
             width: 100%;
-            height: 112px;
+            height: 98px;
             object-fit: cover;
             display: block;
         }
@@ -333,6 +333,15 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 122px;
+            background: #fbfbfb;
         }
 
         /* Disclaimers */
@@ -524,17 +533,8 @@
         <div style="display: flex; gap: 10px; margin-bottom: 8px; border: 1px solid #d4dbe3; padding: 6px; border-radius: 1px; background: #fff;">
             <!-- Left: Cover Photo -->
             <div style="flex: 1.1; height: 150px; overflow: hidden; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1px; display: flex; align-items: center; justify-content: center;">
-                {% set cover_img = cover_photo.photoUrl if cover_photo and cover_photo.photoUrl else None %}
-                {% if not cover_img and valuation_report.get("photos") %}
-                    {% for p in valuation_report["photos"] %}
-                        {% if p.get("isCover") and p.get("photoUrl") and not cover_img %}
-                            {% set cover_img = p.photoUrl %}
-                        {% endif %}
-                    {% endfor %}
-                    {% if not cover_img and valuation_report["photos"][0].get("photoUrl") %}
-                        {% set cover_img = valuation_report["photos"][0]["photoUrl"] %}
-                    {% endif %}
-                {% endif %}
+                {% set cover_obj = (valuation_report.photos|selectattr('isCover')|first) if (valuation_report.photos and valuation_report.photos|selectattr('isCover')|list) else (cover_photo or valuation_report.get('cover_photo')) %}
+                {% set cover_img = cover_obj.photoUrl if (cover_obj and cover_obj.get('photoUrl')) else (valuation_report.photos[0].photoUrl if (valuation_report.photos and valuation_report.photos|length > 0 and valuation_report.photos[0].get('photoUrl')) else None) %}
 
                 {% if cover_img %}
                     <img src="{{ cover_img }}" style="width: 100%; height: 100%; object-fit: cover; display: block;" alt="Subject Property" />
@@ -724,19 +724,19 @@
         <!-- Photographs Banner -->
         <div class="banner">Photographs</div>
 
-        <!-- Photographs Gallery Grid -->
+        <!-- Photographs Gallery Grid (2x2) -->
         <div class="photos-grid">
             {% set display_photos = [] %}
             {% if valuation_report.get("photos") %}
                 {% for p in valuation_report["photos"] %}
-                    {% if p.get("photoUrl") and not p.get("isCover") and display_photos|length < 3 %}
+                    {% if p.get("photoUrl") and not p.get("isCover") and display_photos|length < 4 %}
                         {% set _ = display_photos.append(p) %}
                     {% endif %}
                 {% endfor %}
-                {# If less than 3 photos found, fill with cover or any other photos #}
-                {% if display_photos|length < 3 %}
+                {# If less than 4 photos found, fill with cover or any other photos #}
+                {% if display_photos|length < 4 %}
                     {% for p in valuation_report["photos"] %}
-                        {% if p.get("photoUrl") and p not in display_photos and display_photos|length < 3 %}
+                        {% if p.get("photoUrl") and p not in display_photos and display_photos|length < 4 %}
                             {% set _ = display_photos.append(p) %}
                         {% endif %}
                     {% endfor %}
@@ -746,25 +746,28 @@
             {% if display_photos and display_photos|length > 0 %}
                 {% for photo in display_photos %}
                 <div class="photo-item">
-                    <img class="grid-photo" src="{{ photo.get('photoUrl') }}" alt="{{ photo.get('label') or 'Property Photo' }}" />
-                    <div class="photo-caption">{{ photo.get("label") or ('Photo ' ~ loop.index) }}</div>
+                    <img class="grid-photo" src="{{ photo.get('photoUrl') }}" alt="{{ photo.get('category') or photo.get('label') or 'Property Photo' }}" />
+                    <div class="photo-caption">{{ photo.get("category") or photo.get("label") or photo.get("caption") or ('Photo ' ~ loop.index) }}</div>
                 </div>
                 {% endfor %}
-                {# Fill remaining spots up to 3 with placeholders if desired, or let grid adapt #}
-                {% for i in range(3 - display_photos|length) %}
-                <div class="photo-item" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 135px; background: #fbfbfb;">
+                {# Fill remaining spots up to 4 with placeholders to keep 2x2 grid neat #}
+                {% for i in range(4 - display_photos|length) %}
+                <div class="photo-item photo-placeholder">
                     <div style="color: #aaa; font-size: 10px;">Additional Photo</div>
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="photo-item" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 135px; background: #fbfbfb;">
+                <div class="photo-item photo-placeholder">
                     <div style="color: #aaa; font-size: 10px;">Front Elevation</div>
                 </div>
-                <div class="photo-item" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 135px; background: #fbfbfb;">
+                <div class="photo-item photo-placeholder">
                     <div style="color: #aaa; font-size: 10px;">Rear Elevation</div>
                 </div>
-                <div class="photo-item" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 135px; background: #fbfbfb;">
+                <div class="photo-item photo-placeholder">
                     <div style="color: #aaa; font-size: 10px;">Living Area</div>
+                </div>
+                <div class="photo-item photo-placeholder">
+                    <div style="color: #aaa; font-size: 10px;">Kitchen / Dining</div>
                 </div>
             {% endif %}
         </div>

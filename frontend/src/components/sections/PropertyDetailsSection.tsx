@@ -137,11 +137,21 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         if (addResp.ok) {
           const addPayload = await addResp.json();
           const addData = addPayload?.data || addPayload;
-          const titleReference = addData?.title?.titleReference;
+          // Extract RPD (Real Property Description e.g., 'LOT 1571 DP1193054') instead of raw title ref
+          const rpd =
+            addData?.legal?.realPropertyDescription ||
+            addData?.legal?.rpd ||
+            addData?.legalDescription ||
+            addData?.rpd ||
+            addData?.realPropertyDescription ||
+            (addData?.parcels?.[0]?.lot && addData?.parcels?.[0]?.plan
+              ? `LOT ${addData.parcels[0].lot} ${addData.parcels[0].planType || ''}${addData.parcels[0].plan}`.replace(/\s+/g, ' ').trim()
+              : undefined) ||
+            addData?.title?.titleReference;
           const zoning = addData?.site?.zoneDescriptionLocal;
           const localityId = addData?.location?.locality?.id;
 
-          setIfDefined('propertyDetails.titleReference', titleReference);
+          setIfDefined('propertyDetails.titleReference', rpd);
           setIfDefined('propertyDetails.zoning', zoning);
 
           // Ensure rpData object exists and set localityId
