@@ -494,7 +494,7 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
     parkingArea: undefined,
     otherArea: undefined,
     studyRoom: false,
-    landSlope: '',
+    landSlope: 'Moderate',
     frontage: undefined,
     depth: undefined,
     statutoryValue: undefined,

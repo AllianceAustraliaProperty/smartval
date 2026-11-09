@@ -55,6 +55,14 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
     };
   }, [rpDataId, propType, setValue]);
 
+  // Default land slope to 'Moderate' if unset
+  const landSlope = watch('propertyDetails.landSlope');
+  React.useEffect(() => {
+    if (!landSlope) {
+      setValue('propertyDetails.landSlope', 'Moderate', { shouldDirty: true });
+    }
+  }, [landSlope, setValue]);
+
   const handleAutoFillZoningEffects = () => {
     const councilArea = watch('propertyDetails.councilArea');
 
@@ -218,6 +226,12 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
           const isAct = String(propState || '').trim().toUpperCase() === 'ACT';
           const defaultTenure = isAct ? 'Crown Leasehold' : 'Freehold';
           setIfDefined('propertyDetails.tenureType', defaultTenure);
+
+          // Ensure land slope defaults to Moderate if unset
+          const currentSlope = watch('propertyDetails.landSlope');
+          if (!currentSlope) {
+            setIfDefined('propertyDetails.landSlope', 'Moderate');
+          }
 
           // Ensure rpData object exists and set localityId
           const localityIdNum = toNum(localityId);
