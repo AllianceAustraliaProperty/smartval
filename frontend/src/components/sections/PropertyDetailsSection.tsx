@@ -27,11 +27,20 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
     prevStateRef.current = state;
   }, [state, tenureType, setValue]);
 
-  // Auto-fetch and select property type if linked to RP Data and propertyType is unset
+  // Auto-fetch and select property type and areas if linked to RP Data and unset
   const rpDataId = watch('rpDataId');
   const propType = watch('propertyDetails.propertyType');
+  const watchedBuildingArea = watch('propertyDetails.buildingArea');
+  const watchedParkingArea = watch('propertyDetails.parkingArea');
+  const watchedLivingArea = watch('propertyDetails.livingArea');
+
   React.useEffect(() => {
-    if (!rpDataId || propType) return;
+    if (!rpDataId) return;
+
+    // Check if everything is already populated
+    if (propType && watchedParkingArea !== undefined && watchedLivingArea !== undefined && watchedBuildingArea !== undefined) {
+      return;
+    }
 
     let isMounted = true;
     (async () => {
@@ -40,12 +49,56 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         if (!resp.ok) return;
         const payload = await resp.json();
         const data = payload?.data || payload;
-        const mappedType = mapRpDataPropertyType(
-          data?.attrCore?.propertyType || data?.propertyType,
-          data?.attrCore?.propertySubType || data?.propertySubType
-        );
-        if (mappedType && isMounted) {
-          setValue('propertyDetails.propertyType', mappedType, { shouldDirty: true });
+
+        if (isMounted && !watch('propertyDetails.propertyType')) {
+          const mappedType = mapRpDataPropertyType(
+            data?.attrCore?.propertyType || data?.propertyType,
+            data?.attrCore?.propertySubType || data?.propertySubType
+          );
+          if (mappedType) {
+            setValue('propertyDetails.propertyType', mappedType, { shouldDirty: true });
+          }
+        }
+
+        const carSpacesNum = Number(data?.attrCore?.carSpaces);
+        const buildingAreaNum = Number(data?.attrAdditional?.floorArea);
+
+        let parkingVal = watch('propertyDetails.parkingArea');
+        if (parkingVal === undefined && Number.isFinite(carSpacesNum) && carSpacesNum > 0) {
+          parkingVal = carSpacesNum * 18;
+          if (isMounted) {
+            setValue('propertyDetails.parkingArea', parkingVal, { shouldDirty: true });
+          }
+        }
+
+        let bVal = watch('propertyDetails.buildingArea');
+        if (bVal === undefined && Number.isFinite(buildingAreaNum) && buildingAreaNum > 0) {
+          bVal = buildingAreaNum;
+          if (isMounted) {
+            setValue('propertyDetails.buildingArea', bVal, { shouldDirty: true });
+          }
+        }
+
+        const livingVal = watch('propertyDetails.livingArea');
+        if (livingVal === undefined && bVal !== undefined) {
+          const effectiveParking = parkingVal !== undefined ? parkingVal : (Number.isFinite(carSpacesNum) && carSpacesNum > 0 ? carSpacesNum * 18 : 0);
+          if (isMounted) {
+            setValue('propertyDetails.livingArea', Math.max(0, bVal - effectiveParking), { shouldDirty: true });
+          }
+        }
+
+        const rawCouncil = typeof data?.location?.councilArea === 'string' ? data.location.councilArea.trim() : '';
+        if (rawCouncil && isMounted) {
+          const baseCouncil = rawCouncil.replace(/^(city\s+of\s+|shire\s+of\s+|municipality\s+of\s+)/i, '').trim();
+          if (!watch('propertyDetails.zoningEffects')) {
+            setValue('propertyDetails.zoningEffects', `${baseCouncil || rawCouncil} Local Environment Plan (LEP)`, { shouldDirty: true });
+          }
+          if (!watch('propertyDetails.councilArea')) {
+            const formattedCouncil = rawCouncil.toLowerCase().startsWith('city of ')
+              ? rawCouncil
+              : `City of ${baseCouncil || rawCouncil}`;
+            setValue('propertyDetails.councilArea', formattedCouncil, { shouldDirty: true });
+          }
         }
       } catch (_) {}
     })();
@@ -53,7 +106,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
     return () => {
       isMounted = false;
     };
-  }, [rpDataId, propType, setValue]);
+  }, [rpDataId, propType, watchedParkingArea, watchedLivingArea, watchedBuildingArea, setValue, watch]);
 
   // Default land slope to 'Moderate' if unset
   const landSlope = watch('propertyDetails.landSlope');
@@ -63,6 +116,22 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
     }
   }, [landSlope, setValue]);
 
+  // Synchronize livingArea = buildingArea - parkingArea when buildingArea or parkingArea changes
+  const prevCalcRef = React.useRef<{ building?: number; parking?: number }>({});
+
+  React.useEffect(() => {
+    const b = typeof watchedBuildingArea === 'number' ? watchedBuildingArea : (watchedBuildingArea ? Number(watchedBuildingArea) : undefined);
+    const p = typeof watchedParkingArea === 'number' ? watchedParkingArea : (watchedParkingArea !== undefined && watchedParkingArea !== null && watchedParkingArea !== '' ? Number(watchedParkingArea) : undefined);
+
+    if (b !== undefined && Number.isFinite(b) && p !== undefined && Number.isFinite(p)) {
+      if (prevCalcRef.current.building !== b || prevCalcRef.current.parking !== p) {
+        const calculatedLiving = Math.max(0, b - p);
+        setValue('propertyDetails.livingArea', calculatedLiving, { shouldDirty: true });
+        prevCalcRef.current = { building: b, parking: p };
+      }
+    }
+  }, [watchedBuildingArea, watchedParkingArea, setValue]);
+
   const handleAutoFillZoningEffects = () => {
     const councilArea = watch('propertyDetails.councilArea');
 
@@ -71,8 +140,10 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       return;
     }
 
-    // Append "Local Environment Plan (LEP)" to the council area
-    const zoningEffectsText = `${councilArea.trim()} Local Environment Plan (LEP)`;
+    const rawCouncil = councilArea.trim();
+    const baseCouncil = rawCouncil.replace(/^(city\s+of\s+|shire\s+of\s+|municipality\s+of\s+)/i, '').trim();
+    // Append "Local Environment Plan (LEP)" to the council name
+    const zoningEffectsText = `${baseCouncil || rawCouncil} Local Environment Plan (LEP)`;
     setValue('propertyDetails.zoningEffects', zoningEffectsText, { shouldDirty: true });
   };
 
@@ -173,13 +244,43 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         }
       };
 
+      const buildingAreaNum = toNum(buildingAreaRaw);
+      const carSpacesNum = toNum(carSpacesRaw);
+
+      // Multiples of 18 for parking area (e.g. 2 spaces -> 36 sqm)
+      const parkingAreaVal = carSpacesNum !== undefined && carSpacesNum > 0
+        ? carSpacesNum * 18
+        : undefined;
+
+      // Living area = building area - parking area (e.g. 198 - 36 = 162 sqm)
+      const livingAreaVal = buildingAreaNum !== undefined
+        ? (parkingAreaVal !== undefined ? Math.max(0, buildingAreaNum - parkingAreaVal) : buildingAreaNum)
+        : undefined;
+
       setIfDefined('propertyDetails.siteArea', toNum(siteAreaRaw));
-      setIfDefined('propertyDetails.buildingArea', toNum(buildingAreaRaw));
-      setIfDefined('propertyDetails.councilArea', councilArea);
+      setIfDefined('propertyDetails.buildingArea', buildingAreaNum);
+      setIfDefined('propertyDetails.parkingArea', parkingAreaVal);
+      setIfDefined('propertyDetails.livingArea', livingAreaVal);
+      // Format council area and zoning effects:
+      // Zoning effects: "[Council] Local Environment Plan (LEP)"
+      // Council area: "City of [Council]"
+      if (councilArea && typeof councilArea === 'string' && councilArea.trim()) {
+        const rawCouncil = councilArea.trim();
+        const baseCouncil = rawCouncil.replace(/^(city\s+of\s+|shire\s+of\s+|municipality\s+of\s+)/i, '').trim();
+        const zoningEffectsVal = `${baseCouncil || rawCouncil} Local Environment Plan (LEP)`;
+        const formattedCouncilArea = rawCouncil.toLowerCase().startsWith('city of ')
+          ? rawCouncil
+          : `City of ${baseCouncil || rawCouncil}`;
+
+        setIfDefined('propertyDetails.zoningEffects', zoningEffectsVal);
+        setIfDefined('propertyDetails.councilArea', formattedCouncilArea);
+      } else {
+        setIfDefined('propertyDetails.councilArea', councilArea);
+      }
       setIfDefined('propertyDetails.buildYear', toNum(buildYearRaw));
       setIfDefined('propertyDescriptors.bedrooms', toNum(bedroomsRaw));
       setIfDefined('propertyDescriptors.bathrooms', toNum(bathroomsRaw));
-      setIfDefined('propertyDescriptors.carSpaces', toNum(carSpacesRaw));
+      setIfDefined('propertyDescriptors.carSpaces', carSpacesNum);
       setIfDefined('propertyDescriptors.roofingType', roofingType);
 
       // Map and set property type from RP Data commons
@@ -188,6 +289,18 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         data?.attrCore?.propertySubType || data?.propertySubType
       );
       setIfDefined('propertyDetails.propertyType', mappedPropType);
+
+      // Ensure tenure type is set based on state (ACT -> Crown Leasehold, otherwise Freehold)
+      const propState = watch('address.state') || data?.location?.state;
+      const isAct = String(propState || '').trim().toUpperCase() === 'ACT';
+      const defaultTenure = isAct ? 'Crown Leasehold' : 'Freehold';
+      setIfDefined('propertyDetails.tenureType', defaultTenure);
+
+      // Ensure land slope defaults to Moderate if unset
+      const currentSlope = watch('propertyDetails.landSlope');
+      if (!currentSlope) {
+        setIfDefined('propertyDetails.landSlope', 'Moderate');
+      }
 
       // Fetch additional information and map extra fields
       try {
@@ -220,6 +333,19 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
           setIfDefined('propertyDetails.titleReference', rpd);
           setIfDefined('propertyDetails.zoning', zoning);
+
+          const addCouncil = addData?.location?.councilArea;
+          if (addCouncil && typeof addCouncil === 'string' && addCouncil.trim() && !watch('propertyDetails.councilArea')) {
+            const rawCouncil = addCouncil.trim();
+            const baseCouncil = rawCouncil.replace(/^(city\s+of\s+|shire\s+of\s+|municipality\s+of\s+)/i, '').trim();
+            const zoningEffectsVal = `${baseCouncil || rawCouncil} Local Environment Plan (LEP)`;
+            const formattedCouncilArea = rawCouncil.toLowerCase().startsWith('city of ')
+              ? rawCouncil
+              : `City of ${baseCouncil || rawCouncil}`;
+
+            setIfDefined('propertyDetails.zoningEffects', zoningEffectsVal);
+            setIfDefined('propertyDetails.councilArea', formattedCouncilArea);
+          }
 
           // Ensure tenure type is set based on state (ACT -> Crown Leasehold, otherwise Freehold)
           const propState = watch('address.state') || addData?.location?.state;

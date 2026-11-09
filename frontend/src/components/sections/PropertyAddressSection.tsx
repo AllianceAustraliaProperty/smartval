@@ -264,6 +264,20 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
                             if (mappedType) {
                               setValue('propertyDetails.propertyType', mappedType, { shouldDirty: true });
                             }
+
+                            const carSpaces = Number(data?.attrCore?.carSpaces);
+                            const buildingArea = Number(data?.attrAdditional?.floorArea);
+                            let parkingArea: number | undefined = undefined;
+                            if (Number.isFinite(carSpaces) && carSpaces > 0) {
+                              parkingArea = carSpaces * 18;
+                              setValue('propertyDetails.parkingArea', parkingArea, { shouldDirty: true });
+                            }
+                            if (Number.isFinite(buildingArea) && buildingArea > 0) {
+                              setValue('propertyDetails.buildingArea', buildingArea, { shouldDirty: true });
+                              if (parkingArea !== undefined) {
+                                setValue('propertyDetails.livingArea', Math.max(0, buildingArea - parkingArea), { shouldDirty: true });
+                              }
+                            }
                           }
                         } catch (_) {
                           // ignore background prefetch errors
