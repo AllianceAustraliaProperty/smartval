@@ -8,6 +8,21 @@ import { API_BASE_URL } from '@/lib/api-config';
 import { apiRepository } from '@/lib/api-repository';
 import { summarizePhotos } from '@/lib/photo-utils';
 
+const DEFAULT_PERMISSIBLE_USES =
+  'Permissible uses with development consent include Bed and breakfast, Community care accommodation, Tourist accommodation, Home based business, Informal outdoor recreation, Medical centre, Place of worship, Seniors housing, Railway, Residential aged care facility, Rooming house, Tramway, Roads etc.';
+const DEFAULT_HERITAGE_ISSUE = 'N/A';
+
+const isSmsfOrCommercial = (valuationType?: string, propertyType?: string): boolean => {
+  const v = (valuationType || '').toLowerCase();
+  const p = (propertyType || '').toLowerCase();
+  return (
+    v.includes('smsf') ||
+    v.includes('commercial') ||
+    v.includes('rent review') ||
+    p.includes('commercial')
+  );
+};
+
 export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue, reportId }) => {
   const [isAutomatingFromRP, setIsAutomatingFromRP] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
@@ -115,6 +130,32 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       setValue('propertyDetails.landSlope', 'Moderate', { shouldDirty: true });
     }
   }, [landSlope, setValue]);
+
+  // Default permissible uses only for residential and rural reports (NOT for SMSF or Commercial)
+  const valuationType = watch('valuationDetails.valuationType');
+  const propTypeForPermissible = watch('propertyDetails.propertyType');
+  const permissibleUses = watch('propertyDetails.permissibleUses');
+  const heritageIssue = watch('propertyDetails.heritageIssue');
+
+  React.useEffect(() => {
+    const isExcluded = isSmsfOrCommercial(valuationType, propTypeForPermissible);
+    if (isExcluded) {
+      if (permissibleUses === DEFAULT_PERMISSIBLE_USES) {
+        setValue('propertyDetails.permissibleUses', '', { shouldDirty: true });
+      }
+      return;
+    }
+
+    if (!permissibleUses || permissibleUses.trim() === '') {
+      setValue('propertyDetails.permissibleUses', DEFAULT_PERMISSIBLE_USES, { shouldDirty: true });
+    }
+  }, [valuationType, propTypeForPermissible, permissibleUses, setValue]);
+
+  React.useEffect(() => {
+    if (!heritageIssue || heritageIssue.trim() === '') {
+      setValue('propertyDetails.heritageIssue', DEFAULT_HERITAGE_ISSUE, { shouldDirty: true });
+    }
+  }, [heritageIssue, setValue]);
 
   // Synchronize livingArea = buildingArea - parkingArea when buildingArea or parkingArea changes
   const prevCalcRef = React.useRef<{ building?: number; parking?: number }>({});
@@ -300,6 +341,20 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       const currentSlope = watch('propertyDetails.landSlope');
       if (!currentSlope) {
         setIfDefined('propertyDetails.landSlope', 'Moderate');
+      }
+
+      // Ensure permissible uses defaults ONLY for residential and rural reports (NOT for SMSF or Commercial)
+      const currentValType = watch('valuationDetails.valuationType');
+      const currentPropType = watch('propertyDetails.propertyType') || mappedPropType;
+      if (!isSmsfOrCommercial(currentValType, currentPropType)) {
+        const currentPermissible = watch('propertyDetails.permissibleUses');
+        if (!currentPermissible || !currentPermissible.trim()) {
+          setIfDefined('propertyDetails.permissibleUses', DEFAULT_PERMISSIBLE_USES);
+        }
+      }
+      const currentHeritage = watch('propertyDetails.heritageIssue');
+      if (!currentHeritage || !currentHeritage.trim()) {
+        setIfDefined('propertyDetails.heritageIssue', DEFAULT_HERITAGE_ISSUE);
       }
 
       // Fetch additional information and map extra fields

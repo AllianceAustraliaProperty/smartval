@@ -477,7 +477,7 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
     landShape: '',
     councilArea: '',
     permissibleUses: '',
-    heritageIssue: '',
+    heritageIssue: 'N/A',
     flood: '',
     bushfire: '',
     rainfall: '',

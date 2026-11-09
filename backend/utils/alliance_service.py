@@ -117,6 +117,11 @@ class AllianceService:
             # Parse property type from Alliance format
             property_type = job.get('property_type', '').strip()
             
+            v_type = (job.get('valuation_type') or '').lower()
+            p_type = (property_type or '').lower()
+            is_smsf_or_comm = 'smsf' in v_type or 'commercial' in v_type or 'rent review' in v_type or 'commercial' in p_type
+            default_permissible = '' if is_smsf_or_comm else 'Permissible uses with development consent include Bed and breakfast, Community care accommodation, Tourist accommodation, Home based business, Informal outdoor recreation, Medical centre, Place of worship, Seniors housing, Railway, Residential aged care facility, Rooming house, Tramway, Roads etc.'
+
             # Map Alliance fields to our valuation report structure
             transformed_data = {
                 'allianceId': str(job.get('id')),
@@ -171,8 +176,8 @@ class AllianceService:
                     'buildingArea': None,
                     'landShape': '',
                     'councilArea': '',
-                    'permissibleUses': '',
-                    'heritageIssue': '',
+                    'permissibleUses': default_permissible,
+                    'heritageIssue': 'N/A',
                     'buildYear': None,
                     'accommodation': '',
                     'livingArea': None,
