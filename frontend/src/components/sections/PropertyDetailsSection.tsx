@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FormField, Input, Textarea, Select, Checkbox } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { AllPropertyTypes } from '@/constants/property-types';
+import { AllPropertyTypes, mapRpDataPropertyType } from '@/constants/property-types';
 import { LAND_SHAPE_TYPES } from '@/constants/land-shapes';
 import { Wand2 } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
@@ -11,6 +11,49 @@ import { summarizePhotos } from '@/lib/photo-utils';
 export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue, reportId }) => {
   const [isAutomatingFromRP, setIsAutomatingFromRP] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+
+  const state = watch('address.state');
+  const tenureType = watch('propertyDetails.tenureType');
+  const prevStateRef = React.useRef(state);
+
+  // Default tenure type based on property state (ACT -> Crown Leasehold, otherwise Freehold)
+  React.useEffect(() => {
+    const isAct = String(state || '').trim().toUpperCase() === 'ACT';
+    const defaultTenure = isAct ? 'Crown Leasehold' : 'Freehold';
+
+    if (!tenureType || (prevStateRef.current !== undefined && prevStateRef.current !== state)) {
+      setValue('propertyDetails.tenureType', defaultTenure, { shouldDirty: true });
+    }
+    prevStateRef.current = state;
+  }, [state, tenureType, setValue]);
+
+  // Auto-fetch and select property type if linked to RP Data and propertyType is unset
+  const rpDataId = watch('rpDataId');
+  const propType = watch('propertyDetails.propertyType');
+  React.useEffect(() => {
+    if (!rpDataId || propType) return;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const resp = await fetch(`${API_BASE_URL}/rpdata/commons/${encodeURIComponent(String(rpDataId))}`);
+        if (!resp.ok) return;
+        const payload = await resp.json();
+        const data = payload?.data || payload;
+        const mappedType = mapRpDataPropertyType(
+          data?.attrCore?.propertyType || data?.propertyType,
+          data?.attrCore?.propertySubType || data?.propertySubType
+        );
+        if (mappedType && isMounted) {
+          setValue('propertyDetails.propertyType', mappedType, { shouldDirty: true });
+        }
+      } catch (_) {}
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [rpDataId, propType, setValue]);
 
   const handleAutoFillZoningEffects = () => {
     const councilArea = watch('propertyDetails.councilArea');
@@ -131,12 +174,28 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       setIfDefined('propertyDescriptors.carSpaces', toNum(carSpacesRaw));
       setIfDefined('propertyDescriptors.roofingType', roofingType);
 
+      // Map and set property type from RP Data commons
+      const mappedPropType = mapRpDataPropertyType(
+        data?.attrCore?.propertyType || data?.propertyType,
+        data?.attrCore?.propertySubType || data?.propertySubType
+      );
+      setIfDefined('propertyDetails.propertyType', mappedPropType);
+
       // Fetch additional information and map extra fields
       try {
         const addResp = await fetch(`${API_BASE_URL}/rpdata/additional-information/${encodeURIComponent(String(rpDataId))}`);
         if (addResp.ok) {
           const addPayload = await addResp.json();
           const addData = addPayload?.data || addPayload;
+
+          // Attempt additional info property type if not resolved yet
+          const addPropType = mapRpDataPropertyType(
+            addData?.attrCore?.propertyType || addData?.propertyType,
+            addData?.attrCore?.propertySubType || addData?.propertySubType
+          );
+          if (addPropType) {
+            setIfDefined('propertyDetails.propertyType', addPropType);
+          }
           // Extract RPD (Real Property Description e.g., 'LOT 1571 DP1193054') instead of raw title ref
           const rpd =
             addData?.legal?.realPropertyDescription ||
@@ -153,6 +212,12 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
           setIfDefined('propertyDetails.titleReference', rpd);
           setIfDefined('propertyDetails.zoning', zoning);
+
+          // Ensure tenure type is set based on state (ACT -> Crown Leasehold, otherwise Freehold)
+          const propState = watch('address.state') || addData?.location?.state;
+          const isAct = String(propState || '').trim().toUpperCase() === 'ACT';
+          const defaultTenure = isAct ? 'Crown Leasehold' : 'Freehold';
+          setIfDefined('propertyDetails.tenureType', defaultTenure);
 
           // Ensure rpData object exists and set localityId
           const localityIdNum = toNum(localityId);

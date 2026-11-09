@@ -471,6 +471,7 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
     propertyType: '',
     titleReference: '',
     zoning: '',
+    tenureType: 'Freehold',
     siteArea: undefined,
     buildingArea: 1094,
     landShape: '',

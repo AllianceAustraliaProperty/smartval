@@ -4,6 +4,7 @@ import { FormField, Input, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { MapPin, Home, Building } from 'lucide-react';
 import { STATE_OPTIONS } from '@/types/property-valuation';
+import { mapRpDataPropertyType } from '@/constants/property-types';
 
 export const PropertyAddressSection: React.FC<SectionProps> = ({ register, errors, watch, setValue, reportId }) => {
   const [rpSuggestions, setRpSuggestions] = useState<Array<{ suggestion: string; suggestionId: number }>>([]);
@@ -43,6 +44,19 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
       setValue('address.fullAddress', fullAddress);
     }
   }, [unitNumber, streetName, suburb, state, postcode, setValue]);
+
+  const prevStateRef = React.useRef(state);
+  // Synchronize default tenure type based on property state (ACT -> Crown Leasehold, otherwise Freehold)
+  useEffect(() => {
+    const isAct = String(state || '').trim().toUpperCase() === 'ACT';
+    const defaultTenure = isAct ? 'Crown Leasehold' : 'Freehold';
+    const currentTenure = watch('propertyDetails.tenureType');
+
+    if (!currentTenure || (prevStateRef.current !== undefined && prevStateRef.current !== state)) {
+      setValue('propertyDetails.tenureType', defaultTenure, { shouldDirty: true });
+    }
+    prevStateRef.current = state;
+  }, [state, setValue, watch]);
 
   const handleLinkToRpData = async () => {
     setLinkError(null);
@@ -236,6 +250,24 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
                       onClick={async () => {
                         setValue('rpDataId', String(s.suggestionId));
                         setIsModalOpen(false);
+
+                        // Pre-populate propertyType from RP Data commons if available
+                        try {
+                          const resp = await fetch(`${API_BASE_URL}/rpdata/commons/${encodeURIComponent(String(s.suggestionId))}`);
+                          if (resp.ok) {
+                            const payload = await resp.json();
+                            const data = payload?.data || payload;
+                            const mappedType = mapRpDataPropertyType(
+                              data?.attrCore?.propertyType || data?.propertyType,
+                              data?.attrCore?.propertySubType || data?.propertySubType
+                            );
+                            if (mappedType) {
+                              setValue('propertyDetails.propertyType', mappedType, { shouldDirty: true });
+                            }
+                          }
+                        } catch (_) {
+                          // ignore background prefetch errors
+                        }
                       }}
                     >
                       <div className="flex items-start gap-3">
