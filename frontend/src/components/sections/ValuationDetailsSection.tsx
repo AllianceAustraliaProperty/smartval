@@ -1,7 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FormField, Input, Checkbox, Textarea } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { Wand2 } from 'lucide-react';
+
+const getTodayDateString = (): string => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue }) => {
   const [showCapMethod, setShowCapMethod] = useState(false);
@@ -12,6 +20,29 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
   const directComparisonText = watch('valuationDetails.directComparison');
   const valuationType = watch('valuationDetails.valuationType');
   const capitalisedValue = watch('valuationDetails.capitalisedValue');
+  const dateIssued = watch('valuationDetails.dateIssued');
+  const surveyType = watch('valuationDetails.surveyType');
+  const inspectionDate = watch('valuationDetails.inspectionDate');
+  const prevSurveyTypeRef = useRef(surveyType);
+
+  // Default dateIssued to the current date if unset
+  useEffect(() => {
+    if (!dateIssued || dateIssued.trim() === '') {
+      setValue('valuationDetails.dateIssued', getTodayDateString(), { shouldDirty: true });
+    }
+  }, [dateIssued, setValue]);
+
+  // Default inspectionDate to current date when surveyType is 'Inspection'
+  useEffect(() => {
+    if (surveyType === 'Inspection') {
+      if (!inspectionDate || inspectionDate.trim() === '') {
+        setValue('valuationDetails.inspectionDate', getTodayDateString(), { shouldDirty: true });
+      } else if (prevSurveyTypeRef.current !== undefined && prevSurveyTypeRef.current !== 'Inspection') {
+        setValue('valuationDetails.inspectionDate', getTodayDateString(), { shouldDirty: true });
+      }
+    }
+    prevSurveyTypeRef.current = surveyType;
+  }, [surveyType, inspectionDate, setValue]);
 
   // Auto-set market value when capitalised value changes (for SMSF reports)
   useEffect(() => {
