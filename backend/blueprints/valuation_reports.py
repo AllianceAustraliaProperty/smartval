@@ -11,6 +11,7 @@ from models.settings import Settings
 from pymongo import MongoClient
 from config import Config
 import base64
+import re
 from datetime import datetime
 import os
 from utils.template import summarize_photos, format_currency_words, format_owners, format_rental_frequency, format_date_v2
@@ -241,6 +242,51 @@ def get_all_valuation_reports():
             'total_count': total_count,
             'page': page,
             'limit': limit
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@valuation_reports_bp.route('/next-file-number', methods=['GET'])
+def get_next_file_number():
+    """Get the next file number based on the latest report created under the given logo type."""
+    try:
+        logo_type = (request.args.get('logoType') or 'AAP').strip().upper()
+        db = get_database()
+        
+        query = {
+            '$or': [
+                {'valuationDetails.logoType': logo_type},
+                {'logoType': logo_type}
+            ],
+            'fileNumber': {'$exists': True, '$nin': ['', None]}
+        }
+        cursor = db.valuationReports.find(query, {'fileNumber': 1, 'createdAt': 1}).sort([('_id', -1)]).limit(50)
+        
+        last_fn = None
+        prefix = 'CPV' if logo_type == 'CPV' else 'PV'
+        digits_len = 4 if logo_type == 'CPV' else 6
+        next_num = 1001 if logo_type == 'CPV' else 20001
+        
+        for r in cursor:
+            fn = str(r.get('fileNumber') or '').strip()
+            m = re.match(r'^([A-Za-z]+)(\d+)$', fn)
+            if m:
+                p, d = m.group(1), m.group(2)
+                # If logo is CPV, ensure prefix is CPV; if AAP/TAMN, ensure prefix is PV
+                if logo_type == 'CPV' and p.upper() != 'CPV':
+                    continue
+                last_fn = fn
+                prefix = p
+                digits_len = len(d)
+                next_num = int(d) + 1
+                break
+        
+        next_fn = f"{prefix}{str(next_num).zfill(digits_len)}"
+        return jsonify({
+            'logoType': logo_type,
+            'lastFileNumber': last_fn,
+            'nextFileNumber': next_fn
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

@@ -396,10 +396,27 @@ export const apiRepository = {
 
 
   /**
+   * Get the next incremented file number for a given logo type
+   */
+  async getNextFileNumber(logoType: string): Promise<{ logoType: string; lastFileNumber: string | null; nextFileNumber: string }> {
+    try {
+      const response = await apiClient.get<{ logoType: string; lastFileNumber: string | null; nextFileNumber: string }>(
+        `/valuation-reports/next-file-number?logoType=${encodeURIComponent(logoType)}`
+      );
+      return response;
+    } catch (error) {
+      console.error('Failed to get next file number:', error);
+      const prefix = logoType.toUpperCase() === 'CPV' ? 'CPV' : 'PV';
+      const fallback = logoType.toUpperCase() === 'CPV' ? 'CPV1490' : (logoType.toUpperCase() === 'TAMN' ? 'PV020181' : 'PV020962');
+      return { logoType, lastFileNumber: null, nextFileNumber: fallback };
+    }
+  },
+
+  /**
    * Create a new valuation report (now creates a complete valuation report with property data)
    */
   async createValuationReport(
-    initialData?: { valuationType?: string; valuationDate?: string; address?: any }
+    initialData?: { valuationType?: string; valuationDate?: string; address?: any; logoType?: string; fileNumber?: string }
   ): Promise<{ reportId: string }> {
     try {
       const payload: any = {
@@ -412,9 +429,13 @@ export const apiRepository = {
         payload.valuationDetails = {
           ...DEFAULT_PROPERTY_FORM.valuationDetails,
           valuationType: initialData.valuationType,
-          // Send date string directly â€” backend handles YYYY-MM-DD format
+          logoType: initialData.logoType || DEFAULT_PROPERTY_FORM.valuationDetails?.logoType || 'AAP',
+          // Send date string directly
           valuationDate: initialData.valuationDate || undefined,
         };
+        if (initialData.fileNumber) {
+          payload.fileNumber = initialData.fileNumber.trim();
+        }
       }
 
       const response = await apiClient.post<ApiCreateReportResponse>(

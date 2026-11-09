@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiRepository } from '@/lib/api-repository';
 import { ArrowLeft, X, FilePlus2 } from 'lucide-react';
@@ -10,10 +10,36 @@ export default function NewValuationReportPage() {
 
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingFileNumber, setIsLoadingFileNumber] = useState(false);
   const [newReportData, setNewReportData] = useState({
+    logoType: 'AAP',
+    fileNumber: '',
     valuationType: '',
     valuationDate: new Date().toISOString().split('T')[0], // Default to today
   });
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchNextNumber = async () => {
+      if (!newReportData.logoType) return;
+      try {
+        setIsLoadingFileNumber(true);
+        const res = await apiRepository.getNextFileNumber(newReportData.logoType);
+        if (isMounted && res?.nextFileNumber) {
+          setNewReportData(prev => ({ ...prev, fileNumber: res.nextFileNumber }));
+        }
+      } catch (err) {
+        console.error('Failed to get next file number:', err);
+      } finally {
+        if (isMounted) setIsLoadingFileNumber(false);
+      }
+    };
+
+    fetchNextNumber();
+    return () => {
+      isMounted = false;
+    };
+  }, [newReportData.logoType]);
 
   const handleSubmitNewReport = async () => {
     // Validate required fields
@@ -26,7 +52,7 @@ export default function NewValuationReportPage() {
       setIsCreating(true);
       setError(null);
 
-      // Create the valuation report with initial data
+      // Create the valuation report with initial data (including logoType and fileNumber)
       const { reportId } = await apiRepository.createValuationReport(newReportData);
 
       // navigate to the report edit page
@@ -83,6 +109,42 @@ export default function NewValuationReportPage() {
               )}
 
               <div className="space-y-6">
+                {/* Logo Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Logo Type <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={newReportData.logoType}
+                    onChange={(e) => setNewReportData({ ...newReportData, logoType: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                  >
+                    <option value="AAP">AAP</option>
+                    <option value="CPV">CPV</option>
+                    <option value="TAMN">TAMN</option>
+                  </select>
+                </div>
+
+                {/* File Number */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      File Number
+                    </label>
+                    {isLoadingFileNumber && (
+                      <span className="text-xs text-blue-600 animate-pulse font-medium">Detecting next number...</span>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={newReportData.fileNumber}
+                    onChange={(e) => setNewReportData({ ...newReportData, fileNumber: e.target.value })}
+                    placeholder="e.g., PV020962 or CPV1490"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white font-mono"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Autofilled based on the last report under {newReportData.logoType}</p>
+                </div>
+
                 {/* Valuation Type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
