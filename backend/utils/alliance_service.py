@@ -121,6 +121,7 @@ class AllianceService:
             p_type = (property_type or '').lower()
             is_smsf_or_comm = 'smsf' in v_type or 'commercial' in v_type or 'rent review' in v_type or 'commercial' in p_type
             default_permissible = '' if is_smsf_or_comm else 'Permissible uses with development consent include Bed and breakfast, Community care accommodation, Tourist accommodation, Home based business, Informal outdoor recreation, Medical centre, Place of worship, Seniors housing, Railway, Residential aged care facility, Rooming house, Tramway, Roads etc.'
+            is_unit_job = 'unit' in p_type or 'apartment' in p_type or 'flat' in p_type
 
             # Map Alliance fields to our valuation report structure
             transformed_data = {
@@ -152,12 +153,13 @@ class AllianceService:
                     'inspectionDate': '',
                     'currentDayValuation': False,
                     'externalDesktopValuation': job.get('survey_type') != 'Inspection',
+                    'isUnit': is_unit_job,
                     'marketValue': None,
-                    'interestValued': '',
-                    'showCurrencyOfValuation': False,
-                    'showLandValue': False,
+                    'interestValued': 'Fee Simple Vacant Possession',
+                    'showCurrencyOfValuation': True,
+                    'showLandValue': True,
                     'landValue': None,
-                    'showImprovements': False,
+                    'showImprovements': not is_unit_job,
                     'improvements': None,
                     'directComparison': '',
                     'purposeOfReport': '',

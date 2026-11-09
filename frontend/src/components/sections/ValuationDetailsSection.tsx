@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { FormField, Input, Checkbox, Textarea } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { Wand2 } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/api-config';
 
 const getTodayDateString = (): string => {
   const d = new Date();
@@ -17,6 +18,8 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
   const improvements = watch('valuationDetails.improvements');
   const marketValue = watch('valuationDetails.marketValue');
   const isUnit = watch('valuationDetails.isUnit');
+  const rpDataId = watch('rpDataId');
+  const propDetailsType = watch('propertyDetails.propertyType');
   const directComparisonText = watch('valuationDetails.directComparison');
   const valuationType = watch('valuationDetails.valuationType');
   const capitalisedValue = watch('valuationDetails.capitalisedValue');
@@ -24,6 +27,10 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
   const surveyType = watch('valuationDetails.surveyType');
   const inspectionDate = watch('valuationDetails.inspectionDate');
   const prevSurveyTypeRef = useRef(surveyType);
+  const valuationDate = watch('valuationDetails.valuationDate');
+  const interestValued = watch('valuationDetails.interestValued');
+  const isUnitInitializedRef = useRef(false);
+  const prevIsUnitSyncRef = useRef<boolean | undefined>(undefined);
 
   // Default dateIssued to the current date if unset
   useEffect(() => {
@@ -43,6 +50,88 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
     }
     prevSurveyTypeRef.current = surveyType;
   }, [surveyType, inspectionDate, setValue]);
+
+  // Auto-tick currentDayValuation if valuationDate is the current date
+  useEffect(() => {
+    if (!valuationDate) return;
+    const valDatePart = String(valuationDate).split('T')[0];
+    const today = getTodayDateString();
+    setValue('valuationDetails.currentDayValuation', valDatePart === today, { shouldDirty: true });
+  }, [valuationDate, setValue]);
+
+  // Auto-tick externalDesktopValuation if surveyType is set to desktop or kerbside
+  useEffect(() => {
+    if (!surveyType) return;
+    const lower = surveyType.toLowerCase();
+    if (lower.includes('desktop') || lower.includes('kerbside') || lower.includes('external')) {
+      setValue('valuationDetails.externalDesktopValuation', true, { shouldDirty: true });
+    } else if (lower.includes('inspection')) {
+      setValue('valuationDetails.externalDesktopValuation', false, { shouldDirty: true });
+    }
+  }, [surveyType, setValue]);
+
+  // Autofill interestValued with "Fee Simple Vacant Possession" always
+  useEffect(() => {
+    if (!interestValued || interestValued.trim() === '') {
+      setValue('valuationDetails.interestValued', 'Fee Simple Vacant Possession', { shouldDirty: true });
+    }
+  }, [interestValued, setValue]);
+
+  // Auto-select property type (House vs Unit) from propertyDetails or RP Data
+  useEffect(() => {
+    if (isUnitInitializedRef.current) return;
+
+    if (propDetailsType) {
+      const lower = propDetailsType.toLowerCase();
+      const isUnitType = lower.includes('unit') || lower.includes('apartment') || lower.includes('flat');
+      setValue('valuationDetails.isUnit', isUnitType, { shouldDirty: true });
+      isUnitInitializedRef.current = true;
+      return;
+    }
+
+    if (!rpDataId) return;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const resp = await fetch(`${API_BASE_URL}/rpdata/commons/${encodeURIComponent(String(rpDataId))}`);
+        if (!resp.ok) return;
+        const payload = await resp.json();
+        const data = payload?.data || payload;
+        const rawT = String(data?.attrCore?.propertyType || data?.propertyType || '').toLowerCase();
+        const rawSub = String(data?.attrCore?.propertySubType || data?.propertySubType || '').toLowerCase();
+        const isUnitType = rawT.includes('unit') || rawSub.includes('unit') || rawSub.includes('apartment') || rawSub.includes('flat');
+        if (isMounted) {
+          setValue('valuationDetails.isUnit', isUnitType, { shouldDirty: true });
+          isUnitInitializedRef.current = true;
+        }
+      } catch (_) {}
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [propDetailsType, rpDataId, setValue]);
+
+  // Sync checkboxes and improvements value based on House vs Unit
+  useEffect(() => {
+    // Auto-tick display currency in report in either case by default
+    setValue('valuationDetails.showCurrencyOfValuation', true, { shouldDirty: true });
+
+    if (isUnit === true) {
+      // Unit selected: auto-tick only show land value and disable improvements
+      setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+      setValue('valuationDetails.showImprovements', false, { shouldDirty: true });
+      if (prevIsUnitSyncRef.current === false) {
+        setValue('valuationDetails.improvements', undefined, { shouldDirty: true });
+      }
+    } else if (isUnit === false) {
+      // House selected: auto-tick both show land value and improvements
+      setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+      setValue('valuationDetails.showImprovements', true, { shouldDirty: true });
+    }
+    prevIsUnitSyncRef.current = isUnit;
+  }, [isUnit, setValue]);
 
   // Auto-set market value when capitalised value changes (for SMSF reports)
   useEffect(() => {
@@ -551,6 +640,8 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             {...register('valuationDetails.improvements', { valueAsNumber: true })}
             placeholder="e.g., 350000"
             error={errors.valuationDetails?.improvements?.message}
+            disabled={isUnit === true}
+            className={isUnit === true ? 'bg-gray-100 cursor-not-allowed text-gray-400' : ''}
           />
         </FormField>
 
@@ -564,7 +655,12 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
                 type="radio"
                 value="false"
                 checked={!watch('valuationDetails.isUnit')}
-                onChange={() => setValue('valuationDetails.isUnit', false, { shouldDirty: true })}
+                onChange={() => {
+                  setValue('valuationDetails.isUnit', false, { shouldDirty: true });
+                  setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+                  setValue('valuationDetails.showImprovements', true, { shouldDirty: true });
+                  setValue('valuationDetails.showCurrencyOfValuation', true, { shouldDirty: true });
+                }}
                 className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               />
               <span className="text-sm font-medium text-gray-900">House</span>
@@ -574,7 +670,13 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
                 type="radio"
                 value="true"
                 checked={watch('valuationDetails.isUnit') === true}
-                onChange={() => setValue('valuationDetails.isUnit', true, { shouldDirty: true })}
+                onChange={() => {
+                  setValue('valuationDetails.isUnit', true, { shouldDirty: true });
+                  setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+                  setValue('valuationDetails.showImprovements', false, { shouldDirty: true });
+                  setValue('valuationDetails.improvements', undefined, { shouldDirty: true });
+                  setValue('valuationDetails.showCurrencyOfValuation', true, { shouldDirty: true });
+                }}
                 className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               />
               <span className="text-sm font-medium text-gray-900">Unit</span>

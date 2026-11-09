@@ -331,6 +331,19 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
       );
       setIfDefined('propertyDetails.propertyType', mappedPropType);
 
+      // Sync valuationDetails isUnit, showLandValue, showImprovements, showCurrencyOfValuation
+      if (mappedPropType) {
+        const lowerProp = mappedPropType.toLowerCase();
+        const isUnitProp = lowerProp.includes('unit') || lowerProp.includes('apartment') || lowerProp.includes('flat');
+        setValue('valuationDetails.isUnit', isUnitProp, { shouldDirty: true });
+        setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+        setValue('valuationDetails.showImprovements', !isUnitProp, { shouldDirty: true });
+        setValue('valuationDetails.showCurrencyOfValuation', true, { shouldDirty: true });
+        if (isUnitProp) {
+          setValue('valuationDetails.improvements', undefined, { shouldDirty: true });
+        }
+      }
+
       // Ensure tenure type is set based on state (ACT -> Crown Leasehold, otherwise Freehold)
       const propState = watch('address.state') || data?.location?.state;
       const isAct = String(propState || '').trim().toUpperCase() === 'ACT';
