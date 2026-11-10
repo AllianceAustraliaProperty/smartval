@@ -16,6 +16,23 @@ from utils.email_schedule_timing import HEALTH_MAX_AGE
 email_schedules_bp = Blueprint('email_schedules', __name__)
 ROOT = '/<report_id>/email-schedules'
 
+COMPANY_POC_EMAILS = {
+    'CPV': 'info@certifiedpropertyvaluer.com.au',
+    'TAMN': 'info@tamn.com.au',
+}
+
+
+def get_report_company_info(report):
+    logo = ((report.get('valuationDetails') or {}).get('logoType') or '').strip().upper()
+    file_num = (report.get('fileNumber') or '').strip().upper()
+    if file_num.startswith('CPV'):
+        return 'CPV'
+    if file_num.startswith('TAMN'):
+        return 'TAMN'
+    if logo in ('CPV', 'TAMN'):
+        return logo
+    return logo or 'AAP'
+
 
 def user_id():
     return (getattr(request, 'user', {}) or {}).get('uid') or (getattr(request, 'user', {}) or {}).get('sub')
@@ -86,8 +103,29 @@ def listing(report_id):
     active = db.reportEmailSchedules.find_one({'reportId': report_id, 'active': True}, {'pdf': 0, 'html': 0})
     if active and all(x['_id'] != active['_id'] for x in jobs): jobs.insert(0, active)
     heartbeat = db.reportEmailSchedulerState.find_one({'_id': 'worker'}) or {}
+
     contact = report.get('primaryContact') or {}
-    return jsonify(jobs=[dto(x, report) for x in jobs], defaults={'to': contact.get('email') or contact.get('email2', ''), 'cc': contact.get('email2', '') if contact.get('email') else ''},
+    client_email = (contact.get('email') or contact.get('email2') or '').strip()
+    client_cc = (contact.get('email2') or '').strip() if contact.get('email') else ''
+
+    company = get_report_company_info(report)
+    poc_email = COMPANY_POC_EMAILS.get(company, '')
+    is_poc = bool(poc_email)
+
+    default_to = poc_email if is_poc else client_email
+    default_cc = '' if is_poc else client_cc
+    default_recipient_type = 'poc' if is_poc else 'client'
+
+    defaults = {
+        'to': default_to,
+        'cc': default_cc,
+        'recipientType': default_recipient_type,
+        'clientEmail': client_email,
+        'pocEmail': poc_email,
+        'logoType': company,
+    }
+
+    return jsonify(jobs=[dto(x, report) for x in jobs], defaults=defaults,
         workerHealthy=bool(heartbeat.get('at') and timedelta(0) <= now() - heartbeat['at'] < timedelta(seconds=HEALTH_MAX_AGE)))
 
 
@@ -111,7 +149,7 @@ def prepare(report_id):
     sender = settings.get('reportEmailSender') or Config.MS_GRAPH_SENDER_EMAIL
     if not sender: raise ValueError('The report sender mailbox is not configured. Ask an administrator to update email settings.')
     context = build_report_email_context(report, Config.REPORT_LOGO_URL)
-    logo = (report.get('valuationDetails') or {}).get('logoType', 'AAP')
+    logo = get_report_company_info(report)
     if body.get('recipientType') == 'poc' and logo in ('CPV', 'TAMN'):
         context['client_name'] = 'Falak' if logo == 'CPV' else 'Ashi'
     subject = render_string(settings.get('reportEmailSubject') or DEFAULT_REPORT_EMAIL_SUBJECT, context)

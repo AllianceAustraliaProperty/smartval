@@ -1508,7 +1508,12 @@ def send_report_email(report_id):
 
         pdf_content = generate_pdf_from_html(html_content)
         file_number = (report.get('fileNumber') or report_id[-8:].upper()).strip()
-        logo_type = report.get('valuationDetails', {}).get('logoType', 'AAP')
+        logo_type = (report.get('valuationDetails', {}) or {}).get('logoType') or ''
+        if not logo_type:
+            upper_fn = file_number.upper()
+            if upper_fn.startswith('CPV'): logo_type = 'CPV'
+            elif upper_fn.startswith('TAMN'): logo_type = 'TAMN'
+            else: logo_type = 'AAP'
         filename = f"AAP-{file_number}.pdf" if logo_type == 'AAP' else f"{file_number}.pdf"
 
         from utils.report_email import (
@@ -1521,7 +1526,6 @@ def send_report_email(report_id):
         email_ctx = build_report_email_context(report, Config.REPORT_LOGO_URL)
         
         recipient_type = body.get('recipientType', 'client')
-        logo_type = report.get('valuationDetails', {}).get('logoType', 'AAP')
         
         if recipient_type == 'poc':
             if logo_type == 'CPV':
