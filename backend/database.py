@@ -8,6 +8,16 @@ from pymongo import MongoClient
 from config import Config
 import threading
 
+try:
+    import dns.resolver
+    # Use reliable public DNS (Google & Cloudflare) for MongoDB Atlas SRV lookups to prevent ISP/VPN DNS timeouts
+    _res = dns.resolver.Resolver()
+    _res.nameservers = ['8.8.8.8', '1.1.1.1', '8.8.4.4']
+    _res.lifetime = 6.0
+    dns.resolver.default_resolver = _res
+except Exception:
+    pass
+
 _client = None
 _db = None
 _lock = threading.Lock()

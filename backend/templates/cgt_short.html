@@ -160,14 +160,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 6px;
+            padding: 2px 6px;
             background: #f8fafc;
             border-bottom: 1px solid #e2e8f0;
         }
 
         .property-address {
             font-weight: bold;
-            font-size: 11.5px;
+            font-size: 10.5px;
             color: #333;
             display: flex;
             align-items: center;
@@ -176,15 +176,15 @@
         .map-pin {
             position: relative;
             display: inline-block;
-            margin-right: 8px;
+            margin-right: 6px;
             color: white;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .map-pin img {
-            width: 22px;
-            height: 22px;
+            width: 18px;
+            height: 18px;
             display: block;
         }
 
@@ -200,21 +200,21 @@
         .property-status {
             display: flex;
             align-items: center;
-            min-width: 130px;
+            min-width: 110px;
             background-color: #e0e0e0;
-            padding: 4px 8px;
+            padding: 2px 6px;
             justify-content: space-between;
         }
 
         .status-label {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
-            margin-right: 12px;
+            margin-right: 8px;
             color: #222;
         }
 
         .status-price {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             color: #111;
         }
@@ -222,13 +222,13 @@
         .property-content {
             display: flex;
             flex-direction: row;
-            padding: 6px;
-            gap: 10px;
+            padding: 4px 6px;
+            gap: 8px;
         }
 
         .property-image {
-            width: 145px;
-            height: 88px;
+            width: 115px;
+            height: 68px;
             object-fit: cover;
             border: 1px solid #e2e8f0;
             border-radius: 1px;
@@ -245,57 +245,57 @@
         .property-specs {
             display: flex;
             justify-content: flex-start;
-            gap: 10px;
-            margin-bottom: 3px;
+            gap: 8px;
+            margin-bottom: 2px;
         }
 
         .spec-item {
             display: flex;
             align-items: center;
-            gap: 3px;
-            font-size: 10px;
+            gap: 2px;
+            font-size: 9px;
             color: #555;
         }
 
         .spec-item img {
-            width: 13px;
-            height: 13px;
+            width: 11px;
+            height: 11px;
             vertical-align: middle;
         }
 
         .property-info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2px 8px;
-            margin-bottom: 3px;
+            gap: 1px 6px;
+            margin-bottom: 2px;
         }
 
         .info-row {
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
 
         .info-label {
             font-weight: bold;
-            font-size: 10px;
+            font-size: 9px;
             color: #888;
-            min-width: 65px;
+            min-width: 56px;
         }
 
         .info-value {
-            font-size: 10px;
+            font-size: 9px;
             color: #111;
             flex: 1;
         }
 
         .property-comparison {
-            font-size: 9.5px;
+            font-size: 8.5px;
             color: #333;
-            line-height: 1.25;
+            line-height: 1.2;
             border-top: 1px solid #edf2f7;
-            padding-top: 3px;
+            padding-top: 2px;
         }
 
         /* Photos grid (2x2) */
@@ -317,30 +317,16 @@
 
         .grid-photo {
             width: 100%;
-            height: 98px;
+            height: 180px;
             object-fit: cover;
             display: block;
         }
 
-        .photo-caption {
-            font-size: 9px;
-            font-weight: bold;
-            color: #444;
-            padding: 3px 5px;
-            text-align: center;
-            background: #fafafa;
-            border-top: 1px solid #eee;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
         .photo-placeholder {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 122px;
+            height: 180px;
             background: #fbfbfb;
         }
 
@@ -434,105 +420,94 @@
     {% set final_improvements = valuation_report.get('valuationDetails', {}).get('improvements') or (final_market_value - final_land_value if final_market_value > final_land_value else 0) %}
 
     <!-- ================= PAGE 1: VALUATION SUMMARY ================= -->
-    <div class="page" id="page-1">
+    <div class="page" id="page-1" style="font-family: Arial, Helvetica, sans-serif;">
         <!-- Top Header Bar -->
-        <div class="header-container">
-            <div class="header-left">
-                <div class="report-title">Capital Gains Tax Assessment</div>
-                <div class="report-address">{{ valuation_report["address"]["fullAddress"]|default('') }}</div>
-                <div class="report-meta-tag">Short-Form Valuation Report &bull; Reference #{{ valuation_report.get("fileNumber") or valuation_report.get("referenceNumber") or 'N/A' }}</div>
-            </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 2px;">
             <div>
                 <img src="{{ page_logo_url }}" class="header-logo" alt="Company Logo" />
             </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right;">
+                <div style="font-size: 19px; color: #7d8287; font-weight: normal;">Capital Gains Tax Assessment</div>
+                <div style="font-size: 9.5px; color: #eb0000; text-transform: uppercase; margin-top: 2px;">{{ valuation_report["address"]["fullAddress"]|default('') }}</div>
+            </div>
         </div>
+        
+        <!-- Header Divider Line -->
+        <div style="height: 1.5px; background-color: #888; margin-top: 6px; margin-bottom: 10px; width: 100%;"></div>
 
         <!-- Statutory declaration note -->
-        <p style="font-size: 9.5px; color: #444; line-height: 1.35; margin-bottom: 8px;">
-            This short-form Capital Gains Tax (CGT) valuation report has been prepared in accordance with the Australian Property Institute (API) Valuation and Property Standards and Australian Taxation Office (ATO) guidelines to assess the fair market value of the subject property as at the specified date of valuation.
+        <p style="font-size: 9px; color: #232d37; margin: 0 0 10px 0; line-height: 1.35;">
+            In accordance with the Duties Act, 1997 (as amended). This is to certify the Market Value of the interest & property described herein.
         </p>
 
-        <!-- Instructions & Metadata Table -->
-        <table class="table-border" style="margin-bottom: 8px;">
-            <tr>
-                <td class="label-cell" style="width: 22%;">Reported Interest of</td>
-                <td class="value-cell" style="width: 28%;">
-                    {% if valuation_report.get("primaryContact", {}).get("firstName") or valuation_report.get("primaryContact", {}).get("lastName") %}
+        <!-- Instructions & Metadata Table (2 Rows) -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 9px; color: #232d37;">
+            <tr style="border-bottom: 0.5px solid #bbb;">
+                <td style="padding: 3px 0; font-weight: bold; width: 23%;">Reported Interest of:</td>
+                <td style="padding: 3px 0; width: 27%;">
+                    {% if valuation_report.get("valuationDetails", {}).get("registeredProprietor") %}
+                        {{ valuation_report["valuationDetails"]["registeredProprietor"] }}
+                    {% elif valuation_report.get("primaryContact", {}).get("firstName") or valuation_report.get("primaryContact", {}).get("lastName") %}
                         {{ valuation_report["primaryContact"]["firstName"]|default('') }} {{ valuation_report["primaryContact"]["lastName"]|default('') }}
+                    {% elif valuation_report.get("propertyDetails", {}).get("owner") %}
+                        {{ valuation_report["propertyDetails"]["owner"] }}
                     {% else %}
                         Client
                     {% endif %}
                 </td>
-                <td class="label-cell" style="width: 22%;">Date of Valuation</td>
-                <td class="value-cell" style="width: 28%;">
-                    {{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('N/A') }}
-                </td>
+                <td style="padding: 3px 0; font-weight: bold; width: 23%;">Date of Valuation:</td>
+                <td style="padding: 3px 0; width: 27%;">{{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('N/A') }}</td>
             </tr>
-            <tr>
-                <td class="label-cell">Local Government Area</td>
-                <td class="value-cell">
-                    {{ valuation_report.get("propertyDetails", {}).get("localGovernmentArea") or valuation_report.get("propertyDetails", {}).get("municipality") or 'N/A' }}
-                </td>
-                <td class="label-cell">Title Details</td>
-                <td class="value-cell">
+            <tr style="border-bottom: 0.5px solid #bbb;">
+                <td style="padding: 3px 0; font-weight: bold;">Local Government Area:</td>
+                <td style="padding: 3px 0;">{{ valuation_report.get("propertyDetails", {}).get("localGovernmentArea") or valuation_report.get("propertyDetails", {}).get("councilArea") or valuation_report.get("propertyDetails", {}).get("municipality") or 'N/A' }}</td>
+                <td style="padding: 3px 0; font-weight: bold;">Title Details:</td>
+                <td style="padding: 3px 0;">
                     {% if valuation_report.get("propertyDetails", {}).get("lotNumber") or valuation_report.get("propertyDetails", {}).get("planNumber") %}
-                        Lot {{ valuation_report["propertyDetails"]["lotNumber"]|default('') }} {{ valuation_report["propertyDetails"]["planNumber"]|default('') }}
+                        LOT {{ valuation_report["propertyDetails"]["lotNumber"]|default('') }} {{ valuation_report["propertyDetails"]["planNumber"]|default('') }}
                     {% elif valuation_report.get("propertyDetails", {}).get("titleReference") %}
                         {{ valuation_report["propertyDetails"]["titleReference"] }}
+                    {% elif valuation_report.get("propertyDetails", {}).get("legalDescription") %}
+                        {{ valuation_report["propertyDetails"]["legalDescription"] }}
                     {% else %}
                         Freehold
                     {% endif %}
                 </td>
             </tr>
-            <tr>
-                <td class="label-cell">Property Type</td>
-                <td class="value-cell">
-                    {{ valuation_report.get("propertyDetails", {}).get("propertyType")|default('Residential') }}
-                </td>
-                <td class="label-cell">Date of Inspection</td>
-                <td class="value-cell">
-                    {% if valuation_report.get("valuationDetails", {}).get("externalDesktopValuation") %}
-                        External / Desktop Valuation
-                    {% elif valuation_report.get("valuationDetails", {}).get("inspectionDate") %}
-                        {{ valuation_report["valuationDetails"]["inspectionDate"]|format_date|default('N/A') }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
-            </tr>
         </table>
 
-        <!-- Property Summary Banner with specs -->
-        <div class="banner">
-            <span>Property Summary</span>
-            <div class="property-specs" style="margin-bottom: 0; gap: 14px; font-weight: normal; font-size: 10.5px;">
-                <div class="spec-item">
-                    <img src="https://valai.duo.tax/assets/bed-icon.svg" alt="Bed" />
-                    <span>{{ valuation_report.get("propertyDetails", {}).get("bedrooms")|default('-') }} Beds</span>
-                </div>
-                <div class="spec-item">
-                    <img src="https://valai.duo.tax/assets/bath-icon.svg" alt="Bath" />
-                    <span>{{ valuation_report.get("propertyDetails", {}).get("bathrooms")|default('-') }} Baths</span>
-                </div>
-                <div class="spec-item">
-                    <img src="https://valai.duo.tax/assets/car-icon.svg" alt="Car" />
-                    <span>{{ valuation_report.get("propertyDetails", {}).get("carSpaces")|default('-') }} Cars</span>
-                </div>
-                <div class="spec-item">
-                    <img src="https://valai.duo.tax/assets/land-icon.svg" alt="Site Area" />
-                    <span>{{ valuation_report.get("propertyDetails", {}).get("siteArea")|format_area_smart|default('-') }}</span>
-                </div>
-                <div class="spec-item">
-                    <img src="https://valai.duo.tax/assets/floor-icon.svg" alt="Building Area" />
-                    <span>{{ valuation_report.get("propertyDetails", {}).get("buildingArea")|format_area|default('-') }}</span>
-                </div>
-            </div>
+        <!-- Thick Red Divider Bar -->
+        <div style="height: 2px; background-color: #eb0000; margin-top: 10px; margin-bottom: 10px; width: 100%;"></div>
+
+        <!-- Property Summary Banner -->
+        <div style="background-color: #e4ebee; padding: 6px 12px; margin-bottom: 6px;">
+            <span style="font-size: 13.5px; font-weight: bold; color: #232d37; display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-block; width: 7px; height: 7px; background-color: #3b4249;"></span> Property Summary
+            </span>
+        </div>
+
+        <!-- Horizontal Specs Line -->
+        <div style="display: flex; justify-content: center; align-items: center; gap: 28px; padding: 2px 0 8px 0; font-size: 9.5px; color: #232d37;">
+            <span style="display: flex; align-items: center; gap: 5px;">
+                <img src="https://valai.duo.tax/assets/bed-icon.svg" style="width: 13px; height: 13px;" alt="Bed" />
+                <span>{{ valuation_report.get("propertyDescriptors", {}).get("bedrooms") or valuation_report.get("propertyDetails", {}).get("bedrooms") or '-' }}</span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 5px;">
+                <img src="https://valai.duo.tax/assets/bath-icon.svg" style="width: 13px; height: 13px;" alt="Bath" />
+                <span>{{ valuation_report.get("propertyDescriptors", {}).get("bathrooms") or valuation_report.get("propertyDetails", {}).get("bathrooms") or '-' }}</span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 5px;">
+                <img src="https://valai.duo.tax/assets/car-icon.svg" style="width: 13px; height: 13px;" alt="Car" />
+                <span>{{ valuation_report.get("propertyDescriptors", {}).get("carSpaces") or valuation_report.get("propertyDescriptors", {}).get("parking") or valuation_report.get("propertyDetails", {}).get("carSpaces") or '-' }}</span>
+            </span>
+            <span>Land&nbsp;&nbsp;{{ valuation_report.get("propertyDetails", {}).get("siteArea")|format_area_smart|default('-', true) }}</span>
+            <span>Built&nbsp;&nbsp;{{ valuation_report.get("propertyDetails", {}).get("yearBuilt") or valuation_report.get("propertyDetails", {}).get("buildYear") or valuation_report.get("propertyDetails", {}).get("approximateAge") or '-' }}</span>
         </div>
 
         <!-- Property Photo & Valuation Breakdown Box -->
-        <div style="display: flex; gap: 10px; margin-bottom: 8px; border: 1px solid #d4dbe3; padding: 6px; border-radius: 1px; background: #fff;">
+        <div style="border: 1px solid #aaa; display: flex; flex-direction: row; margin-bottom: 12px; background: #fff;">
             <!-- Left: Cover Photo -->
-            <div style="flex: 1.1; height: 150px; overflow: hidden; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1px; display: flex; align-items: center; justify-content: center;">
+            <div style="flex: 1.05; height: 175px; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center;">
                 {% set cover_obj = (valuation_report.photos|selectattr('isCover')|first) if (valuation_report.photos and valuation_report.photos|selectattr('isCover')|list) else (cover_photo or valuation_report.get('cover_photo')) %}
                 {% set cover_img = cover_obj.photoUrl if (cover_obj and cover_obj.get('photoUrl')) else (valuation_report.photos[0].photoUrl if (valuation_report.photos and valuation_report.photos|length > 0 and valuation_report.photos[0].get('photoUrl')) else None) %}
 
@@ -543,36 +518,36 @@
                 {% endif %}
             </div>
 
-            <!-- Right: Valuation Breakdown Table -->
-            <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                <table class="table-border" style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <td class="label-cell" style="width: 48%;">Land Value</td>
-                        <td class="value-cell" style="text-align: right; font-weight: bold;">{{ final_land_value|format_currency }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label-cell">Improvements</td>
-                        <td class="value-cell" style="text-align: right; font-weight: bold;">{{ final_improvements|format_currency }}</td>
-                    </tr>
-                    <tr style="background-color: #f2f2f2;">
-                        <td class="label-cell" style="background-color: #eaeaea; font-size: 11px;">Market Value</td>
-                        <td class="value-cell" style="text-align: right; font-weight: bold; font-size: 11.5px; color: #111;">{{ final_market_value|format_currency }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label-cell" style="font-size: 10px;">Valuation Date</td>
-                        <td class="value-cell" style="text-align: right; font-weight: 600; font-size: 10px;">{{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('N/A') }}</td>
-                    </tr>
-                </table>
-                <div style="text-align: right; font-size: 9.5px; color: #555; margin-top: 3px;">
-                    <strong>Issue Date:</strong> {% if valuation_report.get("valuationDetails", {}).get("dateIssued") %}{{ valuation_report["valuationDetails"]["dateIssued"]|format_date }}{% else %}{{ now()|format_date }}{% endif %}
+            <!-- Right: Breakdown details -->
+            <div style="flex: 1; padding: 18px 24px 12px 28px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #14191e;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: bold; width: 125px;">Land Value:</span>
+                        <span style="font-weight: normal; flex: 1;">{{ final_land_value|format_currency_no_decimal }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: bold; width: 125px;">Improvements:</span>
+                        <span style="font-weight: normal; flex: 1;">{{ final_improvements|format_currency_no_decimal }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: bold; width: 125px;">Market Value:</span>
+                        <span style="font-weight: bold; flex: 1;">{{ final_market_value|format_currency_no_decimal }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: bold; width: 125px;">Valuation Date:</span>
+                        <span style="font-weight: normal; flex: 1;">{{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('N/A') }}</span>
+                    </div>
+                </div>
+                <div style="font-size: 11px; font-weight: bold; color: #000; text-align: right; margin-top: 10px;">
+                    Issue Date: {% if valuation_report.get("valuationDetails", {}).get("dateIssued") %}{{ valuation_report["valuationDetails"]["dateIssued"]|format_date }}{% else %}{{ now()|format_date }}{% endif %}
                 </div>
             </div>
         </div>
 
         <!-- Subject Improvements -->
-        <div style="margin-bottom: 7px;">
-            <div class="subtitle">Subject Improvements</div>
-            <p style="font-size: 9.5px; line-height: 1.35; color: #333;">
+        <div style="margin-bottom: 10px;">
+            <div style="font-weight: bold; font-size: 9px; color: #232d37; margin-bottom: 2px;">Subject Improvements:</div>
+            <p style="font-size: 9px; line-height: 1.35; color: #232d37; margin: 0;">
                 {% if valuation_report.get("propertyDetails", {}).get("descriptionOfImprovements") %}
                     {{ valuation_report["propertyDetails"]["descriptionOfImprovements"] }}
                 {% elif valuation_report.get("generalComments", {}).get("propertyDescription") %}
@@ -585,39 +560,31 @@
             </p>
         </div>
 
-        <!-- Valuation Statement Box -->
-        <div style="margin-bottom: 7px; background-color: #f8fafc; border: 1px solid #d4dbe3; padding: 6px 10px; border-radius: 1px;">
-            <div style="font-size: 9.5px; color: #333; line-height: 1.35; margin-bottom: 2px;">
-                Based on our inspection and analysis of relevant market evidence, we assess the fair market value of the subject property as at <strong>{{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('') }}</strong> at:
+        <!-- Valuation Statement -->
+        <div style="margin-bottom: 12px;">
+            <div style="font-weight: bold; font-size: 13.5px; color: #232d37; margin-bottom: 6px;">Valuation:</div>
+            <div style="font-size: 9px; color: #232d37; line-height: 1.35; margin-bottom: 6px;">
+                We assess the subject property's Fair Market Value in its present condition and on a vacant possession basis to be: As at {{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('') }}
             </div>
-            <div style="font-size: 13.5px; font-weight: bold; color: #111;">
-                {{ final_market_value|format_currency }} ({{ final_market_value|format_currency_words }})
+            <div style="font-size: 13.5px; font-weight: bold; color: #232d37;">
+                Fair Market Value {{ final_market_value|format_currency }} ({{ final_market_value|format_currency_words }})
             </div>
         </div>
 
         <!-- Signature Block -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px;">
-            <div>
-                <div style="font-size: 9.5px; font-weight: bold; color: #222;">Valuation Prepared By:</div>
-                <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="Signature" style="height: 30px; margin: 2px 0; display: block;" />
-                <div style="font-size: 10px; font-weight: bold; color: #111;">Jugal Saha, Property Valuer, AAPI, CPV.</div>
-                <div style="font-size: 9px; color: #555;">
-                    Certified Practicing Valuer 101474
-                    {% if valuation_report.get("address", {}).get("state") == 'WA' %}<br>WA License Number - LV45321{% endif %}
-                    {% if valuation_report.get("address", {}).get("state") == 'QLD' %}<br>QLD License no: 5429MR{% endif %}
-                </div>
-            </div>
-            <div style="text-align: right;">
-                <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member" style="height: 36px; width: auto; object-fit: contain;" />
-            </div>
+        <div style="margin-bottom: 6px;">
+            <div style="font-size: 9px; color: #232d37; margin-bottom: 2px;">Signature</div>
+            <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="Signature" style="height: 28px; margin: 1px 0; display: block;" />
+            <div style="font-size: 9px; font-weight: bold; color: #232d37;">Jugal Saha, AAPI CPV</div>
+            <div style="font-size: 9px; color: #232d37; margin-bottom: 6px;">(Certified Practising Valuer 101474)</div>
         </div>
 
         <!-- Disclaimers / Certification Statements -->
-        <div class="disclaimer-block">
-            <p><strong>Certification:</strong> The valuer confirms that they do not have any pecuniary or personal interest, either direct or indirect, in the subject property or with the parties involved, which would conflict with the independent and objective valuation of the property.</p>
-            <p><strong>Liability & Third Party:</strong> This valuation report has been prepared for the private and confidential use of the client for the specified purpose of Capital Gains Tax assessment. It should not be reproduced in whole or in part without express written authority from {{ _company_ref }}, nor relied upon by any other party. The valuer accepts no liability to third parties acting without independent advice.</p>
-            <p><strong>Market Conditions & Currency:</strong> This valuation is valid for 90 days from the valuation date. The valuation is based on market conditions, evidence, and property characteristics existing as at the valuation date.</p>
-            <p><strong>GST & Reliance:</strong> Valuations of residential property are undertaken on the basis that GST is not applicable unless specifically stated. This report must be read in its entirety; no reliance should be placed on isolated sections or summaries.</p>
+        <div style="font-size: 7.7px; color: #232d37; line-height: 1.32; display: flex; flex-direction: column; gap: 4px;">
+            <p style="margin: 0;">I hereby certifies that the assessments of the above property have been carried out as of the valuation date stated in this report. Neither {{ _company_ref }} nor, to the best of their knowledge, any member of their firm has any conflict of interest, direct, indirect, or financial, in relation to this property that has not been disclosed herein.</p>
+            <p style="margin: 0;">This report is intended solely for the use of the party or parties to whom it is addressed for the purpose and is not to be utilised for any other purpose. Assuming the property has a clear and marketable title, free from any onerous easements or encumbrances.</p>
+            <p style="margin: 0;">This report has been prepared for the private and confidential use of our client for the specified purpose. It should not be reproduced in whole or part without the express written authority of {{ _company_ref }} or relied upon any other party for any purpose and the valuer shall not have any liability to any party who does so. Our warning is registered here, that any party other than those specifically named in this report should obtain their own valuation before acting in any way in respect of the subject property.</p>
+            <p style="margin: 0;">Where a digital copy of the report has been provided and has not been received directly from us, the report contents, especially the valuation and critical assumption should be verified by contacting the using office to ensure contents are appropriate. In particular if this report appears to be suspicious - that the report is tampered or altered, we recommend to contact the office. This valuation should be read in its entirety, inclusive of any summary and also its expiration date, 3 months from the date of valuation. The valuer and valuation firm does not accept any responsibility where part of this report has been relied upon without reference to the full context of the valuation report.</p>
         </div>
 
         <!-- Footer -->
@@ -643,10 +610,10 @@
         <div class="banner">Market Evidence</div>
 
         <!-- Market Evidence List -->
-        <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 5px;">
             {% set sales_list = valuation_report.get("comparables", {}).get("sales", []) %}
             {% if sales_list and sales_list|length > 0 %}
-                {% for comparable in sales_list[:3] %}
+                {% for comparable in sales_list[:4] %}
                 <div class="property-card">
                     <div class="property-header">
                         <div class="property-address">
@@ -746,29 +713,18 @@
             {% if display_photos and display_photos|length > 0 %}
                 {% for photo in display_photos %}
                 <div class="photo-item">
-                    <img class="grid-photo" src="{{ photo.get('photoUrl') }}" alt="{{ photo.get('category') or photo.get('label') or 'Property Photo' }}" />
-                    <div class="photo-caption">{{ photo.get("category") or photo.get("label") or photo.get("caption") or ('Photo ' ~ loop.index) }}</div>
+                    <img class="grid-photo" src="{{ photo.get('photoUrl') }}" alt="Property Photo" />
                 </div>
                 {% endfor %}
                 {# Fill remaining spots up to 4 with placeholders to keep 2x2 grid neat #}
                 {% for i in range(4 - display_photos|length) %}
-                <div class="photo-item photo-placeholder">
-                    <div style="color: #aaa; font-size: 10px;">Additional Photo</div>
-                </div>
+                <div class="photo-item photo-placeholder"></div>
                 {% endfor %}
             {% else %}
-                <div class="photo-item photo-placeholder">
-                    <div style="color: #aaa; font-size: 10px;">Front Elevation</div>
-                </div>
-                <div class="photo-item photo-placeholder">
-                    <div style="color: #aaa; font-size: 10px;">Rear Elevation</div>
-                </div>
-                <div class="photo-item photo-placeholder">
-                    <div style="color: #aaa; font-size: 10px;">Living Area</div>
-                </div>
-                <div class="photo-item photo-placeholder">
-                    <div style="color: #aaa; font-size: 10px;">Kitchen / Dining</div>
-                </div>
+                <div class="photo-item photo-placeholder"></div>
+                <div class="photo-item photo-placeholder"></div>
+                <div class="photo-item photo-placeholder"></div>
+                <div class="photo-item photo-placeholder"></div>
             {% endif %}
         </div>
 

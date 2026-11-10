@@ -2,6 +2,17 @@
 Development server runner
 """
 import os
+
+try:
+    import dns.resolver
+    # Use reliable public DNS (Google & Cloudflare) for MongoDB Atlas SRV lookups to prevent ISP/VPN DNS timeouts
+    _res = dns.resolver.Resolver()
+    _res.nameservers = ['8.8.8.8', '1.1.1.1', '8.8.4.4']
+    _res.lifetime = 6.0
+    dns.resolver.default_resolver = _res
+except Exception:
+    pass
+
 from app import create_app
 from config import Config
 
