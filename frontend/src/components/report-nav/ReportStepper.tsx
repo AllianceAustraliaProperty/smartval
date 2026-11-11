@@ -45,16 +45,16 @@ export const ReportStepper: React.FC<ReportStepperProps> = ({
     <div
       className={`
         ${montserrat.className}
-        w-full overflow-x-auto py-6 px-4 sm:px-8 bg-white select-none
+        w-full overflow-x-auto py-4 px-4 sm:px-8 bg-white select-none
         border-b border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)]
         ${className}
       `}
     >
-      <div className="min-w-[880px] max-w-[1400px] mx-auto">
+      <div className="w-full max-w-[1140px] min-w-[840px] mx-auto">
         <div className="relative flex items-start justify-between">
           {/* Continuous Connecting Line Behind Nodes */}
           <div
-            className="absolute top-[20px] left-[4%] right-[4%] h-[3.5px] -translate-y-1/2 z-0"
+            className="absolute top-[17px] left-[5%] right-[5%] h-[3px] -translate-y-1/2 z-0"
             aria-hidden="true"
           >
             {/* Base grey line */}
@@ -83,7 +83,7 @@ export const ReportStepper: React.FC<ReportStepperProps> = ({
             let labelColor = 'text-[#94A3B8] font-medium';
 
             if (isCompleted || isPast) {
-              circleBg = 'bg-[#00B050] text-white shadow-sm';
+              circleBg = 'bg-[#00B050] text-white shadow-xs';
               labelColor = 'text-[#00B050] font-semibold';
             }
 
@@ -102,24 +102,24 @@ export const ReportStepper: React.FC<ReportStepperProps> = ({
                 {/* Step Circle Node */}
                 <div
                   className={`
-                    w-10 h-10 rounded-full flex items-center justify-center
+                    w-[34px] h-[34px] rounded-full flex items-center justify-center
                     transition-all duration-200 group-hover:scale-110
                     ${circleBg}
                   `}
                 >
                   {isCompleted || (isPast && !isActive) ? (
-                    <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                    <Check className="w-4 h-4 text-white" strokeWidth={2.75} />
                   ) : isActive ? (
-                    <div className="w-3.5 h-3.5 rounded-full bg-white shadow-xs" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-white shadow-xs" />
                   ) : (
-                    <div className="w-2.5 h-2.5 rounded-full bg-white/70" />
+                    <div className="w-2 h-2 rounded-full bg-white/70" />
                   )}
                 </div>
 
                 {/* Step Label */}
                 <span
                   className={`
-                    mt-2 text-[12px] sm:text-[13px] leading-tight text-center max-w-[85px] sm:max-w-[95px]
+                    mt-2 text-[11.5px] sm:text-[12px] leading-tight text-center max-w-[85px] sm:max-w-[95px]
                     transition-colors duration-200
                     ${labelColor}
                   `}

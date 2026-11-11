@@ -883,7 +883,7 @@ const SearchForm: React.FC<{
           type="button"
           onClick={onSearch}
           disabled={isSearching || formState.propertyType.length === 0}
-          className="inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className="inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isSearching ? (
             <>
@@ -1143,7 +1143,7 @@ const SearchResults: React.FC<{
                 type="button"
                 onClick={onLoadMore}
                 disabled={isSearching}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center px-5 py-2.5 text-xs sm:text-sm font-bold text-[#006ABE] bg-blue-50 border border-blue-200 rounded-full hover:bg-[#006ABE] hover:text-white transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSearching ? (
                   <>
@@ -2642,9 +2642,9 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
         <button
           type="button"
           onClick={addComparable}
-          className="group inline-flex items-center px-4 py-2 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          className="group inline-flex items-center px-5 py-2.5 text-xs sm:text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all duration-300 cursor-pointer"
         >
-          <Plus className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+          <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
           Add {type === 'sales' ? 'Sale' : 'Rental'}
         </button>
       </div>
@@ -2662,7 +2662,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
               setBulkLogs([]);
               setShowBulkModal(true);
             }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors shadow-xs"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full bg-blue-50 hover:bg-[#006ABE] hover:text-white text-[#006ABE] border border-blue-200 transition-all shadow-xs cursor-pointer"
             title="Paste multiple addresses to batch import all of them at once"
           >
             <ListPlus className="w-4 h-4 text-blue-600" />
@@ -2742,7 +2742,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
               type="button"
               onClick={handleAddressSearch}
               disabled={isSearchingAddress || isFetchingComparable}
-              className="inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="inline-flex items-center px-6 min-h-[46px] text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSearchingAddress ? (
                 <>

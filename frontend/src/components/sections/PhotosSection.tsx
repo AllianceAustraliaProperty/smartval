@@ -677,60 +677,59 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       )}
 
       {/* Single Photo Upload Section */}
-      <div className="border border-gray-200 rounded-lg p-6">
-        <div className="flex justify-between items-center mb-4">
+      <div className="border border-gray-200 rounded-2xl p-6">
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
             Upload Photos
           </h3>
-          <button
-            onClick={handleAutoArrange}
-            disabled={isArranging || photos.length === 0}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {isArranging ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div> : <ListOrdered className="w-4 h-4" />}
-            Auto Arrange
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={addEmptyPhoto}
+              disabled={uploading}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#006ABE] hover:bg-[#00589e] text-white font-bold rounded-full shadow-sm hover:shadow transition-all text-xs sm:text-sm cursor-pointer disabled:opacity-50"
+              title="Add a photo entry without uploading an image"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Add Photo</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleAutoArrange}
+              disabled={isArranging || photos.length === 0}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-[#006ABE] bg-blue-50 border border-blue-200 rounded-full hover:bg-[#006ABE] hover:text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
+            >
+              {isArranging ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div> : <ListOrdered className="w-4 h-4" />}
+              Auto Arrange
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4">
-          {/* Upload Button and Add Photo Button */}
-          <div className="flex gap-4">
-            <div className="flex-1 flex items-center justify-center">
-              <label
-                htmlFor="file-upload-photos"
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-              >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                  <p className="mb-2 text-sm text-gray-500">
-                    <span className="font-semibold">Click to upload</span> or drag and drop
-                  </p>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 16MB • Up to 15 photos per upload</p>
-                </div>
-                <input
-                  id="file-upload-photos"
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  multiple
-                  accept="image/*"
-                  onChange={(event) => handleFileUpload(event.target.files)}
-                  disabled={uploading}
-                />
-              </label>
-            </div>
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={addEmptyPhoto}
+          {/* Upload Dropzone */}
+          <div className="w-full">
+            <label
+              htmlFor="file-upload-photos"
+              className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+            >
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                <p className="mb-2 text-sm text-gray-500">
+                  <span className="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 16MB • Up to 15 photos per upload</p>
+              </div>
+              <input
+                id="file-upload-photos"
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                multiple
+                accept="image/*"
+                onChange={(event) => handleFileUpload(event.target.files)}
                 disabled={uploading}
-                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors h-32 flex flex-col items-center justify-center gap-2"
-              >
-                <Upload className="w-6 h-6" />
-                <span>Add Photo</span>
-                <span className="text-xs font-normal">Without Image</span>
-              </button>
-            </div>
+              />
+            </label>
           </div>
 
           {/* Photo Grid */}
@@ -905,7 +904,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                                     type="button"
                                     onClick={() => handleAutomatePhoto(index, photo.photoUrl, photo.category)}
                                     disabled={isDisabled}
-                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors text-xs font-medium ${
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors text-xs font-semibold ${
                                       isAutomating
                                         ? 'bg-blue-600 text-white opacity-80 cursor-wait'
                                         : isQueued
@@ -1426,31 +1425,29 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
       <fieldset disabled={uploading || saves.busy || !photosLoaded} className="space-y-6 min-w-0">
       {/* Upload Section */}
       <div className="space-y-4">
-        <div className="flex gap-4">
-          <div className="flex-1 flex items-center justify-center">
-            <label htmlFor="file-upload-additional-photos" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                <p className="mb-2 text-sm text-gray-500">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
-                </p>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 16MB • Up to 15 photos per upload</p>
-              </div>
-              <input id="file-upload-additional-photos" ref={fileInputRef} type="file" className="hidden" multiple accept="image/*" onChange={(e) => handleFileUpload(e.target.files)} disabled={uploading} />
-            </label>
-          </div>
-          <div className="flex items-center">
-            <button
-              type="button"
-              onClick={addEmptyPhoto}
-              disabled={uploading}
-              className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors h-32 flex flex-col items-center justify-center gap-2"
-            >
-              <Upload className="w-6 h-6" />
-              <span>Add Photo</span>
-              <span className="text-xs font-normal">Without Image</span>
-            </button>
-          </div>
+        <div className="flex flex-wrap justify-between items-center gap-3">
+          <p className="text-sm font-medium text-gray-700">Add or drag photos below</p>
+          <button
+            type="button"
+            onClick={addEmptyPhoto}
+            disabled={uploading}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#006ABE] hover:bg-[#00589e] text-white font-bold rounded-full shadow-sm hover:shadow transition-all text-xs sm:text-sm cursor-pointer disabled:opacity-50"
+          >
+            <Upload className="w-4 h-4" />
+            <span>Add Photo</span>
+          </button>
+        </div>
+        <div className="w-full">
+          <label htmlFor="file-upload-additional-photos" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <Upload className="w-8 h-8 mb-2 text-gray-400" />
+              <p className="mb-2 text-sm text-gray-500">
+                <span className="font-semibold">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-xs text-gray-500">PNG, JPG, GIF up to 16MB • Up to 15 photos per upload</p>
+            </div>
+            <input id="file-upload-additional-photos" ref={fileInputRef} type="file" className="hidden" multiple accept="image/*" onChange={(e) => handleFileUpload(e.target.files)} disabled={uploading} />
+          </label>
         </div>
       </div>
 
