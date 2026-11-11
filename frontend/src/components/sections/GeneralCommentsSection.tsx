@@ -553,11 +553,11 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
             type="button"
             onClick={handleGeneratePropertyDescription}
             disabled={isGeneratingDescription}
-            className="absolute top-2 right-2 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute top-2 right-2 p-2 text-[#006ABE] hover:text-[#00589e] hover:bg-blue-50 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             title="Auto-generate property description"
           >
             {isGeneratingDescription ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#006ABE] border-t-transparent"></div>
             ) : (
               <Wand2 className="w-4 h-4" />
             )}
@@ -580,11 +580,11 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
             type="button"
             onClick={handleGenerateMarketOverview}
             disabled={isGeneratingOverview || !watch('rpData.localityId')}
-            className="absolute top-2 right-2 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute top-2 right-2 p-2 text-[#006ABE] hover:text-[#00589e] hover:bg-blue-50 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             title={watch('rpData.localityId') ? "Auto-generate market overview from RP Data" : "Run Automate in Property Details first"}
           >
             {isGeneratingOverview ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#006ABE] border-t-transparent"></div>
             ) : (
               <Wand2 className="w-4 h-4" />
             )}
@@ -607,11 +607,11 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
             type="button"
             onClick={handleGeneratePropertyComments}
             disabled={isGeneratingComments}
-            className="absolute top-2 right-2 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute top-2 right-2 p-2 text-[#006ABE] hover:text-[#00589e] hover:bg-blue-50 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             title="Auto-generate property comments"
           >
             {isGeneratingComments ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#006ABE] border-t-transparent"></div>
             ) : (
               <Wand2 className="w-4 h-4" />
             )}

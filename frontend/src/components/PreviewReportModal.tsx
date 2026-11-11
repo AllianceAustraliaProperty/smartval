@@ -138,27 +138,27 @@ export function PreviewReportModal({
       
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative w-full max-w-7xl bg-white rounded-lg shadow-xl">
+        <div className="relative w-full max-w-7xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900">
                 {heading}
               </h2>
               {propertyAddress && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm font-medium text-gray-600 mt-1">
                   {propertyAddress}
                 </p>
               )}
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               {htmlContent && (
                 <>
                   <button
                     onClick={handleGenerateReport}
                     disabled={isLoading}
-                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                     Refresh
@@ -166,7 +166,7 @@ export function PreviewReportModal({
 
                   <button
                     onClick={handleDownload}
-                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 shadow-sm transition-all cursor-pointer"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download
@@ -174,7 +174,7 @@ export function PreviewReportModal({
 
                   <button
                     onClick={handleOpenInNewTab}
-                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center px-4 py-2 text-xs sm:text-sm font-bold text-white bg-[#006ABE] hover:bg-[#0052cc] rounded-full shadow-sm hover:shadow transition-all cursor-pointer"
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
                     Open in New Tab
@@ -184,7 +184,7 @@ export function PreviewReportModal({
 
               <button
                 onClick={onClose}
-                className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-md"
+                className="inline-flex items-center justify-center w-9 h-9 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>

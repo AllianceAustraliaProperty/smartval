@@ -89,7 +89,7 @@ export const ReportCardShell: React.FC<ReportCardShellProps> = ({
     <div
       className={`
         ${montserrat.className}
-        bg-white rounded-[28px] border border-[#DCE5F2] p-8 sm:p-10 md:p-12
+        bg-white rounded-[36px] border-2 border-[#E6EFF5] p-8 sm:p-10 md:p-12
         shadow-[0_4px_20px_rgba(0,0,0,0.03)] max-w-[1400px] w-full mx-auto transition-all
         ${className}
       `}
@@ -102,7 +102,7 @@ export const ReportCardShell: React.FC<ReportCardShellProps> = ({
           </div>
 
           {/* Step Heading */}
-          <h2 className="text-2xl sm:text-[34px] font-black text-[#006ABE] tracking-tight mb-1">
+          <h2 className="text-2xl sm:text-[32px] font-bold text-[#006ABE] tracking-tight mb-1">
             Step {meta.stepNumber} | {meta.title}
           </h2>
 

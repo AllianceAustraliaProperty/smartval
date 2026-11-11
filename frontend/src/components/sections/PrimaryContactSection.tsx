@@ -117,7 +117,7 @@ export const PrimaryContactSection: React.FC<SectionProps> = ({
               <button
                 type="button"
                 onClick={addOwner}
-                className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold bg-[#006ABE] text-white rounded-full hover:bg-[#00589e] shadow-sm hover:shadow transition-all cursor-pointer"
               >
                 Add Owner
               </button>

@@ -635,7 +635,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
             <button
               type="button"
               onClick={handleAutoFillZoningEffects}
-              className="absolute top-1/2 -translate-y-1/2 right-2 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+              className="absolute top-1/2 -translate-y-1/2 right-2 p-2 text-[#006ABE] hover:text-[#00589e] hover:bg-blue-50 rounded-full transition-colors duration-200 cursor-pointer"
               title="Auto-fill from Council Area"
             >
               <Wand2 className="w-4 h-4" />
@@ -819,7 +819,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
             <button
               type="button"
               onClick={handleGenerateAccommodation}
-              className="absolute top-2 right-2 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+              className="absolute top-2 right-2 p-2 text-[#006ABE] hover:text-[#00589e] hover:bg-blue-50 rounded-full transition-colors duration-200 cursor-pointer"
               title="Auto-generate from photos and property descriptors"
             >
               <Wand2 className="w-4 h-4" />

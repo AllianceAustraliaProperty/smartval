@@ -193,25 +193,25 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
 
           {/* RP Data suggestions modal */}
           {isModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/50" onClick={() => setIsModalOpen(false)}></div>
-              <div className="relative bg-white rounded-lg shadow-2xl border border-gray-200 w-full max-w-xl mx-4" role="dialog" aria-modal="true">
-                <div className="px-5 py-4 bg-red-600 text-white rounded-t-lg flex items-center justify-between">
-                  <h3 className="text-base md:text-lg font-semibold tracking-wide">Select RP Data Address</h3>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={() => setIsModalOpen(false)}></div>
+              <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-xl mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-150" role="dialog" aria-modal="true">
+                <div className="px-6 py-4 bg-[#006ABE] text-white flex items-center justify-between">
+                  <h3 className="text-base md:text-lg font-bold tracking-wide">Select RP Data Address</h3>
                   <button
                     type="button"
-                    className="text-white/90 hover:text-white text-xl leading-none"
+                    className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center text-white text-xl leading-none transition-colors"
                     onClick={() => setIsModalOpen(false)}
                     aria-label="Close"
                   >
                     ×
                   </button>
                 </div>
-                <div className="px-5 py-4 border-b border-gray-200">
+                <div className="px-6 py-4 border-b border-gray-100">
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
+                      className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#006ABE] text-gray-900 placeholder-gray-400"
                       placeholder="Search address"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -224,15 +224,14 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
                     <button
                       type="button"
                       onClick={() => performSearch(searchTerm)}
-                      className="px-4 py-2 rounded-md text-white"
-                      style={{ backgroundColor: '#dc2626' }}
+                      className="px-5 py-2 rounded-full font-bold text-white bg-[#006ABE] hover:bg-[#00589e] transition-all cursor-pointer"
                       disabled={isSearching}
                     >
                       {isSearching ? 'Searching…' : 'Search'}
                     </button>
                   </div>
                   {linkError && (
-                    <div className="mt-2 text-sm text-red-600">{linkError}</div>
+                    <div className="mt-2 text-sm text-red-600 font-medium">{linkError}</div>
                   )}
                 </div>
                 <div className="max-h-96 overflow-auto">
@@ -305,10 +304,10 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
                     <div className="px-5 py-6 text-sm text-gray-600">No suggestions found.</div>
                   )}
                 </div>
-                <div className="px-5 py-3 bg-gray-50 rounded-b-lg border-t border-gray-200 flex justify-end">
+                <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex justify-end">
                   <button
                     type="button"
-                    className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-white"
+                    className="px-5 py-2 rounded-full font-bold border-2 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-all cursor-pointer"
                     onClick={() => setIsModalOpen(false)}
                   >
                     Close

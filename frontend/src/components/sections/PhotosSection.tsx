@@ -765,7 +765,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                           <p className="text-gray-500 mb-4">No image uploaded</p>
                           <label
                             htmlFor={`individual-upload-${index}`}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700"
+                            className="inline-flex items-center px-5 py-2.5 bg-[#006ABE] hover:bg-[#00589e] text-white font-bold text-xs sm:text-sm rounded-full shadow-sm hover:shadow transition-all cursor-pointer"
                           >
                             Upload Image
                           </label>
@@ -1484,7 +1484,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
                       <p className="text-gray-500 mb-4">No image uploaded</p>
                       <label
                         htmlFor={`additional-individual-upload-${index}`}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700"
+                        className="inline-flex items-center px-5 py-2.5 bg-[#006ABE] hover:bg-[#00589e] text-white font-bold text-xs sm:text-sm rounded-full shadow-sm hover:shadow transition-all cursor-pointer"
                       >
                         Upload Image
                       </label>
@@ -2023,12 +2023,12 @@ export const PhotosSection: React.FC<SectionProps> = ({ register, errors, watch,
       />
 
       {/* Additional Photos Section */}
-      <div className="border border-gray-200 rounded-lg p-6">
+      <div className="border border-gray-200 rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Additional Photos (Granny flat, Studio etc)</h3>
         <p className="text-gray-600 mb-4">Use this section to upload extra photos that don't belong in the main photo set.</p>
 
         {/* Type Selector for Granny Flat/Studio */}
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-2xl p-4">
           <label className="block text-sm font-semibold text-gray-800 mb-3">Photo Section Type</label>
           <div className="flex gap-4">
             <label className="flex items-center space-x-2 cursor-pointer">
@@ -2074,7 +2074,7 @@ export const PhotosSection: React.FC<SectionProps> = ({ register, errors, watch,
       </div>
 
       {/* Floor Plans Section */}
-      <div className="border border-gray-200 rounded-lg p-6">
+      <div className="border border-gray-200 rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Floor Plan</h3>
         <p className="text-gray-600 mb-4">Upload floor plan images for the property.</p>
         <FloorPlanUploader
@@ -2084,7 +2084,7 @@ export const PhotosSection: React.FC<SectionProps> = ({ register, errors, watch,
       </div>
 
       {/* Title Search Section */}
-      <div className="border border-gray-200 rounded-lg p-6">
+      <div className="border border-gray-200 rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Title Search</h3>
         <p className="text-gray-600 mb-4">Upload up to 2 title search images for the report.</p>
         <TitleSearchUploader
@@ -2094,7 +2094,7 @@ export const PhotosSection: React.FC<SectionProps> = ({ register, errors, watch,
       </div>
 
       {/* Blank Pages Section */}
-      <div className="border border-gray-200 rounded-lg p-6">
+      <div className="border border-gray-200 rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Blank Pages</h3>
         <p className="text-gray-600 mb-4">Add blank pages at the end of the report (e.g., for notes).</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

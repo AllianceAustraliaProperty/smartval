@@ -585,7 +585,7 @@ export default function ValuationReportEditPage() {
           <p className="text-gray-600 mb-6">{error || 'The valuation report could not be loaded.'}</p>
           <button
             onClick={() => router.push('/valuation-reports')}
-            className="inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300"
+            className="inline-flex items-center px-7 py-3 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-md hover:shadow-lg transition-all duration-300"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Valuation Reports
@@ -729,11 +729,14 @@ export default function ValuationReportEditPage() {
       {/* Send Report Modal */}
       {showSendReportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={() => setShowSendReportModal(false)} />
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md relative z-10 overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">Send Valuation Report</h3>
-              <button onClick={() => setShowSendReportModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity" onClick={() => setShowSendReportModal(false)} />
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative z-10 overflow-hidden flex flex-col border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900">Send Valuation Report</h3>
+              <button
+                onClick={() => setShowSendReportModal(false)}
+                className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -743,32 +746,32 @@ export default function ValuationReportEditPage() {
               </p>
               
               <div className="space-y-3">
-                <label className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${sendReportRecipientType === 'client' ? 'border-blue-500 bg-blue-50/50 ring-1 ring-blue-500' : 'border-gray-200 hover:bg-gray-50'}`}>
+                <label className={`flex items-start p-4 border rounded-2xl cursor-pointer transition-all ${sendReportRecipientType === 'client' ? 'border-[#006ABE] bg-blue-50/50 ring-2 ring-[#006ABE]/20' : 'border-gray-200 hover:bg-gray-50'}`}>
                   <div className="flex items-center h-5">
                     <input
                       type="radio"
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      className="w-4 h-4 text-[#006ABE] focus:ring-[#006ABE] border-gray-300"
                       checked={sendReportRecipientType === 'client'}
                       onChange={() => setSendReportRecipientType('client')}
                     />
                   </div>
                   <div className="ml-3">
-                    <span className="block text-sm font-medium text-gray-900">Client</span>
+                    <span className="block text-sm font-semibold text-gray-900">Client</span>
                     <span className="block text-xs text-gray-500 mt-1">{(watch('primaryContact.email') || watch('primaryContact.email2') || '').trim()}</span>
                   </div>
                 </label>
 
-                <label className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${sendReportRecipientType === 'poc' ? 'border-blue-500 bg-blue-50/50 ring-1 ring-blue-500' : 'border-gray-200 hover:bg-gray-50'}`}>
+                <label className={`flex items-start p-4 border rounded-2xl cursor-pointer transition-all ${sendReportRecipientType === 'poc' ? 'border-[#006ABE] bg-blue-50/50 ring-2 ring-[#006ABE]/20' : 'border-gray-200 hover:bg-gray-50'}`}>
                   <div className="flex items-center h-5">
                     <input
                       type="radio"
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      className="w-4 h-4 text-[#006ABE] focus:ring-[#006ABE] border-gray-300"
                       checked={sendReportRecipientType === 'poc'}
                       onChange={() => setSendReportRecipientType('poc')}
                     />
                   </div>
                   <div className="ml-3">
-                    <span className="block text-sm font-medium text-gray-900">{watch('valuationDetails.logoType')} POC</span>
+                    <span className="block text-sm font-semibold text-gray-900">{watch('valuationDetails.logoType')} POC</span>
                     <span className="block text-xs text-gray-500 mt-1">
                       {watch('valuationDetails.logoType') === 'CPV' ? 'info@certifiedpropertyvaluer.com.au' : 'info@tamn.com.au'}
                     </span>
@@ -776,11 +779,11 @@ export default function ValuationReportEditPage() {
                 </label>
               </div>
             </div>
-            <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/70 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setShowSendReportModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-full hover:bg-gray-50 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -798,7 +801,7 @@ export default function ValuationReportEditPage() {
                   executeSendReport(targetEmail, sendReportRecipientType);
                 }}
                 disabled={isSendingReport}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSendingReport ? (
                   <>
@@ -840,37 +843,43 @@ export default function ValuationReportEditPage() {
       {showValidationModal && (
         <div className="fixed inset-0 z-50">
           <div
-            className="fixed inset-0 bg-black/50 transition-opacity"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
             onClick={() => setShowValidationModal(false)}
           />
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full max-w-md bg-white rounded-lg shadow-xl">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                 <div className="flex items-center space-x-3">
-                  <div className="w-9 h-9 rounded-full bg-yellow-100 flex items-center justify-center">
-                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                    <AlertTriangle className="w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Action Needed</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Action Needed</h3>
                 </div>
                 <button
                   onClick={() => setShowValidationModal(false)}
-                  className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-md"
+                  className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="p-6">
-                <p className="text-gray-700 mb-3">The following sections are empty:</p>
-                <ul className="list-disc list-inside text-gray-800 mb-6">
+                <p className="text-gray-700 mb-3 font-medium">The following sections are empty:</p>
+                <ul className="list-disc list-inside text-gray-800 mb-6 space-y-1 font-semibold">
                   {missingRequirements.map(item => (
-                    <li key={item}>{item}</li>
+                    <li key={item} className="text-[#006ABE]">{item}</li>
                   ))}
                 </ul>
                 <p className="text-sm text-gray-600">Please add the required information before previewing or generating the report.</p>
               </div>
 
-              <div className="px-6 pb-6 flex items-center justify-end space-x-2">
+              <div className="px-6 py-4 bg-gray-50/70 border-t border-gray-100 flex items-center justify-end space-x-3">
+                <button
+                  onClick={() => setShowValidationModal(false)}
+                  className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-full hover:bg-gray-50 transition-all cursor-pointer"
+                >
+                  OK
+                </button>
                 {missingRequirements.length > 0 && (
                   <button
                     onClick={() => {
@@ -878,17 +887,11 @@ export default function ValuationReportEditPage() {
                       setCurrentSection(target);
                       setShowValidationModal(false);
                     }}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-md hover:shadow-lg transition-all cursor-pointer"
                   >
                     Go to {missingRequirements.includes('Photos') ? 'Photos' : 'Comparables'}
                   </button>
                 )}
-                <button
-                  onClick={() => setShowValidationModal(false)}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
-                >
-                  OK
-                </button>
               </div>
             </div>
           </div>

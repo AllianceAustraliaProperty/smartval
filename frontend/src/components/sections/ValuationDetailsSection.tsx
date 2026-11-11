@@ -1119,7 +1119,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
           <button
             type="button"
             onClick={handleAutoFillDirectComparison}
-            className="absolute top-2 right-2 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+            className="absolute top-2 right-2 p-2 text-[#006ABE] hover:text-[#00589e] hover:bg-blue-50 rounded-full transition-colors duration-200 cursor-pointer"
             title="Auto-fill from comparable sales evidence"
           >
             <Wand2 className="w-4 h-4" />

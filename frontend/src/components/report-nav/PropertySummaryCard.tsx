@@ -41,18 +41,18 @@ export const PropertySummaryCard: React.FC<PropertySummaryCardProps> = ({
     <div
       className={`
         ${montserrat.className}
-        bg-white rounded-[28px] border border-[#DCE5F2] p-8 md:p-10
+        bg-white rounded-[36px] border-2 border-[#E6EFF5] p-8 md:p-10
         shadow-[0_4px_20px_rgba(0,0,0,0.03)] max-w-[1400px] w-full mx-auto mt-8
         ${className}
       `}
     >
       {/* Title */}
-      <h3 className="text-2xl sm:text-[28px] font-black text-[#006ABE] tracking-tight mb-3">
+      <h3 className="text-2xl sm:text-[28px] font-bold text-[#006ABE] tracking-tight mb-3">
         Property Summary
       </h3>
 
-      {/* Bold Dark Divider Line matching wireframe */}
-      <div className="h-[2px] bg-black/80 w-full mb-6" />
+      {/* Clean Divider Line matching platform standard */}
+      <div className="h-[1.5px] bg-[#E2E8F0] w-full mb-6" />
 
       {/* 6 Key Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">

@@ -1104,9 +1104,9 @@ const SearchResults: React.FC<{
                           onAddToSales(result);
                         }}
                         disabled={addedToSales.has(result.id) || existingSalesRpIds.has(result.rpId)}
-                        className={`flex-1 text-xs py-2 px-3 rounded transition-colors duration-200 ${addedToSales.has(result.id) || existingSalesRpIds.has(result.rpId)
+                        className={`flex-1 text-xs py-2 px-3 font-bold rounded-full shadow-xs transition-colors duration-200 ${addedToSales.has(result.id) || existingSalesRpIds.has(result.rpId)
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-[#006ABE] text-white hover:bg-[#00589e]'
                           }`}
                       >
                         {addedToSales.has(result.id) || existingSalesRpIds.has(result.rpId) ? 'Added to Sales' : 'Add to Sales'}
@@ -1118,9 +1118,9 @@ const SearchResults: React.FC<{
                           onAddToRentals(result);
                         }}
                         disabled={addedToRentals.has(result.id) || existingRentalsRpIds.has(result.rpId)}
-                        className={`flex-1 text-xs py-2 px-3 rounded transition-colors duration-200 ${addedToRentals.has(result.id) || existingRentalsRpIds.has(result.rpId)
+                        className={`flex-1 text-xs py-2 px-3 font-bold rounded-full shadow-xs transition-colors duration-200 ${addedToRentals.has(result.id) || existingRentalsRpIds.has(result.rpId)
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : 'bg-green-600 text-white hover:bg-green-700'
+                          : 'bg-[#28A745] text-white hover:bg-[#218838]'
                           }`}
                       >
                         {addedToRentals.has(result.id) || existingRentalsRpIds.has(result.rpId) ? 'Added to Listings' : 'Add to Listings'}
@@ -2018,7 +2018,7 @@ Make it professional and adapt it appropriately based on typical commercial reta
                     }
                   }}
                   disabled={generatingDescId === `${type}-${index}`}
-                  className="absolute top-0 right-0 mt-1 mr-1 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-2 py-0.5 rounded border border-blue-200 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                  className="absolute top-0 right-0 mt-1 mr-1 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-2.5 py-0.5 rounded-full border border-blue-200 hover:bg-blue-50 transition-colors disabled:opacity-50"
                 >
                   {generatingDescId === `${type}-${index}` ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -3041,7 +3041,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                   setBulkLogs([]);
                 }}
                 disabled={isBulkProcessing || !bulkInput.trim()}
-                className="px-3 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-200/60 rounded-lg transition-colors disabled:opacity-40"
+                className="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-200/60 rounded-full transition-colors disabled:opacity-40"
               >
                 Clear
               </button>
@@ -3050,7 +3050,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                   type="button"
                   onClick={() => setShowBulkModal(false)}
                   disabled={isBulkProcessing}
-                  className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-50"
+                  className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 hover:bg-gray-50 rounded-full transition-colors disabled:opacity-50"
                 >
                   {bulkLogs.some(l => l.status === 'success') ? 'Done' : 'Cancel'}
                 </button>
@@ -3058,7 +3058,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                   type="button"
                   onClick={handleBulkImport}
                   disabled={isBulkProcessing || !bulkInput.trim()}
-                  className="inline-flex items-center gap-2 px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[#006ABE] hover:bg-[#00589e] rounded-full shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isBulkProcessing ? (
                     <>

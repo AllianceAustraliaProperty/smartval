@@ -427,7 +427,7 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
                 type="button"
                 onClick={() => siteMapInputRef.current?.click()}
                 disabled={isUploadingSiteMap || !reportId}
-                className="px-6 min-h-[46px] bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium rounded-full shadow-sm hover:shadow transition-all disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap text-sm cursor-pointer"
+                className="px-6 min-h-[46px] bg-[#006ABE] hover:bg-[#00589e] text-white font-bold rounded-full shadow-sm hover:shadow transition-all disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap text-sm cursor-pointer"
               >
                 <Upload size={16} />
                 {isUploadingSiteMap ? 'Uploading...' : 'Upload'}
@@ -513,7 +513,7 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
           <button
             type="button"
             onClick={() => setShowMap(!showMap)}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            className="px-4 py-1.5 text-xs font-bold rounded-full bg-blue-50 text-[#006ABE] hover:bg-[#006ABE] hover:text-white transition-all cursor-pointer"
           >
             {showMap ? 'Hide Map' : 'Show Map'}
           </button>

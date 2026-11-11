@@ -112,7 +112,7 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
       className={`
         ${montserrat.className}
         h-[80px] shrink-0 sticky top-0 z-[100] shadow-md
-        flex items-center justify-between px-6 sm:px-8 select-none
+        flex items-center justify-between px-8 select-none
         ${className}
       `}
       style={{ backgroundColor: '#006ABE' }}
@@ -133,7 +133,7 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
             priority
           />
         </div>
-        <div className="flex flex-col justify-center -mt-[18px]">
+        <div className="flex flex-col justify-center -mt-[20px]">
           <h1 className="text-[32px] tracking-wide flex items-baseline h-8">
             <span className={`font-bold text-white ${poppins.className}`}>SMART</span>
             <span
@@ -146,17 +146,17 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
         </div>
       </div>
 
-      {/* Center: Clickable & Fully Editable File No. and RP Data ID */}
-      <div className="hidden md:flex items-center space-x-8 lg:space-x-12">
+      {/* Center: Exactly Centered File No. and RP Data ID matching home page search bar */}
+      <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center space-x-8 lg:space-x-12 mt-2 z-50">
         {/* File No */}
-        <div className="flex items-center border-b-[3px] border-white pb-1 transition-all duration-200 hover:border-white/90">
+        <div className="flex items-center border-b-[3px] border-white pb-2 transition-all duration-200 hover:border-white/90">
           <label
             htmlFor="header-file-number"
             className="text-white font-semibold text-[15px] mr-2.5 cursor-pointer select-none"
           >
             File No.
           </label>
-          <span className="text-white/60 mr-2.5 select-none text-base">|</span>
+          <div className="w-[2px] h-6 bg-white/40 mr-3 flex-shrink-0" />
           <input
             id="header-file-number"
             type="text"
@@ -168,11 +168,11 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
         </div>
 
         {/* RP Data ID (Clickable Hyperlink to CoreLogic RP Data property page) */}
-        <div className="flex items-center border-b-[3px] border-white pb-1 transition-all duration-200 hover:border-white/90">
+        <div className="flex items-center border-b-[3px] border-white pb-2 transition-all duration-200 hover:border-white/90">
           <span className="text-white font-semibold text-[15px] mr-2.5 select-none">
             RP Data ID
           </span>
-          <span className="text-white/60 mr-2.5 select-none text-base">|</span>
+          <div className="w-[2px] h-6 bg-white/40 mr-3 flex-shrink-0" />
           {rpDataId ? (
             <a
               href={getRpDataUrl()}
@@ -193,7 +193,7 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
       </div>
 
       {/* Right: Exactly Home Page-Styled 46x46 Rounded Square Action Buttons */}
-      <div className="flex items-center space-x-3 shrink-0">
+      <div className="flex items-center space-x-4 shrink-0 pl-4">
         {/* 1. Schedule Inspection / Email Modal (Lights up orange, no pop-out) */}
         <button
           type="button"
