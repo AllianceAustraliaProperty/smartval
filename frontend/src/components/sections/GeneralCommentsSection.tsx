@@ -6,6 +6,7 @@ import { API_BASE_URL } from '@/lib/api-config';
 import { apiRepository } from '@/lib/api-repository';
 import { summarizePhotos } from '@/lib/photo-utils';
 import { uploadFileToS3 } from '@/lib/s3-upload';
+import { HeaderActionPortal } from '../report-nav';
 
 export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue, reportId }) => {
   const [isAutomating, setIsAutomating] = useState(false);
@@ -515,16 +516,12 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">General Comments</h2>
-          <p className="text-gray-600">Provide narrative commentary to support the valuation conclusions and describe the property context.</p>
-        </div>
+      <HeaderActionPortal>
         <button
           type="button"
           onClick={handleAutomateMarketTrends}
           disabled={isAutomating || isAutoSaving || !watch('rpData.localityId')}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#006ABE] hover:bg-[#00589e] text-white shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold cursor-pointer"
           title={watch('rpData.localityId') ? "Automate Market Overview from RP Data" : "Run Automate in Property Details first"}
         >
           {isAutomating || isAutoSaving ? (
@@ -535,11 +532,11 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
           ) : (
             <>
               <Wand2 className="w-4 h-4" />
-              Automate
+              Automate Market Overview
             </>
           )}
         </button>
-      </div>
+      </HeaderActionPortal>
 
       <FormField
         label="Property Description"
@@ -660,7 +657,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
               type="button"
               onClick={() => imageInputRef.current?.click()}
               disabled={isUploadingImage}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-gray-400/80 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-500 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUploadingImage ? (
                 <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div> Uploading...</>

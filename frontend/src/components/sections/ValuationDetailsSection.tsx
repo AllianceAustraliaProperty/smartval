@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { FormField, Input, Checkbox, Textarea } from '../ui/FormField';
+import { FormField, Input, Checkbox, Textarea, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { Wand2 } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
@@ -260,19 +260,14 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
   };
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Valuation Details</h2>
-        <p className="text-gray-600">Capture the valuation approach, figures, and any qualifications.</p>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           label="Valuation Type"
           error={errors.valuationDetails?.valuationType?.message}
         >
-          <select
+          <Select
             {...register('valuationDetails.valuationType')}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            error={errors.valuationDetails?.valuationType?.message}
           >
             <option value="">Select valuation type</option>
             <option value="CGT 2027">CGT 2027</option>
@@ -291,7 +286,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             <option value="Probate Valuation">Probate Valuation</option>
             <option value="Family Law">Family Law</option>
             <option value="Financial Settlement">Financial Settlement</option>
-          </select>
+          </Select>
         </FormField>
 
         {valuationType === 'Land Valuation' && (
@@ -299,9 +294,9 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             label="Valuation SubType"
             error={(errors as any).valuationDetails?.landValuationType?.message}
           >
-            <select
+            <Select
               {...register('valuationDetails.landValuationType')}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+              error={(errors as any).valuationDetails?.landValuationType?.message}
             >
               <option value="">Select subtype</option>
               <option value="Stamp Duty">Stamp Duty</option>
@@ -311,7 +306,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
               <option value="Probate">Probate</option>
               <option value="Pre Purchase/Pre Sale">Pre Purchase/Pre Sale</option>
               <option value="Family Law Matter">Family Law Matter</option>
-            </select>
+            </Select>
           </FormField>
         )}
 
@@ -356,14 +351,14 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
           label="Logo Type"
           error={errors.valuationDetails?.logoType?.message}
         >
-          <select
+          <Select
             {...register('valuationDetails.logoType')}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            error={errors.valuationDetails?.logoType?.message}
           >
             <option value="AAP">AAP</option>
             <option value="CPV">CPV</option>
             <option value="TAMN">TAMN</option>
-          </select>
+          </Select>
         </FormField>
       </div>
 
@@ -410,15 +405,15 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
           label="Survey Type"
           error={errors.valuationDetails?.surveyType?.message}
         >
-          <select
+          <Select
             {...register('valuationDetails.surveyType')}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            error={errors.valuationDetails?.surveyType?.message}
           >
             <option value="">Select survey type</option>
             <option value="Inspection">Inspection</option>
             <option value="External/Desktop Valuation">External/Desktop Valuation</option>
             <option value="Kerbside Valuation">Kerbside Valuation</option>
-          </select>
+          </Select>
         </FormField>
       </div>
 
@@ -551,9 +546,9 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
           label="Primary Method"
           error={(errors as any).valuationDetails?.primaryMethod?.message}
         >
-          <select
+          <Select
             {...register('valuationDetails.primaryMethod')}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            error={(errors as any).valuationDetails?.primaryMethod?.message}
           >
             <option value="">Select primary method</option>
             <option value="Direct Sales Comparison">Direct Sales Comparison</option>
@@ -563,16 +558,16 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             <option value="Residual Method">Residual Method</option>
             <option value="Profits Method">Profits Method</option>
             <option value="Cost Approach">Cost Approach</option>
-          </select>
+          </Select>
         </FormField>
 
         <FormField
           label="Secondary Method"
           error={(errors as any).valuationDetails?.secondaryMethod?.message}
         >
-          <select
+          <Select
             {...register('valuationDetails.secondaryMethod')}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            error={(errors as any).valuationDetails?.secondaryMethod?.message}
           >
             <option value="">Select secondary method</option>
             <option value="Direct Sales Comparison">Direct Sales Comparison</option>
@@ -582,7 +577,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             <option value="Residual Method">Residual Method</option>
             <option value="Profits Method">Profits Method</option>
             <option value="Cost Approach">Cost Approach</option>
-          </select>
+          </Select>
         </FormField>
       </div>
 
@@ -872,15 +867,15 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
           label="Occupancy"
           error={(errors as any).valuationDetails?.occupancy?.message}
         >
-          <select
+          <Select
             {...register('valuationDetails.occupancy' as any)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+            error={(errors as any).valuationDetails?.occupancy?.message}
           >
             <option value="">Select occupancy status</option>
             <option value="Vacant">Vacant</option>
             <option value="Tenant Occupied">Tenant Occupied</option>
             <option value="Owner Occupied">Owner Occupied</option>
-          </select>
+          </Select>
         </FormField>
       </div>
 

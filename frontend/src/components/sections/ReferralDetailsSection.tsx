@@ -1,109 +1,67 @@
-import React, { useEffect } from 'react';
-import { FormField, Input } from '../ui/FormField';
+'use client';
+
+import React from 'react';
+import { PillFormField, PillInput, PillCurrencyInput, PillSelect } from '../ui';
 import { SectionProps } from '@/types/property-valuation';
-import { User, DollarSign } from 'lucide-react';
+import { User } from 'lucide-react';
 
-export const ReferralDetailsSection: React.FC<SectionProps> = ({ register, errors, watch }) => {
-  // Debug: Log the current form values
-  const referralDetails = watch('referralDetails');
-  console.log('ReferralDetailsSection - Current form values:', referralDetails);
-  
-  // Watch for changes in referralDetails
-  useEffect(() => {
-    console.log('ReferralDetails changed:', referralDetails);
-  }, [referralDetails]);
-  
+export const ReferralDetailsSection: React.FC<SectionProps> = ({ register, errors }) => {
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Financial & Referral Details</h2>
-        <p className="text-gray-600">Record referral and financial information for this valuation report.</p>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+      {/* 1. Report Fee */}
+      <PillFormField
+        label="Report Fee"
+        error={errors.invoiceDetails?.reportFee?.message}
+      >
+        <PillCurrencyInput
+          {...register('invoiceDetails.reportFee', { valueAsNumber: true })}
+          placeholder="Enter the report fee for the invoice"
+          error={errors.invoiceDetails?.reportFee?.message}
+        />
+      </PillFormField>
 
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            label="Report Fee (Invoice Amount)"
-            error={errors.invoiceDetails?.reportFee?.message}
-          >
-            <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                type="number"
-                step="0.01"
-                {...register('invoiceDetails.reportFee', { valueAsNumber: true })}
-                placeholder="Enter report fee for invoice"
-                error={errors.invoiceDetails?.reportFee?.message}
-                className="pl-10"
-              />
-            </div>
-          </FormField>
+      {/* 2. Referrer Name */}
+      <PillFormField
+        label="Referrer Name"
+        error={errors.referralDetails?.referrerName?.message}
+      >
+        <PillInput
+          icon={<User className="w-4 h-4 text-gray-500" />}
+          {...register('referralDetails.referrerName')}
+          placeholder="Enter referrer name"
+          error={errors.referralDetails?.referrerName?.message}
+        />
+      </PillFormField>
 
-          <FormField
-            label="Referrer Name"
-            error={errors.referralDetails?.referrerName?.message}
-          >
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                {...register('referralDetails.referrerName')}
-                placeholder="Enter referrer name"
-                error={errors.referralDetails?.referrerName?.message}
-                className="pl-10"
-              />
-            </div>
-          </FormField>
+      {/* 3. Referral Fee */}
+      <PillFormField
+        label="Referral Fee"
+        error={errors.referralDetails?.referralFee?.message}
+      >
+        <PillCurrencyInput
+          {...register('referralDetails.referralFee', { valueAsNumber: true })}
+          placeholder="Enter referral fee"
+          error={errors.referralDetails?.referralFee?.message}
+        />
+      </PillFormField>
 
-          <FormField
-            label="Referral Fee"
-            error={errors.referralDetails?.referralFee?.message}
-          >
-            <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                type="number"
-                {...register('referralDetails.referralFee', { valueAsNumber: true })}
-                placeholder="Enter referral fee"
-                error={errors.referralDetails?.referralFee?.message}
-                className="pl-10"
-              />
-            </div>
-          </FormField>
-
-          <FormField
-            label="Invoice Status"
-            error={errors.referralDetails?.invoiceStatus?.message}
-          >
-            <select
-              {...register('referralDetails.invoiceStatus')}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-            >
-              <option value="">Select invoice status</option>
-              <option value="paid">Paid</option>
-              <option value="unpaid">Unpaid</option>
-              <option value="pending">Pending</option>
-              <option value="overdue">Overdue</option>
-            </select>
-          </FormField>
-        </div>
-
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-blue-600" />
-              </div>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-blue-900 mb-1">Referral Information</h4>
-              <p className="text-sm text-blue-700">
-                This section is used to track referral sources and associated fees for the valuation report.
-                This information helps maintain records of business relationships and referral agreements.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* 4. Invoice Status */}
+      <PillFormField
+        label="Invoice Status"
+        error={errors.referralDetails?.invoiceStatus?.message}
+      >
+        <PillSelect
+          {...register('referralDetails.invoiceStatus')}
+          placeholder="Select invoice status"
+          error={errors.referralDetails?.invoiceStatus?.message}
+          options={[
+            { value: 'paid', label: 'Paid' },
+            { value: 'unpaid', label: 'Unpaid' },
+            { value: 'pending', label: 'Pending' },
+            { value: 'overdue', label: 'Overdue' },
+          ]}
+        />
+      </PillFormField>
     </div>
   );
 };

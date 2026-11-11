@@ -3,6 +3,7 @@ import { FormField, Input, Textarea, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { API_BASE_URL } from '@/lib/api-config';
 import { apiRepository } from '@/lib/api-repository';
+import { HeaderActionPortal } from '../report-nav';
 import { Plus, Trash2, Edit3, Eye, EyeOff, MapPin, DollarSign, Calendar, Home, Car, Ruler, Calendar as CalendarIcon, Navigation, FileText, ExternalLink, Upload, X, Camera, Search, Filter, ListPlus, CheckCircle2, AlertTriangle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
 interface Comparable {
@@ -1675,7 +1676,7 @@ const ComparableCard: React.FC<{
                             fileInputRef.current?.click();
                           }}
                           disabled={uploading}
-                          className="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                          className="px-3.5 py-1.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium shadow-sm transition-all"
                         >
                           {uploading ? 'Uploading...' : 'Upload'}
                         </button>
@@ -3523,20 +3524,17 @@ export const ComparablesSection: React.FC<SectionProps> = (props) => {
 
   return (
     <div className="space-y-10">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Comparables</h2>
-          <p className="text-gray-600">Record sales and rental evidence supporting the valuation.</p>
-        </div>
+      <HeaderActionPortal>
         <button
           type="button"
           onClick={() => setShowSearchForm(!showSearchForm)}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100"
+          title={showSearchForm ? 'Hide Search Comparables' : 'Search Comparables'}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all bg-blue-50 text-[#006ABE] border border-blue-200 hover:bg-[#006ABE] hover:text-white cursor-pointer"
         >
-          <Search className="w-4 h-4 mr-2" />
-          {showSearchForm ? 'Hide Search' : 'Search Comparables'}
+          <Search className="w-4 h-4" />
+          <span>{showSearchForm ? 'Hide Search' : 'Search Comparables'}</span>
         </button>
-      </div>
+      </HeaderActionPortal>
 
       {showSearchForm && (
         <>

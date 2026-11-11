@@ -5,6 +5,7 @@ import { SectionProps } from '@/types/property-valuation';
 import { MapPin, Home, Building } from 'lucide-react';
 import { STATE_OPTIONS } from '@/types/property-valuation';
 import { mapRpDataPropertyType } from '@/constants/property-types';
+import { HeaderActionPortal } from '../report-nav';
 
 export const PropertyAddressSection: React.FC<SectionProps> = ({ register, errors, watch, setValue, reportId }) => {
   const [rpSuggestions, setRpSuggestions] = useState<Array<{ suggestion: string; suggestionId: number }>>([]);
@@ -150,27 +151,23 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
   
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Property Address</h2>
-        <p className="text-gray-600">Enter the property address details for this valuation report.</p>
-        </div>
+      <HeaderActionPortal>
         <div className="flex items-center gap-3">
           {linkError && (
-            <span className="text-sm text-red-600">{linkError}</span>
+            <span className="text-sm font-medium text-red-600">{linkError}</span>
           )}
           <button
             type="button"
             onClick={handleLinkToRpData}
-            className="inline-flex items-center px-4 py-2 rounded-md text-white hover:opacity-95 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-            style={{ backgroundColor: '#dc2626' }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold cursor-pointer"
             disabled={isLinking}
             title="Link to RP Data"
           >
+            <Home className="w-4 h-4" />
             {isLinking ? 'Linking…' : 'Link to RP Data'}
           </button>
         </div>
-      </div>
+      </HeaderActionPortal>
 
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
         <div className="space-y-6">

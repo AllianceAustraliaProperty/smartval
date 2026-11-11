@@ -7,6 +7,7 @@ import { getWikiSuburbDescription } from '@/utils/wikiUtils';
 import { GoogleMapDisplay } from '../GoogleMap';
 import { apiRepository } from '@/lib/api-repository';
 import { API_BASE_URL } from '@/lib/api-config';
+import { HeaderActionPortal } from '../report-nav';
 
 const LocationItem: React.FC<{
   title: string;
@@ -298,16 +299,12 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
   
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Location Details</h2>
-          <p className="text-gray-600">Describe the broader location attributes and utilities available to the property.</p>
-        </div>
+      <HeaderActionPortal>
         <button
           type="button"
           onClick={handleAutoFillEverything}
           disabled={isAutomating || isAutoSaving}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#006ABE] hover:bg-[#00589e] text-white shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold cursor-pointer"
           title="Automate all location details"
         >
           {isAutomating || isAutoSaving ? (
@@ -318,11 +315,11 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
           ) : (
             <>
               <Wand2 className="w-4 h-4" />
-              Automate
+              Automate Location Details
             </>
           )}
         </button>
-      </div>
+      </HeaderActionPortal>
 
       <FormField
         label="Suburb Description"
@@ -430,7 +427,7 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
                 type="button"
                 onClick={() => siteMapInputRef.current?.click()}
                 disabled={isUploadingSiteMap || !reportId}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 whitespace-nowrap"
+                className="px-6 min-h-[46px] bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium rounded-full shadow-sm hover:shadow transition-all disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap text-sm cursor-pointer"
               >
                 <Upload size={16} />
                 {isUploadingSiteMap ? 'Uploading...' : 'Upload'}

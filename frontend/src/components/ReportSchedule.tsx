@@ -19,7 +19,21 @@ function displayTime(job: Job) {
   return job.scheduledAt ? new Intl.DateTimeFormat('en-AU', { timeZone: job.timeZone || 'Australia/Sydney', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(job.scheduledAt)) + ' · ' + (job.timeZone || 'Australia/Sydney').replace('Australia/', '') : '';
 }
 
-export function ReportSchedule({ reportId, onPrepare }: { reportId: string; onPrepare: () => Promise<boolean> }) {
+export interface ReportScheduleProps {
+  reportId: string;
+  onPrepare: () => Promise<boolean>;
+  isOpen?: boolean;
+  onClose?: () => void;
+  showTrigger?: boolean;
+}
+
+export function ReportSchedule({
+  reportId,
+  onPrepare,
+  isOpen,
+  onClose,
+  showTrigger = true,
+}: ReportScheduleProps) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<Listing | null>(null);
   const [error, setError] = useState('');
@@ -39,6 +53,9 @@ export function ReportSchedule({ reportId, onPrepare }: { reportId: string; onPr
   const active = data?.jobs.find(job => job.active);
   const base = `${API_BASE_URL}/valuation-reports/${encodeURIComponent(reportId)}/email-schedules`;
   async function api(path = '', body?: object) {
+    if (!reportId || reportId === 'undefined') {
+      return { jobs: [], defaults: { to: '', cc: '' }, workerHealthy: true };
+    }
     const response = await fetch(base + path, { method: body ? 'POST' : 'GET', credentials: 'include', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Could not load scheduling. Please try again.');
@@ -51,12 +68,13 @@ export function ReportSchedule({ reportId, onPrepare }: { reportId: string; onPr
   }
   useEffect(() => {
     let stopped = false;
+    if (!reportId || reportId === 'undefined') return;
     api().then((result: Listing) => {
       if (!stopped) {
         setData(result);
-        setTo(result.defaults.to);
-        setCc(result.defaults.cc);
-        if (result.defaults.recipientType) {
+        setTo(result.defaults?.to || '');
+        setCc(result.defaults?.cc || '');
+        if (result.defaults?.recipientType) {
           setRecipientType(result.defaults.recipientType);
         }
       }
@@ -65,6 +83,25 @@ export function ReportSchedule({ reportId, onPrepare }: { reportId: string; onPr
     // Report navigation remounts this component; no background polling per report.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportId]);
+
+  const handleOpenSchedule = () => {
+    setOpen(true);
+    void perform('Loading schedule…', async () => {
+      const result = await refresh();
+      if (!to && result.defaults?.to) setTo(result.defaults.to);
+      if (!cc && result.defaults?.cc) setCc(result.defaults.cc);
+      if (result.defaults?.recipientType) setRecipientType(result.defaults.recipientType);
+    });
+  };
+
+  useEffect(() => {
+    if (isOpen && !open) {
+      handleOpenSchedule();
+    } else if (isOpen === false && open) {
+      close();
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (open && !dialog.current?.open) {
       dialog.current?.showModal();
@@ -81,7 +118,14 @@ export function ReportSchedule({ reportId, onPrepare }: { reportId: string; onPr
     finally { setBusy(''); }
   }
   function invalidate() { setPreview(null); requestId.current = null; }
-  function close() { if (!busy) { setOpen(false); setConfirmCancel(false); setEditingTime(false); } }
+  function close() {
+    if (!busy) {
+      setOpen(false);
+      setConfirmCancel(false);
+      setEditingTime(false);
+      onClose?.();
+    }
+  }
   async function change(action: string) {
     if (!active) return;
     await api(`/${active.id}/${action}`, { version: active.version, localDateTime: when, timeZone: zone, reviewed });
@@ -94,10 +138,37 @@ export function ReportSchedule({ reportId, onPrepare }: { reportId: string; onPr
     <p className="text-xs leading-5 text-gray-500 sm:col-span-2">Choose at least 2 minutes ahead. Daylight saving is applied automatically. Sends more than an hour late pause for review.</p>
   </div>;
   return <>
-    <button type="button" onClick={() => { setOpen(true); void perform('Loading schedule…', async () => { const result = await refresh(); if (!to && result.defaults?.to) setTo(result.defaults.to); if (!cc && result.defaults?.cc) setCc(result.defaults.cc); if (result.defaults?.recipientType) setRecipientType(result.defaults.recipientType); }); }} className={`${button} ${active ? 'border-blue-200 bg-blue-50 text-blue-800' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}>
+    <button
+      id="report-schedule-trigger"
+      type="button"
+      onClick={handleOpenSchedule}
+      className={showTrigger ? `${button} ${active ? 'border-blue-200 bg-blue-50 text-blue-800' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}` : 'hidden'}
+    >
       <CalendarClock size={17} /><span>{active ? labels[active.status] || 'Manage schedule' : 'Schedule email'}</span>
     </button>
-    <dialog ref={dialog} onCancel={event => { event.preventDefault(); close(); }} onClose={() => setOpen(false)} aria-labelledby="schedule-title" className="m-auto max-h-[92dvh] w-[calc(100%-2rem)] max-w-3xl rounded-2xl bg-white p-0 text-gray-900 shadow-2xl backdrop:bg-slate-900/50">
+    <dialog
+      ref={dialog}
+      onCancel={event => { event.preventDefault(); close(); }}
+      onClose={() => {
+        setOpen(false);
+        onClose?.();
+      }}
+      onClick={event => {
+        if (!dialog.current) return;
+        const rect = dialog.current.getBoundingClientRect();
+        const isInDialog = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
+        if (!isInDialog) {
+          close();
+        }
+      }}
+      aria-labelledby="schedule-title"
+      className="m-auto max-h-[92dvh] w-[calc(100%-2rem)] max-w-3xl rounded-2xl bg-white p-0 text-gray-900 shadow-2xl backdrop:bg-slate-900/50"
+    >
       <div className="flex max-h-[92dvh] flex-col">
         <header className="flex shrink-0 items-start justify-between gap-3 border-b border-gray-100 px-5 py-5 sm:px-7">
           <div><div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-700"><CalendarClock size={16} /> Report delivery</div><h2 tabIndex={-1} id="schedule-title" className="text-xl font-semibold outline-none">Schedule report email</h2><p className="mt-1 text-sm text-gray-500">Review the email and attachment before confirming.</p></div>

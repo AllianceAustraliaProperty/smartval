@@ -12,7 +12,10 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { apiRepository } from '@/lib/api-repository';
 import { PropertyValuationData, PropertyData, DEFAULT_PROPERTY_FORM } from '@/types/property-valuation';
 import { API_BASE_URL } from '@/lib/api-config';
-import { Navigation } from '@/components/Navigation';
+import { ReportTopNav, ReportStepper, ReportCardShell, PropertySummaryCard } from '@/components/report-nav';
+import { Montserrat } from 'next/font/google';
+
+const montserrat = Montserrat({ subsets: ['latin'] });
 
 import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch, Download, AlertTriangle, Receipt, ChevronDown, Send } from 'lucide-react';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
@@ -168,6 +171,7 @@ export default function ValuationReportEditPage() {
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const [isSendingInvoice, setIsSendingInvoice] = useState(false);
   const [showSendReportModal, setShowSendReportModal] = useState(false);
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [sendReportRecipientType, setSendReportRecipientType] = useState<'client' | 'poc'>('client');
   const [isInvoiceMenuOpen, setIsInvoiceMenuOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
@@ -271,6 +275,27 @@ export default function ValuationReportEditPage() {
     });
     return () => subscription.unsubscribe();
   }, [watch, setValue]);
+
+  // Compute live formatted address for nav and shell
+  const currentFullAddress = useMemo(() => {
+    const full = watch('address.fullAddress') || property?.address?.fullAddress;
+    if (full && full.trim()) return full.trim();
+    const unit = watch('address.unitNumber') || property?.address?.unitNumber;
+    const street = watch('address.streetName') || property?.address?.streetName || '';
+    const suburb = watch('address.suburb') || property?.address?.suburb || '';
+    const state = watch('address.state') || property?.address?.state || '';
+    const postcode = watch('address.postcode') || property?.address?.postcode || '';
+    const streetPart = unit ? `${unit}/${street}` : street;
+    return [streetPart, suburb, state, postcode].filter(Boolean).join(' ').trim();
+  }, [
+    property?.address,
+    watch('address.fullAddress'),
+    watch('address.unitNumber'),
+    watch('address.streetName'),
+    watch('address.suburb'),
+    watch('address.state'),
+    watch('address.postcode'),
+  ]);
 
   const { completedSections, sectionsWithErrors } = useSectionStatus(
     watch, getValues, errors, sectionIds, getSectionData, checkSectionCompletion, checkSectionErrors);
@@ -573,311 +598,133 @@ export default function ValuationReportEditPage() {
   const CurrentSectionComponent = sectionComponents[currentSection as keyof typeof sectionComponents];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100">
-      <div className="flex">
-        {/* Navigation Sidebar */}
-        <Navigation
+    <div className={`${montserrat.className} min-h-screen bg-[#F8F9FA] flex flex-col pb-16`}>
+      {/* Sticky SMARTval Royal Blue Top Navigation Bar */}
+      <ReportTopNav
+        fileNumber={watch('fileNumber') || property?.fileNumber || ''}
+        rpDataId={watch('rpDataId') || property?.rpDataId || ''}
+        propertyAddress={currentFullAddress}
+        onFileNumberChange={(newVal) => {
+          setValue('fileNumber', newVal, { shouldDirty: true });
+        }}
+        onRpDataIdChange={(newVal) => {
+          setValue('rpDataId', newVal, { shouldDirty: true });
+        }}
+        onBack={handleCancel}
+        onOpenSchedule={() => setIsScheduleOpen(true)}
+        onOpenPreview={handlePreview}
+        onGenerateReport={handleGenerateReport}
+        onSendReport={handleSendReport}
+        onOpenFinancial={() => handleSectionChange('referralDetails')}
+        onPreviewInvoice={handlePreviewInvoice}
+        onGenerateInvoice={handleGenerateInvoice}
+        onSendInvoice={handleSendInvoice}
+        onSave={handleSubmit(onSubmit)}
+        isSaving={isSaving}
+        isGeneratingReport={isGeneratingReport}
+        isSendingReport={isSendingReport}
+        isGeneratingInvoice={isGeneratingInvoice}
+        isSendingInvoice={isSendingInvoice}
+      />
+
+      {/* Horizontal Connected 10-Step Progress Stepper */}
+      <ReportStepper
+        currentSection={currentSection}
+        completedSections={completedSections}
+        onStepClick={handleSectionChange}
+      />
+
+      {/* Main Wizard Content Area */}
+      <main className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center space-x-3">
+            <X className="w-5 h-5 text-red-500 shrink-0" />
+            <p className="text-red-800 font-medium">{error}</p>
+          </div>
+        )}
+
+        {/* Save Error Alert */}
+        {saveError && (
+          <div role="alert" className="mb-6 rounded-2xl border border-red-300 bg-red-50 p-4 text-red-800">
+            <p className="font-medium">{saveError}</p>
+            <button type="button" onClick={downloadDraft} className="mt-2 text-sm underline font-semibold">
+              Download unsaved draft
+            </button>
+          </div>
+        )}
+
+        {/* Universal Step Card Shell */}
+        <ReportCardShell
           currentSection={currentSection}
-          onSectionChange={handleSectionChange}
-          completedSections={completedSections}
-          sectionsWithErrors={sectionsWithErrors}
+          fullAddress={currentFullAddress}
+        >
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <fieldset disabled={isSaving} className="min-w-0">
+              {CurrentSectionComponent && (
+                <CurrentSectionComponent
+                  register={register}
+                  control={control}
+                  watch={watch}
+                  setValue={setValue}
+                  errors={errors}
+                  reportId={reportId}
+                />
+              )}
+            </fieldset>
+          </form>
+        </ReportCardShell>
+
+        {/* Property Summary Lower Card */}
+        <PropertySummaryCard
           propertyData={{
-            valuationType: property.valuationDetails?.valuationType,
-            valuationDate: property.valuationDetails?.valuationDate,
-            bedrooms: property.propertyDescriptors?.bedrooms,
-            bathrooms: property.propertyDescriptors?.bathrooms,
-            carSpaces: property.propertyDescriptors?.carSpaces,
-            buildingArea: property.propertyDetails?.buildingArea,
-            siteArea: property.propertyDetails?.siteArea,
-            marketValue: property.valuationDetails?.marketValue,
+            bedrooms: watch('propertyDescriptors.bedrooms') ?? property.propertyDescriptors?.bedrooms,
+            bathrooms: watch('propertyDescriptors.bathrooms') ?? property.propertyDescriptors?.bathrooms,
+            carSpaces: watch('propertyDescriptors.carSpaces') ?? property.propertyDescriptors?.carSpaces,
+            buildingArea: watch('propertyDetails.buildingArea') ?? property.propertyDetails?.buildingArea,
+            siteArea: watch('propertyDetails.siteArea') ?? property.propertyDetails?.siteArea,
+            buildYear: watch('propertyDetails.buildYear') ?? property.propertyDetails?.buildYear,
+            marketValue: watch('valuationDetails.marketValue') ?? property.valuationDetails?.marketValue,
+            valuationDate: watch('valuationDetails.valuationDate') ?? property.valuationDetails?.valuationDate,
+            valuationType: watch('valuationDetails.valuationType') ?? property.valuationDetails?.valuationType,
           }}
         />
 
-        {/* Main Content */}
-        <div className="flex-1 ml-80">
-          <div className="p-8">
-            {/* Header */}
-            <div className="mb-8 space-y-4">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div className="flex items-center space-x-4 min-w-0">
-                  <button
-                    onClick={handleCancel}
-                    className="group flex items-center space-x-3 px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors duration-300 shrink-0"
-                  >
-                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
-                    <span className="font-medium">Back to Valuation Reports</span>
-                  </button>
-                  
-                  <div className="h-8 w-px bg-gray-300 shrink-0"></div>
-                  
-                  <div className="min-w-0">
-                    <h1 className="text-3xl font-bold text-gray-900 truncate">Edit Valuation Report</h1>
-                    <p className="text-gray-600 truncate">{property.address?.fullAddress || 'No address available'}</p>
-                  </div>
-                </div>
+        {/* Bottom Step Navigation Controls */}
+        <div className="mt-8 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handlePrevious}
+            disabled={!canGoPrevious}
+            className="inline-flex items-center px-7 py-3 text-sm font-bold rounded-full text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 hover:shadow-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Previous
+          </button>
 
-                <div className="flex items-center gap-3 shrink-0 flex-nowrap">
-                  <div className="relative" data-report-menu>
-                    <button
-                      onClick={() => setIsReportMenuOpen((open) => !open)}
-                      disabled={isSaving || isGeneratingReport || isSendingReport}
-                      className="h-11 inline-flex items-center justify-center px-4 text-sm font-semibold rounded-xl text-green-700 bg-green-50 border-2 border-green-200 hover:border-green-300 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {(isGeneratingReport || isSendingReport) ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-600 border-t-transparent mr-2"></div>
-                          {isSendingReport ? 'Sending...' : 'Generating...'}
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="w-4 h-4 mr-2" />
-                          Report
-                          <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${isReportMenuOpen ? 'rotate-180' : ''}`} />
-                        </>
-                      )}
-                    </button>
-
-                    {isReportMenuOpen && !isGeneratingReport && !isSendingReport && (
-                      <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-xl shadow-xl border border-green-100 z-30 overflow-hidden">
-                        <button
-                          onClick={() => {
-                            setIsReportMenuOpen(false);
-                            handlePreview();
-                          }}
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors"
-                        >
-                          <FileSearch className="w-4 h-4 mr-3 text-green-600" />
-                          Preview Report
-                        </button>
-                        <div className="h-px bg-green-100" />
-                        <button
-                          onClick={() => {
-                            setIsReportMenuOpen(false);
-                            handleGenerateReport();
-                          }}
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors"
-                        >
-                          <Download className="w-4 h-4 mr-3 text-green-600" />
-                          Generate PDF
-                        </button>
-                        <div className="h-px bg-green-100" />
-                        <button
-                          onClick={() => {
-                            setIsReportMenuOpen(false);
-                            handleSendReport();
-                          }}
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors"
-                        >
-                          <Send className="w-4 h-4 mr-3 text-green-600" />
-                          Send Report
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <ReportSchedule reportId={String(params.id)} onPrepare={async () => {
-                    if (!validatePhotosAndComparables()) return false;
-                    return prepareReport();
-                  }} />
-
-                  <div className="relative" data-invoice-menu>
-                    <button
-                      onClick={() => setIsInvoiceMenuOpen((open) => !open)}
-                      disabled={isSaving || isGeneratingInvoice || isSendingInvoice}
-                      className="h-11 inline-flex items-center justify-center px-4 text-sm font-semibold rounded-xl text-amber-700 bg-amber-50 border-2 border-amber-200 hover:border-amber-300 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {(isGeneratingInvoice || isSendingInvoice) ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-amber-600 border-t-transparent mr-2"></div>
-                          {isSendingInvoice ? 'Sending...' : 'Generating...'}
-                        </>
-                      ) : (
-                        <>
-                          <Receipt className="w-4 h-4 mr-2" />
-                          Invoice
-                          <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${isInvoiceMenuOpen ? 'rotate-180' : ''}`} />
-                        </>
-                      )}
-                    </button>
-
-                    {isInvoiceMenuOpen && !isGeneratingInvoice && !isSendingInvoice && (
-                      <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-xl shadow-xl border border-amber-100 z-30 overflow-hidden">
-                        <button
-                          onClick={() => {
-                            setIsInvoiceMenuOpen(false);
-                            handlePreviewInvoice();
-                          }}
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 transition-colors"
-                        >
-                          <FileSearch className="w-4 h-4 mr-3 text-amber-600" />
-                          Preview Invoice
-                        </button>
-                        <div className="h-px bg-amber-100" />
-                        <button
-                          onClick={() => {
-                            setIsInvoiceMenuOpen(false);
-                            handleGenerateInvoice();
-                          }}
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 transition-colors"
-                        >
-                          <Download className="w-4 h-4 mr-3 text-amber-600" />
-                          Generate PDF
-                        </button>
-                        <div className="h-px bg-amber-100" />
-                        <button
-                          onClick={() => {
-                            setIsInvoiceMenuOpen(false);
-                            handleSendInvoice();
-                          }}
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 transition-colors"
-                        >
-                          <Send className="w-4 h-4 mr-3 text-amber-600" />
-                          Send Invoice
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={handleSubmit(onSubmit)}
-                    disabled={isSaving}
-                    className="h-11 group inline-flex items-center justify-center px-6 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Save className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-200" />
-                    {isSaving ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Metadata Bar */}
-              <div className="flex items-center gap-4 pt-1">
-                {/* File Number */}
-                <div className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-500 mb-1">File Number</label>
-                  <input
-                    type="text"
-                    value={watch('fileNumber') || ''}
-                    onChange={(e) => setValue('fileNumber', e.target.value, { shouldDirty: true })}
-                    placeholder="Enter file number"
-                    className="px-3 py-2 text-sm font-semibold text-gray-900 bg-white border-2 border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors w-32"
-                  />
-                </div>
-                
-                <div className="h-8 w-px bg-gray-300"></div>
-                
-                {/* Stage Dropdown */}
-                <div className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-500 mb-1">Stage</label>
-                  <select
-                    value={watch('valuationDetails.stage') || ''}
-                    onChange={(e) => setValue('valuationDetails.stage', e.target.value, { shouldDirty: true })}
-                    className="px-3 py-2 text-sm font-semibold text-gray-900 bg-white border-2 border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                    <option value="">Select Stage</option>
-                    <option value="Booking">Booking</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Review">Review</option>
-                    <option value="Completed">Completed</option>
-                    <option value="On Hold">On Hold</option>
-                  </select>
-                </div>
-
-                <div className="h-8 w-px bg-gray-300"></div>
-
-                {/* RP Data Link */}
-                <div className="flex flex-col">
-                  <label className="text-xs font-medium text-gray-500 mb-1">RP Data</label>
-                  {watch('rpDataId') ? (
-                    <a
-                      href={`https://rpp.corelogic.com.au/property/${watch('rpDataId')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-700 underline text-sm font-semibold py-2"
-                      title="Open in RP Data"
-                    >
-                      {watch('rpDataId')}
-                    </a>
-                  ) : (
-                    <span className="text-sm font-semibold text-gray-500 py-2">Not set</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                <div className="flex items-center space-x-3">
-                  <X className="w-5 h-5 text-red-500" />
-                  <p className="text-red-800 font-medium">{error}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Form Content */}
-            {saveError && <div role="alert" className="mb-4 rounded border border-red-300 bg-red-50 p-4 text-red-800">
-              <p>{saveError}</p>
-              <button type="button" onClick={downloadDraft} className="mt-2 underline font-semibold">Download unsaved draft</button>
-            </div>}
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <fieldset disabled={isSaving} className="min-w-0">
-              <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8">
-                {CurrentSectionComponent && (
-                  <CurrentSectionComponent
-                    register={register}
-                    control={control}
-                    watch={watch}
-                    setValue={setValue}
-                    errors={errors}
-                    reportId={reportId}
-                  />
-                )}
-              </div>
-              </fieldset>
-            </form>
-
-            {/* Section Navigation */}
-            <div className="mt-8 flex items-center justify-between">
-              <button
-                onClick={handlePrevious}
-                disabled={!canGoPrevious}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-gray-700 bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                Previous
-              </button>
-
-              <div className="flex items-center space-x-2">
-                {sections.map((section, index) => (
-                  <button
-                    key={section.id}
-                    onClick={() => setCurrentSection(section.id)}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                      currentSection === section.id
-                        ? 'bg-blue-600 scale-125'
-                        : completedSections.has(section.id)
-                        ? 'bg-green-500'
-                        : sectionsWithErrors.has(section.id)
-                        ? 'bg-red-500'
-                        : 'bg-gray-300'
-                    }`}
-                    title={section.title}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={handleNext}
-                disabled={!canGoNext}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-gray-700 bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </button>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={!canGoNext}
+            className="inline-flex items-center px-9 py-3 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 ml-2" />
+          </button>
         </div>
-      </div>
+      </main>
+
+      {/* Schedule dialog component */}
+      <ReportSchedule
+        reportId={reportId || String(params.id)}
+        isOpen={isScheduleOpen}
+        onClose={() => setIsScheduleOpen(false)}
+        showTrigger={false}
+        onPrepare={async () => {
+          if (!validatePhotosAndComparables()) return false;
+          return prepareReport();
+        }}
+      />
 
       {/* Send Report Modal */}
       {showSendReportModal && (
@@ -975,7 +822,7 @@ export default function ValuationReportEditPage() {
         isOpen={showPreviewModal}
         onClose={handleClosePreview}
         reportId={reportId}
-        propertyAddress={property?.address?.fullAddress}
+        propertyAddress={currentFullAddress}
         fileNumber={property?.fileNumber}
       />
 
@@ -984,7 +831,7 @@ export default function ValuationReportEditPage() {
         isOpen={showInvoicePreviewModal}
         onClose={() => setShowInvoicePreviewModal(false)}
         reportId={reportId}
-        propertyAddress={property?.address?.fullAddress}
+        propertyAddress={currentFullAddress}
         fileNumber={property?.fileNumber}
         mode="invoice"
       />

@@ -2002,33 +2002,23 @@ export const PhotosSection: React.FC<SectionProps> = ({ register, errors, watch,
   // Show message if no report ID is available
   if (!actualReportId || actualReportId === 'temp') {
     return (
-      <div className="space-y-8">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Photos</h2>
-          <p className="text-gray-600">Upload and manage photos for the valuation report.</p>
-        </div>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-          <p className="text-yellow-800 text-sm">
-            Please save the valuation report first before uploading photos.
-          </p>
-        </div>
+      <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
+        <p className="text-yellow-800 text-sm font-medium">
+          Please save the valuation report first before uploading photos.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Photos</h2>
-        <p className="text-gray-600">Upload and manage photos for the valuation report.</p>
-        {hasUnsavedChanges && (
-          <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded-md p-3">
-            <p className="text-yellow-800 text-sm font-medium">
-              ⚠️ You have unsaved changes. Click Save to save your photo attribute changes.
-            </p>
-          </div>
-        )}
-      </div>
+      {hasUnsavedChanges && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+          <p className="text-yellow-800 text-sm font-medium">
+            ⚠️ You have unsaved changes. Click Save to save your photo attribute changes.
+          </p>
+        </div>
+      )}
 
       <PhotoUploadComponent
         reportId={actualReportId}

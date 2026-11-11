@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --color-smartval-blue: #006ABE;
+  --color-smartval-blue-dark: #0052cc;
+  --color-smartval-green: #00b050;
+  --color-smartval-pill-border: #9ca3af;
 }
 
 @theme inline {
@@ -10,6 +14,10 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-smartval-blue: var(--color-smartval-blue);
+  --color-smartval-blue-dark: var(--color-smartval-blue-dark);
+  --color-smartval-green: var(--color-smartval-green);
+  --color-smartval-pill-border: var(--color-smartval-pill-border);
 }
 
 @media (prefers-color-scheme: dark) {

@@ -11,6 +11,7 @@ import { Wand2, AlertTriangle, AlertCircle, CheckCircle2, Info, X } from 'lucide
 import { API_BASE_URL } from '@/lib/api-config';
 import { summarizePhotos } from '@/lib/photo-utils';
 import { apiRepository } from '@/lib/api-repository';
+import { HeaderActionPortal } from '../report-nav';
 
 interface UiMessage {
   type: 'error' | 'warning' | 'success' | 'info';
@@ -211,16 +212,12 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Property Descriptors</h2>
-          <p className="text-gray-600">Record the internal layout, construction materials, and condition of the improvements.</p>
-        </div>
+      <HeaderActionPortal>
         <button
           type="button"
           onClick={handleAutomate}
           disabled={isAutomating || isAutoSaving}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#006ABE] hover:bg-[#00589e] text-white shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold cursor-pointer"
           title="Automate descriptors from photos"
         >
           {isAutomating || isAutoSaving ? (
@@ -231,11 +228,11 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           ) : (
             <>
               <Wand2 className="w-4 h-4" />
-              Automate
+              Automate from Photos
             </>
           )}
         </button>
-      </div>
+      </HeaderActionPortal>
 
       {/* Dynamic Feedback Banner */}
       {uiMessage && (

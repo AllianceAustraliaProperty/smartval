@@ -7,6 +7,7 @@ import { Wand2 } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { apiRepository } from '@/lib/api-repository';
 import { summarizePhotos } from '@/lib/photo-utils';
+import { HeaderActionPortal } from '../report-nav';
 
 const DEFAULT_PERMISSIBLE_USES =
   'Permissible uses with development consent include Bed and breakfast, Community care accommodation, Tourist accommodation, Home based business, Informal outdoor recreation, Medical centre, Place of worship, Seniors housing, Railway, Residential aged care facility, Rooming house, Tramway, Roads etc.';
@@ -514,17 +515,13 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Property Details</h2>
-        <p className="text-gray-600">Describe the fundamental characteristics of the property.</p>
-        </div>
-        {Boolean(watch('rpDataId')) && (
+      {Boolean(watch('rpDataId')) && (
+        <HeaderActionPortal>
           <button
             type="button"
             onClick={handleAutomateFromRP}
             disabled={isAutomatingFromRP || isAutoSaving}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#006ABE] hover:bg-[#00589e] text-white shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold cursor-pointer"
             title="Automate from RP Data"
           >
             {isAutomatingFromRP || isAutoSaving ? (
@@ -535,12 +532,12 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
             ) : (
               <>
                 <Wand2 className="w-4 h-4" />
-                Automate
+                Automate from RP Data
               </>
             )}
           </button>
-        )}
-      </div>
+        </HeaderActionPortal>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField

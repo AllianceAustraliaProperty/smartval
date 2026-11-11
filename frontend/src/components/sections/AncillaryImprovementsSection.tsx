@@ -10,11 +10,6 @@ export const AncillaryImprovementsSection: React.FC<SectionProps> = ({ register,
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Ancillary Improvements</h2>
-        <p className="text-gray-600">Document improvements that are not part of the main dwelling.</p>
-      </div>
-
       <FormField
         label="Include Ancillary Improvements Section"
         error={errors.ancillaryImprovements?.showSection?.message}
