@@ -2083,7 +2083,7 @@ export const PhotosSection: React.FC<SectionProps> = ({ register, errors, watch,
       {/* Additional Photos Section */}
       <div className="border border-gray-200 rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Additional Photos (Granny flat, Studio etc)</h3>
-        <p className="text-gray-600 mb-4">Use this section to upload extra photos that don't belong in the main photo set.</p>
+        <p className="text-gray-600 mb-4">Use this section to upload extra photos that don&apos;t belong in the main photo set.</p>
 
         {/* Type Selector for Granny Flat/Studio */}
         <div className="mb-6 bg-blue-50 border border-blue-200 rounded-2xl p-4">
@@ -2121,7 +2121,7 @@ export const PhotosSection: React.FC<SectionProps> = ({ register, errors, watch,
             </label>
           </div>
           <p className="text-xs text-gray-600 mt-2">
-            Select the type of additional photos to display in parentheses in the PDF (e.g., "Additional Photos (Granny Flat)").
+            Select the type of additional photos to display in parentheses in the PDF (e.g., &quot;Additional Photos (Granny Flat)&quot;).
           </p>
         </div>
 

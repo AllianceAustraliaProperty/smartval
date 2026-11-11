@@ -1281,7 +1281,7 @@ const ComparableCard: React.FC<{
         const regex = new RegExp(`${label}\\s+(.+?)\\s*\\.`, 'i');
         const match = comparisonValue.match(regex);
         if (!match) return '';
-        let matchedValue = match[1].trim();
+        const matchedValue = match[1].trim();
 
         // Try exact match first, then case-insensitive
         const exactMatch = options.find((option) => option === matchedValue);
