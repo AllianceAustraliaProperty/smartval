@@ -2651,117 +2651,81 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
 
       {/* Address Search */}
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Search className="w-5 h-5 text-blue-600" />
-            <h4 className="text-lg font-semibold text-gray-900">Search Address</h4>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setBulkLogs([]);
-              setShowBulkModal(true);
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full bg-blue-50 hover:bg-[#006ABE] hover:text-white text-[#006ABE] border border-blue-200 transition-all shadow-xs cursor-pointer"
-            title="Paste multiple addresses to batch import all of them at once"
-          >
-            <ListPlus className="w-4 h-4 text-blue-600" />
-            Bulk Paste Addresses
-          </button>
+        <div className="flex items-center gap-2 mb-4">
+          <Search className="w-5 h-5 text-blue-600" />
+          <h4 className="text-lg font-semibold text-gray-900">Search Address</h4>
         </div>
 
         <div className="relative" ref={searchContainerRef}>
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <Input
-                type="text"
-                value={addressSearch}
-                onPaste={(e) => {
-                  const text = e.clipboardData?.getData('text') || '';
-                  if (text.includes('\n')) {
-                    e.preventDefault();
-                    setBulkInput(text.trim());
-                    setBulkLogs([]);
-                    setShowBulkModal(true);
-                  }
-                }}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setAddressSearch(value);
+          <Input
+            type="text"
+            value={addressSearch}
+            onPaste={(e) => {
+              const text = e.clipboardData?.getData('text') || '';
+              if (text.includes('\n')) {
+                e.preventDefault();
+                setBulkInput(text.trim());
+                setBulkLogs([]);
+                setShowBulkModal(true);
+              }
+            }}
+            onChange={(e) => {
+              const value = e.target.value;
+              setAddressSearch(value);
 
-                  // Debounced auto-suggest: trigger search as user types (min 3 chars)
-                  if (debounceTimerRef.current) {
-                    clearTimeout(debounceTimerRef.current);
-                  }
+              // Debounced auto-suggest: trigger search as user types (min 3 chars)
+              if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+              }
 
-                  if (value.trim().length >= 3) {
-                    debounceTimerRef.current = setTimeout(async () => {
-                      try {
-                        setIsSearchingAddress(true);
-                        const response = await fetch(
-                          `${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(value)}`,
-                          { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json' } }
-                        );
-                        if (!response.ok) throw new Error(`API request failed: ${response.status}`);
-                        const data = await response.json();
-                        if (data.success && data.data) {
-                          setAddressSearchResults(data.data);
-                          setShowAddressResults(true);
-                        } else {
-                          setAddressSearchResults([]);
-                          setShowAddressResults(false);
-                        }
-                      } catch (err) {
-                        console.error('Auto-suggest error:', err);
-                      } finally {
-                        setIsSearchingAddress(false);
-                      }
-                    }, 400);
-                  } else {
-                    // Too short — hide suggestions
-                    setShowAddressResults(false);
-                    setAddressSearchResults([]);
+              if (value.trim().length >= 3) {
+                debounceTimerRef.current = setTimeout(async () => {
+                  try {
+                    setIsSearchingAddress(true);
+                    const response = await fetch(
+                      `${API_BASE_URL}/rpdata/search-address?address=${encodeURIComponent(value)}`,
+                      { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+                    );
+                    if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+                    const data = await response.json();
+                    if (data.success && data.data) {
+                      setAddressSearchResults(data.data);
+                      setShowAddressResults(true);
+                    } else {
+                      setAddressSearchResults([]);
+                      setShowAddressResults(false);
+                    }
+                  } catch (err) {
+                    console.error('Auto-suggest error:', err);
+                  } finally {
+                    setIsSearchingAddress(false);
                   }
-                }}
-                onFocus={() => {
-                  // Show cached results when clicking on the input
-                  if (addressSearchResults.length > 0) {
-                    setShowAddressResults(true);
-                  }
-                }}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAddressSearch();
-                  }
-                }}
-                placeholder="Enter address to search (or paste multiple addresses)..."
-                className="w-full"
-              />
+                }, 400);
+              } else {
+                // Too short — hide suggestions
+                setShowAddressResults(false);
+                setAddressSearchResults([]);
+              }
+            }}
+            onFocus={() => {
+              // Show cached results when clicking on the input
+              if (addressSearchResults.length > 0) {
+                setShowAddressResults(true);
+              }
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleAddressSearch();
+              }
+            }}
+            placeholder="Enter address to search (or paste multiple addresses)..."
+            className="w-full pr-11"
+          />
+          {(isSearchingAddress || isFetchingComparable) && (
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
+              <Loader2 className="w-5 h-5 text-[#006ABE] animate-spin" />
             </div>
-            <button
-              type="button"
-              onClick={handleAddressSearch}
-              disabled={isSearchingAddress || isFetchingComparable}
-              className="inline-flex items-center px-6 min-h-[46px] text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              {isSearchingAddress ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Searching...
-                </>
-              ) : isFetchingComparable ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </>
-              )}
-            </button>
-          </div>
+          )}
 
           {/* Search Results Dropdown - Absolutely Positioned */}
           {showAddressResults && addressSearchResults.length > 0 && (

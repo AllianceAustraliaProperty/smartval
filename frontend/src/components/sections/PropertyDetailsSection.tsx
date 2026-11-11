@@ -532,7 +532,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
             ) : (
               <>
                 <Wand2 className="w-4 h-4" />
-                Automate from RP Data
+                Automate
               </>
             )}
           </button>

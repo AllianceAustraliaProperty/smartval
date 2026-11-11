@@ -55,9 +55,9 @@ export const PillInput = React.forwardRef<HTMLInputElement, PillInputProps>(
         `}
       >
         {icon && (
-          <div className="flex items-center justify-center w-7 h-7 rounded-full border border-gray-400/80 text-gray-500 shrink-0 mr-2.5">
+          <div className="flex items-center justify-center text-gray-500 shrink-0 ml-1 mr-2 pointer-events-none">
             {typeof icon === 'string' ? (
-              <span className="text-xs font-semibold">{icon}</span>
+              <span className="text-sm font-semibold text-gray-500">{icon}</span>
             ) : (
               icon
             )}
@@ -92,7 +92,7 @@ export const PillCurrencyInput = React.forwardRef<HTMLInputElement, PillCurrency
         ref={ref}
         type="text"
         inputMode="decimal"
-        icon={<span className="text-xs font-semibold text-gray-600">{iconLabel}</span>}
+        icon={<span className="text-sm font-semibold text-gray-500">{iconLabel}</span>}
         {...props}
       />
     );

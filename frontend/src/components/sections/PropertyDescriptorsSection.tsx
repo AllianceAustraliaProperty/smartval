@@ -228,7 +228,7 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
           ) : (
             <>
               <Wand2 className="w-4 h-4" />
-              Automate from Photos
+              Automate
             </>
           )}
         </button>

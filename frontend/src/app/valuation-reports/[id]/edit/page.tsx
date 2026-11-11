@@ -172,6 +172,7 @@ export default function ValuationReportEditPage() {
   const [isSendingInvoice, setIsSendingInvoice] = useState(false);
   const [showSendReportModal, setShowSendReportModal] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [isScheduled, setIsScheduled] = useState(false);
   const [sendReportRecipientType, setSendReportRecipientType] = useState<'client' | 'poc'>('client');
   const [isInvoiceMenuOpen, setIsInvoiceMenuOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
@@ -323,6 +324,8 @@ export default function ValuationReportEditPage() {
       try {
         sessionStorage.removeItem(`smartval-draft-${reportId}`);
       } catch {}
+      reset(data);
+      setProperty(data);
       alert('Valuation report updated successfully!');
     } catch { /* Keep the form and its draft visible for retry. */ }
   };
@@ -330,7 +333,12 @@ export default function ValuationReportEditPage() {
   const prepareReport = async (): Promise<boolean> => {
     let saved = false;
     try {
-      await handleSubmit(async data => { await saveForm(data); saved = true; }, () => {
+      await handleSubmit(async data => {
+        await saveForm(data);
+        reset(data);
+        setProperty(data);
+        saved = true;
+      }, () => {
         setSaveError('Please correct the highlighted fields before generating this document.');
       })();
     } catch { /* A failed save must never generate a stale document. */ }
@@ -621,6 +629,8 @@ export default function ValuationReportEditPage() {
         onSendInvoice={handleSendInvoice}
         onSave={handleSubmit(onSubmit)}
         isSaving={isSaving}
+        isDirty={isDirty}
+        isScheduled={isScheduled}
         isGeneratingReport={isGeneratingReport}
         isSendingReport={isSendingReport}
         isGeneratingInvoice={isGeneratingInvoice}
@@ -720,6 +730,7 @@ export default function ValuationReportEditPage() {
         isOpen={isScheduleOpen}
         onClose={() => setIsScheduleOpen(false)}
         showTrigger={false}
+        onScheduleChange={setIsScheduled}
         onPrepare={async () => {
           if (!validatePhotosAndComparables()) return false;
           return prepareReport();

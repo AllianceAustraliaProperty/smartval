@@ -532,7 +532,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
           ) : (
             <>
               <Wand2 className="w-4 h-4" />
-              Automate Market Overview
+              Automate
             </>
           )}
         </button>

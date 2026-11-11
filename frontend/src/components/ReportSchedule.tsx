@@ -25,6 +25,7 @@ export interface ReportScheduleProps {
   isOpen?: boolean;
   onClose?: () => void;
   showTrigger?: boolean;
+  onScheduleChange?: (isScheduled: boolean) => void;
 }
 
 export function ReportSchedule({
@@ -33,6 +34,7 @@ export function ReportSchedule({
   isOpen,
   onClose,
   showTrigger = true,
+  onScheduleChange,
 }: ReportScheduleProps) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<Listing | null>(null);
@@ -83,6 +85,11 @@ export function ReportSchedule({
     // Report navigation remounts this component; no background polling per report.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportId]);
+
+  useEffect(() => {
+    const isScheduled = Boolean(active && ['scheduled', 'processing', 'sending', 'needs_review'].includes(active.status));
+    onScheduleChange?.(isScheduled);
+  }, [active, onScheduleChange]);
 
   const handleOpenSchedule = () => {
     setOpen(true);
@@ -142,7 +149,7 @@ export function ReportSchedule({
       id="report-schedule-trigger"
       type="button"
       onClick={handleOpenSchedule}
-      className={showTrigger ? `${button} ${active ? 'border-blue-200 bg-blue-50 text-blue-800' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}` : 'hidden'}
+      className={showTrigger ? `${button} ${active ? 'border-orange-200 bg-orange-50 text-[#F07D2B]' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}` : 'hidden'}
     >
       <CalendarClock size={17} /><span>{active ? labels[active.status] || 'Manage schedule' : 'Schedule email'}</span>
     </button>

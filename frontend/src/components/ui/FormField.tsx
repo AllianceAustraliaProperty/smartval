@@ -47,9 +47,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ${disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''}
           `}
         >
-          <div className="flex items-center justify-center w-7 h-7 rounded-full border border-gray-400/80 text-gray-500 shrink-0 mr-2.5 pointer-events-none">
+          <div className="flex items-center justify-center text-gray-500 shrink-0 ml-1 mr-2 pointer-events-none">
             {typeof icon === 'string' ? (
-              <span className="text-xs font-semibold">{icon}</span>
+              <span className="text-sm font-semibold text-gray-500">{icon}</span>
             ) : (
               icon
             )}
@@ -127,9 +127,9 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="relative w-full">
         {icon && (
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full border border-gray-400/80 text-gray-500 shrink-0 pointer-events-none z-10">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center text-gray-500 shrink-0 pointer-events-none z-10">
             {typeof icon === 'string' ? (
-              <span className="text-xs font-semibold">{icon}</span>
+              <span className="text-sm font-semibold text-gray-500">{icon}</span>
             ) : (
               icon
             )}
@@ -139,7 +139,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           disabled={disabled}
           className={`
-            w-full min-h-[46px] ${icon ? 'pl-13' : 'px-5'} pr-11 border-2 border-gray-400/80 rounded-full shadow-sm
+            w-full min-h-[46px] ${icon ? 'pl-10' : 'px-5'} pr-11 border-2 border-gray-400/80 rounded-full shadow-sm
             focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600
             text-sm text-gray-900 bg-white appearance-none cursor-pointer transition-all
             ${error ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'hover:border-gray-500'}
@@ -283,7 +283,7 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
 
   return (
     <div className="relative flex items-center w-full">
-      <div className="absolute left-3.5 flex items-center justify-center w-7 h-7 rounded-full border border-gray-400/80 text-gray-500 shrink-0 pointer-events-none text-xs font-semibold z-10">
+      <div className="absolute left-4.5 flex items-center justify-center text-gray-500 shrink-0 pointer-events-none text-sm font-semibold z-10">
         $
       </div>
       <input
@@ -293,7 +293,7 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
         value={inputValue}
         onChange={handleChange}
         className={`
-          w-full min-h-[46px] pl-13 pr-5 border-2 border-gray-400/80 rounded-full shadow-sm placeholder-gray-400
+          w-full min-h-[46px] pl-10 pr-5 border-2 border-gray-400/80 rounded-full shadow-sm placeholder-gray-400
           focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600
           text-sm text-gray-900 bg-white transition-all
           ${error ? 'border-red-400 focus:ring-red-100 focus:border-red-500' : 'hover:border-gray-500'}

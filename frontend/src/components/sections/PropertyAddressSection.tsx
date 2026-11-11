@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { FormField, Input, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { MapPin, Home, Building } from 'lucide-react';
+import { MapPin, Home, Building, Link2 } from 'lucide-react';
 import { STATE_OPTIONS } from '@/types/property-valuation';
 import { mapRpDataPropertyType } from '@/constants/property-types';
 import { HeaderActionPortal } from '../report-nav';
@@ -163,7 +163,7 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
             disabled={isLinking}
             title="Link to RP Data"
           >
-            <Home className="w-4 h-4" />
+            <Link2 className="w-4 h-4" />
             {isLinking ? 'Linking…' : 'Link to RP Data'}
           </button>
         </div>

@@ -315,7 +315,7 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
           ) : (
             <>
               <Wand2 className="w-4 h-4" />
-              Automate Location Details
+              Automate
             </>
           )}
         </button>
