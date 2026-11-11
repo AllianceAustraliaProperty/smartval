@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormField, Input, Checkbox, FileUpload, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { Upload, X, Edit3, Wand2, ListOrdered, Clock, ImageOff } from 'lucide-react';
+import { Upload, X, Edit3, Wand2, ListOrdered, Clock, ImageOff, Plus } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/api-config';
 import { uploadMultipleFilesToS3 } from '@/lib/s3-upload';
 import { getAdditionalPhotoSaves } from '@/lib/additional-photo-saves';
@@ -690,8 +690,8 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#006ABE] hover:bg-[#00589e] text-white font-bold rounded-full shadow-sm hover:shadow transition-all text-xs sm:text-sm cursor-pointer disabled:opacity-50"
               title="Add a photo entry without uploading an image"
             >
-              <Upload className="w-4 h-4" />
-              <span>Add Photo</span>
+              <Plus className="w-4 h-4" />
+              <span>Add Entry</span>
             </button>
             <button
               type="button"
@@ -1241,6 +1241,52 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
     publishPhotos(list, true);
   };
 
+  const [isArranging, setIsArranging] = useState(false);
+
+  const handleAutoArrange = async () => {
+    if (saves.busy || !photosLoaded || photosRef.current.length === 0) return;
+    setIsArranging(true);
+    setUploadError(null);
+    try {
+      const getCategoryRank = (category: string | undefined | null) => {
+        if (!category) return 999;
+        const lower = category.toLowerCase();
+        if (lower === 'living') return 10;
+        if (lower === 'kitchen') return 20;
+        if (lower === 'dining') return 30;
+        if (lower === 'bathroom') return 40;
+        if (lower.startsWith('bedroom')) {
+          const match = lower.match(/\d+/);
+          const num = match ? parseInt(match[0], 10) : 0;
+          return 50 + num;
+        }
+        if (lower.startsWith('ensuite')) {
+          const match = lower.match(/\d+/);
+          const num = match ? parseInt(match[0], 10) : 0;
+          return 60 + num;
+        }
+        if (lower === 'balcony' || lower === 'deck' || lower === 'balcony/deck') return 70;
+        if (lower === 'patio') return 80;
+        return 100;
+      };
+
+      const sorted = [...photosRef.current].sort((a, b) => {
+        const rankA = getCategoryRank(a.category);
+        const rankB = getCategoryRank(b.category);
+        return rankA - rankB;
+      });
+
+      await saves.run(async () => {
+        await savePhotosNow(sorted);
+      });
+    } catch (error) {
+      console.error('Error auto-arranging additional photos:', error);
+      setUploadError(error instanceof Error ? error.message : 'Failed to save auto-arranged order');
+    } finally {
+      setIsArranging(false);
+    }
+  };
+
   const addEmptyPhoto = async () => {
     try {
       setUploading(true);
@@ -1427,15 +1473,27 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
       <div className="space-y-4">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <p className="text-sm font-medium text-gray-700">Add or drag photos below</p>
-          <button
-            type="button"
-            onClick={addEmptyPhoto}
-            disabled={uploading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#006ABE] hover:bg-[#00589e] text-white font-bold rounded-full shadow-sm hover:shadow transition-all text-xs sm:text-sm cursor-pointer disabled:opacity-50"
-          >
-            <Upload className="w-4 h-4" />
-            <span>Add Photo</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={addEmptyPhoto}
+              disabled={uploading}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#006ABE] hover:bg-[#00589e] text-white font-bold rounded-full shadow-sm hover:shadow transition-all text-xs sm:text-sm cursor-pointer disabled:opacity-50"
+              title="Add a photo entry without uploading an image"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Entry</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleAutoArrange}
+              disabled={isArranging || photos.length === 0}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-[#006ABE] bg-blue-50 border border-blue-200 rounded-full hover:bg-[#006ABE] hover:text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
+            >
+              {isArranging ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div> : <ListOrdered className="w-4 h-4" />}
+              Auto Arrange
+            </button>
+          </div>
         </div>
         <div className="w-full">
           <label htmlFor="file-upload-additional-photos" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">

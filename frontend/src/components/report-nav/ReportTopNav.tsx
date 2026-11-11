@@ -286,8 +286,6 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
             onClick={() => {
               if (onPreviewInvoice || onGenerateInvoice || onSendInvoice) {
                 setIsInvoiceMenuOpen((prev) => !prev);
-              } else if (onOpenFinancial) {
-                onOpenFinancial();
               }
             }}
             disabled={isGeneratingInvoice || isSendingInvoice}
@@ -299,7 +297,7 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
             `}
           >
             {isGeneratingInvoice || isSendingInvoice ? (
-              <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
+              <Loader2 className="w-5 h-5 text-[#28A745] animate-spin" />
             ) : (
               <DollarSign className="w-6 h-6" strokeWidth={2.5} />
             )}
@@ -307,19 +305,6 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
 
           {isInvoiceMenuOpen && (
             <div className="absolute right-0 mt-2 w-60 origin-top-right bg-white rounded-2xl shadow-xl border border-gray-100 z-[110] overflow-hidden py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
-              {onOpenFinancial && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsInvoiceMenuOpen(false);
-                    onOpenFinancial();
-                  }}
-                  className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#006ABE] transition-colors font-semibold cursor-pointer"
-                >
-                  <DollarSign className="w-4 h-4 mr-3 text-[#006ABE]" />
-                  Step 8: Financial & Referral
-                </button>
-              )}
               {onPreviewInvoice && (
                 <button
                   type="button"
@@ -327,9 +312,9 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
                     setIsInvoiceMenuOpen(false);
                     onPreviewInvoice();
                   }}
-                  className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors font-semibold cursor-pointer"
+                  className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-[#28A745] transition-colors font-semibold cursor-pointer"
                 >
-                  <FileSearch className="w-4 h-4 mr-3 text-amber-600" />
+                  <FileSearch className="w-4 h-4 mr-3 text-[#28A745]" />
                   Preview Invoice
                 </button>
               )}
@@ -340,9 +325,9 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
                     setIsInvoiceMenuOpen(false);
                     onGenerateInvoice();
                   }}
-                  className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors font-semibold cursor-pointer"
+                  className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-[#28A745] transition-colors font-semibold cursor-pointer"
                 >
-                  <Download className="w-4 h-4 mr-3 text-amber-600" />
+                  <Download className="w-4 h-4 mr-3 text-[#28A745]" />
                   Generate Invoice PDF
                 </button>
               )}
@@ -353,9 +338,9 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
                     setIsInvoiceMenuOpen(false);
                     onSendInvoice();
                   }}
-                  className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors font-semibold cursor-pointer"
+                  className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-[#28A745] transition-colors font-semibold cursor-pointer"
                 >
-                  <Send className="w-4 h-4 mr-3 text-amber-600" />
+                  <Send className="w-4 h-4 mr-3 text-[#28A745]" />
                   Send Invoice
                 </button>
               )}
