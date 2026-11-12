@@ -115,7 +115,7 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
     <header
       className={`
         ${montserrat.className}
-        h-[80px] shrink-0 sticky top-0 z-[100] shadow-md
+        h-[80px] shrink-0 fixed top-0 left-0 right-0 z-40 shadow-md
         flex items-center justify-between px-8 select-none
         ${className}
       `}

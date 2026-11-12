@@ -373,6 +373,7 @@ export default function ValuationReportEditPage() {
 
   const handleSectionChange = (sectionId: string) => {
     setCurrentSection(sectionId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const validatePhotosAndComparables = (): boolean => {
@@ -625,7 +626,7 @@ export default function ValuationReportEditPage() {
   const CurrentSectionComponent = sectionComponents[currentSection as keyof typeof sectionComponents];
 
   return (
-    <div className={`${montserrat.className} min-h-screen bg-[#F8F9FA] flex flex-col pb-16 overflow-x-clip`}>
+    <div className={`${montserrat.className} min-h-screen bg-[#F8F9FA] flex flex-col pt-[80px]`}>
       {/* Sticky SMARTval Royal Blue Top Navigation Bar */}
       <ReportTopNav
         fileNumber={watch('fileNumber') || property?.fileNumber || ''}
@@ -664,7 +665,7 @@ export default function ValuationReportEditPage() {
       />
 
       {/* Main Wizard Content Area */}
-      <main className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
         {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center space-x-3">
@@ -758,7 +759,7 @@ export default function ValuationReportEditPage() {
 
       {/* Send Report Modal */}
       {showSendReportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity" onClick={() => setShowSendReportModal(false)} />
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative z-10 overflow-hidden flex flex-col border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100">
@@ -871,7 +872,7 @@ export default function ValuationReportEditPage() {
 
       {/* Validation Warning Modal */}
       {showValidationModal && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[200]">
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
             onClick={() => setShowValidationModal(false)}
