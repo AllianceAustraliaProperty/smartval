@@ -418,6 +418,9 @@
     {% set final_land_value = valuation_report.get('valuationDetails', {}).get('landValue') or land_value_rounded or land_value or 0 %}
     {% set final_market_value = valuation_report.get('valuationDetails', {}).get('marketValue') or 0 %}
     {% set final_improvements = valuation_report.get('valuationDetails', {}).get('improvements') or (final_market_value - final_land_value if final_market_value > final_land_value else 0) %}
+    {% set _prop_type = (valuation_report.get('propertyDetails', {}).get('propertyType') or valuation_report.get('propertyType') or '')|lower %}
+    {% set _is_unit = (valuation_report.get('valuationDetails', {}).get('isUnit') in [True, 'true', 'True', 1, '1']) or ('unit' in _prop_type) or ('apartment' in _prop_type) or ('flat' in _prop_type) or ('studio' in _prop_type) %}
+    {% set _show_improvements = (valuation_report.get('valuationDetails', {}).get('showImprovements') not in [False, 'false', 'False', 0, '0']) and not _is_unit %}
 
     <!-- ================= PAGE 1: VALUATION SUMMARY ================= -->
     <div class="page" id="page-1" style="font-family: Arial, Helvetica, sans-serif;">
@@ -519,15 +522,17 @@
 
             <!-- Right: Breakdown details -->
             <div style="flex: 1; padding: 18px 24px 12px 28px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #14191e;">
+                <div style="display: flex; flex-direction: column; gap: {% if _show_improvements %}8px{% else %}10px{% endif %}; font-size: 12px; color: #14191e;">
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-weight: bold; width: 125px;">Land Value:</span>
                         <span style="font-weight: normal; flex: 1;">{{ final_land_value|format_currency_no_decimal }}</span>
                     </div>
+                    {% if _show_improvements %}
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-weight: bold; width: 125px;">Improvements:</span>
                         <span style="font-weight: normal; flex: 1;">{{ final_improvements|format_currency_no_decimal }}</span>
                     </div>
+                    {% endif %}
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-weight: bold; width: 125px;">Market Value:</span>
                         <span style="font-weight: bold; flex: 1;">{{ final_market_value|format_currency_no_decimal }}</span>
