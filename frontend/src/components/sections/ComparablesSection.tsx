@@ -3135,19 +3135,6 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
           })}
         </div>
       )}
-
-      {comparables.length > 0 && (
-        <div className="text-center pt-2">
-          <button
-            type="button"
-            onClick={addComparable}
-            className="group inline-flex items-center px-6 py-2.5 text-xs sm:text-sm font-bold rounded-full text-[#006ABE] bg-white border-2 border-[#006ABE]/30 hover:border-[#006ABE] hover:bg-blue-50/50 shadow-xs transition-all duration-200 cursor-pointer"
-          >
-            <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-200" />
-            Add Another {type === 'sales' ? 'Sale' : 'Rental'}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

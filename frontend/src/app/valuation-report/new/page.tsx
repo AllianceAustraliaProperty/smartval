@@ -163,7 +163,7 @@ export default function NewValuationReportPage() {
                     value={newReportData.fileNumber}
                     onChange={(e) => setNewReportData({ ...newReportData, fileNumber: e.target.value })}
                     placeholder="e.g., PV020962 or CPV1490"
-                    className="w-full h-12 px-5 rounded-full border-2 border-gray-400/80 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-gray-900 bg-white font-mono text-sm outline-none transition-all"
+                    className="w-full h-12 px-5 rounded-full border-2 border-gray-400/80 hover:border-[#006ABE] focus:border-[#006ABE] focus:ring-2 focus:ring-[#006ABE]/20 text-gray-900 bg-white font-mono text-sm outline-none transition-all"
                   />
                   <p className="text-xs text-gray-400 mt-1 pl-3">Autofilled based on the last report under {newReportData.logoType}</p>
                 </div>
@@ -205,7 +205,7 @@ export default function NewValuationReportPage() {
                     type="date"
                     value={newReportData.valuationDate}
                     onChange={(e) => setNewReportData({ ...newReportData, valuationDate: e.target.value })}
-                    className="w-full h-12 px-5 rounded-full border-2 border-gray-400/80 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-gray-900 bg-white font-medium text-sm outline-none transition-all"
+                    className="w-full h-12 px-5 rounded-full border-2 border-gray-400/80 hover:border-[#006ABE] focus:border-[#006ABE] focus:ring-2 focus:ring-[#006ABE]/20 text-gray-900 bg-white font-medium text-sm outline-none transition-all"
                   />
                 </div>
               </div>

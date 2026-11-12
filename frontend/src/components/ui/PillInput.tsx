@@ -49,7 +49,7 @@ export const PillInput = React.forwardRef<HTMLInputElement, PillInputProps>(
         className={`
           relative flex items-center w-full min-h-[46px] px-3.5 py-1.5
           rounded-full border-2 bg-white transition-all
-          ${error ? 'border-red-400 focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-100' : 'border-gray-400/80 hover:border-gray-500 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100'}
+          ${error ? 'border-red-400 focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-100' : 'border-gray-400/80 hover:border-[#006ABE] focus-within:border-[#006ABE] focus-within:ring-2 focus-within:ring-[#006ABE]/20'}
           ${disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''}
           ${wrapperClassName}
         `}
