@@ -265,7 +265,7 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
                             const rawSub = String(data?.attrCore?.propertySubType || data?.propertySubType || '').toLowerCase();
                             const isUnitType = rawT.includes('unit') || rawSub.includes('unit') || rawSub.includes('apartment') || rawSub.includes('flat');
                             setValue('valuationDetails.isUnit', isUnitType, { shouldDirty: true });
-                            setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+                            setValue('valuationDetails.showLandValue', !isUnitType, { shouldDirty: true });
                             setValue('valuationDetails.showImprovements', !isUnitType, { shouldDirty: true });
                             setValue('valuationDetails.showCurrencyOfValuation', true, { shouldDirty: true });
                             if (isUnitType) {

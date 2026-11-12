@@ -16,5 +16,6 @@ export function affectedSections(name: string | undefined, ids: string[]) {
   const root = name.split('.')[0];
   if (root === 'address') return ['propertyAddress'];
   if (root === 'primaryContact') return ids.includes('primaryContact') ? ['primaryContact'] : ['propertyAddress'];
+  if (root === 'invoiceDetails') return ['referralDetails'];
   return ids.includes(root) ? [root] : [];
 }

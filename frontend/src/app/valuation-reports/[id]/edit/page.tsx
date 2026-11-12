@@ -76,7 +76,10 @@ const sections = [
       case 'valuationDetails':
         return formData.valuationDetails;
       case 'referralDetails':
-        return formData.referralDetails;
+        return {
+          ...formData.referralDetails,
+          reportFee: formData.invoiceDetails?.reportFee,
+        };
       case 'photos':
         return formData.photos;
       case 'comparables':
@@ -104,7 +107,6 @@ const sections = [
                   sectionData.mainBuildingType || sectionData.roofingType || sectionData.externalWalls);
       case 'ancillaryImprovements':
         return !!(
-          sectionData.showSection ||
           sectionData.driveway ||
           sectionData.fencing ||
           (Array.isArray(sectionData.otherItems) && sectionData.otherItems.length > 0) ||
@@ -117,8 +119,11 @@ const sections = [
         return !!(sectionData.propertyDescription || sectionData.marketOverview || sectionData.propertyComments);
       case 'valuationDetails':
         return !!(sectionData.valuationType && sectionData.valuationDate && sectionData.marketValue);
-      case 'referralDetails':
-        return !!(sectionData.referrerName);
+      case 'referralDetails': {
+        const fee = sectionData.reportFee;
+        const hasReportFee = fee !== undefined && fee !== null && fee !== '' && (!isNaN(Number(fee)) ? Number(fee) > 0 : true);
+        return !!(sectionData.referrerName || hasReportFee || sectionData.referralFee);
+      }
       case 'photos':
         return !!(sectionData && sectionData.length > 0);
       case 'comparables':
@@ -147,7 +152,7 @@ const sections = [
       case 'valuationDetails':
         return !!(formErrors.valuationDetails);
       case 'referralDetails':
-        return !!(formErrors.referralDetails);
+        return !!(formErrors.referralDetails || formErrors.invoiceDetails);
       case 'photos':
         return !!(formErrors.photos);
       case 'comparables':
@@ -620,7 +625,7 @@ export default function ValuationReportEditPage() {
   const CurrentSectionComponent = sectionComponents[currentSection as keyof typeof sectionComponents];
 
   return (
-    <div className={`${montserrat.className} min-h-screen bg-[#F8F9FA] flex flex-col pb-16`}>
+    <div className={`${montserrat.className} min-h-screen bg-[#F8F9FA] flex flex-col pb-16 overflow-x-clip`}>
       {/* Sticky SMARTval Royal Blue Top Navigation Bar */}
       <ReportTopNav
         fileNumber={watch('fileNumber') || property?.fileNumber || ''}

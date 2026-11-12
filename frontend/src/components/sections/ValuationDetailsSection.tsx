@@ -133,23 +133,27 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
     }
 
     if (isUnit === true) {
-      // Unit selected: auto-tick only show land value and disable improvements
-      if (watch('valuationDetails.showLandValue') !== true) {
-        setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
-      }
-      if (watch('valuationDetails.showImprovements') !== false) {
-        setValue('valuationDetails.showImprovements', false, { shouldDirty: true });
-      }
-      if (prevIsUnitSyncRef.current === false && watch('valuationDetails.improvements') !== undefined) {
-        setValue('valuationDetails.improvements', undefined, { shouldDirty: true });
+      // Unit selected: only display currency is selected by default; showLandValue and showImprovements are false by default
+      if (prevIsUnitSyncRef.current !== true) {
+        if (watch('valuationDetails.showLandValue') !== false) {
+          setValue('valuationDetails.showLandValue', false, { shouldDirty: true });
+        }
+        if (watch('valuationDetails.showImprovements') !== false) {
+          setValue('valuationDetails.showImprovements', false, { shouldDirty: true });
+        }
+        if (watch('valuationDetails.improvements') !== undefined) {
+          setValue('valuationDetails.improvements', undefined, { shouldDirty: true });
+        }
       }
     } else if (isUnit === false) {
       // House selected: auto-tick both show land value and improvements
-      if (watch('valuationDetails.showLandValue') !== true) {
-        setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
-      }
-      if (watch('valuationDetails.showImprovements') !== true) {
-        setValue('valuationDetails.showImprovements', true, { shouldDirty: true });
+      if (prevIsUnitSyncRef.current !== false) {
+        if (watch('valuationDetails.showLandValue') !== true) {
+          setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+        }
+        if (watch('valuationDetails.showImprovements') !== true) {
+          setValue('valuationDetails.showImprovements', true, { shouldDirty: true });
+        }
       }
     }
     prevIsUnitSyncRef.current = isUnit;
@@ -645,6 +649,8 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             {...register('valuationDetails.landValue', { valueAsNumber: true })}
             placeholder="e.g., 500000"
             error={errors.valuationDetails?.landValue?.message}
+            disabled={!watch('valuationDetails.showLandValue')}
+            className={!watch('valuationDetails.showLandValue') ? 'bg-gray-100 cursor-not-allowed text-gray-400' : ''}
           />
         </FormField>
 
@@ -657,8 +663,8 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
             {...register('valuationDetails.improvements', { valueAsNumber: true })}
             placeholder="e.g., 350000"
             error={errors.valuationDetails?.improvements?.message}
-            disabled={isUnit === true}
-            className={isUnit === true ? 'bg-gray-100 cursor-not-allowed text-gray-400' : ''}
+            disabled={!watch('valuationDetails.showImprovements')}
+            className={!watch('valuationDetails.showImprovements') ? 'bg-gray-100 cursor-not-allowed text-gray-400' : ''}
           />
         </FormField>
 
@@ -689,7 +695,7 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
                 checked={watch('valuationDetails.isUnit') === true}
                 onChange={() => {
                   setValue('valuationDetails.isUnit', true, { shouldDirty: true });
-                  setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+                  setValue('valuationDetails.showLandValue', false, { shouldDirty: true });
                   setValue('valuationDetails.showImprovements', false, { shouldDirty: true });
                   setValue('valuationDetails.improvements', undefined, { shouldDirty: true });
                   setValue('valuationDetails.showCurrencyOfValuation', true, { shouldDirty: true });

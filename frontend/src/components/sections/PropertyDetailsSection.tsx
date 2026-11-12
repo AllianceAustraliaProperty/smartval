@@ -337,7 +337,7 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         const lowerProp = mappedPropType.toLowerCase();
         const isUnitProp = lowerProp.includes('unit') || lowerProp.includes('apartment') || lowerProp.includes('flat');
         setValue('valuationDetails.isUnit', isUnitProp, { shouldDirty: true });
-        setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+        setValue('valuationDetails.showLandValue', !isUnitProp, { shouldDirty: true });
         setValue('valuationDetails.showImprovements', !isUnitProp, { shouldDirty: true });
         setValue('valuationDetails.showCurrencyOfValuation', true, { shouldDirty: true });
         if (isUnitProp) {

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FormField, Input, Textarea, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
 import { API_BASE_URL } from '@/lib/api-config';
@@ -2217,6 +2218,22 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
   const [bulkInput, setBulkInput] = useState('');
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [bulkLogs, setBulkLogs] = useState<BulkLogEntry[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll while bulk modal is open to prevent background shifting
+  useEffect(() => {
+    if (showBulkModal) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showBulkModal]);
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
@@ -2679,6 +2696,13 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                 setBulkInput(text.trim());
                 setBulkLogs([]);
                 setShowBulkModal(true);
+                setShowAddressResults(false);
+                setAddressSearchResults([]);
+                setAddressSearch('');
+                if (debounceTimerRef.current) {
+                  clearTimeout(debounceTimerRef.current);
+                }
+                (e.target as HTMLInputElement).blur();
               }
             }}
             onChange={(e) => {
@@ -2898,9 +2922,9 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
       </div>
 
       {/* Bulk Import Modal */}
-      {showBulkModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+      {showBulkModal && mounted && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-100">
             {/* Modal Header */}
             <div className="p-6 border-b border-gray-100 flex items-start justify-between bg-gradient-to-r from-blue-50/60 to-indigo-50/40">
               <div className="flex items-center gap-3">
@@ -3051,7 +3075,8 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {comparables.length === 0 ? (

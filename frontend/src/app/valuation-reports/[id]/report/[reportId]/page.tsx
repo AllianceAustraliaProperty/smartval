@@ -74,7 +74,10 @@ const sections = [
       case 'valuationDetails':
         return formData.valuationDetails;
       case 'referralDetails':
-        return formData.referralDetails;
+        return {
+          ...formData.referralDetails,
+          reportFee: formData.invoiceDetails?.reportFee,
+        };
       case 'photos':
         return formData.photos;
       case 'comparables':
@@ -100,7 +103,6 @@ const sections = [
         return !!(sectionData.accommodation);
       case 'ancillaryImprovements':
         return !!(
-          sectionData.showSection ||
           sectionData.driveway ||
           sectionData.fencing ||
           (Array.isArray(sectionData.otherItems) && sectionData.otherItems.length > 0) ||
@@ -112,8 +114,11 @@ const sections = [
         return !!(sectionData.generalComments);
       case 'valuationDetails':
         return !!(sectionData.valuationType && sectionData.valuationDate && sectionData.marketValue);
-      case 'referralDetails':
-        return !!(sectionData.referrerName);
+      case 'referralDetails': {
+        const fee = sectionData.reportFee;
+        const hasReportFee = fee !== undefined && fee !== null && fee !== '' && (!isNaN(Number(fee)) ? Number(fee) > 0 : true);
+        return !!(sectionData.referrerName || hasReportFee || sectionData.referralFee);
+      }
       case 'photos':
         return !!(sectionData && sectionData.length > 0);
       case 'comparables':
