@@ -2668,14 +2668,6 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
-        <button
-          type="button"
-          onClick={addComparable}
-          className="group inline-flex items-center px-5 py-2.5 text-xs sm:text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all duration-300 cursor-pointer"
-        >
-          <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
-          Add {type === 'sales' ? 'Sale' : 'Rental'}
-        </button>
       </div>
 
       {/* Address Search */}
@@ -3133,6 +3125,19 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
               </div>
             );
           })}
+        </div>
+      )}
+
+      {comparables.length > 0 && (
+        <div className="flex justify-center pt-2">
+          <button
+            type="button"
+            onClick={addComparable}
+            className="group inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-full text-[#006ABE] bg-white border-2 border-[#006ABE] hover:bg-blue-50 shadow-sm transition-all duration-300 cursor-pointer"
+          >
+            <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-300" />
+            Add Another {type === 'sales' ? 'Sale' : 'Rental'}
+          </button>
         </div>
       )}
     </div>

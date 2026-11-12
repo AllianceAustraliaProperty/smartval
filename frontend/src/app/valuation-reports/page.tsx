@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit3, Trash2, Building, FileText, CheckCircle, FileType, Download, Eye as Preview, Sparkles, Home, MapPin, DollarSign, Calendar, User as UserIcon, User, ArrowRight, Shield, Settings, LogOut, ChevronDown, FileSearch, ExternalLink, RefreshCw, Copy, Mail } from 'lucide-react';
+import { Search, Plus, Loader2, Edit3, Trash2, Building, FileText, CheckCircle, FileType, Download, Eye as Preview, Sparkles, Home, MapPin, DollarSign, Calendar, User as UserIcon, User, ArrowRight, Shield, Settings, LogOut, ChevronDown, FileSearch, ExternalLink, RefreshCw, Copy, Mail } from 'lucide-react';
 import { getCurrentUser, signOut, type User as AuthUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -75,6 +75,7 @@ export default function ValuationReportsPage() {
   const [totalReportsCount, setTotalReportsCount] = useState(0);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
 
   const requests = React.useRef(new LatestRequest());
   const searchRef = React.useRef(searchTerm);
@@ -219,8 +220,15 @@ export default function ValuationReportsPage() {
     };
   }, [searchTerm]);
 
+  useEffect(() => {
+    setIsCreatingNew(false);
+    const handlePageShow = () => setIsCreatingNew(false);
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
   const handleCreateNew = () => {
-    // Navigate to the new valuation report page
+    setIsCreatingNew(true);
     router.push('/valuation-report/new');
   };
 
@@ -505,9 +513,20 @@ export default function ValuationReportsPage() {
           {/* create New Valuation Report button */}
           <button
             onClick={handleCreateNew}
-            className="w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center text-[#006ABE] hover:bg-[#28A745] hover:text-white shadow-sm transition-colors"
+            disabled={isCreatingNew}
+            title={isCreatingNew ? 'Opening new report form...' : 'Create New Valuation Report'}
+            aria-label="Create New Valuation Report"
+            className={`w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center text-[#006ABE] shadow-sm transition-all ${
+              isCreatingNew
+                ? 'cursor-wait opacity-90'
+                : 'hover:bg-[#28A745] hover:text-white cursor-pointer'
+            }`}
           >
-            <Plus className="w-7 h-7" strokeWidth={3} />
+            {isCreatingNew ? (
+              <Loader2 className="w-6 h-6 animate-spin text-[#006ABE]" />
+            ) : (
+              <Plus className="w-7 h-7" strokeWidth={3} />
+            )}
           </button>
           
           {/* Bulk Delete button */}
@@ -728,10 +747,15 @@ export default function ValuationReportsPage() {
               </p>
               <button
                 onClick={handleCreateNew}
-                className="group inline-flex items-center px-8 py-4 text-[15px] font-bold rounded-2xl text-white bg-[#28A745] hover:bg-[#218838] shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                disabled={isCreatingNew}
+                className="group inline-flex items-center px-8 py-4 text-[15px] font-bold rounded-2xl text-white bg-[#28A745] hover:bg-[#218838] shadow-lg transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-75 disabled:cursor-wait"
               >
-                <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" strokeWidth={3} />
-                New Report
+                {isCreatingNew ? (
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" strokeWidth={3} />
+                )}
+                {isCreatingNew ? 'Opening…' : 'New Report'}
               </button>
             </div>
           )}
