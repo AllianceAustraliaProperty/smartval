@@ -516,14 +516,14 @@ export default function ValuationReportsPage() {
             disabled={isCreatingNew}
             title={isCreatingNew ? 'Opening new report form...' : 'Create New Valuation Report'}
             aria-label="Create New Valuation Report"
-            className={`w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center text-[#006ABE] shadow-sm transition-all ${
+            className={`w-[46px] h-[46px] rounded-[14px] flex items-center justify-center shadow-sm transition-all duration-200 ${
               isCreatingNew
-                ? 'cursor-wait opacity-90'
-                : 'hover:bg-[#28A745] hover:text-white cursor-pointer'
+                ? 'bg-[#d1d5db] cursor-not-allowed opacity-90'
+                : 'bg-white text-[#006ABE] hover:bg-[#28A745] hover:text-white cursor-pointer'
             }`}
           >
             {isCreatingNew ? (
-              <Loader2 className="w-6 h-6 animate-spin text-[#006ABE]" />
+              <Loader2 className="w-6 h-6 animate-spin text-[#28A745]" />
             ) : (
               <Plus className="w-7 h-7" strokeWidth={3} />
             )}
