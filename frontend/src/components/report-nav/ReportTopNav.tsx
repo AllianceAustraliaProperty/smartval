@@ -151,50 +151,45 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
       </div>
 
       {/* Center: Centered File No. and RP Data ID each with individual underlines */}
-      <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center space-x-8 lg:space-x-12 mt-2 z-50">
+      <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-8 lg:gap-10 mt-2 z-50">
         {/* File No */}
-        <div className="flex items-center border-b-[3px] border-white pb-2 transition-all duration-300 hover:border-white/90">
+        <div className="flex items-center w-[235px] border-b-[3px] border-white pb-2 transition-all duration-300 hover:border-white/90">
           <label
             htmlFor="header-file-number"
-            className="text-white font-semibold text-[17px] mr-3 cursor-pointer select-none whitespace-nowrap"
+            className="text-white font-semibold text-[17px] mr-2.5 cursor-pointer select-none whitespace-nowrap shrink-0"
           >
             File No.
           </label>
-          <div className="w-[2px] h-6 bg-white/40 mr-4 flex-shrink-0" />
+          <div className="w-[2px] h-6 bg-white/40 mr-3 shrink-0" />
           <input
             id="header-file-number"
             type="text"
             value={fileNumber}
             onChange={(e) => onFileNumberChange?.(e.target.value)}
             placeholder="Enter File No."
-            style={{
-              width: fileNumber
-                ? `${Math.max(fileNumber.length + 1, 8)}ch`
-                : '14ch',
-            }}
-            className="bg-transparent text-white font-bold text-[17px] tracking-wide focus:outline-none placeholder-white/50 cursor-text max-w-[200px]"
+            className="bg-transparent text-white font-bold text-[17px] tracking-wide focus:outline-none placeholder-white/50 cursor-text flex-1 min-w-0"
           />
         </div>
 
         {/* RP Data ID (Clickable Hyperlink to CoreLogic RP Data property page) */}
-        <div className="flex items-center border-b-[3px] border-white pb-2 transition-all duration-300 hover:border-white/90">
-          <span className="text-white font-semibold text-[17px] mr-3 select-none whitespace-nowrap">
+        <div className="flex items-center w-[235px] border-b-[3px] border-white pb-2 transition-all duration-300 hover:border-white/90">
+          <span className="text-white font-semibold text-[17px] mr-2.5 select-none whitespace-nowrap shrink-0">
             RP Data ID
           </span>
-          <div className="w-[2px] h-6 bg-white/40 mr-4 flex-shrink-0" />
+          <div className="w-[2px] h-6 bg-white/40 mr-3 shrink-0" />
           {rpDataId ? (
             <a
               href={getRpDataUrl()}
               target="_blank"
               rel="noopener noreferrer"
               title={`Open RP Data property page (${rpDataId})`}
-              className="group text-white font-bold text-[17px] tracking-wide hover:underline cursor-pointer inline-flex items-center gap-2 focus:outline-none truncate"
+              className="group text-white font-bold text-[17px] tracking-wide hover:underline cursor-pointer inline-flex items-center gap-2 focus:outline-none flex-1 min-w-0 truncate"
             >
-              <span>{rpDataId}</span>
-              <ExternalLink className="w-4 h-4 opacity-75 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              <span className="truncate">{rpDataId}</span>
+              <ExternalLink className="w-4 h-4 opacity-75 group-hover:opacity-100 transition-opacity shrink-0" />
             </a>
           ) : (
-            <span className="text-white/60 font-medium text-[17px] italic select-none">
+            <span className="text-white/60 font-medium text-[17px] italic select-none flex-1 min-w-0">
               Not linked
             </span>
           )}
