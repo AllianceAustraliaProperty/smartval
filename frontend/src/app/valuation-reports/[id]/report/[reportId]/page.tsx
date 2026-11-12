@@ -99,7 +99,15 @@ const sections = [
       case 'propertyDescriptors':
         return !!(sectionData.accommodation);
       case 'ancillaryImprovements':
-        return true; // This section is optional
+        return !!(
+          sectionData.showSection ||
+          sectionData.driveway ||
+          sectionData.fencing ||
+          (Array.isArray(sectionData.otherItems) && sectionData.otherItems.length > 0) ||
+          sectionData.otherItemsText ||
+          sectionData.accommodation ||
+          sectionData.waterUtilisation
+        );
       case 'generalComments':
         return !!(sectionData.generalComments);
       case 'valuationDetails':

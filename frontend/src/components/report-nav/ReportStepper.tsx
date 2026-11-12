@@ -38,9 +38,6 @@ export const ReportStepper: React.FC<ReportStepperProps> = ({
   onStepClick,
   className = '',
 }) => {
-  const currentIndex = REPORT_STEPS.findIndex((s) => s.id === currentSection);
-  const activeIndex = currentIndex !== -1 ? currentIndex : 0;
-
   return (
     <div
       className={`
@@ -52,37 +49,53 @@ export const ReportStepper: React.FC<ReportStepperProps> = ({
     >
       <div className="w-full max-w-[1140px] min-w-[840px] mx-auto">
         <div className="relative flex items-start justify-between">
-          {/* Continuous Connecting Line Behind Nodes */}
+          {/* Continuous Connecting Base Line Behind Nodes */}
           <div
             className="absolute top-[17px] left-[5%] right-[5%] h-[3px] -translate-y-1/2 z-0"
             aria-hidden="true"
           >
             {/* Base grey line */}
             <div className="w-full h-full bg-[#CBD5E1] rounded-full" />
-
-            {/* Green progress line covering completed steps */}
-            <div
-              className="absolute top-0 left-0 h-full bg-[#00B050] transition-all duration-300 rounded-full"
-              style={{
-                width: `${Math.min(
-                  100,
-                  (activeIndex / (REPORT_STEPS.length - 1)) * 100
-                )}%`,
-              }}
-            />
           </div>
 
+          {/* Green progress segments between completed steps */}
+          {REPORT_STEPS.slice(0, -1).map((step, idx) => {
+            const nextStep = REPORT_STEPS[idx + 1];
+            const isCurrentComplete = completedSections.has(step.id);
+            const isNextComplete = completedSections.has(nextStep.id);
+            const isCurrentActive = currentSection === step.id;
+            const isNextActive = currentSection === nextStep.id;
+
+            const isSegmentGreen =
+              (isCurrentComplete && isNextComplete) ||
+              (isCurrentComplete && isNextActive) ||
+              (isNextComplete && isCurrentActive);
+
+            if (!isSegmentGreen) return null;
+
+            return (
+              <div
+                key={`segment-${step.id}`}
+                className="absolute top-[17px] -translate-y-1/2 h-[3px] bg-[#00B050] transition-all duration-300 z-0"
+                style={{
+                  left: `${(idx + 0.5) * 10}%`,
+                  width: '10%',
+                }}
+                aria-hidden="true"
+              />
+            );
+          })}
+
           {/* Stepper Nodes & Labels */}
-          {REPORT_STEPS.map((step, idx) => {
+          {REPORT_STEPS.map((step) => {
             const isActive = step.id === currentSection;
             const isCompleted = completedSections.has(step.id);
-            const isPast = idx < activeIndex;
 
             // Determine circle styling
             let circleBg = 'bg-[#94A3B8] text-white';
             let labelColor = 'text-[#94A3B8] font-medium';
 
-            if (isCompleted || isPast) {
+            if (isCompleted) {
               circleBg = 'bg-[#00B050] text-white shadow-xs';
               labelColor = 'text-[#00B050] font-semibold';
             }
@@ -107,7 +120,7 @@ export const ReportStepper: React.FC<ReportStepperProps> = ({
                     ${circleBg}
                   `}
                 >
-                  {isCompleted || (isPast && !isActive) ? (
+                  {isCompleted ? (
                     <Check className="w-4 h-4 text-white" strokeWidth={2.75} />
                   ) : isActive ? (
                     <div className="w-2.5 h-2.5 rounded-full bg-white shadow-xs" />

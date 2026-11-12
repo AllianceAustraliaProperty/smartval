@@ -103,7 +103,15 @@ const sections = [
         return !!(sectionData.bedrooms || sectionData.bathrooms || sectionData.carSpaces ||
                   sectionData.mainBuildingType || sectionData.roofingType || sectionData.externalWalls);
       case 'ancillaryImprovements':
-        return true; // This section is optional
+        return !!(
+          sectionData.showSection ||
+          sectionData.driveway ||
+          sectionData.fencing ||
+          (Array.isArray(sectionData.otherItems) && sectionData.otherItems.length > 0) ||
+          sectionData.otherItemsText ||
+          sectionData.accommodation ||
+          sectionData.waterUtilisation
+        );
       case 'generalComments':
         // Check if at least one of the comment fields is filled
         return !!(sectionData.propertyDescription || sectionData.marketOverview || sectionData.propertyComments);
