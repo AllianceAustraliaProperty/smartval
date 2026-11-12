@@ -544,6 +544,14 @@
             </div>
         </div>
 
+        <!-- Property Address -->
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 13px; color: #111; margin-bottom: 2px;">Property Address</div>
+            <div style="font-size: 19px; font-weight: 800; color: #000; letter-spacing: -0.3px; line-height: 1.2;">
+                {{ valuation_report.get("address", {}).get("fullAddress") or valuation_report["address"]["fullAddress"]|default('') }}
+            </div>
+        </div>
+
         <!-- Property Details -->
         <div style="margin-bottom: 12px;">
             <div style="font-weight: bold; font-size: 14.5px; color: #111; margin-bottom: 6px;">Property Details</div>
