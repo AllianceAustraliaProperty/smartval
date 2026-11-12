@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { API_BASE_URL } from '@/lib/api-config';
 import { FormField, Input, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
@@ -14,6 +15,21 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isModalOpen]);
   const addressData = watch('address');
   console.log('PropertyAddressSection - Current address data:', addressData);
   
@@ -192,10 +208,10 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
           {/* Link button moved outside the card */}
 
           {/* RP Data suggestions modal */}
-          {isModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={() => setIsModalOpen(false)}></div>
-              <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-xl mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-150" role="dialog" aria-modal="true">
+          {isModalOpen && mounted && createPortal(
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-xs" onClick={() => setIsModalOpen(false)}></div>
+              <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150" role="dialog" aria-modal="true">
                 <div className="px-6 py-4 bg-[#006ABE] text-white flex items-center justify-between">
                   <h3 className="text-base md:text-lg font-bold tracking-wide">Select RP Data Address</h3>
                   <button
@@ -208,10 +224,10 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
                   </button>
                 </div>
                 <div className="px-6 py-4 border-b border-gray-100">
-                  <div className="flex gap-2">
+                  <div className="flex gap-2.5 items-center">
                     <input
                       type="text"
-                      className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#006ABE] hover:border-[#006ABE] text-gray-900 placeholder-gray-400 transition-colors"
+                      className="flex-1 min-h-[46px] rounded-full border-2 border-gray-400/80 px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#006ABE]/20 focus:border-[#006ABE] hover:border-[#006ABE] text-gray-900 placeholder-gray-400 transition-all bg-white"
                       placeholder="Search address"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -224,7 +240,7 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
                     <button
                       type="button"
                       onClick={() => performSearch(searchTerm)}
-                      className="px-5 py-2 rounded-full font-bold text-white bg-[#006ABE] hover:bg-[#00589e] transition-all cursor-pointer"
+                      className="min-h-[46px] px-6 py-2.5 rounded-full font-bold text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={isSearching}
                     >
                       {isSearching ? 'Searching…' : 'Search'}
@@ -305,7 +321,8 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
                   )}
                 </div>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
 
           {/* Unit Number and Street Name */}
