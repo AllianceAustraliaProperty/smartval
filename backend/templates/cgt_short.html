@@ -577,9 +577,6 @@
         <div style="margin-bottom: 12px;">
             <div style="font-weight: bold; font-size: 15px; color: #000; margin-bottom: 5px;">Valuation</div>
             <div style="font-size: 10.5px; color: #111; margin-bottom: 8px;">
-                <strong>Subject Property:</strong> {{ valuation_report.get("address", {}).get("fullAddress") or valuation_report["address"]["fullAddress"]|default('') }}.
-            </div>
-            <div style="font-size: 10.5px; color: #111; margin-bottom: 8px;">
                 We assess the subject property's Fair Market Value in its present condition to be:
             </div>
             <div style="margin-bottom: 12px;">
@@ -601,6 +598,34 @@
                 <div style="font-size: 9px; color: #111; line-height: 1.35;">
                     <div><strong>JUGAL SAHA</strong>, (Property Valuer) AAPI CPV</div>
                     <div>(Certified Practising Valuer 101474){% if valuation_report.get('address', {}).get('state') == 'WA' %}&nbsp;&nbsp;WA License Number - LV45321{% elif valuation_report.get('address', {}).get('state') == 'QLD' %}&nbsp;&nbsp;QLD License no: 5429MR{% endif %}</div>
+                </div>
+            </div>
+
+            <!-- API Member Logo & Dynamic Company Contact Details -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 14px; padding-top: 4px;">
+                <div>
+                    <img src="https://valai.duo.tax/assets/member-api-logo.png" alt="API Member Logo" style="width: 140px; height: auto; display: block;" />
+                </div>
+                <div style="text-align: right; font-size: 9px; line-height: 1.38; color: #111;">
+                    {% if logo_type == 'CPV' %}
+                        <div style="font-weight: bold; font-size: 10.5px; color: #000; margin-bottom: 1px;">Certified Property Valuer</div>
+                        <div>Phone: 0485 008 806</div>
+                        <div>info@certifiedpropertyvaluer.com.au</div>
+                        <div>www.certifiedpropertyvaluer.com.au</div>
+                    {% elif logo_type == 'TAMN' %}
+                        <div style="font-weight: bold; font-size: 10.5px; color: #000; margin-bottom: 1px;">Tamn Property Valuers</div>
+                        <div>ABN 92 605 356 983</div>
+                        <div>Phone: 1300 226 482</div>
+                        <div>info@tamn.com.au &nbsp;|&nbsp; www.tamn.com.au</div>
+                    {% else %}
+                        <div style="font-weight: bold; font-size: 10.5px; color: #000; margin-bottom: 1px;">Alliance Australia Property Pty Ltd</div>
+                        <div>ABN 35 641 373 702</div>
+                        <div>Phone: 043 1300 800</div>
+                        <div>PO Box 195 NSW 2194</div>
+                    {% endif %}
+                    <div style="font-style: italic; font-size: 8px; margin-top: 2px; color: #333;">
+                        Liability limited by a scheme approved under Professional Standards Legislation
+                    </div>
                 </div>
             </div>
         </div>
