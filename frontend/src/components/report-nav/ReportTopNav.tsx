@@ -167,7 +167,12 @@ export const ReportTopNav: React.FC<ReportTopNavProps> = ({
             value={fileNumber}
             onChange={(e) => onFileNumberChange?.(e.target.value)}
             placeholder="Enter File No."
-            className="bg-transparent text-white font-bold text-[17px] tracking-wide focus:outline-none w-32 sm:w-36 placeholder-white/50 cursor-text"
+            style={{
+              width: fileNumber
+                ? `${Math.max(fileNumber.length + 1, 8)}ch`
+                : '14ch',
+            }}
+            className="bg-transparent text-white font-bold text-[17px] tracking-wide focus:outline-none placeholder-white/50 cursor-text max-w-[200px]"
           />
         </div>
 
