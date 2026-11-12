@@ -4,7 +4,7 @@ import { SectionProps } from '@/types/property-valuation';
 import { API_BASE_URL } from '@/lib/api-config';
 import { apiRepository } from '@/lib/api-repository';
 import { HeaderActionPortal } from '../report-nav';
-import { Plus, Trash2, Edit3, Eye, EyeOff, MapPin, DollarSign, Calendar, Home, Car, Ruler, Calendar as CalendarIcon, Navigation, FileText, ExternalLink, Upload, X, Camera, Search, Filter, ListPlus, CheckCircle2, AlertTriangle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Edit3, Eye, EyeOff, MapPin, DollarSign, Calendar, Home, Scale, Car, Ruler, Calendar as CalendarIcon, Navigation, FileText, ExternalLink, Upload, X, Camera, Search, Filter, ListPlus, CheckCircle2, AlertTriangle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
 interface Comparable {
   id: string;
@@ -1243,16 +1243,22 @@ const ComparableCard: React.FC<{
   useEffect(() => {
     if (saleLeasePrice && buildingArea && buildingArea > 0) {
       const calculated = Math.round((saleLeasePrice / buildingArea) * 100) / 100;
-      setValue(`comparables.${type}.${index}.nlaRate` as any, calculated, { shouldDirty: true });
+      const cur = watch(`comparables.${type}.${index}.nlaRate` as const);
+      if (cur !== calculated) {
+        setValue(`comparables.${type}.${index}.nlaRate` as any, calculated, { shouldDirty: true });
+      }
     }
-  }, [saleLeasePrice, buildingArea]);
+  }, [saleLeasePrice, buildingArea, type, index, setValue, watch]);
 
   useEffect(() => {
     if (netIncomeRental && saleLeasePrice && saleLeasePrice > 0) {
       const calculated = Math.round((netIncomeRental / saleLeasePrice) * 10000) / 100;
-      setValue(`comparables.${type}.${index}.yield` as any, calculated, { shouldDirty: true });
+      const cur = watch(`comparables.${type}.${index}.yield` as const);
+      if (cur !== calculated) {
+        setValue(`comparables.${type}.${index}.yield` as any, calculated, { shouldDirty: true });
+      }
     }
-  }, [netIncomeRental, saleLeasePrice]);
+  }, [netIncomeRental, saleLeasePrice, type, index, setValue, watch]);
 
   // Reset tracking when switching to a different comparable
   useEffect(() => {
@@ -2185,11 +2191,17 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
       .map((c: any) => c.nlaRate)
       .filter((r: any) => typeof r === 'number' && !isNaN(r) && r > 0);
     if (rates.length === 0) return;
-    const min = Math.min(...rates);
-    const max = Math.max(...rates);
-    setValue('valuationDetails.lowestValueSqm' as any, Math.round(min * 100) / 100, { shouldDirty: true });
-    setValue('valuationDetails.highestValueSqm' as any, Math.round(max * 100) / 100, { shouldDirty: true });
-  }, [JSON.stringify(comparables.map((c: any) => c.nlaRate))]);
+    const min = Math.round(Math.min(...rates) * 100) / 100;
+    const max = Math.round(Math.max(...rates) * 100) / 100;
+    const curMin = watch('valuationDetails.lowestValueSqm');
+    const curMax = watch('valuationDetails.highestValueSqm');
+    if (curMin !== min) {
+      setValue('valuationDetails.lowestValueSqm' as any, min, { shouldDirty: true });
+    }
+    if (curMax !== max) {
+      setValue('valuationDetails.highestValueSqm' as any, max, { shouldDirty: true });
+    }
+  }, [JSON.stringify(comparables.map((c: any) => c.nlaRate)), type, setValue, watch]);
 
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
   const [addressSearch, setAddressSearch] = useState('');
@@ -3043,18 +3055,18 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
       )}
 
       {comparables.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
-          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Home className="w-8 h-8 text-gray-400" />
+        <div className="text-center py-12 bg-gray-50/70 rounded-2xl border-2 border-dashed border-gray-200">
+          <div className="w-12 h-12 bg-blue-50 text-[#006ABE] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-2xs">
+            <Scale className="w-6 h-6" />
           </div>
-          <h4 className="text-lg font-semibold text-gray-900 mb-2">No {type} comparables yet</h4>
-          <p className="text-gray-600 mb-6">Add your first {type === 'sales' ? 'sale' : 'rental'} comparable to get started.</p>
+          <h4 className="text-base font-bold text-gray-900 mb-1">No {type} comparables yet</h4>
+          <p className="text-xs text-gray-500 mb-5">Add your first {type === 'sales' ? 'sale' : 'rental'} comparable to get started.</p>
           <button
             type="button"
             onClick={addComparable}
-            className="group inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            className="group inline-flex items-center px-6 py-2.5 text-xs sm:text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all duration-200 cursor-pointer"
           >
-            <Plus className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+            <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-200" />
             Add First {type === 'sales' ? 'Sale' : 'Rental'}
           </button>
         </div>
@@ -3100,13 +3112,13 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
       )}
 
       {comparables.length > 0 && (
-        <div className="text-center">
+        <div className="text-center pt-2">
           <button
             type="button"
             onClick={addComparable}
-            className="group inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-gray-700 bg-white border-2 border-gray-200 hover:border-blue-400 hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+            className="group inline-flex items-center px-6 py-2.5 text-xs sm:text-sm font-bold rounded-full text-[#006ABE] bg-white border-2 border-[#006ABE]/30 hover:border-[#006ABE] hover:bg-blue-50/50 shadow-xs transition-all duration-200 cursor-pointer"
           >
-            <Plus className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+            <Plus className="w-4 h-4 mr-1.5 group-hover:rotate-90 transition-transform duration-200" />
             Add Another {type === 'sales' ? 'Sale' : 'Rental'}
           </button>
         </div>

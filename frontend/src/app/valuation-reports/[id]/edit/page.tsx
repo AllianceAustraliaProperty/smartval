@@ -326,25 +326,31 @@ export default function ValuationReportEditPage() {
     return operation;
   };
 
-  const onSubmit = async (data: PropertyValuationData) => {
+  const handleSave = async (data?: PropertyValuationData) => {
     try {
-      await saveForm(data);
+      const allValues = data && Object.keys(data).length > 0 ? { ...getValues(), ...data } : getValues();
+      await saveForm(allValues);
       try {
         sessionStorage.removeItem(`smartval-draft-${reportId}`);
       } catch {}
-      reset(data);
-      setProperty(data);
+      reset(allValues);
+      setProperty(allValues);
       alert('Valuation report updated successfully!');
     } catch { /* Keep the form and its draft visible for retry. */ }
+  };
+
+  const onSubmit = async (data: PropertyValuationData) => {
+    await handleSave(data);
   };
 
   const prepareReport = async (): Promise<boolean> => {
     let saved = false;
     try {
       await handleSubmit(async data => {
-        await saveForm(data);
-        reset(data);
-        setProperty(data);
+        const allValues = { ...getValues(), ...data };
+        await saveForm(allValues);
+        reset(allValues);
+        setProperty(allValues);
         saved = true;
       }, () => {
         setSaveError('Please correct the highlighted fields before generating this document.');
@@ -635,7 +641,7 @@ export default function ValuationReportEditPage() {
         onPreviewInvoice={handlePreviewInvoice}
         onGenerateInvoice={handleGenerateInvoice}
         onSendInvoice={handleSendInvoice}
-        onSave={handleSubmit(onSubmit)}
+        onSave={() => handleSave()}
         isSaving={isSaving}
         isDirty={isDirty}
         isScheduled={isScheduled}

@@ -418,7 +418,7 @@ export default function ValuationReportEditPage() {
                   <button
                     onClick={handleSubmit(onSubmit)}
                     disabled={isSaving}
-                    className="group inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="group inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <Save className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                     {isSaving ? 'Saving...' : 'Save Changes'}

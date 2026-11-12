@@ -488,7 +488,7 @@ export default function AdminDashboard() {
                   <h2 className="text-3xl font-bold text-gray-900 mb-2">User Management</h2>
                   <p className="text-gray-600">Manage user accounts and permissions</p>
                 </div>
-                <button onClick={() => setIsAddUserModalOpen(true)} className="inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300">
+                <button onClick={() => setIsAddUserModalOpen(true)} className="inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all duration-200 cursor-pointer">
                   <UserPlus className="w-5 h-5 mr-2" />
                   Add New User
                 </button>

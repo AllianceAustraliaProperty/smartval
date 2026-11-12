@@ -251,7 +251,7 @@ export default function AccountPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-2 inline-flex items-center px-6 py-3 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+              className="mt-2 inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all duration-200 disabled:opacity-50 cursor-pointer"
             >
               <Lock className="w-4 h-4 mr-2" />
               {submitting ? 'Updating...' : 'Update Password'}

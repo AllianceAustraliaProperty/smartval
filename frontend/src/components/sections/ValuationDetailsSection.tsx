@@ -56,24 +56,32 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
     if (!valuationDate) return;
     const valDatePart = String(valuationDate).split('T')[0];
     const today = getTodayDateString();
-    setValue('valuationDetails.currentDayValuation', valDatePart === today, { shouldDirty: true });
-  }, [valuationDate, setValue]);
+    const shouldCheck = valDatePart === today;
+    if (watch('valuationDetails.currentDayValuation') !== shouldCheck) {
+      setValue('valuationDetails.currentDayValuation', shouldCheck, { shouldDirty: true });
+    }
+  }, [valuationDate, setValue, watch]);
 
   // Auto-tick externalDesktopValuation if surveyType is set to desktop or kerbside
   useEffect(() => {
     if (!surveyType) return;
     const lower = surveyType.toLowerCase();
+    const currentVal = watch('valuationDetails.externalDesktopValuation');
     if (lower.includes('desktop') || lower.includes('kerbside') || lower.includes('external')) {
-      setValue('valuationDetails.externalDesktopValuation', true, { shouldDirty: true });
+      if (currentVal !== true) {
+        setValue('valuationDetails.externalDesktopValuation', true, { shouldDirty: true });
+      }
     } else if (lower.includes('inspection')) {
-      setValue('valuationDetails.externalDesktopValuation', false, { shouldDirty: true });
+      if (currentVal !== false) {
+        setValue('valuationDetails.externalDesktopValuation', false, { shouldDirty: true });
+      }
     }
-  }, [surveyType, setValue]);
+  }, [surveyType, setValue, watch]);
 
   // Autofill interestValued with "Fee Simple Vacant Possession" always
   useEffect(() => {
     if (!interestValued || interestValued.trim() === '') {
-      setValue('valuationDetails.interestValued', 'Fee Simple Vacant Possession', { shouldDirty: true });
+      setValue('valuationDetails.interestValued', 'Fee Simple Vacant Possession', { shouldDirty: false });
     }
   }, [interestValued, setValue]);
 
@@ -84,7 +92,9 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
     if (propDetailsType) {
       const lower = propDetailsType.toLowerCase();
       const isUnitType = lower.includes('unit') || lower.includes('apartment') || lower.includes('flat');
-      setValue('valuationDetails.isUnit', isUnitType, { shouldDirty: true });
+      if (watch('valuationDetails.isUnit') !== isUnitType) {
+        setValue('valuationDetails.isUnit', isUnitType, { shouldDirty: true });
+      }
       isUnitInitializedRef.current = true;
       return;
     }
@@ -102,7 +112,9 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
         const rawSub = String(data?.attrCore?.propertySubType || data?.propertySubType || '').toLowerCase();
         const isUnitType = rawT.includes('unit') || rawSub.includes('unit') || rawSub.includes('apartment') || rawSub.includes('flat');
         if (isMounted) {
-          setValue('valuationDetails.isUnit', isUnitType, { shouldDirty: true });
+          if (watch('valuationDetails.isUnit') !== isUnitType) {
+            setValue('valuationDetails.isUnit', isUnitType, { shouldDirty: true });
+          }
           isUnitInitializedRef.current = true;
         }
       } catch (_) {}
@@ -111,34 +123,44 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
     return () => {
       isMounted = false;
     };
-  }, [propDetailsType, rpDataId, setValue]);
+  }, [propDetailsType, rpDataId, setValue, watch]);
 
   // Sync checkboxes and improvements value based on House vs Unit
   useEffect(() => {
     // Auto-tick display currency in report in either case by default
-    setValue('valuationDetails.showCurrencyOfValuation', true, { shouldDirty: true });
+    if (watch('valuationDetails.showCurrencyOfValuation') !== true) {
+      setValue('valuationDetails.showCurrencyOfValuation', true, { shouldDirty: false });
+    }
 
     if (isUnit === true) {
       // Unit selected: auto-tick only show land value and disable improvements
-      setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
-      setValue('valuationDetails.showImprovements', false, { shouldDirty: true });
-      if (prevIsUnitSyncRef.current === false) {
+      if (watch('valuationDetails.showLandValue') !== true) {
+        setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+      }
+      if (watch('valuationDetails.showImprovements') !== false) {
+        setValue('valuationDetails.showImprovements', false, { shouldDirty: true });
+      }
+      if (prevIsUnitSyncRef.current === false && watch('valuationDetails.improvements') !== undefined) {
         setValue('valuationDetails.improvements', undefined, { shouldDirty: true });
       }
     } else if (isUnit === false) {
       // House selected: auto-tick both show land value and improvements
-      setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
-      setValue('valuationDetails.showImprovements', true, { shouldDirty: true });
+      if (watch('valuationDetails.showLandValue') !== true) {
+        setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+      }
+      if (watch('valuationDetails.showImprovements') !== true) {
+        setValue('valuationDetails.showImprovements', true, { shouldDirty: true });
+      }
     }
     prevIsUnitSyncRef.current = isUnit;
-  }, [isUnit, setValue]);
+  }, [isUnit, setValue, watch]);
 
   // Auto-set market value when capitalised value changes (for SMSF reports)
   useEffect(() => {
-    if (capitalisedValue !== undefined) {
+    if (capitalisedValue !== undefined && Number(watch('valuationDetails.marketValue')) !== Number(capitalisedValue)) {
       setValue('valuationDetails.marketValue', capitalisedValue, { shouldDirty: true });
     }
-  }, [capitalisedValue, setValue]);
+  }, [capitalisedValue, setValue, watch]);
 
   // Auto-calculate market value when land value or improvements change
   useEffect(() => {
@@ -148,17 +170,17 @@ export const ValuationDetailsSection: React.FC<SectionProps> = ({ register, erro
 
     // Always set the market value (even if 0) when either field changes
     // This ensures market value is cleared when both land and improvements are deleted
-    if (landValue !== undefined || improvements !== undefined) {
+    if ((landValue !== undefined || improvements !== undefined) && Number(watch('valuationDetails.marketValue')) !== total) {
       setValue('valuationDetails.marketValue', total, { shouldDirty: true });
     }
-  }, [landValue, improvements, setValue]);
+  }, [landValue, improvements, setValue, watch]);
 
   // Auto-set valuation amount equal to market value when it's a Unit
   useEffect(() => {
-    if (isUnit && marketValue !== undefined) {
+    if (isUnit && marketValue !== undefined && Number(watch('valuationDetails.valuationAmount')) !== Number(marketValue)) {
       setValue('valuationDetails.valuationAmount', marketValue, { shouldDirty: true });
     }
-  }, [isUnit, marketValue, setValue]);
+  }, [isUnit, marketValue, setValue, watch]);
 
   // Normalize state abbreviations inside Direct Comparison Approach text (e.g., Nsw -> NSW)
   useEffect(() => {

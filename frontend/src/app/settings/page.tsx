@@ -232,12 +232,12 @@ function TemplateEditor({
         </button>
         <div className="flex items-center space-x-3">
           <button onClick={onPreview} disabled={isPreviewing}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-blue-700 bg-blue-50 border-2 border-blue-200 hover:border-blue-300 hover:shadow-md transition-all disabled:opacity-50"
+            className="inline-flex items-center px-5 py-2.5 text-xs sm:text-sm font-bold rounded-full text-[#006ABE] bg-blue-50 border border-blue-200 hover:bg-[#006ABE] hover:text-white shadow-xs transition-all disabled:opacity-50 cursor-pointer"
           >
             <Eye className="w-4 h-4 mr-2" /> {isPreviewing ? 'Loading...' : 'Preview'}
           </button>
           <button onClick={onSave} disabled={isSaving}
-            className="inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            className="inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all disabled:opacity-50 cursor-pointer"
           >
             <Save className="w-4 h-4 mr-2" /> {isSaving ? 'Saving...' : 'Save Template'}
           </button>
