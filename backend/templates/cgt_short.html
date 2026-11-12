@@ -543,14 +543,14 @@
             </div>
         </div>
 
-        <!-- Subject Improvements -->
-        <div style="margin-bottom: 10px;">
-            <div style="font-weight: bold; font-size: 9px; color: #232d37; margin-bottom: 2px;">Subject Improvements:</div>
-            <p style="font-size: 9px; line-height: 1.35; color: #232d37; margin: 0;">
-                {% if valuation_report.get("propertyDetails", {}).get("descriptionOfImprovements") %}
-                    {{ valuation_report["propertyDetails"]["descriptionOfImprovements"] }}
-                {% elif valuation_report.get("generalComments", {}).get("propertyDescription") %}
+        <!-- Property Details -->
+        <div style="margin-bottom: 12px;">
+            <div style="font-weight: bold; font-size: 15px; color: #000; margin-bottom: 6px;">Property Details</div>
+            <p style="font-size: 9.5px; line-height: 1.4; color: #232d37; margin: 0; text-align: justify;">
+                {% if valuation_report.get("generalComments", {}).get("propertyDescription") %}
                     {{ valuation_report["generalComments"]["propertyDescription"] }}
+                {% elif valuation_report.get("propertyDetails", {}).get("descriptionOfImprovements") %}
+                    {{ valuation_report["propertyDetails"]["descriptionOfImprovements"] }}
                 {% elif valuation_report.get("propertyDescription") %}
                     {{ valuation_report["propertyDescription"] }}
                 {% else %}
@@ -559,26 +559,44 @@
             </p>
         </div>
 
-        <!-- Valuation Statement -->
+        <!-- Valuation Section -->
         <div style="margin-bottom: 12px;">
-            <div style="font-weight: bold; font-size: 13.5px; color: #232d37; margin-bottom: 4px;">Valuation:</div>
-            <div style="font-size: 9.5px; font-weight: bold; color: #232d37; margin-bottom: 4px;">
-                {{ valuation_report["address"]["fullAddress"]|default('') }}
+            <div style="font-weight: bold; font-size: 17px; color: #000; margin-bottom: 6px;">Valuation</div>
+            <div style="font-size: 10.5px; color: #111; margin-bottom: 8px;">
+                Subject property: {{ valuation_report["address"]["fullAddress"]|default('') }}.
             </div>
-            <div style="font-size: 9px; color: #232d37; line-height: 1.35; margin-bottom: 6px;">
-                We assess the subject property's Fair Market Value in its present condition and on a vacant possession basis to be: As at {{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('') }}
+            <div style="font-size: 10.5px; color: #111; margin-bottom: 8px;">
+                We assess the subject property's Fair Market Value in its present condition to be:
             </div>
-            <div style="font-size: 13.5px; font-weight: bold; color: #232d37;">
-                Fair Market Value {{ final_market_value|format_currency }} ({{ final_market_value|format_currency_words }})
+            <div style="margin-bottom: 12px;">
+                <div style="font-size: 10.5px; color: #111; margin-bottom: 1px;">Market Value:</div>
+                <div style="font-size: 20px; font-weight: 800; color: #000; letter-spacing: -0.3px; line-height: 1.1;">
+                    {{ final_market_value|format_currency }}
+                </div>
+                <div style="font-size: 9.5px; font-style: italic; color: #333; margin-top: 3px;">
+                    ({{ final_market_value|format_currency_words }})
+                </div>
             </div>
-        </div>
 
-        <!-- Signature Block -->
-        <div style="margin-bottom: 6px;">
-            <div style="font-size: 9px; color: #232d37; margin-bottom: 2px;">Signature</div>
-            <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="Signature" style="height: 28px; margin: 1px 0; display: block;" />
-            <div style="font-size: 9px; font-weight: bold; color: #232d37;">Jugal Saha, AAPI CPV</div>
-            <div style="font-size: 9px; color: #232d37; margin-bottom: 6px;">(Certified Practising Valuer 101474)</div>
+            <!-- Signature & Valuation Date Row -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 4px;">
+                <!-- Left: Prepared By + Signature + Valuer Info -->
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 3px;">
+                        <span style="font-weight: bold; font-size: 10.5px; color: #000;">Prepared By</span>
+                        <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="Signature" style="height: 30px; display: block;" />
+                    </div>
+                    <div style="font-size: 9px; color: #111; line-height: 1.35;">
+                        <div>JUGAL SAHA, (Property Valuer) AAPI CPV</div>
+                        <div>(Certified Practising Valuer 101474){% if valuation_report.get('address', {}).get('state') == 'WA' %}&nbsp;&nbsp;WA License Number - LV45321{% elif valuation_report.get('address', {}).get('state') == 'QLD' %}&nbsp;&nbsp;QLD License no: 5429MR{% endif %}</div>
+                    </div>
+                </div>
+
+                <!-- Right: Date of Valuation -->
+                <div style="font-size: 10.5px; color: #000; text-align: right; padding-bottom: 2px;">
+                    <span>Date of Valuation:</span> <strong>{{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('N/A') }}</strong>
+                </div>
+            </div>
         </div>
 
         <!-- Disclaimers / Certification Statements -->
