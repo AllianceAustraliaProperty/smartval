@@ -854,23 +854,27 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         </FormField>
 
         <FormField
-          label={`External Area (sqm${watch('propertyDetails.includeGrannyFlatExternalArea') ? ' - Granny Flat' : ''})`}
+          label="External Area (sqm)"
+          headerRight={
+            <label className="flex items-center space-x-1.5 cursor-pointer text-xs font-semibold text-gray-600 hover:text-gray-900 select-none shrink-0">
+              <input
+                type="checkbox"
+                {...register('propertyDetails.includeGrannyFlatExternalArea')}
+                className="h-3.5 w-3.5 text-[#006ABE] focus:ring-[#006ABE] border-gray-300 rounded cursor-pointer"
+              />
+              <span className="whitespace-nowrap">Granny Flat</span>
+            </label>
+          }
           error={(watch('propertyDetails.includeGrannyFlatExternalArea')
             ? (errors as any).propertyDetails?.externalAreaGrannyFlat?.message
             : errors.propertyDetails?.externalArea?.message)}
         >
-          <div className="mb-2">
-            <Checkbox
-              {...register('propertyDetails.includeGrannyFlatExternalArea')}
-              label="Granny Flat"
-            />
-          </div>
           <Input
             type="number"
             {...register((watch('propertyDetails.includeGrannyFlatExternalArea')
               ? 'propertyDetails.externalAreaGrannyFlat'
               : 'propertyDetails.externalArea') as any, { valueAsNumber: true })}
-            placeholder="Outdoor or balcony areas"
+            placeholder={watch('propertyDetails.includeGrannyFlatExternalArea') ? "Granny flat outdoor area" : "Outdoor or balcony areas"}
             error={(watch('propertyDetails.includeGrannyFlatExternalArea')
               ? (errors as any).propertyDetails?.externalAreaGrannyFlat?.message
               : errors.propertyDetails?.externalArea?.message)}

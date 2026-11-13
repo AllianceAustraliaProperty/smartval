@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react';
 
 interface FormFieldProps {
   label: string;
+  headerRight?: React.ReactNode;
   children: React.ReactNode;
   error?: string;
   required?: boolean;
@@ -11,6 +12,7 @@ interface FormFieldProps {
 
 export const FormField: React.FC<FormFieldProps> = ({
   label,
+  headerRight,
   children,
   error,
   required = false,
@@ -18,10 +20,13 @@ export const FormField: React.FC<FormFieldProps> = ({
 }) => {
   return (
     <div className={`space-y-1.5 ${className}`}>
-      <label className="block text-sm font-semibold text-gray-800">
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
-      </label>
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-semibold text-gray-800">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        {headerRight && <div>{headerRight}</div>}
+      </div>
       {children}
       {error && (
         <p className="text-xs text-red-600 font-medium px-3">{error}</p>
