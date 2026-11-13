@@ -420,6 +420,7 @@
     {% set final_improvements = valuation_report.get('valuationDetails', {}).get('improvements') or (final_market_value - final_land_value if final_market_value > final_land_value else 0) %}
     {% set _prop_type = (valuation_report.get('propertyDetails', {}).get('propertyType') or valuation_report.get('propertyType') or '')|lower %}
     {% set _is_unit = (valuation_report.get('valuationDetails', {}).get('isUnit') in [True, 'true', 'True', 1, '1']) or ('unit' in _prop_type) or ('apartment' in _prop_type) or ('flat' in _prop_type) or ('studio' in _prop_type) %}
+    {% set _show_land_value = (valuation_report.get('valuationDetails', {}).get('showLandValue') not in [False, 'false', 'False', 0, '0']) and not _is_unit %}
     {% set _show_improvements = (valuation_report.get('valuationDetails', {}).get('showImprovements') not in [False, 'false', 'False', 0, '0']) and not _is_unit %}
 
     <!-- ================= PAGE 1: VALUATION SUMMARY ================= -->
@@ -445,8 +446,8 @@
         <!-- Instructions & Metadata Table (2 Rows) -->
         <table style="width: 100%; border-collapse: collapse; font-size: 9px; color: #232d37;">
             <tr style="border-bottom: 0.5px solid #bbb;">
-                <td style="padding: 3px 0; font-weight: bold; width: 23%;">Reported Interest of:</td>
-                <td style="padding: 3px 0; width: 27%;">
+                <td style="padding: 3px 0; font-weight: bold; width: 20%;">Reported Interest of:</td>
+                <td style="padding: 3px 0; width: 28%;">
                     {% if valuation_report.get("valuationDetails", {}).get("registeredProprietor") %}
                         {{ valuation_report["valuationDetails"]["registeredProprietor"] }}
                     {% elif valuation_report.get("primaryContact", {}).get("firstName") or valuation_report.get("primaryContact", {}).get("lastName") %}
@@ -457,8 +458,8 @@
                         Client
                     {% endif %}
                 </td>
-                <td style="padding: 3px 0; font-weight: bold; width: 23%;">Date of Valuation:</td>
-                <td style="padding: 3px 0; width: 27%;">{{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('N/A') }}</td>
+                <td style="padding: 3px 0; font-weight: bold; width: 20%;">Property Address:</td>
+                <td style="padding: 3px 0; width: 32%;">{{ valuation_report.get("address", {}).get("fullAddress") or valuation_report["address"]["fullAddress"]|default('') }}</td>
             </tr>
             <tr style="border-bottom: 0.5px solid #bbb;">
                 <td style="padding: 3px 0; font-weight: bold;">Local Government Area:</td>
@@ -522,11 +523,13 @@
 
             <!-- Right: Breakdown details -->
             <div style="flex: 1; padding: 18px 24px 12px 28px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="display: flex; flex-direction: column; gap: {% if _show_improvements %}8px{% else %}10px{% endif %}; font-size: 12px; color: #14191e;">
+                <div style="display: flex; flex-direction: column; gap: {% if _show_improvements and _show_land_value %}8px{% else %}10px{% endif %}; font-size: 12px; color: #14191e;">
+                    {% if _show_land_value %}
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-weight: bold; width: 125px;">Land Value:</span>
                         <span style="font-weight: normal; flex: 1;">{{ final_land_value|format_currency_no_decimal }}</span>
                     </div>
+                    {% endif %}
                     {% if _show_improvements %}
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-weight: bold; width: 125px;">Improvements:</span>
@@ -534,7 +537,7 @@
                     </div>
                     {% endif %}
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="font-weight: bold; width: 125px;">Market Value:</span>
+                        <span style="font-weight: bold; width: 125px;">{% if _is_unit %}Valuation Amount:{% else %}Market Value:{% endif %}</span>
                         <span style="font-weight: bold; flex: 1;">{{ final_market_value|format_currency_no_decimal }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
@@ -580,7 +583,7 @@
                 We assess the subject property's Fair Market Value in its present condition to be:
             </div>
             <div style="margin-bottom: 12px;">
-                <div style="font-size: 11px; font-weight: 600; color: #222; margin-bottom: 2px;">Market Value:</div>
+                <div style="font-size: 11px; font-weight: 600; color: #222; margin-bottom: 2px;">Market Value as at {{ valuation_report.get("valuationDetails", {}).get("valuationDate")|format_date|default('N/A') }}:</div>
                 <div style="font-size: 21px; font-weight: 800; color: #000; letter-spacing: -0.2px; line-height: 1.1;">
                     {{ final_market_value|format_currency }}
                 </div>
