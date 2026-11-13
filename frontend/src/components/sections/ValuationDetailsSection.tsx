@@ -646,11 +646,17 @@ We assessed the subject property's Fair Market Rental Value on ${valuationDate},
         >
           <Input
             type="number"
-            {...register('valuationDetails.landValue', { valueAsNumber: true })}
+            {...register('valuationDetails.landValue', {
+              valueAsNumber: true,
+              onChange: (e) => {
+                const val = e.target.value;
+                if (val !== '' && !watch('valuationDetails.showLandValue')) {
+                  setValue('valuationDetails.showLandValue', true, { shouldDirty: true });
+                }
+              },
+            })}
             placeholder="e.g., 500000"
             error={errors.valuationDetails?.landValue?.message}
-            disabled={!watch('valuationDetails.showLandValue')}
-            className={!watch('valuationDetails.showLandValue') ? 'bg-gray-100 cursor-not-allowed text-gray-400' : ''}
           />
         </FormField>
 
