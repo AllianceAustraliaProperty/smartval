@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormField, Input, Checkbox, FileUpload, Select } from '../ui/FormField';
 import { SectionProps } from '@/types/property-valuation';
-import { Upload, X, Edit3, Wand2, ListOrdered, Clock, ImageOff, Plus } from 'lucide-react';
+import { Upload, X, Edit3, Wand2, ListOrdered, Clock, ImageOff, Plus, ChevronDown, ChevronUp, Check, Star, FileText, Camera, Trash2, Loader2 } from 'lucide-react';
+
+const inputClass = "w-full h-9 px-4 py-1.5 text-xs sm:text-sm font-medium border border-gray-300 rounded-full bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#006ABE] focus:ring-2 focus:ring-[#006ABE]/20 transition-all text-left shadow-2xs";
+const labelClass = "block text-xs font-semibold text-gray-700 mb-1 ml-0.5 text-left";
 import { API_BASE_URL } from '@/lib/api-config';
 import { uploadMultipleFilesToS3 } from '@/lib/s3-upload';
 import { getAdditionalPhotoSaves } from '@/lib/additional-photo-saves';
@@ -430,6 +433,32 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
     }
   };
 
+  const handleDeleteCard = async (photoIndex: number) => {
+    const photo = photos[photoIndex];
+    if (photo && photo.photoUrl) {
+      await deletePhoto(photo.photoUrl);
+    } else {
+      try {
+        const updatedPhotos = photos.filter((_, i) => i !== photoIndex);
+        photosRef.current = updatedPhotos;
+        setPhotos(updatedPhotos);
+        onPhotosUpdate(updatedPhotos);
+        const response = await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ photos: updatedPhotos }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete photo card');
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+        setUploadError(error instanceof Error ? error.message : 'Failed to delete photo');
+      }
+    }
+  };
+
   const removeImageOnly = async (photoUrl: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/photos/remove-image/${reportId}`, {
@@ -584,6 +613,31 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
     setPhotos(reordered);
     onPhotosUpdate(reordered);
     handleDragEnd();
+
+    try {
+      await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ photos: reordered }),
+      });
+    } catch (error) {
+      console.error('Error saving reordered photos:', error);
+      setUploadError('Failed to save new photo order');
+    }
+  };
+
+  const movePhoto = async (fromIndex: number, direction: 'up' | 'down') => {
+    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+    if (toIndex < 0 || toIndex >= photos.length) return;
+
+    const reordered = [...photos];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+
+    photosRef.current = reordered;
+    setPhotos(reordered);
+    onPhotosUpdate(reordered);
 
     try {
       await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
@@ -753,52 +807,34 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                   onDrop={(e) => handleDrop(index, e)}
                   onDragEnd={handleDragEnd}
                   style={{ cursor: dragIndex === index ? 'grabbing' : 'grab' }}
-                  className={`border-2 rounded-lg p-6 bg-white shadow-sm transition-all duration-200 ${dragIndex === index
-                    ? 'opacity-50 border-blue-400'
+                  className={`border rounded-2xl p-5 sm:p-6 bg-white shadow-sm transition-all duration-200 hover:shadow-md ${dragIndex === index
+                    ? 'opacity-50 border-blue-400 ring-2 ring-blue-100'
                     : dragOverIndex === index && dragIndex !== null && dragIndex !== index
                       ? 'border-blue-500 ring-2 ring-blue-200'
-                      : 'border-gray-300'
+                      : 'border-gray-200'
                     }`}>
-                  <div className="flex gap-6">
-                    {/* Photo - Left Side - Full Image */}
-                    <div className="relative group flex-shrink-0 w-1/2">
+                  {/* TIER 1: PHOTO PREVIEW ON LEFT + DETAILS & SETTINGS ON RIGHT */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                    {/* Photo - Left Column (5 cols) */}
+                    <div className="col-span-12 lg:col-span-5 flex flex-col">
                       {photo.photoUrl ? (
-                        <img
-                          src={`${photo.photoUrl}`}
-                          alt={`Photo ${index + 1}`}
-                          className="w-full h-auto max-h-96 object-contain rounded-lg border-2 border-gray-200"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-full h-96 flex flex-col items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300">
-                          <Upload className="w-16 h-16 text-gray-400 mb-4" />
-                          <p className="text-gray-500 mb-4">No image uploaded</p>
-                          <label
-                            htmlFor={`individual-upload-${index}`}
-                            className="inline-flex items-center px-5 py-2.5 bg-[#006ABE] hover:bg-[#00589e] text-white font-bold text-xs sm:text-sm rounded-full shadow-sm hover:shadow transition-all cursor-pointer"
-                          >
-                            Upload Image
-                          </label>
-                          <input
-                            id={`individual-upload-${index}`}
-                            ref={(el) => { individualFileInputRefs.current[index] = el; }}
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={(e) => handleIndividualFileUpload(index, e.target.files)}
-                            disabled={uploading}
+                        <div className="w-full h-full min-h-[210px] max-h-[280px] rounded-2xl overflow-hidden border border-gray-200 relative group bg-gray-100 shadow-2xs flex items-center justify-center">
+                          <img
+                            src={`${photo.photoUrl}`}
+                            alt={`Photo ${index + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
                           />
-                        </div>
-                      )}
-                      <div className="absolute top-2 right-2 flex gap-2">
-                        {photo.photoUrl && (
-                          <>
+
+                          {/* Top-Right Actions: Pill-shaped Action Buttons (Hover Only) */}
+                          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto">
                             <label
                               htmlFor={`replace-upload-${index}`}
-                              className="bg-blue-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-blue-700 cursor-pointer flex items-center justify-center"
+                              className="h-7 px-3 bg-black/70 hover:bg-black/85 text-white text-[11px] rounded-full font-medium backdrop-blur-md shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 hover:scale-105 active:scale-95"
                               title="Upload a different picture"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Camera className="w-3.5 h-3.5" />
+                              <span>Change</span>
                             </label>
                             <input
                               id={`replace-upload-${index}`}
@@ -814,285 +850,367 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                               onClick={async () => {
                                 await removeImageOnly(photo.photoUrl);
                               }}
-                              className="bg-orange-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-orange-600"
-                              title="Remove picture (keep category)"
+                              className="w-7 h-7 bg-amber-600/90 hover:bg-amber-600 text-white rounded-full shadow-md backdrop-blur-md transition-all flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95"
+                              title="Remove picture (keep details)"
                             >
-                              <ImageOff className="w-4 h-4" />
+                              <ImageOff className="w-3.5 h-3.5" />
                             </button>
-                          </>
-                        )}
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (photo.photoUrl) {
-                              // Photo with URL - delete via delete endpoint (handles S3 cleanup)
-                              await deletePhoto(photo.photoUrl);
-                            } else {
-                              // Empty photo - remove from array and update database
-                              try {
-                                const updatedPhotos = photos.filter((_, i) => i !== index);
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCard(index)}
+                              className="w-7 h-7 bg-red-600/90 hover:bg-red-600 text-white rounded-full shadow-md backdrop-blur-md transition-all flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95"
+                              title="Delete photo card"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full min-h-[210px] flex flex-col items-center justify-center bg-gray-50/80 rounded-2xl border-2 border-dashed border-gray-300 p-6 text-center relative group">
+                          {/* Trash button in top right of pictureless box (Hover Only) */}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCard(index)}
+                            className="absolute top-2.5 right-2.5 w-7 h-7 bg-red-600/90 hover:bg-red-600 text-white rounded-full shadow-md backdrop-blur-md transition-all flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto duration-200"
+                            title="Delete photo card"
+                            aria-label="Delete photo card"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
 
-                                // Update database
-                                const response = await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
-                                  method: 'PUT',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  credentials: 'include',
-                                  body: JSON.stringify({ photos: updatedPhotos }),
-                                });
-
-                                if (!response.ok) {
-                                  throw new Error('Failed to delete photo from database');
-                                }
-
-                                // Update local state
-                                setPhotos(updatedPhotos);
-                                onPhotosUpdate(updatedPhotos);
-                              } catch (error) {
-                                console.error('Delete error:', error);
-                                setUploadError(error instanceof Error ? error.message : 'Failed to delete photo');
-                              }
-                            }
-                          }}
-                          className="bg-red-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700"
-                          title="Delete photo"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
+                          <Upload className="w-12 h-12 text-gray-400 mb-3" />
+                          <p className="text-sm font-medium text-gray-600 mb-3">No image uploaded</p>
+                          <label
+                            htmlFor={`individual-upload-${index}`}
+                            className="inline-flex items-center px-4 py-2 bg-[#006ABE] hover:bg-[#00589e] text-white font-semibold text-xs rounded-full shadow-sm hover:shadow transition-all cursor-pointer"
+                          >
+                            Upload Image
+                          </label>
+                          <input
+                            id={`individual-upload-${index}`}
+                            ref={(el) => { individualFileInputRefs.current[index] = el; }}
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => handleIndividualFileUpload(index, e.target.files)}
+                            disabled={uploading}
+                          />
+                        </div>
+                      )}
                     </div>
 
-                    {/* Photo Details Form - Right Side - Single Column Layout */}
-                    <div className="flex-1 w-1/2 space-y-4">
-                      {/* 2-Column Grid for Basic Properties */}
-                      <div className="grid grid-cols-2 gap-4">
-                        {/* Left Column */}
-                        <div className="space-y-4">
-                          {/* Photo Settings - Only show when photo URL exists */}
-                          {photo.photoUrl && (
-                            <div className="space-y-3 bg-gray-50 p-3 rounded-md">
-                              <h4 className="text-sm font-semibold text-gray-800 mb-2">Photo Settings</h4>
-                              <label className="flex items-center space-x-2">
-                                <input
-                                  type="checkbox"
-                                  checked={photo.isCover || false}
-                                  onChange={(e) => updatePhotoAttribute(index, 'isCover', e.target.checked)}
-                                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="text-sm font-medium text-gray-700">Cover Photo</span>
-                              </label>
-                              <label className="flex items-center space-x-2">
-                                <input
-                                  type="checkbox"
-                                  checked={photo.isGallery || false}
-                                  onChange={(e) => updatePhotoAttribute(index, 'isGallery', e.target.checked)}
-                                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="text-sm font-medium text-gray-700">Gallery</span>
-                              </label>
-                              <label className="flex items-center space-x-2">
-                                <input
-                                  type="checkbox"
-                                  checked={photo.isAnnexure || false}
-                                  onChange={(e) => updatePhotoAttribute(index, 'isAnnexure', e.target.checked)}
-                                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="text-sm font-medium text-gray-700">Annexure</span>
-                              </label>
-                            </div>
-                          )}
+                    {/* Details & Settings - Right Column Studio Card (7 cols) */}
+                    <div className="col-span-12 lg:col-span-7 bg-gray-50/70 p-4 sm:p-4.5 rounded-2xl border border-gray-200 flex flex-col justify-between gap-3">
+                      {/* Header bar: Title, Up/Down Buttons & Automate AI Button */}
+                      <div className="h-8 flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-[#006ABE] text-white flex items-center justify-center shrink-0 shadow-xs">
+                            <Camera className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="text-sm font-bold text-gray-900 tracking-tight shrink-0">
+                            Photo #{index + 1}
+                          </span>
+                          <div className="flex items-center gap-1 ml-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => movePhoto(index, 'up')}
+                              disabled={index === 0}
+                              className="w-7 h-7 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-[#006ABE] hover:border-blue-300 hover:bg-blue-50/60 flex items-center justify-center transition-all shadow-2xs disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer"
+                              title="Move photo up"
+                              aria-label="Move photo up"
+                            >
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => movePhoto(index, 'down')}
+                              disabled={index === photos.length - 1}
+                              className="w-7 h-7 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-[#006ABE] hover:border-blue-300 hover:bg-blue-50/60 flex items-center justify-center transition-all shadow-2xs disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer"
+                              title="Move photo down"
+                              aria-label="Move photo down"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
 
-                          {/* Basic Details */}
-                          <div className="space-y-3 bg-gray-50 p-3 rounded-md">
-                            <div className="flex justify-between items-center mb-2">
-                              <h4 className="text-sm font-semibold text-gray-800">Basic Details</h4>
-                              {photo.photoUrl && (() => {
-                                const isAutomating = processingPhotoUrls.has(photo.photoUrl);
-                                const isQueued = false; // Queuing replaced by concurrent logic
-                                const isDisabled = isAutomating || isQueued;
+                        {photo.photoUrl && (() => {
+                          const isAutomating = processingPhotoUrls.has(photo.photoUrl);
+                          const isQueued = false;
+                          const isDisabled = isAutomating || isQueued;
 
-                                return (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAutomatePhoto(index, photo.photoUrl, photo.category)}
-                                    disabled={isDisabled}
-                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors text-xs font-semibold ${
-                                      isAutomating
-                                        ? 'bg-blue-600 text-white opacity-80 cursor-wait'
-                                        : isQueued
-                                        ? 'bg-amber-500 text-white opacity-90 cursor-wait'
-                                        : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
-                                    }`}
-                                    title={
-                                      isAutomating
-                                        ? 'Analyzing photo with AI...'
-                                        : isQueued
-                                        ? 'Queued - waiting for previous photo analysis to complete...'
-                                        : 'Automate photo details with AI'
-                                    }
-                                  >
-                                    {isAutomating ? (
-                                      <>
-                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                        <span>Automating...</span>
-                                      </>
-                                    ) : isQueued ? (
-                                      <>
-                                        <Clock className="w-3 h-3 animate-pulse" />
-                                        <span>Queued</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Wand2 className="w-3 h-3" />
-                                        <span>Automate</span>
-                                      </>
-                                    )}
-                                  </button>
-                                );
-                              })()}
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => handleAutomatePhoto(index, photo.photoUrl, photo.category)}
+                              disabled={isDisabled}
+                              className="h-8 px-3.5 text-[#006ABE] hover:text-[#00589e] hover:bg-blue-100/70 rounded-full border border-blue-200/80 bg-white transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-bold disabled:opacity-50 shadow-2xs shrink-0"
+                              title={
+                                isAutomating
+                                  ? 'Analyzing photo with AI...'
+                                  : 'Automate photo details with AI'
+                              }
+                            >
+                              {isAutomating ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  <span className="text-xs font-semibold">Automating...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Wand2 className="w-3.5 h-3.5 text-[#006ABE]" />
+                                  <span className="text-xs font-semibold">Automate</span>
+                                </>
+                              )}
+                            </button>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Photo Settings: 3 Equal-Width Segmented Capsule Toggles */}
+                      {photo.photoUrl && (
+                        <div className="grid grid-cols-3 gap-2">
+                          <label
+                            className={`flex items-center justify-center gap-1.5 h-8.5 px-3 rounded-full border text-xs font-semibold cursor-pointer transition-all select-none shadow-2xs ${
+                              photo.isCover
+                                ? 'bg-amber-50 border-amber-300 text-amber-800'
+                                : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={photo.isCover || false}
+                              onChange={(e) => updatePhotoAttribute(index, 'isCover', e.target.checked)}
+                              className="sr-only"
+                            />
+                            <Star className={`w-3.5 h-3.5 ${photo.isCover ? 'fill-amber-500 text-amber-500' : 'text-gray-400'}`} />
+                            <span className="truncate">Cover Photo</span>
+                          </label>
+
+                          <label
+                            className={`flex items-center justify-center gap-1.5 h-8.5 px-3 rounded-full border text-xs font-semibold cursor-pointer transition-all select-none shadow-2xs ${
+                              photo.isGallery
+                                ? 'bg-blue-50 border-blue-300 text-[#006ABE]'
+                                : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={photo.isGallery || false}
+                              onChange={(e) => updatePhotoAttribute(index, 'isGallery', e.target.checked)}
+                              className="sr-only"
+                            />
+                            <Check className={`w-3.5 h-3.5 ${photo.isGallery ? 'text-[#006ABE]' : 'text-gray-400'}`} />
+                            <span className="truncate">Gallery</span>
+                          </label>
+
+                          <label
+                            className={`flex items-center justify-center gap-1.5 h-8.5 px-3 rounded-full border text-xs font-semibold cursor-pointer transition-all select-none shadow-2xs ${
+                              photo.isAnnexure
+                                ? 'bg-purple-50 border-purple-300 text-purple-800'
+                                : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={photo.isAnnexure || false}
+                              onChange={(e) => updatePhotoAttribute(index, 'isAnnexure', e.target.checked)}
+                              className="sr-only"
+                            />
+                            <FileText className={`w-3.5 h-3.5 ${photo.isAnnexure ? 'text-purple-600' : 'text-gray-400'}`} />
+                            <span className="truncate">Annexure</span>
+                          </label>
+                        </div>
+                      )}
+
+                      {/* Basic Details: Symmetrical Layout (Category & Flooring 50/50, Annexure Header full-width) */}
+                      <div className="space-y-2.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className={labelClass}>Category</label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                list={`category-options-${index}`}
+                                value={photo.category || ''}
+                                onChange={(e) => updatePhotoAttribute(index, 'category', e.target.value)}
+                                placeholder="Select category..."
+                                className={inputClass}
+                              />
+                              <datalist id={`category-options-${index}`}>
+                                {ROOM_CATEGORIES.map(cat => (
+                                  <option key={cat} value={cat} />
+                                ))}
+                              </datalist>
                             </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-800 mb-1">Category</label>
-                              <div className="relative">
-                                <input
-                                  type="text"
-                                  list={`category-options-${index}`}
-                                  value={photo.category || ''}
-                                  onChange={(e) => updatePhotoAttribute(index, 'category', e.target.value)}
-                                  placeholder="Select or type category..."
-                                  className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                                <datalist id={`category-options-${index}`}>
-                                  {ROOM_CATEGORIES.map(cat => (
-                                    <option key={cat} value={cat} />
-                                  ))}
-                                </datalist>
-                              </div>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-800 mb-1">Flooring</label>
+                          </div>
+
+                          <div>
+                            <label className={labelClass}>Flooring</label>
+                            <div className="relative">
                               <select
                                 value={photo.flooring || ''}
                                 onChange={(e) => updatePhotoAttribute(index, 'flooring', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className={`${inputClass} appearance-none pr-8 cursor-pointer`}
                               >
                                 <option value="">Select Flooring</option>
                                 {FLOORING_OPTIONS.map(floor => (
                                   <option key={floor} value={floor}>{floor}</option>
                                 ))}
                               </select>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-800 mb-1">Annexure Header</label>
-                              <input
-                                type="text"
-                                value={photo.annexureHeader || ''}
-                                onChange={(e) => updatePhotoAttribute(index, 'annexureHeader', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter annexure header"
-                              />
+                              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              </div>
                             </div>
                           </div>
+                        </div>
+
+                        <div>
+                          <label className={labelClass}>Annexure Header</label>
+                          <input
+                            type="text"
+                            value={photo.annexureHeader || ''}
+                            onChange={(e) => updatePhotoAttribute(index, 'annexureHeader', e.target.value)}
+                            className={inputClass}
+                            placeholder="Enter descriptive annexure header..."
+                          />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Full Width Sections Below - 3 Column Grid */}
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Features & Fixtures Checkboxes */}
-                    <div className="bg-gray-50 p-4 rounded-md">
-                      <label className="block text-sm font-semibold text-gray-800 mb-3">Features & Fixtures</label>
-                      <div className="max-h-48 overflow-y-auto border-2 border-gray-300 rounded-lg p-4 bg-white">
-                        <div className="grid grid-cols-2 gap-2">
-                          {/* Predefined features */}
-                          {(getCategoryFeatures(photo.category)).map(feature => (
-                            <label key={feature} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded">
-                              <input
-                                type="checkbox"
-                                checked={(photo.featuresFixtures || []).includes(feature)}
-                                onChange={(e) => {
+                  {/* TIER 2: FEATURES & FIXTURES + PRIME COST ITEMS (50/50 SPLIT) */}
+                  <div className="mt-5 pt-4 border-t border-gray-200 grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch">
+                    {/* LEFT 50% (6 cols): Features & Fixtures */}
+                    <div className="lg:col-span-6 bg-gray-50/70 p-4 rounded-2xl border border-gray-200 flex flex-col">
+                      <div className="h-8 flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-gray-900 tracking-tight">Features & Fixtures</span>
+                          {(photo.featuresFixtures || []).length > 0 && (
+                            <span className="text-[11px] font-semibold text-[#006ABE] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full shadow-2xs">
+                              {(photo.featuresFixtures || []).length} selected
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex-1 bg-white p-3.5 rounded-2xl border border-gray-200/90 min-h-[110px] max-h-48 overflow-y-auto">
+                        <div className="flex flex-wrap gap-2">
+                          {(getCategoryFeatures(photo.category)).map(feature => {
+                            const isChecked = (photo.featuresFixtures || []).includes(feature);
+                            return (
+                              <button
+                                key={feature}
+                                type="button"
+                                onClick={() => {
                                   const current = photo.featuresFixtures || [];
-                                  const updated = e.target.checked
-                                    ? [...current, feature]
-                                    : current.filter((item: string) => item !== feature);
+                                  const updated = isChecked
+                                    ? current.filter((item: string) => item !== feature)
+                                    : [...current, feature];
                                   updatePhotoAttribute(index, 'featuresFixtures', updated);
                                 }}
-                                className="rounded border-gray-400 text-blue-600 focus:ring-blue-500"
-                              />
-                              <span className="text-sm text-gray-800 font-medium">{feature}</span>
-                            </label>
-                          ))}
-                          {/* Custom features (not in predefined list) */}
+                                className={`h-7 px-3 rounded-full text-xs font-medium border transition-all cursor-pointer select-none inline-flex items-center gap-1.5 shadow-2xs ${
+                                  isChecked
+                                    ? 'bg-blue-50 border-blue-300 text-[#006ABE] font-semibold'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                                }`}
+                              >
+                                {isChecked ? <Check className="w-3 h-3 text-[#006ABE]" /> : <Plus className="w-3 h-3 text-gray-400" />}
+                                <span>{feature}</span>
+                              </button>
+                            );
+                          })}
+                          {/* Custom features */}
                           {(photo.featuresFixtures || [])
                             .filter((item: string) => !(getCategoryFeatures(photo.category)).includes(item))
                             .map((feature: string) => (
-                              <label key={`custom-${feature}`} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded bg-blue-50">
-                                <input
-                                  type="checkbox"
-                                  checked={true}
-                                  onChange={(e) => {
-                                    const current = photo.featuresFixtures || [];
-                                    const updated = current.filter((item: string) => item !== feature);
-                                    updatePhotoAttribute(index, 'featuresFixtures', updated);
-                                  }}
-                                  className="rounded border-gray-400 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="text-sm text-gray-800 font-medium">{feature}</span>
-                                <span className="text-xs text-blue-600 ml-1">(custom)</span>
-                              </label>
+                              <button
+                                key={`custom-${feature}`}
+                                type="button"
+                                onClick={() => {
+                                  const current = photo.featuresFixtures || [];
+                                  const updated = current.filter((item: string) => item !== feature);
+                                  updatePhotoAttribute(index, 'featuresFixtures', updated);
+                                }}
+                                className="h-7 px-3 rounded-full text-xs font-semibold bg-blue-50 border border-blue-300 text-[#006ABE] inline-flex items-center gap-1.5 shadow-2xs hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all cursor-pointer group"
+                                title="Click to remove custom feature"
+                              >
+                                <Check className="w-3 h-3 text-[#006ABE] group-hover:hidden" />
+                                <X className="w-3 h-3 text-red-500 hidden group-hover:inline" />
+                                <span>{feature}</span>
+                                <span className="text-[10px] text-blue-500/80 group-hover:text-red-400">(custom)</span>
+                              </button>
                             ))}
                         </div>
                         {(!photo.category || getCategoryFeatures(photo.category).length === 0) && (photo.featuresFixtures || []).length === 0 && (
-                          <p className="text-sm text-gray-600 text-center py-4 bg-gray-100 rounded">Select a category to see features or add custom items</p>
+                          <p className="text-xs text-gray-400 text-center py-6">Select a category above to view features</p>
                         )}
                       </div>
                     </div>
 
-                    {/* Prime Cost Items Checkboxes */}
-                    <div className="bg-gray-50 p-4 rounded-md">
-                      <label className="block text-sm font-semibold text-gray-800 mb-3">Prime Cost Items</label>
-                      <div className="max-h-48 overflow-y-auto border-2 border-gray-300 rounded-lg p-4 bg-white">
-                        <div className="grid grid-cols-2 gap-2">
-                          {/* Predefined prime cost items */}
-                          {(getCategoryPrimeCostItems(photo.category)).map(item => (
-                            <label key={item} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded">
-                              <input
-                                type="checkbox"
-                                checked={(photo.primeCostItems || []).includes(item)}
-                                onChange={(e) => {
+                    {/* RIGHT 50% (6 cols): Prime Cost Items */}
+                    <div className="lg:col-span-6 bg-gray-50/70 p-4 rounded-2xl border border-gray-200 flex flex-col">
+                      <div className="h-8 flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-gray-900 tracking-tight">Prime Cost Items</span>
+                          {(photo.primeCostItems || []).length > 0 && (
+                            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shadow-2xs">
+                              {(photo.primeCostItems || []).length} selected
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex-1 bg-white p-3.5 rounded-2xl border border-gray-200/90 min-h-[110px] max-h-48 overflow-y-auto">
+                        <div className="flex flex-wrap gap-2">
+                          {(getCategoryPrimeCostItems(photo.category)).map(item => {
+                            const isChecked = (photo.primeCostItems || []).includes(item);
+                            return (
+                              <button
+                                key={item}
+                                type="button"
+                                onClick={() => {
                                   const current = photo.primeCostItems || [];
-                                  const updated = e.target.checked
-                                    ? [...current, item]
-                                    : current.filter((primeItem: string) => primeItem !== item);
+                                  const updated = isChecked
+                                    ? current.filter((primeItem: string) => primeItem !== item)
+                                    : [...current, item];
                                   updatePhotoAttribute(index, 'primeCostItems', updated);
                                 }}
-                                className="rounded border-gray-400 text-blue-600 focus:ring-blue-500"
-                              />
-                              <span className="text-sm text-gray-800 font-medium">{item}</span>
-                            </label>
-                          ))}
-                          {/* Custom prime cost items (not in predefined list) */}
+                                className={`h-7 px-3 rounded-full text-xs font-medium border transition-all cursor-pointer select-none inline-flex items-center gap-1.5 shadow-2xs ${
+                                  isChecked
+                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                                }`}
+                              >
+                                {isChecked ? <Check className="w-3 h-3 text-emerald-600" /> : <Plus className="w-3 h-3 text-gray-400" />}
+                                <span>{item}</span>
+                              </button>
+                            );
+                          })}
+                          {/* Custom prime cost items */}
                           {(photo.primeCostItems || [])
                             .filter((item: string) => !(getCategoryPrimeCostItems(photo.category)).includes(item))
                             .map((item: string) => (
-                              <label key={`custom-${item}`} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded bg-green-50">
-                                <input
-                                  type="checkbox"
-                                  checked={true}
-                                  onChange={(e) => {
-                                    const current = photo.primeCostItems || [];
-                                    const updated = current.filter((primeItem: string) => primeItem !== item);
-                                    updatePhotoAttribute(index, 'primeCostItems', updated);
-                                  }}
-                                  className="rounded border-gray-400 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="text-sm text-gray-800 font-medium">{item}</span>
-                                <span className="text-xs text-green-600 ml-1">(custom)</span>
-                              </label>
+                              <button
+                                key={`custom-${item}`}
+                                type="button"
+                                onClick={() => {
+                                  const current = photo.primeCostItems || [];
+                                  const updated = current.filter((primeItem: string) => primeItem !== item);
+                                  updatePhotoAttribute(index, 'primeCostItems', updated);
+                                }}
+                                className="h-7 px-3 rounded-full text-xs font-semibold bg-emerald-50 border border-emerald-300 text-emerald-800 inline-flex items-center gap-1.5 shadow-2xs hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all cursor-pointer group"
+                                title="Click to remove custom item"
+                              >
+                                <Check className="w-3 h-3 text-emerald-600 group-hover:hidden" />
+                                <X className="w-3 h-3 text-red-500 hidden group-hover:inline" />
+                                <span>{item}</span>
+                                <span className="text-[10px] text-emerald-600/80 group-hover:text-red-400">(custom)</span>
+                              </button>
                             ))}
                         </div>
                         {(!photo.category || getCategoryPrimeCostItems(photo.category).length === 0) && (photo.primeCostItems || []).length === 0 && (
-                          <p className="text-sm text-gray-600 text-center py-4 bg-gray-100 rounded">Select a category to see prime cost items or add custom items</p>
+                          <p className="text-xs text-gray-400 text-center py-6">Select a category above to view prime cost items</p>
                         )}
                       </div>
                     </div>
