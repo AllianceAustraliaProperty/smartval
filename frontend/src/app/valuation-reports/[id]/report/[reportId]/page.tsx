@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useSectionStatus } from '@/lib/use-section-status';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { apiRepository } from '@/lib/api-repository';
@@ -122,9 +122,8 @@ const sections = [
       case 'valuationDetails':
         return !!(sectionData.valuationType && sectionData.valuationDate && sectionData.marketValue);
       case 'referralDetails': {
-        const fee = sectionData.reportFee;
-        const hasReportFee = fee !== undefined && fee !== null && fee !== '' && (!isNaN(Number(fee)) ? Number(fee) > 0 : true);
-        return !!(sectionData.referrerName || hasReportFee || sectionData.referralFee);
+        const isPaid = String(sectionData?.invoiceStatus || '').toLowerCase() === 'paid';
+        return isPaid;
       }
       case 'photos':
         return !!(sectionData && sectionData.length > 0);
@@ -243,6 +242,30 @@ export default function ValuationReportEditPage() {
 
   const { completedSections, sectionsWithErrors } = useSectionStatus(
     watch, getValues, errors, sectionIds, getSectionData, checkSectionCompletion, checkSectionErrors);
+
+  // Automatically switch invoiceStatus to 'paid' when any step other than the first step (propertyAddress) is completed
+  const prevCompletedSectionsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const otherCompleted = Array.from(completedSections).filter(
+      id => id !== 'propertyAddress' && id !== 'referralDetails'
+    );
+    const hasOtherCompleted = otherCompleted.length > 0;
+    const currentStatus = watch('referralDetails.invoiceStatus');
+
+    // Check if any other step newly transitioned to completed (or first load with completed steps)
+    const hasNewlyCompletedStep = otherCompleted.some(
+      id => !prevCompletedSectionsRef.current.has(id)
+    );
+
+    if (hasOtherCompleted && hasNewlyCompletedStep) {
+      if (currentStatus !== 'paid') {
+        setValue('referralDetails.invoiceStatus', 'paid', { shouldDirty: true });
+      }
+    }
+
+    prevCompletedSectionsRef.current = new Set(completedSections);
+  }, [completedSections, setValue, watch]);
 
   const saveForm = (data: PropertyValuationData): Promise<void> => {
     if (pendingSave.current) return pendingSave.current;
