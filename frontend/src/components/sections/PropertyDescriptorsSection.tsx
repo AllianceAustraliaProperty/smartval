@@ -52,6 +52,83 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
     return AllMainBuildingTypes;
   }, [propertyType]);
 
+  // Default Internal and External Conditions to 'Good'
+  const internalCondition = watch('propertyDescriptors.internalCondition');
+  React.useEffect(() => {
+    if (!internalCondition) {
+      setValue('propertyDescriptors.internalCondition', 'Good', { shouldDirty: true });
+    }
+  }, [internalCondition, setValue]);
+
+  const externalCondition = watch('propertyDescriptors.externalCondition');
+  React.useEffect(() => {
+    if (!externalCondition) {
+      setValue('propertyDescriptors.externalCondition', 'Good', { shouldDirty: true });
+    }
+  }, [externalCondition, setValue]);
+
+  // Default Granny Flat Internal and External Conditions to 'Good' when Granny Flat enabled
+  const gfInternalCondition = watch('propertyDescriptors.grannyFlat.internalCondition');
+  const gfExternalCondition = watch('propertyDescriptors.grannyFlat.externalCondition');
+  React.useEffect(() => {
+    if (isGrannyFlat) {
+      if (!gfInternalCondition) {
+        setValue('propertyDescriptors.grannyFlat.internalCondition', 'Good', { shouldDirty: true });
+      }
+      if (!gfExternalCondition) {
+        setValue('propertyDescriptors.grannyFlat.externalCondition', 'Good', { shouldDirty: true });
+      }
+    }
+  }, [isGrannyFlat, gfInternalCondition, gfExternalCondition, setValue]);
+
+  // Default Repair Requirements to 'None' and Noted Defects to 'N/A'
+  const repairsRequirements = watch('propertyDescriptors.repairsRequirements');
+  React.useEffect(() => {
+    if (repairsRequirements === undefined || repairsRequirements === null || repairsRequirements === '') {
+      setValue('propertyDescriptors.repairsRequirements', 'None', { shouldDirty: true });
+    }
+  }, [repairsRequirements, setValue]);
+
+  const defects = watch('propertyDescriptors.defects');
+  React.useEffect(() => {
+    if (defects === undefined || defects === null || defects === '') {
+      setValue('propertyDescriptors.defects', 'N/A', { shouldDirty: true });
+    }
+  }, [defects, setValue]);
+
+  // Internal Walls default logic:
+  // Rendered Brick if External Walls is selected to be Double Brick,
+  // otherwise for any other selected external wall (or initial default), Plasterboard.
+  const externalWalls = watch('propertyDescriptors.externalWalls');
+  const internalWalls = watch('propertyDescriptors.internalWalls');
+  const prevExternalWallsRef = React.useRef<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    const isDoubleBrick = (externalWalls || '').toLowerCase().includes('double brick');
+    const targetInternal = isDoubleBrick ? 'Rendered Brick' : 'Plasterboard';
+
+    // If internalWalls is unset, or if externalWalls changed value
+    if (!internalWalls || (prevExternalWallsRef.current !== undefined && prevExternalWallsRef.current !== externalWalls)) {
+      setValue('propertyDescriptors.internalWalls', targetInternal, { shouldDirty: true });
+    }
+    prevExternalWallsRef.current = externalWalls;
+  }, [externalWalls, internalWalls, setValue]);
+
+  const gfExternalWalls = watch('propertyDescriptors.grannyFlat.externalWalls');
+  const gfInternalWalls = watch('propertyDescriptors.grannyFlat.internalWalls');
+  const prevGfExternalWallsRef = React.useRef<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (!isGrannyFlat) return;
+    const isDoubleBrick = (gfExternalWalls || '').toLowerCase().includes('double brick');
+    const targetInternal = isDoubleBrick ? 'Rendered Brick' : 'Plasterboard';
+
+    if (!gfInternalWalls || (prevGfExternalWallsRef.current !== undefined && prevGfExternalWallsRef.current !== gfExternalWalls)) {
+      setValue('propertyDescriptors.grannyFlat.internalWalls', targetInternal, { shouldDirty: true });
+    }
+    prevGfExternalWallsRef.current = gfExternalWalls;
+  }, [isGrannyFlat, gfExternalWalls, gfInternalWalls, setValue]);
+
   const handleAutomate = async () => {
     setIsAutomating(true);
     setUiMessage(null);

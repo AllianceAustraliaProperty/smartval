@@ -519,13 +519,13 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
     carSpaces: undefined,
     mainBuildingType: '',
     externalWalls: '',
-    internalWalls: '',
+    internalWalls: 'Plasterboard',
     roofingType: '',
     parkingType: '',
-    internalCondition: undefined,
-    externalCondition: undefined,
-    repairsRequirements: '',
-    defects: '',
+    internalCondition: 'Good',
+    externalCondition: 'Good',
+    repairsRequirements: 'None',
+    defects: 'N/A',
     lighting: '',
     airconditioning: '',
     fireServices: '',
@@ -535,10 +535,10 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
       mainBuildingType: '',
       roofingType: '',
       externalWalls: '',
-      internalWalls: '',
+      internalWalls: 'Plasterboard',
       parkingType: '',
-      internalCondition: undefined,
-      externalCondition: undefined
+      internalCondition: 'Good',
+      externalCondition: 'Good'
     }
   },
   ancillaryImprovements: {
