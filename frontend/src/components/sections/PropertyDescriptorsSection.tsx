@@ -52,82 +52,122 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
     return AllMainBuildingTypes;
   }, [propertyType]);
 
-  // Default Internal and External Conditions to 'Good'
-  const internalCondition = watch('propertyDescriptors.internalCondition');
+  // Check if report is a Land valuation
+  const valuationType = watch('valuationDetails.valuationType');
+  const isLand = Boolean(
+    (valuationType || '').toLowerCase().includes('land') ||
+    (propertyType || '').toLowerCase() === 'land' ||
+    (propertyType || '').toLowerCase().includes('vacant land')
+  );
+
+  // One-time initial defaults on mount for unset fields (skipped for Land valuations)
+  const hasInitializedDefaultsRef = React.useRef(false);
+
   React.useEffect(() => {
-    if (!internalCondition) {
+    if (isLand) {
+      // If it is a Land valuation, clear any accidental building descriptor defaults
+      if (watch('propertyDescriptors.internalCondition') === 'Good') {
+        setValue('propertyDescriptors.internalCondition', undefined as any, { shouldDirty: true });
+      }
+      if (watch('propertyDescriptors.externalCondition') === 'Good') {
+        setValue('propertyDescriptors.externalCondition', undefined as any, { shouldDirty: true });
+      }
+      if (watch('propertyDescriptors.repairsRequirements') === 'None') {
+        setValue('propertyDescriptors.repairsRequirements', '', { shouldDirty: true });
+      }
+      if (watch('propertyDescriptors.defects') === 'N/A') {
+        setValue('propertyDescriptors.defects', '', { shouldDirty: true });
+      }
+      return;
+    }
+
+    if (hasInitializedDefaultsRef.current) return;
+    hasInitializedDefaultsRef.current = true;
+
+    const currentInternal = watch('propertyDescriptors.internalCondition');
+    if (!currentInternal) {
       setValue('propertyDescriptors.internalCondition', 'Good', { shouldDirty: true });
     }
-  }, [internalCondition, setValue]);
 
-  const externalCondition = watch('propertyDescriptors.externalCondition');
-  React.useEffect(() => {
-    if (!externalCondition) {
+    const currentExternal = watch('propertyDescriptors.externalCondition');
+    if (!currentExternal) {
       setValue('propertyDescriptors.externalCondition', 'Good', { shouldDirty: true });
     }
-  }, [externalCondition, setValue]);
 
-  // Default Granny Flat Internal and External Conditions to 'Good' when Granny Flat enabled
-  const gfInternalCondition = watch('propertyDescriptors.grannyFlat.internalCondition');
-  const gfExternalCondition = watch('propertyDescriptors.grannyFlat.externalCondition');
-  React.useEffect(() => {
-    if (isGrannyFlat) {
-      if (!gfInternalCondition) {
-        setValue('propertyDescriptors.grannyFlat.internalCondition', 'Good', { shouldDirty: true });
-      }
-      if (!gfExternalCondition) {
-        setValue('propertyDescriptors.grannyFlat.externalCondition', 'Good', { shouldDirty: true });
-      }
-    }
-  }, [isGrannyFlat, gfInternalCondition, gfExternalCondition, setValue]);
-
-  // Default Repair Requirements to 'None' and Noted Defects to 'N/A'
-  const repairsRequirements = watch('propertyDescriptors.repairsRequirements');
-  React.useEffect(() => {
-    if (repairsRequirements === undefined || repairsRequirements === null || repairsRequirements === '') {
+    const currentRepairs = watch('propertyDescriptors.repairsRequirements');
+    if (currentRepairs === undefined || currentRepairs === null || currentRepairs === '') {
       setValue('propertyDescriptors.repairsRequirements', 'None', { shouldDirty: true });
     }
-  }, [repairsRequirements, setValue]);
 
-  const defects = watch('propertyDescriptors.defects');
-  React.useEffect(() => {
-    if (defects === undefined || defects === null || defects === '') {
+    const currentDefects = watch('propertyDescriptors.defects');
+    if (currentDefects === undefined || currentDefects === null || currentDefects === '') {
       setValue('propertyDescriptors.defects', 'N/A', { shouldDirty: true });
     }
-  }, [defects, setValue]);
 
-  // Internal Walls default logic:
-  // Rendered Brick if External Walls is selected to be Double Brick,
-  // otherwise for any other selected external wall (or initial default), Plasterboard.
+    const currentExternalWalls = watch('propertyDescriptors.externalWalls');
+    const currentInternalWalls = watch('propertyDescriptors.internalWalls');
+    if (currentExternalWalls && !currentInternalWalls) {
+      const isDoubleBrick = (currentExternalWalls || '').toLowerCase().includes('double brick');
+      setValue('propertyDescriptors.internalWalls', isDoubleBrick ? 'Rendered Brick' : 'Plasterboard', { shouldDirty: true });
+    }
+  }, [isLand]);
+
+  // One-time defaults for Granny Flat when enabled (skipped for Land valuations)
+  const hasInitializedGfDefaultsRef = React.useRef(false);
+  React.useEffect(() => {
+    if (!isGrannyFlat || isLand || hasInitializedGfDefaultsRef.current) return;
+    hasInitializedGfDefaultsRef.current = true;
+
+    const gfInternal = watch('propertyDescriptors.grannyFlat.internalCondition');
+    if (!gfInternal) {
+      setValue('propertyDescriptors.grannyFlat.internalCondition', 'Good', { shouldDirty: true });
+    }
+
+    const gfExternal = watch('propertyDescriptors.grannyFlat.externalCondition');
+    if (!gfExternal) {
+      setValue('propertyDescriptors.grannyFlat.externalCondition', 'Good', { shouldDirty: true });
+    }
+
+    const gfExtWalls = watch('propertyDescriptors.grannyFlat.externalWalls');
+    const gfIntWalls = watch('propertyDescriptors.grannyFlat.internalWalls');
+    if (gfExtWalls && !gfIntWalls) {
+      const isDoubleBrick = (gfExtWalls || '').toLowerCase().includes('double brick');
+      setValue('propertyDescriptors.grannyFlat.internalWalls', isDoubleBrick ? 'Rendered Brick' : 'Plasterboard', { shouldDirty: true });
+    }
+  }, [isGrannyFlat, isLand]);
+
+  // Dynamic Internal Walls: when External Walls selection changes, switch to Rendered Brick (for Double Brick) or Plasterboard (for other walls), or clear if none selected
   const externalWalls = watch('propertyDescriptors.externalWalls');
-  const internalWalls = watch('propertyDescriptors.internalWalls');
   const prevExternalWallsRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
-    const isDoubleBrick = (externalWalls || '').toLowerCase().includes('double brick');
-    const targetInternal = isDoubleBrick ? 'Rendered Brick' : 'Plasterboard';
-
-    // If internalWalls is unset, or if externalWalls changed value
-    if (!internalWalls || (prevExternalWallsRef.current !== undefined && prevExternalWallsRef.current !== externalWalls)) {
-      setValue('propertyDescriptors.internalWalls', targetInternal, { shouldDirty: true });
+    if (isLand) return;
+    if (prevExternalWallsRef.current !== undefined && prevExternalWallsRef.current !== externalWalls) {
+      if (externalWalls && externalWalls.trim()) {
+        const isDoubleBrick = externalWalls.toLowerCase().includes('double brick');
+        setValue('propertyDescriptors.internalWalls', isDoubleBrick ? 'Rendered Brick' : 'Plasterboard', { shouldDirty: true });
+      } else {
+        setValue('propertyDescriptors.internalWalls', '', { shouldDirty: true });
+      }
     }
     prevExternalWallsRef.current = externalWalls;
-  }, [externalWalls, internalWalls, setValue]);
+  }, [isLand, externalWalls, setValue]);
 
   const gfExternalWalls = watch('propertyDescriptors.grannyFlat.externalWalls');
-  const gfInternalWalls = watch('propertyDescriptors.grannyFlat.internalWalls');
   const prevGfExternalWallsRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
-    if (!isGrannyFlat) return;
-    const isDoubleBrick = (gfExternalWalls || '').toLowerCase().includes('double brick');
-    const targetInternal = isDoubleBrick ? 'Rendered Brick' : 'Plasterboard';
-
-    if (!gfInternalWalls || (prevGfExternalWallsRef.current !== undefined && prevGfExternalWallsRef.current !== gfExternalWalls)) {
-      setValue('propertyDescriptors.grannyFlat.internalWalls', targetInternal, { shouldDirty: true });
+    if (!isGrannyFlat || isLand) return;
+    if (prevGfExternalWallsRef.current !== undefined && prevGfExternalWallsRef.current !== gfExternalWalls) {
+      if (gfExternalWalls && gfExternalWalls.trim()) {
+        const isDoubleBrick = gfExternalWalls.toLowerCase().includes('double brick');
+        setValue('propertyDescriptors.grannyFlat.internalWalls', isDoubleBrick ? 'Rendered Brick' : 'Plasterboard', { shouldDirty: true });
+      } else {
+        setValue('propertyDescriptors.grannyFlat.internalWalls', '', { shouldDirty: true });
+      }
     }
     prevGfExternalWallsRef.current = gfExternalWalls;
-  }, [isGrannyFlat, gfExternalWalls, gfInternalWalls, setValue]);
+  }, [isGrannyFlat, isLand, gfExternalWalls, setValue]);
 
   const handleAutomate = async () => {
     setIsAutomating(true);
