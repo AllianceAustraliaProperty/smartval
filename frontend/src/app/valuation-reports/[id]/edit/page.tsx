@@ -778,6 +778,8 @@ export default function ValuationReportEditPage() {
         isOpen={isScheduleOpen}
         onClose={() => setIsScheduleOpen(false)}
         showTrigger={false}
+        logoType={watch('valuationDetails.logoType')}
+        clientEmail={(watch('primaryContact.email') || watch('primaryContact.email2') || '').trim()}
         onScheduleChange={setIsScheduled}
         onPrepare={async () => {
           if (!validatePhotosAndComparables()) return false;

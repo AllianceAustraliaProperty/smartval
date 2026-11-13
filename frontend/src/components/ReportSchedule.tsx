@@ -10,6 +10,12 @@ const zones = ['Australia/Sydney', 'Australia/Melbourne', 'Australia/Brisbane', 
 const labels: Record<string, string> = { scheduled: 'Scheduled', processing: 'Preparing to send', sending: 'Submitting email', accepted: 'Accepted by Microsoft', cancelled: 'Cancelled / closed', failed: 'Failed', needs_review: 'Needs review' };
 const button = 'inline-flex h-11 items-center justify-center gap-2 rounded-full border-2 px-5 text-sm font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006ABE] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer';
 const input = 'mt-1 min-h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-base text-gray-900 hover:border-[#006ABE] focus:border-[#006ABE] focus:outline-none focus:ring-2 focus:ring-[#006ABE]/20 transition-colors';
+
+const COMPANY_POC_EMAILS: Record<string, string> = {
+  CPV: 'info@certifiedpropertyvaluer.com.au',
+  TAMN: 'info@tamn.com.au',
+};
+
 function localTime(date: Date, zone: string) {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(date);
   const get = (type: string) => parts.find(x => x.type === type)?.value;
@@ -26,6 +32,8 @@ export interface ReportScheduleProps {
   onClose?: () => void;
   showTrigger?: boolean;
   onScheduleChange?: (isScheduled: boolean) => void;
+  logoType?: string;
+  clientEmail?: string;
 }
 
 export function ReportSchedule({
@@ -35,6 +43,8 @@ export function ReportSchedule({
   onClose,
   showTrigger = true,
   onScheduleChange,
+  logoType,
+  clientEmail,
 }: ReportScheduleProps) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<Listing | null>(null);
@@ -54,11 +64,17 @@ export function ReportSchedule({
   const requestId = useRef<string | null>(null);
   const active = data?.jobs.find(job => job.active);
   const base = `${API_BASE_URL}/valuation-reports/${encodeURIComponent(reportId)}/email-schedules`;
+
+  const effectiveLogo = (logoType || data?.defaults?.logoType || '').trim().toUpperCase();
+  const effectivePocEmail = COMPANY_POC_EMAILS[effectiveLogo] || data?.defaults?.pocEmail || '';
+  const effectiveClientEmail = clientEmail || data?.defaults?.clientEmail || '';
+
   async function api(path = '', body?: object) {
     if (!reportId || reportId === 'undefined') {
       return { jobs: [], defaults: { to: '', cc: '' }, workerHealthy: true };
     }
-    const response = await fetch(base + path, { method: body ? 'POST' : 'GET', credentials: 'include', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
+    const query = !path && effectiveLogo ? `?logoType=${encodeURIComponent(effectiveLogo)}` : '';
+    const response = await fetch(base + path + query, { method: body ? 'POST' : 'GET', credentials: 'include', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Could not load scheduling. Please try again.');
     return result;
@@ -68,23 +84,30 @@ export function ReportSchedule({
     setData(result);
     return result;
   }
+
+  const applyDefaults = (result: Listing) => {
+    setData(result);
+    const resolvedLogo = (logoType || result.defaults?.logoType || '').trim().toUpperCase();
+    const resolvedPoc = COMPANY_POC_EMAILS[resolvedLogo] || result.defaults?.pocEmail || '';
+    const resolvedClient = clientEmail || result.defaults?.clientEmail || '';
+    const isPoc = Boolean(resolvedPoc);
+    const resolvedType = isPoc ? 'poc' : (result.defaults?.recipientType || 'client');
+    setRecipientType(resolvedType);
+    setTo(resolvedType === 'poc' ? resolvedPoc : (result.defaults?.to || resolvedClient));
+    setCc(result.defaults?.cc || '');
+  };
+
   useEffect(() => {
     let stopped = false;
     if (!reportId || reportId === 'undefined') return;
     api().then((result: Listing) => {
       if (!stopped) {
-        setData(result);
-        setTo(result.defaults?.to || '');
-        setCc(result.defaults?.cc || '');
-        if (result.defaults?.recipientType) {
-          setRecipientType(result.defaults.recipientType);
-        }
+        applyDefaults(result);
       }
     }).catch(() => { if (!stopped) setError('Scheduling is unavailable. Open it to retry.'); });
     return () => { stopped = true; };
-    // Report navigation remounts this component; no background polling per report.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportId]);
+  }, [reportId, logoType]);
 
   useEffect(() => {
     const isScheduled = Boolean(active && ['scheduled', 'processing', 'sending', 'needs_review'].includes(active.status));
@@ -95,9 +118,7 @@ export function ReportSchedule({
     setOpen(true);
     void perform('Loading schedule…', async () => {
       const result = await refresh();
-      if (!to && result.defaults?.to) setTo(result.defaults.to);
-      if (!cc && result.defaults?.cc) setCc(result.defaults.cc);
-      if (result.defaults?.recipientType) setRecipientType(result.defaults.recipientType);
+      applyDefaults(result);
     });
   };
 
@@ -205,10 +226,10 @@ export function ReportSchedule({
             event.preventDefault();
             void perform(preview ? 'Saving schedule…' : 'Saving report and preparing PDF…', async () => {
               if (preview) { await api(`/${preview.job.id}/confirm`, { version: preview.job.version, localDateTime: when, timeZone: zone }); invalidate(); await refresh(); setNotice('Email scheduled. You can close this page; the server will send it at the chosen time.'); }
-              else { if (!await onPrepare()) throw new Error('The report could not be saved or is missing required photos/comparables. Close this window, check the report, and try again.'); requestId.current ||= crypto.randomUUID(); setPreview(await api('/prepare', { requestId: requestId.current, to, cc, recipientType })); }
+              else { if (!await onPrepare()) throw new Error('The report could not be saved or is missing required photos/comparables. Close this window, check the report, and try again.'); requestId.current ||= crypto.randomUUID(); setPreview(await api('/prepare', { requestId: requestId.current, to, cc, recipientType, logoType: effectiveLogo })); }
             });
           }}>
-            {!preview ? <><div className="flex items-center gap-2 text-sm font-semibold text-gray-800"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs text-blue-700">1</span>Recipients</div><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium text-gray-700">To<input required value={to} onChange={event => { setTo(event.target.value); invalidate(); }} placeholder={recipientType === 'poc' ? (data?.defaults.pocEmail || 'info@certifiedpropertyvaluer.com.au') : 'client@example.com'} className={input} /></label><label className="text-sm font-medium text-gray-700">Cc <span className="font-normal text-gray-400">(optional)</span><input value={cc} onChange={event => { setCc(event.target.value); invalidate(); }} placeholder="Additional recipients" className={input} /></label></div><p className="text-xs text-gray-500">Separate multiple addresses with commas. Confirm the recipients before continuing.</p><label className="block text-sm font-medium text-gray-700">Email greeting<select value={recipientType} onChange={event => { const nextType = event.target.value; setRecipientType(nextType); invalidate(); if (nextType === 'poc' && data?.defaults?.pocEmail) { setTo(data.defaults.pocEmail); } else if (nextType === 'client' && data?.defaults?.clientEmail) { setTo(data.defaults.clientEmail); } }} className={input}><option value="client">Client name</option><option value="poc">Partner contact (CPV / TAMN)</option></select></label></> : <section className="space-y-3 rounded-xl border border-gray-200 p-4"><div className="flex items-center justify-between gap-3"><h3 className="font-semibold">Review your email</h3><button type="button" className="min-h-11 text-sm text-blue-700 underline" onClick={invalidate}>Edit recipients</button></div><dl className="space-y-2 break-words text-sm"><div><dt className="inline text-gray-500">From: </dt><dd className="inline">{preview.job.sender}</dd></div><div><dt className="inline text-gray-500">To: </dt><dd className="inline">{preview.job.to.join(', ')}</dd></div>{preview.job.cc.length > 0 && <div><dt className="inline text-gray-500">Cc: </dt><dd className="inline">{preview.job.cc.join(', ')}</dd></div>}<div><dt className="inline text-gray-500">Subject: </dt><dd className="inline font-medium">{preview.job.subject}</dd></div></dl><iframe title="Email content preview" sandbox="" referrerPolicy="no-referrer" srcDoc={preview.html} className="h-64 w-full rounded-lg border border-gray-200 bg-white" /><a href={`${base}/${preview.job.id}/pdf`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline"><FileText size={17} />Review attached PDF: {preview.job.filename}</a><p className="text-xs leading-5 text-gray-500">This exact email and PDF will be sent. If you edit the report later, cancel and prepare a new email to use those changes.</p></section>}
+            {!preview ? <><div className="flex items-center gap-2 text-sm font-semibold text-gray-800"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs text-blue-700">1</span>Recipients</div><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium text-gray-700">To<input required value={to} onChange={event => { setTo(event.target.value); invalidate(); }} placeholder={recipientType === 'poc' ? (effectivePocEmail || 'partner@example.com') : (effectiveClientEmail || 'client@example.com')} className={input} /></label><label className="text-sm font-medium text-gray-700">Cc <span className="font-normal text-gray-400">(optional)</span><input value={cc} onChange={event => { setCc(event.target.value); invalidate(); }} placeholder="Additional recipients" className={input} /></label></div><p className="text-xs text-gray-500">Separate multiple addresses with commas. Confirm the recipients before continuing.</p><label className="block text-sm font-medium text-gray-700">Email greeting<select value={recipientType} onChange={event => { const nextType = event.target.value; setRecipientType(nextType); invalidate(); if (nextType === 'poc') { if (effectivePocEmail) setTo(effectivePocEmail); } else if (nextType === 'client') { setTo(effectiveClientEmail); } }} className={input}><option value="client">Client name</option><option value="poc">{effectiveLogo === 'TAMN' ? 'Partner contact (TAMN)' : (effectiveLogo === 'CPV' ? 'Partner contact (CPV)' : 'Partner contact (CPV / TAMN)')}</option></select></label></> : <section className="space-y-3 rounded-xl border border-gray-200 p-4"><div className="flex items-center justify-between gap-3"><h3 className="font-semibold">Review your email</h3><button type="button" className="min-h-11 text-sm text-blue-700 underline" onClick={invalidate}>Edit recipients</button></div><dl className="space-y-2 break-words text-sm"><div><dt className="inline text-gray-500">From: </dt><dd className="inline">{preview.job.sender}</dd></div><div><dt className="inline text-gray-500">To: </dt><dd className="inline">{preview.job.to.join(', ')}</dd></div>{preview.job.cc.length > 0 && <div><dt className="inline text-gray-500">Cc: </dt><dd className="inline">{preview.job.cc.join(', ')}</dd></div>}<div><dt className="inline text-gray-500">Subject: </dt><dd className="inline font-medium">{preview.job.subject}</dd></div></dl><iframe title="Email content preview" sandbox="" referrerPolicy="no-referrer" srcDoc={preview.html} className="h-64 w-full rounded-lg border border-gray-200 bg-white" /><a href={`${base}/${preview.job.id}/pdf`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline"><FileText size={17} />Review attached PDF: {preview.job.filename}</a><p className="text-xs leading-5 text-gray-500">This exact email and PDF will be sent. If you edit the report later, cancel and prepare a new email to use those changes.</p></section>}
             <div className="flex items-center gap-2 text-sm font-semibold text-gray-800"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs text-blue-700">2</span>Delivery time</div>{timeFields}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-5"><p className="max-w-sm text-xs leading-5 text-gray-500">{preview ? 'Confirming schedules one email. Only one active schedule is allowed per report.' : 'Preparing a preview saves this report. It does not send or schedule an email.'}</p><button className={`${button} border-[#006ABE] bg-[#006ABE] text-white hover:bg-[#00589e] shadow-sm`}><CalendarClock size={17} />{preview ? 'Schedule email' : 'Prepare email preview'}</button></div>
           </form>}

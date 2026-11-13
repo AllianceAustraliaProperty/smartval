@@ -1508,7 +1508,7 @@ def send_report_email(report_id):
 
         pdf_content = generate_pdf_from_html(html_content)
         file_number = (report.get('fileNumber') or report_id[-8:].upper()).strip()
-        logo_type = (report.get('valuationDetails', {}) or {}).get('logoType') or ''
+        logo_type = (body.get('logoType') or (report.get('valuationDetails', {}) or {}).get('logoType') or report.get('logoType') or '').strip().upper()
         if not logo_type:
             upper_fn = file_number.upper()
             if upper_fn.startswith('CPV'): logo_type = 'CPV'

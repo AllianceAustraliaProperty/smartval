@@ -22,16 +22,20 @@ COMPANY_POC_EMAILS = {
 }
 
 
-def get_report_company_info(report):
-    logo = ((report.get('valuationDetails') or {}).get('logoType') or '').strip().upper()
+def get_report_company_info(report, override_logo=None):
+    if override_logo:
+        override = str(override_logo).strip().upper()
+        if override in ('CPV', 'TAMN', 'AAP'):
+            return override
+    logo = ((report.get('valuationDetails') or {}).get('logoType') or report.get('logoType') or '').strip().upper()
+    if logo in ('CPV', 'TAMN', 'AAP'):
+        return logo
     file_num = (report.get('fileNumber') or '').strip().upper()
     if file_num.startswith('CPV'):
         return 'CPV'
     if file_num.startswith('TAMN'):
         return 'TAMN'
-    if logo in ('CPV', 'TAMN'):
-        return logo
-    return logo or 'AAP'
+    return 'AAP'
 
 
 def user_id():
@@ -108,7 +112,8 @@ def listing(report_id):
     client_email = (contact.get('email') or contact.get('email2') or '').strip()
     client_cc = (contact.get('email2') or '').strip() if contact.get('email') else ''
 
-    company = get_report_company_info(report)
+    req_logo = request.args.get('logoType')
+    company = get_report_company_info(report, override_logo=req_logo)
     poc_email = COMPANY_POC_EMAILS.get(company, '')
     is_poc = bool(poc_email)
 
@@ -149,7 +154,8 @@ def prepare(report_id):
     sender = settings.get('reportEmailSender') or Config.MS_GRAPH_SENDER_EMAIL
     if not sender: raise ValueError('The report sender mailbox is not configured. Ask an administrator to update email settings.')
     context = build_report_email_context(report, Config.REPORT_LOGO_URL)
-    logo = get_report_company_info(report)
+    req_logo = body.get('logoType')
+    logo = get_report_company_info(report, override_logo=req_logo)
     if body.get('recipientType') == 'poc' and logo in ('CPV', 'TAMN'):
         context['client_name'] = 'Falak' if logo == 'CPV' else 'Ashi'
     subject = render_string(settings.get('reportEmailSubject') or DEFAULT_REPORT_EMAIL_SUBJECT, context)

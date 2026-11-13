@@ -523,7 +523,7 @@
 
             <!-- Right: Breakdown details -->
             <div style="flex: 1; padding: 18px 24px 12px 28px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="display: flex; flex-direction: column; gap: {% if _show_improvements and _show_land_value %}8px{% else %}10px{% endif %}; font-size: 12px; color: #14191e;">
+                <div style="display: flex; flex-direction: column; gap: {% if _show_improvements %}7px{% else %}9px{% endif %}; font-size: 12px; color: #14191e;">
                     {% if _show_land_value %}
                     <div style="display: flex; justify-content: space-between;">
                         <span style="font-weight: bold; width: 125px;">Land Value:</span>
@@ -536,8 +536,14 @@
                         <span style="font-weight: normal; flex: 1;">{{ final_improvements|format_currency_no_decimal }}</span>
                     </div>
                     {% endif %}
+                    {% if _is_unit %}
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="font-weight: bold; width: 125px;">{% if _is_unit %}Valuation Amount:{% else %}Market Value:{% endif %}</span>
+                        <span style="font-weight: bold; width: 125px;">Valuation Amount:</span>
+                        <span style="font-weight: normal; flex: 1;">{{ (valuation_report.get('valuationDetails', {}).get('valuationAmount') or final_market_value)|format_currency_no_decimal }}</span>
+                    </div>
+                    {% endif %}
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: bold; width: 125px;">Market Value:</span>
                         <span style="font-weight: bold; flex: 1;">{{ final_market_value|format_currency_no_decimal }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
