@@ -31,11 +31,12 @@ export const metadata: Metadata = {
   description: "Modern property valuation report generation system with comprehensive form-based data collection and professional reporting capabilities.",
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon.png?v=2', sizes: '192x192', type: 'image/png' },
+      { url: '/favicon.ico?v=2', sizes: 'any' },
     ],
+    shortcut: '/favicon.ico?v=2',
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png?v=2', sizes: '180x180', type: 'image/png' },
     ],
   },
 };

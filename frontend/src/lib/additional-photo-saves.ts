@@ -17,6 +17,7 @@ export class AdditionalPhotoSaves {
       const response = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ photos }),
       });
       if (!response.ok) throw new Error('Photo changes could not be saved. Please retry.');

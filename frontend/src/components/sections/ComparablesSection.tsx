@@ -1423,6 +1423,7 @@ const ComparableCard: React.FC<{
         presignRes = await fetch(`${API_BASE_URL}/comparables-photos/update-photo/${reportId}/${type}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             fileExtension,
             contentType: file.type,
@@ -1435,6 +1436,7 @@ const ComparableCard: React.FC<{
         presignRes = await fetch(`${API_BASE_URL}/comparables-photos/presigned-url/${reportId}/${type}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ fileExtension, contentType: file.type }),
         });
       }
@@ -1489,6 +1491,7 @@ const ComparableCard: React.FC<{
       const confirmRes = await fetch(`${API_BASE_URL}/comparables-photos/confirm-upload/${reportId}/${type}/${index}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(confirmBody),
       });
 
@@ -1543,6 +1546,7 @@ const ComparableCard: React.FC<{
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ photoUrl: comparable.photoUrl }),
       });
       if (!response.ok) {
@@ -2283,6 +2287,7 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
         const deleteRes = await fetch(`${API_BASE_URL}/comparables-photos/delete/${reportId}/${type}`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ photoUrl: comparableToRemove.photoUrl }),
         });
 

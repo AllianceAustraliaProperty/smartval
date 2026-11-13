@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' fonts.googleapis.com https://cdnjs.cloudflare.com",
       `img-src 'self' data: blob: https:${isProd ? '' : ' http://localhost:5000'}`,
       "font-src 'self' fonts.gstatic.com https://cdnjs.cloudflare.com",
-      `connect-src 'self'${apiOrigin ? ` ${apiOrigin}` : ''}${prodConnectOrigins} https://*.sharepoint.com https://*.microsoftonline.com https://*.googleapis.com https://*.firebaseapp.com https://*.firebase.google.com https://*.s3.amazonaws.com https://maps.googleapis.com`,
+      `connect-src 'self'${apiOrigin ? ` ${apiOrigin}` : ''}${prodConnectOrigins} https://*.sharepoint.com https://*.microsoftonline.com https://*.googleapis.com https://*.firebaseapp.com https://*.firebase.google.com https://*.s3.amazonaws.com https://*.amazonaws.com https://maps.googleapis.com`,
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

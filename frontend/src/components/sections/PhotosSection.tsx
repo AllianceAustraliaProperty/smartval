@@ -189,6 +189,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ photos: sorted }),
       });
     } catch (error) {
@@ -287,6 +288,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
         await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ photos: latestPhotos }),
         });
       } catch (err) {
@@ -390,7 +392,9 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
 
   const fetchPhotos = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/photos/list/${reportId}`);
+      const response = await fetch(`${API_BASE_URL}/photos/list/${reportId}`, {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
         const allPhotos = data.photos || [];
@@ -409,6 +413,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ photoUrl }),
       });
 
@@ -432,6 +437,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ photoUrl }),
       });
 
@@ -495,6 +501,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(newPhoto),
       });
 
@@ -582,6 +589,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ photos: reordered }),
       });
     } catch (error) {
@@ -613,6 +621,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       const response = await fetch(`${API_BASE_URL}/photos/presigned-url/${reportId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           fileExtension,
           contentType: file.type,
@@ -649,6 +658,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
       const updateResponse = await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ photos: updatedPhotos }),
       });
 
@@ -826,6 +836,7 @@ const PhotoUploadComponent: React.FC<PhotoUploadProps> = ({ reportId, onPhotosUp
                                 const response = await fetch(`${API_BASE_URL}/photos/update/${reportId}`, {
                                   method: 'PUT',
                                   headers: { 'Content-Type': 'application/json' },
+                                  credentials: 'include',
                                   body: JSON.stringify({ photos: updatedPhotos }),
                                 });
 
@@ -1166,7 +1177,9 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
   }, [reportId, saves]);
 
   const fetchPhotos = async () => {
-    const res = await fetch(`${API_BASE_URL}/additional-photos/list/${reportId}`);
+    const res = await fetch(`${API_BASE_URL}/additional-photos/list/${reportId}`, {
+      credentials: 'include',
+    });
     if (!res.ok) throw new Error('Unable to load additional photos. Please retry.');
     const data = await res.json();
     publishPhotos(data.photos || [], true);
@@ -1207,6 +1220,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
       await saves.run(async () => {
         const response = await fetch(`${API_BASE_URL}/additional-photos/delete/${reportId}`, {
           method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ photoUrl }),
         });
         if (!response.ok) throw new Error('Failed to delete photo');
@@ -1235,6 +1249,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
   const savePhotosNow = async (list: any[]) => {
     const response = await fetch(`${API_BASE_URL}/additional-photos/update/${reportId}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ photos: list }),
     });
     if (!response.ok) throw new Error('Photo changes could not be saved. Please retry.');
@@ -1341,6 +1356,7 @@ const SimpleAdditionalPhotosUploader: React.FC<SimpleAdditionalPhotoUploadProps>
       const response = await fetch(`${API_BASE_URL}/additional-photos/presigned-url/${reportId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           fileExtension,
           contentType: file.type,
@@ -1789,7 +1805,9 @@ const FloorPlanUploader: React.FC<FloorPlanUploadProps> = ({ reportId, onPhotosU
 
   const fetchPhotos = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/floor-plans/list/${reportId}`);
+      const res = await fetch(`${API_BASE_URL}/floor-plans/list/${reportId}`, {
+        credentials: 'include',
+      });
       if (res.ok) {
         const data = await res.json();
         const list = data.photos || [];
@@ -1830,6 +1848,7 @@ const FloorPlanUploader: React.FC<FloorPlanUploadProps> = ({ reportId, onPhotosU
       const response = await fetch(`${API_BASE_URL}/floor-plans/delete/${reportId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ photoUrl })
       });
       if (!response.ok) {
@@ -1905,7 +1924,9 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
 
   const fetchPhotos = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/title-search/list/${reportId}`);
+      const res = await fetch(`${API_BASE_URL}/title-search/list/${reportId}`, {
+        credentials: 'include',
+      });
       if (res.ok) {
         const data = await res.json();
         setPhotos(data.photos || []);
@@ -1943,6 +1964,7 @@ const TitleSearchUploader: React.FC<TitleSearchUploadProps> = ({ reportId, onPho
       const response = await fetch(`${API_BASE_URL}/title-search/delete/${reportId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ photoUrl })
       });
       if (!response.ok) {

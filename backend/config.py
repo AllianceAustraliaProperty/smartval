@@ -5,7 +5,13 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# Load backend/.env first so backend settings populate os.environ without clobbering
+# any existing OS/container environment variables in production (override=False)
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+backend_env = os.path.join(backend_dir, '.env')
+if os.path.exists(backend_env):
+    load_dotenv(backend_env, override=False)
+load_dotenv(override=False)
 
 
 class Config:
@@ -18,7 +24,13 @@ class Config:
     MONGODB_URI = os.environ.get('MONGODB_URI') or 'mongodb://localhost:27017/flask_app'
     
     # CORS configuration
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'https://aapvaluations.com.au,https://www.aapvaluations.com.au').split(',')
+    default_cors = 'https://aapvaluations.com.au,https://www.aapvaluations.com.au'
+    _raw_cors = os.environ.get('CORS_ORIGINS', default_cors)
+    CORS_ORIGINS = [origin.strip() for origin in _raw_cors.split(',') if origin.strip()]
+    if DEBUG:
+        for local_origin in ['http://localhost:3000', 'http://127.0.0.1:3000']:
+            if local_origin not in CORS_ORIGINS:
+                CORS_ORIGINS.append(local_origin)
     
     # API configuration
     API_TITLE = 'Flask API'

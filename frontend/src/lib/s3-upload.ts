@@ -35,6 +35,7 @@ export async function getPresignedUrl(
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         fileExtension,
         contentType,
@@ -67,6 +68,7 @@ export async function getPresignedUrlsBatch(
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({ files }),
     });
     if (!response.ok) {
@@ -123,6 +125,7 @@ export async function confirmUpload(
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         s3Url,
         fileKey,

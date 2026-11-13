@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     response.cookies.set('val-ai-auth', sessionCookie, {
       httpOnly: true,
       secure: isProd,
-      sameSite: 'strict',
+      sameSite: isProd ? 'strict' : 'lax',
       path: '/',
       maxAge: 6 * 60 * 60, // 6 hours in seconds
     });
@@ -41,10 +41,11 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE() {
   const response = NextResponse.json({ ok: true });
+  const isProd = process.env.NODE_ENV === 'production';
   response.cookies.set('val-ai-auth', '', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'strict' : 'lax',
     path: '/',
     maxAge: 0,
   });
