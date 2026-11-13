@@ -5,7 +5,7 @@ import { SectionProps } from '@/types/property-valuation';
 import { API_BASE_URL } from '@/lib/api-config';
 import { apiRepository } from '@/lib/api-repository';
 import { HeaderActionPortal } from '../report-nav';
-import { Plus, Trash2, Edit3, Eye, EyeOff, MapPin, DollarSign, Calendar, Home, Scale, Car, Ruler, Calendar as CalendarIcon, Navigation, FileText, ExternalLink, Upload, X, Camera, Search, Filter, ListPlus, CheckCircle2, AlertTriangle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Edit3, Eye, EyeOff, MapPin, DollarSign, Calendar, Home, Scale, Car, Ruler, Calendar as CalendarIcon, Navigation, FileText, ExternalLink, Upload, X, Camera, Search, Filter, ListPlus, CheckCircle2, AlertTriangle, AlertCircle, Loader2, Sparkles, Wand2, ChevronDown } from 'lucide-react';
 
 interface Comparable {
   id: string;
@@ -1564,398 +1564,394 @@ const ComparableCard: React.FC<{
     }
   };
 
+  const inputClass = "w-full h-9 px-4 py-1.5 text-xs sm:text-sm font-medium border border-gray-300 rounded-full bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#006ABE] focus:ring-2 focus:ring-[#006ABE]/20 transition-all text-left shadow-2xs";
+  const inputReadOnlyClass = "w-full h-9 px-4 py-1.5 text-xs sm:text-sm font-medium border border-gray-200 rounded-full bg-gray-50 text-gray-700 cursor-not-allowed text-left shadow-2xs";
+  const labelClass = "block text-xs font-semibold text-gray-700 mb-1 ml-0.5 truncate text-left";
+
+  // Safe formatting for collapsed metric pills (strictly no NaN)
+  const priceVal = comparable.saleLeasePrice !== undefined && comparable.saleLeasePrice !== null && !isNaN(Number(comparable.saleLeasePrice)) ? Number(comparable.saleLeasePrice) : null;
+  const priceText = priceVal !== null ? `$${priceVal.toLocaleString()}` : '$—';
+
+  const accomParts: string[] = [];
+  if (comparable.bedrooms !== undefined && comparable.bedrooms !== null && comparable.bedrooms !== '' && !isNaN(Number(comparable.bedrooms))) {
+    accomParts.push(`${comparable.bedrooms} bed`);
+  }
+  if (comparable.bathrooms !== undefined && comparable.bathrooms !== null && comparable.bathrooms !== '' && !isNaN(Number(comparable.bathrooms))) {
+    accomParts.push(`${comparable.bathrooms} bath`);
+  }
+  if (comparable.carSpaces !== undefined && comparable.carSpaces !== null && comparable.carSpaces !== '' && !isNaN(Number(comparable.carSpaces))) {
+    accomParts.push(`${comparable.carSpaces} car`);
+  }
+  const accomText = accomParts.length > 0 ? accomParts.join(', ') : '— bed, — bath';
+
+  const siteArea = comparable.siteArea !== undefined && comparable.siteArea !== null && comparable.siteArea !== '' && !isNaN(Number(comparable.siteArea)) ? Number(comparable.siteArea) : null;
+  const bldArea = comparable.buildingArea !== undefined && comparable.buildingArea !== null && comparable.buildingArea !== '' && !isNaN(Number(comparable.buildingArea)) ? Number(comparable.buildingArea) : null;
+  const areaVal = bldArea ?? siteArea;
+  const areaText = areaVal !== null ? `${areaVal.toLocaleString()} sqm` : '— sqm';
+
+  const distVal = comparable.distance !== undefined && comparable.distance !== null && comparable.distance !== '' && !isNaN(Number(comparable.distance)) ? Number(comparable.distance) : null;
+  const distText = distVal !== null ? `${distVal} km` : '— km';
+
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-      {/* Card Header */}
-      <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-500 rounded-lg">
-              <Home className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900">Comparable #{index + 1}</h4>
-              <p className="text-sm text-gray-600">{toTitleCase(comparable.fullAddress) || 'Address not specified'}</p>
-            </div>
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden transition-all">
+      {/* Card Header: Crisp, Sleek & Informative */}
+      <div
+        className={`p-3.5 px-5 bg-gradient-to-r from-blue-50/80 via-slate-50 to-blue-50/60 ${
+          isExpanded ? 'border-b border-gray-200' : ''
+        } flex items-center justify-between transition-all`}
+      >
+        <div
+          onClick={onToggleExpanded}
+          className="flex items-center space-x-3 min-w-0 cursor-pointer select-none group flex-1"
+        >
+          <div className="w-8 h-8 rounded-lg bg-[#006ABE] text-white flex items-center justify-center shrink-0 shadow-xs group-hover:bg-[#00589e] transition-colors">
+            <Home className="w-4 h-4" />
           </div>
-          <div className="flex items-center space-x-2">
-            <button
-              type="button"
-              onClick={onToggleExpanded}
-              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-            >
-              {isExpanded ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-            <button
-              type="button"
-              onClick={() => onRemove(index)}
-              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+            <h4 className="font-bold text-sm text-gray-900 leading-tight shrink-0 group-hover:text-[#006ABE] transition-colors">
+              Comparable #{index + 1}
+            </h4>
+            <span className="text-gray-300 font-normal shrink-0">•</span>
+            <p className="text-sm text-gray-600 font-medium truncate max-w-[380px] sm:max-w-[600px] lg:max-w-[800px] leading-tight">
+              {toTitleCase(comparable.fullAddress) || 'Address not specified'}
+            </p>
           </div>
+        </div>
+
+        {/* Action Icons */}
+        <div className="flex items-center space-x-2 shrink-0 ml-3">
+          <button
+            type="button"
+            onClick={onToggleExpanded}
+            className="w-8 h-8 rounded-full border border-gray-200 bg-white text-gray-500 hover:text-gray-800 hover:border-gray-300 hover:bg-gray-50 flex items-center justify-center shadow-2xs transition-all cursor-pointer"
+            title={isExpanded ? 'Collapse card' : 'Expand card'}
+          >
+            {isExpanded ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            className="w-8 h-8 rounded-full border border-red-200 bg-red-50 text-red-600 hover:text-red-700 hover:border-red-300 hover:bg-red-100 flex items-center justify-center shadow-2xs transition-all cursor-pointer"
+            title="Delete comparable"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Quick Summary */}
-      <div className="p-4 bg-gray-50">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <DollarSign className="w-4 h-4 text-green-600" />
-            <span className="font-medium text-gray-900">
-              {comparable.saleLeasePrice ? `$${comparable.saleLeasePrice.toLocaleString()}` : 'Not set'}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Home className="w-4 h-4 text-blue-600" />
-            <span className="text-gray-700">
-              {comparable.bedrooms ?? '—'} bed, {comparable.bathrooms ?? '—'} bath
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Ruler className="w-4 h-4 text-purple-600" />
-            <span className="text-gray-700">
-              {comparable.buildingArea ?? '—'} sqm
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Navigation className="w-4 h-4 text-orange-600" />
-            <span className="text-gray-700">
-              {comparable.distance ?? '—'} km
-            </span>
-          </div>
-        </div>
-      </div>
+      {/* Collapsed Bottom Strip: 4 Beautiful Colored Pill Capsules (Money, Accommodation, Area, Distance) */}
+      {!isExpanded && (
+        <div
+          onClick={onToggleExpanded}
+          className="px-5 py-2.5 bg-gray-50/90 border-t border-gray-200/80 flex items-center flex-wrap gap-2.5 cursor-pointer hover:bg-gray-100/70 transition-colors select-none"
+        >
+          {/* Money Pill */}
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs">
+            <DollarSign className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>{priceText}</span>
+          </span>
 
-      {/* Expanded Form */}
+          {/* Accommodation Pill */}
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full shadow-2xs">
+            <Home className="w-3.5 h-3.5 text-[#006ABE] shrink-0" />
+            <span>{accomText}</span>
+          </span>
+
+          {/* Area Pill */}
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-purple-700 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full shadow-2xs">
+            <Ruler className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+            <span>{areaText}</span>
+          </span>
+
+          {/* Distance Pill */}
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full shadow-2xs">
+            <Navigation className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+            <span>{distText}</span>
+          </span>
+        </div>
+      )}
+
+      {/* Expanded Form Studio */}
       {isExpanded && (
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* Left Column - Photo Upload */}
-            <div className="lg:col-span-2">
-              <FormField
-                label="Property Photo"
-                error={errors.comparables?.[type]?.[index]?.photoUrl?.message}
-              >
-                <div className="space-y-4">
-                  {uploadError && (
-                    <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                      <p className="text-red-600 text-sm">{uploadError}</p>
-                    </div>
-                  )}
-
-                  {/* Photo Display */}
-                  {!imageError && (((comparable as any).tempPhoto?.previewUrl) || comparable.photoUrl) ? (
-                    <div className="relative group">
-                      <img
-                        src={((comparable as any).tempPhoto?.previewUrl) || comparable.photoUrl}
-                        alt={`Comparable ${index + 1} photo`}
-                        className="w-full aspect-square object-cover rounded-lg border-2 border-gray-200"
-                        onError={() => setImageError(true)}
-                      />
-                      <div className="absolute top-2 right-2 flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            console.log('Change photo button clicked for comparable', { reportId, type, index });
-                            fileInputRef.current?.click();
-                          }}
-                          className="bg-blue-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-blue-700"
-                          title="Change photo"
-                        >
-                          <Camera className="w-3 h-3" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={deletePhoto}
-                          className="bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700"
-                          title="Delete photo"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors aspect-square flex items-center justify-center">
-                      <div className="flex flex-col items-center space-y-2">
-                        <Camera className="w-6 h-6 text-gray-400" />
-                        <p className="text-xs text-gray-600">No photo</p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            console.log('Upload button clicked for comparable', { reportId, type, index });
-                            fileInputRef.current?.click();
-                          }}
-                          disabled={uploading}
-                          className="px-3.5 py-1.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium shadow-sm transition-all"
-                        >
-                          {uploading ? 'Uploading...' : 'Upload'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Hidden file input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      console.log('Comparable file input changed', { reportId, type, index });
-                      const f = e.target.files?.[0];
-                      if (!f) return;
-                      // Try presigned flow first
-                      const s3Url = await uploadComparableToS3(f);
-                      if (s3Url) {
-                        // ensure local tempPhoto is cleared if any
-                        setValue(`comparables.${type}.${index}.tempPhoto`, undefined, { shouldDirty: true, shouldTouch: true });
-                      }
-                      
-                      // Reset the file input so the same file can be selected again
-                      if (e.target) {
-                        e.target.value = '';
-                      }
-                    }}
-                    className="sr-only"
-                    disabled={uploading}
-                  />
-
-                  {/* Hidden input for form registration */}
-                  <input
-                    {...register(`comparables.${type}.${index}.photoUrl` as const)}
-                    type="hidden"
-                  />
+        <div className="p-4 sm:p-5 space-y-3.5">
+          {/* ================================================================= */}
+          {/* TIER 1: PROPERTY EVIDENCE GRID (PHOTO ON LEFT + ALL SPECS)        */}
+          {/* ZERO CLUMSINESS: Full-height photo + Symmetrical, left-aligned rows */}
+          {/* ================================================================= */}
+          <div className="grid grid-cols-12 gap-4 items-stretch">
+            {/* Left Column: Photo ONLY - Taller Vertical Height! (3 cols) */}
+            <div className="col-span-12 lg:col-span-3 flex flex-col">
+              {uploadError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-2 text-xs text-red-600 mb-2">
+                  {uploadError}
                 </div>
-              </FormField>
+              )}
+
+              {/* Photo Frame with Change Button & Red Trash Button */}
+              {!imageError && (((comparable as any).tempPhoto?.previewUrl) || comparable.photoUrl) ? (
+                <div className="w-full h-full min-h-[246px] rounded-xl overflow-hidden border border-gray-200 relative group bg-gray-100 shadow-2xs">
+                  <img
+                    src={((comparable as any).tempPhoto?.previewUrl) || comparable.photoUrl}
+                    alt={`Comparable ${index + 1} photo`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={() => setImageError(true)}
+                  />
+
+                  {/* Top-Right Actions: Pill-shaped Change Photo & Trash Buttons (Visible on Hover Only) */}
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="h-7 px-3 bg-black/70 hover:bg-black/85 text-white text-[11px] rounded-full font-medium backdrop-blur-md shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 hover:scale-105 active:scale-95"
+                      title="Change photo"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Change</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={deletePhoto}
+                      disabled={uploading}
+                      className="w-7 h-7 bg-red-600/90 hover:bg-red-600 text-white rounded-full shadow-md backdrop-blur-md transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 hover:scale-105 active:scale-95"
+                      title="Remove picture"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full h-full min-h-[246px] rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center p-4 text-center">
+                  <Camera className="w-7 h-7 text-gray-400 mb-1" />
+                  <span className="text-sm font-semibold text-gray-600">No Photo</span>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="mt-1.5 text-xs text-[#006ABE] font-bold hover:underline cursor-pointer disabled:opacity-50"
+                  >
+                    {uploading ? 'Uploading...' : '+ Upload Photo'}
+                  </button>
+                </div>
+              )}
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  console.log('Comparable file input changed', { reportId, type, index });
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  const s3Url = await uploadComparableToS3(f);
+                  if (s3Url) {
+                    setValue(`comparables.${type}.${index}.tempPhoto`, undefined, { shouldDirty: true, shouldTouch: true });
+                  }
+                  if (e.target) {
+                    e.target.value = '';
+                  }
+                }}
+                className="sr-only"
+                disabled={uploading}
+              />
+
+              {/* Hidden input for form registration */}
+              <input
+                {...register(`comparables.${type}.${index}.photoUrl` as const)}
+                type="hidden"
+              />
             </div>
 
-            {/* Right Column - Form Fields */}
-            <div className="lg:col-span-3 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  label="Full Address"
-                  error={errors.comparables?.[type]?.[index]?.fullAddress?.message}
-                >
-                  <Input
+            {/* Right Column: 4 Clean, Symmetrical, Uniformly Left-Aligned Rows (9 cols) */}
+            <div className="col-span-12 lg:col-span-9 space-y-2.5">
+              {/* Row 1: Core Transaction & Location (Address 6 cols, Price 2 cols, Date 2 cols, Distance 2 cols) */}
+              <div className="grid grid-cols-12 gap-2.5">
+                <div className="col-span-12 sm:col-span-6">
+                  <label className={labelClass}>Full Address</label>
+                  <input
+                    type="text"
                     {...register(`comparables.${type}.${index}.fullAddress` as const)}
                     placeholder="Enter comparable address"
-                    error={errors.comparables?.[type]?.[index]?.fullAddress?.message}
+                    className={inputClass}
                   />
-                </FormField>
-
-                <FormField
-                  label={priceLabel}
-                  error={errors.comparables?.[type]?.[index]?.saleLeasePrice?.message}
-                >
-                  <Input
+                  {errors.comparables?.[type]?.[index]?.fullAddress?.message && (
+                    <p className="text-[10px] text-red-600 font-medium mt-0.5">{errors.comparables[type][index].fullAddress.message}</p>
+                  )}
+                </div>
+                <div className="col-span-6 sm:col-span-2">
+                  <label className={labelClass}>{priceLabel} ($)</label>
+                  <input
                     type="number"
                     {...register(`comparables.${type}.${index}.saleLeasePrice` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 750000"
-                    error={errors.comparables?.[type]?.[index]?.saleLeasePrice?.message}
+                    placeholder="e.g. 750000"
+                    className={inputClass}
                   />
-                </FormField>
-
-
-                <FormField
-                  label="Bedrooms"
-                  error={errors.comparables?.[type]?.[index]?.bedrooms?.message}
-                >
-                  <Input
-                    type="number"
-                    {...register(`comparables.${type}.${index}.bedrooms` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 3"
-                    error={errors.comparables?.[type]?.[index]?.bedrooms?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="Bathrooms"
-                  error={errors.comparables?.[type]?.[index]?.bathrooms?.message}
-                >
-                  <Input
-                    type="number"
-                    {...register(`comparables.${type}.${index}.bathrooms` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 2"
-                    error={errors.comparables?.[type]?.[index]?.bathrooms?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="Car Spaces"
-                  error={errors.comparables?.[type]?.[index]?.carSpaces?.message}
-                >
-                  <Input
-                    type="number"
-                    {...register(`comparables.${type}.${index}.carSpaces` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 1"
-                    error={errors.comparables?.[type]?.[index]?.carSpaces?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="Site Area (sqm)"
-                  error={errors.comparables?.[type]?.[index]?.siteArea?.message}
-                >
-                  <Input
-                    type="number"
-                    {...register(`comparables.${type}.${index}.siteArea` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 500"
-                    error={errors.comparables?.[type]?.[index]?.siteArea?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="Land Value Per Hectare Rate ($/ha)"
-                  error={errors.comparables?.[type]?.[index]?.residualLandValue?.message}
-                >
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register(`comparables.${type}.${index}.residualLandValue` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 25000"
-                    error={errors.comparables?.[type]?.[index]?.residualLandValue?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="NLA / Building Area (sqm)"
-                  error={errors.comparables?.[type]?.[index]?.buildingArea?.message}
-                >
-                  <Input
-                    type="number"
-                    {...register(`comparables.${type}.${index}.buildingArea` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 180"
-                    error={errors.comparables?.[type]?.[index]?.buildingArea?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="Net Income ($)"
-                  error={errors.comparables?.[type]?.[index]?.netIncomeRental?.message}
-                >
-                  <Input
-                    type="number"
-                    {...register(`comparables.${type}.${index}.netIncomeRental` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 50000"
-                    error={errors.comparables?.[type]?.[index]?.netIncomeRental?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="Passing Rent ($)"
-                  error={errors.comparables?.[type]?.[index]?.passingRent?.message}
-                >
-                  <Input
-                    type="number"
-                    {...register(`comparables.${type}.${index}.passingRent` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 60000"
-                    error={errors.comparables?.[type]?.[index]?.passingRent?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="NLA Rate ($/sqm)"
-                  error={errors.comparables?.[type]?.[index]?.nlaRate?.message}
-                >
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register(`comparables.${type}.${index}.nlaRate` as const, { valueAsNumber: true })}
-                    placeholder="Auto-calculated"
-                    readOnly
-                    style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
-                    error={errors.comparables?.[type]?.[index]?.nlaRate?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="Yield (%)"
-                  error={errors.comparables?.[type]?.[index]?.yield?.message}
-                >
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register(`comparables.${type}.${index}.yield` as const, { valueAsNumber: true })}
-                    placeholder="Auto-calculated"
-                    readOnly
-                    style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
-                    error={errors.comparables?.[type]?.[index]?.yield?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="Build Year"
-                  error={errors.comparables?.[type]?.[index]?.buildYear?.message}
-                >
-                  <Input
-                    type="number"
-                    {...register(`comparables.${type}.${index}.buildYear` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 2005"
-                    error={errors.comparables?.[type]?.[index]?.buildYear?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label="Days on Market"
-                  error={errors.comparables?.[type]?.[index]?.daysOnMarket?.message}
-                >
-                  <Input
-                    type="number"
-                    {...register(`comparables.${type}.${index}.daysOnMarket` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 45"
-                    error={errors.comparables?.[type]?.[index]?.daysOnMarket?.message}
-                  />
-                </FormField>
-
-                <FormField
-                  label={dateLabel}
-                  error={errors.comparables?.[type]?.[index]?.saleLeaseDate?.message}
-                >
-                  <Input
+                  {errors.comparables?.[type]?.[index]?.saleLeasePrice?.message && (
+                    <p className="text-[10px] text-red-600 font-medium mt-0.5">{errors.comparables[type][index].saleLeasePrice.message}</p>
+                  )}
+                </div>
+                <div className="col-span-6 sm:col-span-2">
+                  <label className={labelClass}>{dateLabel}</label>
+                  <input
                     type="date"
                     {...register(`comparables.${type}.${index}.saleLeaseDate` as const)}
-                    error={errors.comparables?.[type]?.[index]?.saleLeaseDate?.message}
+                    className={inputClass}
                   />
-                </FormField>
-
-                <FormField
-                  label="Distance (km)"
-                  error={errors.comparables?.[type]?.[index]?.distance?.message}
-                >
-                  <Input
+                </div>
+                <div className="col-span-12 sm:col-span-2">
+                  <label className={labelClass}>Distance (km)</label>
+                  <input
                     type="number"
                     step="0.01"
                     {...register(`comparables.${type}.${index}.distance` as const, { valueAsNumber: true })}
-                    placeholder="e.g., 1.2"
-                    error={errors.comparables?.[type]?.[index]?.distance?.message}
+                    placeholder="e.g. 1.2"
+                    className={inputClass}
                   />
-                </FormField>
+                </div>
+              </div>
 
-                <FormField
-                  label="RP Data ID"
-                  error={errors.comparables?.[type]?.[index]?.rpId?.message}
-                >
-                  <Input
-                    {...register(`comparables.${type}.${index}.rpId` as const)}
-                    placeholder="External reference ID"
-                    error={errors.comparables?.[type]?.[index]?.rpId?.message}
+              {/* Row 2: Physical Specs in 6 Left-Aligned Columns */}
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
+                <div>
+                  <label className={labelClass}>Bedrooms</label>
+                  <input
+                    type="number"
+                    {...register(`comparables.${type}.${index}.bedrooms` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 3"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Bathrooms</label>
+                  <input
+                    type="number"
+                    {...register(`comparables.${type}.${index}.bathrooms` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 2"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Car Spaces</label>
+                  <input
+                    type="number"
+                    {...register(`comparables.${type}.${index}.carSpaces` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 1"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Site Area (sqm)</label>
+                  <input
+                    type="number"
+                    {...register(`comparables.${type}.${index}.siteArea` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 500"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>NLA / Building (sqm)</label>
+                  <input
+                    type="number"
+                    {...register(`comparables.${type}.${index}.buildingArea` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 180"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Build Year</label>
+                  <input
+                    type="number"
+                    {...register(`comparables.${type}.${index}.buildYear` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 2011"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+
+              {/* Row 3: Financial & Valuation Metrics in 6 Left-Aligned Columns */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                <div>
+                  <label className={labelClass}>Land Value Rate ($/ha)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    {...register(`comparables.${type}.${index}.residualLandValue` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 25000"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>NLA Rate ($/sqm)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    {...register(`comparables.${type}.${index}.nlaRate` as const, { valueAsNumber: true })}
+                    placeholder="Auto"
                     readOnly
-                    className="bg-gray-50 cursor-not-allowed"
+                    className={inputReadOnlyClass}
                   />
-                </FormField>
+                </div>
+                <div>
+                  <label className={labelClass}>Net Income ($)</label>
+                  <input
+                    type="number"
+                    {...register(`comparables.${type}.${index}.netIncomeRental` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 50000"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Passing Rent ($)</label>
+                  <input
+                    type="number"
+                    {...register(`comparables.${type}.${index}.passingRent` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 60000"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Yield (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    {...register(`comparables.${type}.${index}.yield` as const, { valueAsNumber: true })}
+                    placeholder="Auto"
+                    readOnly
+                    className={inputReadOnlyClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Days on Market</label>
+                  <input
+                    type="number"
+                    {...register(`comparables.${type}.${index}.daysOnMarket` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 21"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
 
-                <FormField
-                  label="Is Comparable"
-                  error={errors.comparables?.[type]?.[index]?.isComparable?.message}
-                >
-                  <div className="flex items-center space-x-2">
+              {/* Row 4: RP Data ID & Full "Property suitable for comparison" Checkbox */}
+              <div className="grid grid-cols-12 gap-2.5 items-end">
+                <div className="col-span-12 sm:col-span-4">
+                  <label className={labelClass}>RP Data ID</label>
+                  <input
+                    type="text"
+                    {...register(`comparables.${type}.${index}.rpId` as const)}
+                    placeholder="RP Data ID"
+                    readOnly
+                    className={inputReadOnlyClass}
+                  />
+                </div>
+                <div className="col-span-12 sm:col-span-8">
+                  <label className="flex items-center space-x-2.5 h-9 px-4 rounded-full bg-gray-50 border border-gray-200 cursor-pointer hover:bg-blue-50/50 hover:border-blue-200 transition shadow-2xs">
                     <input
                       type="checkbox"
                       {...register(`comparables.${type}.${index}.isComparable` as const)}
                       onChange={(e) => {
                         const isChecked = e.target.checked;
                         if (isChecked) {
-                          // Uncheck all other comparables of the same type
                           const currentComparables = watch(`comparables.${type}`) ?? [];
                           currentComparables.forEach((_: any, i: number) => {
                             if (i !== index) {
@@ -1963,31 +1959,27 @@ const ComparableCard: React.FC<{
                             }
                           });
                         }
-                        // Set the current comparable's value
                         setValue(`comparables.${type}.${index}.isComparable`, isChecked, { shouldDirty: true });
                       }}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      className="w-4 h-4 text-[#006ABE] bg-white border-gray-300 rounded focus:ring-[#006ABE] cursor-pointer"
                     />
-                    <label className="text-sm text-gray-700">
-                      This property is suitable for comparison
-                    </label>
-                  </div>
-                </FormField>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700 select-none">
+                      Property suitable for comparison
+                    </span>
+                  </label>
+                </div>
               </div>
+            </div>
+          </div>
 
-              {/* Description and Comparison Notes */}
-              <div className="relative">
-                <FormField
-                  label="Description"
-                  error={errors.comparables?.[type]?.[index]?.description?.message}
-                >
-                  <Textarea
-                    {...register(`comparables.${type}.${index}.description` as const)}
-                    placeholder="Brief description of the property..."
-                    rows={3}
-                    error={errors.comparables?.[type]?.[index]?.description?.message}
-                  />
-                </FormField>
+          {/* ================================================================= */}
+          {/* TIER 2: VALUER'S NARRATIVE & COMPARISON ANALYSIS (50/50 SPLIT)     */}
+          {/* ================================================================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch pt-3 border-t border-gray-200">
+            {/* LEFT 50% (6 cols): Big Expansive Description Box with Wand2 Icon */}
+            <div className="lg:col-span-6 bg-gray-50/70 p-4 rounded-2xl border border-gray-200 flex flex-col">
+              <div className="h-8 flex items-center justify-between mb-3">
+                <span className="text-sm font-bold text-gray-900 tracking-tight">Property Description</span>
                 <button
                   type="button"
                   onClick={async () => {
@@ -1997,14 +1989,14 @@ const ComparableCard: React.FC<{
                       const comp = watch(`comparables.${type}.${index}`);
                       const subjectZone = watch('propertyDetails.zoning');
                       const zone = comp?.zoning || subjectZone || '[Zone]';
-                      const buildingArea = comp?.buildingArea || '[building area]';
-                      const distance = comp?.distance || '[distance]';
-                      
+                      const bldArea = comp?.buildingArea || '[building area]';
+                      const dist = comp?.distance || '[distance]';
+
                       const promptText = `Generate a professional, concise property description for a comparable property used in a real estate valuation report.
 Property Details:
-- Building Area: ${buildingArea} sqm
+- Building Area: ${bldArea} sqm
 - Zoning: ${zone}
-- Distance from subject property: ${distance} km
+- Distance from subject property: ${dist} km
 
 The description should be in a similar format to: "Commercial retail premises with a building area of approximately [building area] sqm, situated within the [Zone]. The property comprises a well-presented ground-floor commercial unit suitable for retail, showroom, or light commercial use, featuring an open-plan retail/display area, ancillary storage, staff amenities, and convenient on-site and street parking. The property is located approximately [distance] km from the subject property."
 Make it professional and adapt it appropriately based on typical commercial retail premises. Do not include introductory phrases like "Here is a description". Return only the description text.`;
@@ -2012,9 +2004,9 @@ Make it professional and adapt it appropriately based on typical commercial reta
                       const response = await fetch('/internal-api/generate-text', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ prompt: promptText })
+                        body: JSON.stringify({ prompt: promptText }),
                       });
-                      
+
                       if (response.ok) {
                         const { data } = await response.json();
                         setValue(`comparables.${type}.${index}.description`, data, { shouldDirty: true });
@@ -2029,121 +2021,140 @@ Make it professional and adapt it appropriately based on typical commercial reta
                     }
                   }}
                   disabled={generatingDescId === `${type}-${index}`}
-                  className="absolute top-0 right-0 mt-1 mr-1 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-2.5 py-0.5 rounded-full border border-blue-200 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                  className="h-8 px-3.5 text-[#006ABE] hover:text-[#00589e] hover:bg-blue-100/70 rounded-full border border-blue-200/80 bg-white transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-bold disabled:opacity-50 shadow-2xs"
+                  title="Auto-generate property description"
                 >
                   {generatingDescId === `${type}-${index}` ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <Sparkles className="w-3 h-3" />
+                    <Wand2 className="w-3.5 h-3.5 text-[#006ABE]" />
                   )}
-                  {generatingDescId === `${type}-${index}` ? 'Generating...' : 'Auto-generate'}
+                  <span className="text-xs font-semibold">
+                    {generatingDescId === `${type}-${index}` ? 'Generating...' : 'Auto-generate'}
+                  </span>
                 </button>
               </div>
 
-              {/* Comparison Notes and Auto-fill side by side */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <FormField
-                  label="Comparison Notes"
-                  error={errors.comparables?.[type]?.[index]?.comparison?.message}
-                >
-                  <Textarea
-                    {...register(`comparables.${type}.${index}.comparison` as const)}
-                    placeholder="Summarise adjustments and comparability factors..."
-                    rows={6}
-                    error={errors.comparables?.[type]?.[index]?.comparison?.message}
-                  />
-                </FormField>
+              <textarea
+                {...register(`comparables.${type}.${index}.description` as const)}
+                rows={5}
+                placeholder="Enter comprehensive property description, architectural style, accommodation layout, condition, and quality finishes..."
+                className="w-full flex-1 min-h-[140px] text-sm font-medium leading-relaxed p-3.5 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:border-[#006ABE] focus:ring-2 focus:ring-[#006ABE]/20 transition text-gray-900 resize-y"
+              />
+              {errors.comparables?.[type]?.[index]?.description?.message && (
+                <p className="text-xs text-red-600 font-medium mt-1">{errors.comparables[type][index].description.message}</p>
+              )}
+            </div>
 
-                {/* Auto-fill Comparison Notes */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Auto-fill Options</label>
-                  <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2">
-                    {/* Similar */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 flex-shrink-0">
-                        <span className="text-xs font-medium text-gray-700">Similar</span>
-                      </div>
-                      <select
-                        value={similarDetail}
-                        onChange={(e) => setSimilarDetail(e.target.value)}
-                        className="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-gray-900"
-                      >
-                        <option value="">Select...</option>
-                        {COMPARISON_DETAIL_OPTIONS.map(o => (
-                          <option key={o} value={o}>{o}</option>
-                        ))}
-                      </select>
+            {/* RIGHT 50% (6 cols): Comparison Notes & Integrated Auto-fill */}
+            <div className="lg:col-span-6 bg-gray-50/70 p-4 rounded-2xl border border-gray-200 flex flex-col">
+              <div className="h-8 flex items-center justify-between mb-3">
+                <span className="text-sm font-bold text-gray-900 tracking-tight">Comparison Notes & Parameters</span>
+              </div>
+
+              {/* Auto-fill Parameters Strip (Similar, Inferior, Superior, Overall) - Centered custom ChevronDown */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-16 text-xs font-semibold text-gray-700 shrink-0">Similar</span>
+                  <div className="relative flex-1">
+                    <select
+                      value={similarDetail}
+                      onChange={(e) => setSimilarDetail(e.target.value)}
+                      className="w-full h-8 pl-3.5 pr-8 text-xs font-medium border border-gray-300 rounded-full bg-white text-gray-800 focus:outline-none focus:border-[#006ABE] focus:ring-1 focus:ring-[#006ABE]/20 cursor-pointer shadow-2xs appearance-none truncate"
+                    >
+                      <option value="">Select...</option>
+                      {COMPARISON_DETAIL_OPTIONS.map((o) => (
+                        <option key={o} value={o}>{o}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <ChevronDown className="w-3.5 h-3.5" />
                     </div>
+                  </div>
+                </div>
 
-                    {/* Inferior */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 flex-shrink-0">
-                        <span className="text-xs font-medium text-gray-700">Inferior</span>
-                      </div>
-                      <select
-                        value={inferiorDetail}
-                        onChange={(e) => setInferiorDetail(e.target.value)}
-                        className="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-gray-900"
-                      >
-                        <option value="">Select...</option>
-                        {COMPARISON_DETAIL_OPTIONS.map(o => (
-                          <option key={o} value={o}>{o}</option>
-                        ))}
-                      </select>
+                <div className="flex items-center gap-2">
+                  <span className="w-16 text-xs font-semibold text-gray-700 shrink-0">Inferior</span>
+                  <div className="relative flex-1">
+                    <select
+                      value={inferiorDetail}
+                      onChange={(e) => setInferiorDetail(e.target.value)}
+                      className="w-full h-8 pl-3.5 pr-8 text-xs font-medium border border-gray-300 rounded-full bg-white text-gray-800 focus:outline-none focus:border-[#006ABE] focus:ring-1 focus:ring-[#006ABE]/20 cursor-pointer shadow-2xs appearance-none truncate"
+                    >
+                      <option value="">Select...</option>
+                      {COMPARISON_DETAIL_OPTIONS.map((o) => (
+                        <option key={o} value={o}>{o}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <ChevronDown className="w-3.5 h-3.5" />
                     </div>
+                  </div>
+                </div>
 
-                    {/* Superior */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 flex-shrink-0">
-                        <span className="text-xs font-medium text-gray-700">Superior</span>
-                      </div>
-                      <select
-                        value={superiorDetail}
-                        onChange={(e) => setSuperiorDetail(e.target.value)}
-                        className="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-gray-900"
-                      >
-                        <option value="">Select...</option>
-                        {COMPARISON_DETAIL_OPTIONS.map(o => (
-                          <option key={o} value={o}>{o}</option>
-                        ))}
-                      </select>
+                <div className="flex items-center gap-2">
+                  <span className="w-16 text-xs font-semibold text-gray-700 shrink-0">Superior</span>
+                  <div className="relative flex-1">
+                    <select
+                      value={superiorDetail}
+                      onChange={(e) => setSuperiorDetail(e.target.value)}
+                      className="w-full h-8 pl-3.5 pr-8 text-xs font-medium border border-gray-300 rounded-full bg-white text-gray-800 focus:outline-none focus:border-[#006ABE] focus:ring-1 focus:ring-[#006ABE]/20 cursor-pointer shadow-2xs appearance-none truncate"
+                    >
+                      <option value="">Select...</option>
+                      {COMPARISON_DETAIL_OPTIONS.map((o) => (
+                        <option key={o} value={o}>{o}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <ChevronDown className="w-3.5 h-3.5" />
                     </div>
+                  </div>
+                </div>
 
-                    {/* Overall */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 flex-shrink-0">
-                        <span className="text-xs font-medium text-gray-700">Overall</span>
-                      </div>
-                      <select
-                        value={overallDetail}
-                        onChange={(e) => setOverallDetail(e.target.value)}
-                        className="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-gray-900"
-                      >
-                        <option value="">Select...</option>
-                        {OVERALL_DETAIL_OPTIONS.map(o => (
-                          <option key={o} value={o}>{o}</option>
-                        ))}
-                      </select>
+                <div className="flex items-center gap-2">
+                  <span className="w-16 text-xs font-semibold text-[#006ABE] shrink-0">Overall</span>
+                  <div className="relative flex-1">
+                    <select
+                      value={overallDetail}
+                      onChange={(e) => setOverallDetail(e.target.value)}
+                      className="w-full h-8 pl-3.5 pr-8 text-xs font-medium text-[#006ABE] border border-blue-200 rounded-full bg-blue-50/70 focus:outline-none focus:border-[#006ABE] focus:ring-1 focus:ring-[#006ABE]/20 cursor-pointer shadow-2xs appearance-none truncate"
+                    >
+                      <option value="">Select...</option>
+                      {OVERALL_DETAIL_OPTIONS.map((o) => (
+                        <option key={o} value={o}>{o}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#006ABE]">
+                      <ChevronDown className="w-3.5 h-3.5" />
                     </div>
-
-                    {/* Land Value (Land Valuation reports only) */}
-                    {watch('valuationDetails.valuationType') === 'Land Valuation' && (
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 flex-shrink-0">
-                          <span className="text-xs font-medium text-gray-700">Land Value</span>
-                        </div>
-                        <input
-                          type="number"
-                          step="0.01"
-                          {...register(`comparables.${type}.${index}.landValue` as const, { valueAsNumber: true })}
-                          placeholder="e.g., 165000"
-                          className="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-gray-900"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
+
+              {/* Land Value (Land Valuation reports only) */}
+              {watch('valuationDetails.valuationType') === 'Land Valuation' && (
+                <div className="flex items-center gap-2 mb-2.5 bg-white p-1 px-3.5 rounded-full border border-gray-200 shadow-2xs">
+                  <span className="text-xs font-semibold text-gray-700 whitespace-nowrap">Land Value ($):</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    {...register(`comparables.${type}.${index}.landValue` as const, { valueAsNumber: true })}
+                    placeholder="e.g. 165000"
+                    className="flex-1 h-7 px-2.5 text-xs border border-gray-200 rounded-full focus:outline-none focus:border-[#006ABE]"
+                  />
+                </div>
+              )}
+
+              {/* Comparison Notes Textarea */}
+              <textarea
+                {...register(`comparables.${type}.${index}.comparison` as const)}
+                rows={3}
+                placeholder="Summarise adjustments and comparability factors..."
+                className="w-full flex-1 min-h-[90px] text-sm font-medium leading-relaxed p-3.5 border border-gray-300 rounded-2xl bg-white focus:outline-none focus:border-[#006ABE] focus:ring-2 focus:ring-[#006ABE]/20 transition text-gray-900 resize-y"
+              />
+              {errors.comparables?.[type]?.[index]?.comparison?.message && (
+                <p className="text-xs text-red-600 font-medium mt-1">{errors.comparables[type][index].comparison.message}</p>
+              )}
             </div>
           </div>
         </div>
