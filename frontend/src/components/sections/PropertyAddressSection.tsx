@@ -297,8 +297,12 @@ export const PropertyAddressSection: React.FC<SectionProps> = ({ register, error
                             }
                             if (Number.isFinite(buildingArea) && buildingArea > 0) {
                               setValue('propertyDetails.buildingArea', buildingArea, { shouldDirty: true });
-                              if (parkingArea !== undefined) {
+                              if (isUnitType) {
+                                setValue('propertyDetails.livingArea', buildingArea, { shouldDirty: true });
+                              } else if (parkingArea !== undefined) {
                                 setValue('propertyDetails.livingArea', Math.max(0, buildingArea - parkingArea), { shouldDirty: true });
+                              } else {
+                                setValue('propertyDetails.livingArea', buildingArea, { shouldDirty: true });
                               }
                             }
                           }

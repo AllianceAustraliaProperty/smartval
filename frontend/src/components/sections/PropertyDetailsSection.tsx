@@ -97,9 +97,16 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
 
         const livingVal = watch('propertyDetails.livingArea');
         if (livingVal === undefined && bVal !== undefined) {
-          const effectiveParking = parkingVal !== undefined ? parkingVal : (Number.isFinite(carSpacesNum) && carSpacesNum > 0 ? carSpacesNum * 18 : 0);
+          const rawT = String(data?.attrCore?.propertyType || data?.propertyType || '').toLowerCase();
+          const rawSub = String(data?.attrCore?.propertySubType || data?.propertySubType || '').toLowerCase();
+          const currentPropType = (watch('propertyDetails.propertyType') || '').toLowerCase();
+          const isUnit = watch('valuationDetails.isUnit') === true ||
+            currentPropType.includes('unit') || currentPropType.includes('apartment') || currentPropType.includes('flat') ||
+            rawT.includes('unit') || rawSub.includes('unit') || rawSub.includes('apartment') || rawSub.includes('flat');
+
+          const effectiveParking = !isUnit && (parkingVal !== undefined ? parkingVal : (Number.isFinite(carSpacesNum) && carSpacesNum > 0 ? carSpacesNum * 18 : 0));
           if (isMounted) {
-            setValue('propertyDetails.livingArea', Math.max(0, bVal - effectiveParking), { shouldDirty: true });
+            setValue('propertyDetails.livingArea', isUnit ? bVal : Math.max(0, bVal - (effectiveParking || 0)), { shouldDirty: true });
           }
         }
 
@@ -158,21 +165,32 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
     }
   }, [heritageIssue, setValue]);
 
-  // Synchronize livingArea = buildingArea - parkingArea when buildingArea or parkingArea changes
-  const prevCalcRef = React.useRef<{ building?: number; parking?: number }>({});
+  // Synchronize livingArea = buildingArea - parkingArea when buildingArea or parkingArea changes (unless unit)
+  const prevCalcRef = React.useRef<{ building?: number; parking?: number; isUnit?: boolean }>({});
+  const isUnitValuation = watch('valuationDetails.isUnit');
+  const propTypeCurrent = watch('propertyDetails.propertyType');
 
   React.useEffect(() => {
     const b = typeof watchedBuildingArea === 'number' ? watchedBuildingArea : (watchedBuildingArea ? Number(watchedBuildingArea) : undefined);
     const p = typeof watchedParkingArea === 'number' ? watchedParkingArea : (watchedParkingArea !== undefined && watchedParkingArea !== null && watchedParkingArea !== '' ? Number(watchedParkingArea) : undefined);
+    const lowerType = (propTypeCurrent || '').toLowerCase();
+    const isUnit = isUnitValuation === true || lowerType.includes('unit') || lowerType.includes('apartment') || lowerType.includes('flat');
 
-    if (b !== undefined && Number.isFinite(b) && p !== undefined && Number.isFinite(p)) {
-      if (prevCalcRef.current.building !== b || prevCalcRef.current.parking !== p) {
-        const calculatedLiving = Math.max(0, b - p);
-        setValue('propertyDetails.livingArea', calculatedLiving, { shouldDirty: true });
-        prevCalcRef.current = { building: b, parking: p };
+    if (b !== undefined && Number.isFinite(b)) {
+      if (isUnit) {
+        if (prevCalcRef.current.building !== b || prevCalcRef.current.isUnit !== isUnit) {
+          setValue('propertyDetails.livingArea', b, { shouldDirty: true });
+          prevCalcRef.current = { building: b, parking: p, isUnit: true };
+        }
+      } else if (p !== undefined && Number.isFinite(p)) {
+        if (prevCalcRef.current.building !== b || prevCalcRef.current.parking !== p || prevCalcRef.current.isUnit !== isUnit) {
+          const calculatedLiving = Math.max(0, b - p);
+          setValue('propertyDetails.livingArea', calculatedLiving, { shouldDirty: true });
+          prevCalcRef.current = { building: b, parking: p, isUnit: false };
+        }
       }
     }
-  }, [watchedBuildingArea, watchedParkingArea, setValue]);
+  }, [watchedBuildingArea, watchedParkingArea, isUnitValuation, propTypeCurrent, setValue]);
 
   const handleAutoFillZoningEffects = () => {
     const councilArea = watch('propertyDetails.councilArea');
@@ -294,9 +312,16 @@ export const PropertyDetailsSection: React.FC<SectionProps> = ({ register, error
         ? carSpacesNum * 18
         : undefined;
 
-      // Living area = building area - parking area (e.g. 198 - 36 = 162 sqm)
+      const rawT = String(data?.attrCore?.propertyType || data?.propertyType || '').toLowerCase();
+      const rawSub = String(data?.attrCore?.propertySubType || data?.propertySubType || '').toLowerCase();
+      const activePropType = (watch('propertyDetails.propertyType') || '').toLowerCase();
+      const isUnit = watch('valuationDetails.isUnit') === true ||
+        activePropType.includes('unit') || activePropType.includes('apartment') || activePropType.includes('flat') ||
+        rawT.includes('unit') || rawSub.includes('unit') || rawSub.includes('apartment') || rawSub.includes('flat');
+
+      // Living area = building area - parking area (e.g. 198 - 36 = 162 sqm), unless unit
       const livingAreaVal = buildingAreaNum !== undefined
-        ? (parkingAreaVal !== undefined ? Math.max(0, buildingAreaNum - parkingAreaVal) : buildingAreaNum)
+        ? (!isUnit && parkingAreaVal !== undefined ? Math.max(0, buildingAreaNum - parkingAreaVal) : buildingAreaNum)
         : undefined;
 
       setIfDefined('propertyDetails.siteArea', toNum(siteAreaRaw));
