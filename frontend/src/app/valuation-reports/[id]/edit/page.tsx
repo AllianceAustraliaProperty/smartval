@@ -101,10 +101,15 @@ const sections = [
         return !!(sectionData.titleReference && sectionData.zoning);
       case 'locationDetails':
         return !!(sectionData.suburbDescription);
-      case 'propertyDescriptors':
-        // Check if at least some key fields are filled
-        return !!(sectionData.bedrooms || sectionData.bathrooms || sectionData.carSpaces ||
-                  sectionData.mainBuildingType || sectionData.roofingType || sectionData.externalWalls);
+      case 'propertyDescriptors': {
+        const hasBuildingType = !!(sectionData.mainBuildingType && String(sectionData.mainBuildingType).trim());
+        const hasRoofing = !!(sectionData.roofingType && String(sectionData.roofingType).trim());
+        const extWalls = sectionData.externalWalls;
+        const hasExtWalls = Array.isArray(extWalls)
+          ? extWalls.length > 0
+          : !!(extWalls && String(extWalls).trim());
+        return hasBuildingType && hasRoofing && hasExtWalls;
+      }
       case 'ancillaryImprovements':
         return !!(
           sectionData.driveway ||

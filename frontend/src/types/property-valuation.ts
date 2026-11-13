@@ -564,7 +564,7 @@ export const DEFAULT_PROPERTY_FORM: PropertyValuationData = {
     dateIssued: '',
     currentDayValuation: false,
     externalDesktopValuation: false,
-    marketValue: 3000000,
+    marketValue: undefined,
     interestValued: 'Fee Simple Vacant Possession',
     showCurrencyOfValuation: true,
     showLandValue: true,
