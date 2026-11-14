@@ -25,11 +25,6 @@ const UserSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-// Create indexes for lightning-fast lookups during login
-UserSchema.index({ email: 1 });
-UserSchema.index({ username: 1 });
-UserSchema.index({ firebaseUid: 1 });
-
 const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
 export default User;

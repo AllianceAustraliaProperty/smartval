@@ -1,0 +1,215 @@
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">7. Market Evidence</div>
+    <div class="space-between-sm"></div>
+    <div id="market-evidence">
+      <div class="market-evidence-container">
+        {% if "comparables" in valuation_report and "sales" in
+        valuation_report["comparables"] %} {% for comparable in
+        valuation_report["comparables"]["sales"] %}
+        <div class="property-card">
+          <div class="property-header">
+            <div class="property-address">
+              <div class="map-pin">
+                <img src="https://valai.duo.tax/assets/map-icon.svg" alt="Map Pin" />
+                <span>{{ loop.index }}</span>
+              </div>
+              {{ comparable["fullAddress"]|default('')|title_address }}
+            </div>
+            <div class="property-status">
+              <span class="status-label">Sold</span>
+              <span class="status-price">{{ comparable["saleLeasePrice"]|format_currency|default('')
+                }}</span>
+            </div>
+          </div>
+          <div class="property-content">
+            {% set comp_img = comparable.get("photoUrl") or comparable.get("photo_url") or comparable.get("imageUrl") or comparable.get("image_url") %}
+            <img class="property-image" src="{{ comp_img or 'https://valai.duo.tax/assets/property-placeholder.jpg' }}" alt="Property Image" />
+            <div class="property-details">
+              <div class="property-specs">
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/bed-icon.svg" alt="Bed"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["bedrooms"]|default('') }}
+                </div>
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/bath-icon.svg" alt="Bath"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["bathrooms"]|default('') }}
+                </div>
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/car-icon.svg" alt="Car"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["carSpaces"]|default('') }}
+                </div>
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/land-icon.svg" alt="Site Area"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["siteArea"]|format_area_smart|default('') }}
+                </div>
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/floor-icon.svg" alt="Building Area"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["buildingArea"]|format_area|default('') }}
+                </div>
+              </div>
+
+              <div class="property-info-grid">
+                <div class="info-row">
+                  <div class="info-label">Year Built</div>
+                  <div class="info-value">
+                    {{ comparable["buildYear"]|default('-') }}
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">DOM</div>
+                  <div class="info-value">
+                    {{ comparable["daysOnMarket"]|default('-') }}
+                  </div>
+                </div>
+
+                <div class="info-row">
+                  <div class="info-label">Sale Date</div>
+                  <div class="info-value">
+                    {{ comparable.get("saleLeaseDate")|format_date|default('-') }}
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Distance</div>
+                  <div class="info-value">
+                    {{ comparable["distance"]|default('-') }} km
+                  </div>
+                </div>
+              </div>
+
+              <div class="property-comparison">
+                In comparison to subject: {{ comparable["comparison"] |
+                default('') }}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %} {% endif %}
+      </div>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+
+  {% if has_rentals %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">8. Rental Evidence</div>
+    <div class="space-between-sm"></div>
+    <div id="rental-evidence">
+      <div class="market-evidence-container">
+        {% for comparable in valuation_report["comparables"]["rentals"] %}
+        <div class="property-card">
+          <div class="property-header">
+            <div class="property-address">
+              <div class="map-pin">
+                <img src="https://valai.duo.tax/assets/map-icon.svg" alt="Map Pin" />
+                <span>{{ loop.index }}</span>
+              </div>
+              {{ comparable["fullAddress"]|default('')|title_address }}
+            </div>
+            <div class="property-status">
+              <span class="status-label">Leased</span>
+              <span class="status-price">{{ comparable["saleLeasePrice"]|format_currency|default('') }} {{
+                comparable.get("rentalFrequency", "")|format_rental_frequency }}</span>
+            </div>
+          </div>
+          <div class="property-content">
+            {% set comp_img = comparable.get("photoUrl") or comparable.get("photo_url") or comparable.get("imageUrl") or
+            comparable.get("image_url") %}
+            <img class="property-image" src="{{ comp_img or 'https://valai.duo.tax/assets/property-placeholder.jpg' }}"
+              alt="Property Image" />
+            <div class="property-details">
+              <div class="property-specs">
+                {% if comparable.get("bedrooms") %}
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/bed-icon.svg" alt="Bed"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["bedrooms"]|default('') }}
+                </div>
+                {% endif %}
+                {% if comparable.get("bathrooms") %}
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/bath-icon.svg" alt="Bath"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["bathrooms"]|default('') }}
+                </div>
+                {% endif %}
+                {% if comparable.get("carSpaces") %}
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/car-icon.svg" alt="Car"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["carSpaces"]|default('') }}
+                </div>
+                {% endif %}
+                {% if comparable.get("siteArea") %}
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/land-icon.svg" alt="Site Area"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["siteArea"]|format_area_smart|default('') }}
+                </div>
+                {% endif %}
+                {% if comparable.get("buildingArea") %}
+                <div class="spec-item">
+                  <img src="https://valai.duo.tax/assets/floor-icon.svg" alt="Building Area"
+                    style="width: 16px; height: 16px; vertical-align: middle" />
+                  {{ comparable["buildingArea"]|format_area|default('') }}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="property-info-grid">
+                {% if comparable.get("buildYear") %}
+                <div class="info-row">
+                  <div class="info-label">Year Built</div>
+                  <div class="info-value">
+                    {{ comparable["buildYear"]|default('-') }}
+                  </div>
+                </div>
+                {% endif %}
+                <div class="info-row">
+                  <div class="info-label">Lease Date</div>
+                  <div class="info-value">
+                    {{ comparable.get("saleLeaseDate")|format_date|default('-') }}
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Distance</div>
+                  <div class="info-value">
+                    {{ comparable["distance"]|default('-') }} km
+                  </div>
+                </div>
+              </div>
+
+              <div class="property-comparison">
+                {% if comparable.get("briefComments") %}
+                <strong>Brief comments:</strong> {{ comparable["briefComments"] }}<br />
+                {% endif %}
+                {% if comparable.get("comparison") %}
+                In comparison to subject: {{ comparable["comparison"]|default('') }}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endif %}
+

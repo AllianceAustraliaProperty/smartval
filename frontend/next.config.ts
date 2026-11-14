@@ -75,6 +75,9 @@ const nextConfig: NextConfig = {
   // Disable X-Powered-By header
   poweredByHeader: false,
 
+  // Explicitly disable browser source maps in production
+  productionBrowserSourceMaps: false,
+
   // Compress responses
   compress: true,
 

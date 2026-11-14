@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "NODE_OPTIONS='--dns-result-order=ipv4first' next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "tsc --noEmit && next lint"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

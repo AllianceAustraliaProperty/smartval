@@ -108,6 +108,22 @@ backend/uploads/
 *.rdp
 .claude*env*
 
+# Scratch and test output files
+test*.html
+test*.jpg
+test*.jpeg
+test*.png
+error*.txt
+debug*.log
+reproduce_*.py
+
+# Output and temporary directories
+output/
+reports/
+tmp/
+temp/
+scratch/
+
 # Planning
 .planning/
 

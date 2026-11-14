@@ -1,0 +1,181 @@
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">{{ 10 + section_offset }}. Assumptions, Conditions & Limitations</div>
+    <div style="line-height: 15px">
+      <p>
+        The valuation is made on the basis of "Market Value" as adopted by the Australian Property Institute from the International Valuation Standards Council definition. That is: "The estimated amount for which an asset should exchange on the date of valuation between a willing buyer and a willing seller in an arm’s length transaction after proper marketing wherein the parties had each acted knowledgeably, Prudently, and without compulsion".
+      </p>
+      <p>
+        This valuation is for the use of the party or parties to whom it is
+        addressed and is not to be used for any other purposes. The report is
+        subject to the definitions, qualifiers and disclaimers contained
+        herein and which form part of this report. No liability or
+        responsibility is accepted or undertaken to any third party or parties
+        which may use or rely on the whole or any part of this report or its
+        conclusion. No liability or responsibility is accepted or undertaken
+        in the event that the party or parties to which it is addressed use
+        this report for any other purpose apart from that expressly outlined.
+      </p>
+      <p>
+        No part of this valuation or any reference to it may be included in
+        any other document or reproduced or published in any way without
+        written approval of the form and context in which it is to appear.
+        Only a signed original of this valuation should be relied upon and no
+        responsibility will be accepted for photocopies of the report or
+        signatures to the report. The Valuer nor, to the best of my knowledge,
+        any member of this firm, has any conflict of interest; direct,
+        indirect or financial interest pecuniary or otherwise in the said
+        property that is not disclosed herein.
+      </p>
+      <p>
+        This valuation is current at the date of valuation only. The value
+        assessed herein may change significantly and unexpectedly over a
+        relatively short period including as a result of general market
+        movements or factors specific to the particular property. We do not
+        accept liability for losses arising from such subsequent changes in
+        value including consequential or economic loss. Without limiting the
+        generality of the above comment, we do not assume any responsibility
+        or accept any liability where this valuation is relied upon after the
+        expiration of three months from the date of the valuation, or such
+        earlier date if you become aware of any factors that have any effect
+        on the valuation.
+      </p>
+      <p>
+        Unless specifically stated, where the valuation relates to a Strata
+        Titled property, all parties should be aware that the market value is
+        assessed without knowledge of orders against the Strata Company and
+        without the benefit of a search of the Strata Company's records,
+        particularly relating to reserve funds. All parties should make their
+        own enquiries in relation to this matter.
+      </p>
+      <p>
+        Plant and equipment and other items have not been individually tested
+        or inspected to a standard other than that required by a prudent
+        valuer in making this assessment. Sufficient enquiry has been made to
+        enable the valuer to arrive at a fair assessment and the right to
+        amend any valuation should an unknown condition or impediment be
+        established by competent analysis is therefore reserved.
+      </p>
+      <p>
+        No soil tests or environmental studies have been made available for
+        the valuer's perusal. Therefore, it should be noted that the valuation
+        is subject to there being no surface or sub-surface soil problems
+        including instability, toxic/ hazardous wastes, toxic mould, asbestos
+        or building material hazards in or on the property that would
+        adversely affect, its existing or potential use or reduce its
+        marketability. Should a problem be known or arise the valuation should
+        be referred to the valuer for comment and review as deemed
+        appropriate. We are not experts in this regard and if more detailed
+        advice is required, an environmental consultant should be retained.
+        The client acknowledges and recognizes that the Valuer is not expert
+        in identifying environmental hazards and compliance requirements
+        affecting properties. The Valuer has endeavoured to identify all
+        matters of environmental concern and the effect they might have on the
+        value of the property. However, the Valuer will not be held liable nor
+        responsible for his/her failure to identify all such matters of
+        environmental concern and the impact which any environmental related
+        issue has on the property and its value.
+      </p>
+      <p>
+        Unless stated as otherwise in this report we advise that a copy of the
+        current Certificate of Title has not been provided or searched. This
+        valuation assumes clear title. Should any encumbrances, easements,
+        leases or other restrictions not mentioned in this report be known or
+        discovered then the valuation should be referred to the Valuer for
+        comment.
+      </p>
+      <p>
+        For retrospective valuations where the valuer does not have access to
+        conduct an internal inspection, we will proceed on the basis of a
+        desktop assessment. The information and photographs of the subject
+        property including condition and presentation will be sourced from a
+        combination but not limited to our internal database, online property
+        searches, local agent and government resources. Should the information
+        noted in our report be revealed inaccurate/incorrect at a future date,
+        we reserve the right to amend our valuation report.
+      </p>
+      <p>
+        It is noted that our Valuation Report is not suitable for Court
+        Purposes. This report should not be used for litigation proceedings
+        and does not meet the criteria of Property Disputes, Expert Witness
+        and/or Family Court Matters.
+      </p>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% for photos_group in valuation_report["gallery_photos_groups"] %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">
+      {{ 11 + section_offset }}. Photographs {{ "(cont'd)" if loop.index > 1 else "" }}
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="photos-container">
+      {% for photo in photos_group %}
+      <img src="{{ photo['photoUrl'] }}" alt="" />
+      {% endfor %}
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endfor %}
+
+  {# Dynamic section numbering for Additional Photos and Floor Plan #}
+  {% set additional_photos_section_num = 13 %}
+  {% set floor_plan_section_num = 13 if not has_additional_photos else 14 %}
+
+  {# Additional Photos Section - 6 photos per page, 2 per row #}
+  {% if has_additional_photos %}
+  {% set additional_photos_groups = valuation_report["additionalPhotos"]|batch(6) %}
+  {% set additional_photos_type = valuation_report.get("additionalPhotosType", "") %}
+  {% set type_suffix = " (" + additional_photos_type + ")" if additional_photos_type else "" %}
+  {% for photos_group in additional_photos_groups %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">
+      {{ additional_photos_section_num }}. Additional Photos{{ type_suffix }} {{ "(cont'd)" if loop.index > 1 else "" }}
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="photos-container">
+      {% for photo in photos_group %}
+      <img src="{{ photo['photoUrl'] }}" alt="Additional Photo" />
+      {% endfor %}
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% for photo in valuation_report["photos"] %} {% if
+  photo["isAnnexure"] %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">{{ photo['annexureHeader'] }}</div>
+    <div class="space-between-sm"></div>
+    <div class="annexure-content">
+      <img src="{{ photo['photoUrl'] }}" alt="Annexure Document" />
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report['address']['fullAddress']|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endif %} {% endfor %}
+
+  {# Annexure page - unified for both AAP and CPV #}

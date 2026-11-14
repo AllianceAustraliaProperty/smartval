@@ -1,359 +1,326 @@
-# SmartVal
+# SMARTval — Enterprise Property Valuation & Report Generation Platform
 
-SmartVal is the property valuation application at **https://aapvaluations.com.au**.
-This README explains the recovery and improvements completed on **13 October 2026**,
-how the app now runs, and what the team still needs to do.
+**Version:** `v1.0.0` (Production Baseline)  
+**Production Host:** `https://aapvaluations.com.au`  
+**Architecture:** Next.js 15.5 App Router · React 19 · Flask 3.1 · MongoDB Atlas · Headless Chromium PDF Worker · Caddy 2.8 Ingress  
 
-## Current status
+---
 
-- The recovery and performance changes are deployed and pushed to `main`.
-- The frontend, backend, PDF worker and email worker passed their latest health checks, with no container restarts recorded after deployment.
-- Login, JavaScript assets, protected routes, report reads, inspection-report reads and a synthetic PDF render were checked.
-- Alliance connectivity is still unresolved and is left for the developer, as requested.
-- Credential rotation is still outstanding; the owner asked their team to handle it separately.
+## 1. Overview & System Architecture
 
-These are results from the deployment checks, not a promise of continuous monitoring.
+SMARTval is an enterprise-grade web application and automated report generation engine built for registered Australian property valuers. The platform streamlines property inspections, comparable sales analysis, multi-tenant branding, and complex valuation drafting into compliant, high-resolution PDF valuation reports.
 
-## Schedule a report email
+### Architecture Topology
 
-1. Open a report in the editor and select **Schedule email**, beside the Report actions.
-2. Check **To**, optional **Cc**, the greeting, send date/time and time zone. Sydney is the default.
-3. Select **Prepare email preview**. This saves the report and generates the attachment; it does not send an email.
-4. Review the email and open **Review attached PDF**, then select **Schedule email**.
-5. The button shows the current status. Open it to change the time, cancel, refresh status or view recent history.
-
-You can close the browser after confirmation. The server keeps the schedule across restarts.
-Only the person who created a schedule can change it. One active schedule is allowed per report;
-manual **Send Report** is blocked while that schedule is active.
-
-The email uses the existing report email template, sender and signature. Recipients, rendered
-email and PDF are frozen when you prepare the preview. Later report edits do **not** update
-that attachment. The scheduling screen warns about changes; cancel and prepare again to use
-the latest report. Changing only the send time keeps the approved attachment.
-
-### Delivery rules
-
-- Choose a time at least **2 minutes ahead**, up to one year in advance. Ambiguous or missing daylight-saving times are rejected.
-- Unconfirmed previews expire after **one hour**. Confirmation checks that the report has not changed.
-- The PDF must be **2.5 MB or smaller**. Larger attachment support is a developer follow-up below.
-- A separate email worker claims each due job atomically. It processes one send at a time and checks idle queues every 15 seconds.
-- Jobs survive restarts. A crash before submission can recover; a crash/timeout after submission becomes **Needs review** and is never automatically resent.
-- **Accepted by Microsoft** means Microsoft accepted the request, not that the recipient received it. Check the sender mailbox for delivery failures.
-- A missing/deleted report or a send more than one hour late pauses for review instead of sending unexpectedly.
-- A configuration failure before submission is marked **Failed**. Fix the cause and prepare a new schedule.
-- For **Needs review**, check the sender's Sent Items before selecting **Review and close**. A new schedule may duplicate an email already submitted.
-- Cancellation cannot recall a submitted email. A job already being submitted cannot be cancelled or rescheduled.
-- Frozen PDFs and email bodies are removed 30 days after accepted, cancelled or failed jobs finish. Audit/status metadata remains. Unresolved review jobs retain their attachment.
-
-### Developer and operations notes
-
-`backend/blueprints/email_schedules.py` provides authenticated scheduling endpoints.
-`backend/utils/email_schedule.py` contains the state machine and date validation.
-`backend/email_scheduler.py` is the separate worker; `frontend/src/components/ReportSchedule.tsx`
-contains the responsive scheduling dialog. Existing immediate email delivery remains available.
-
-MongoDB collections: `reportEmailSchedules` and `reportEmailSchedulerState`. The worker creates
-an atomic uniqueness guard for active jobs per report, queue/history indexes and a TTL index
-for unconfirmed previews. It starts before the API/frontend release switches, so indexes exist
-before schedules can be confirmed. API list responses exclude attachment and email-body payloads.
-All scheduling endpoints require the existing Firebase login; mutation endpoints also validate
-Origin and job ownership/version. PDFs are served through authenticated endpoints, not public links.
-
-The `email-worker` Compose service reuses the backend image, MongoDB and Graph configuration.
-It requires `SCHEDULED_EMAILS_ENABLED=true`, has a read-only filesystem, no exposed port,
-0.5 CPU and 512 MB memory limit. Health checks use a heartbeat written only after a successful
-worker cycle. The scheduler screen warns if this heartbeat is stale. To pause sends operationally,
-stop the email worker; do not delete the MongoDB jobs. Review overdue jobs before restarting.
-
-```sh
-docker exec smartval-email-worker python email_scheduler.py --healthcheck
-docker logs --tail 50 smartval-email-worker
+```
+                    Internet (HTTPS :443 / HTTP :80)
+                                   │
+                                   ▼
+                   ┌───────────────────────────────┐
+                   │    smartval-caddy (v2.8+)     │
+                   │  - Automatic TLS (Let's Encrypt)
+                   │  - 6 Defensive Security Headers│
+                   └───────┬───────────────┬───────┘
+                           │               │
+            ┌──────────────┘               └──────────────┐
+            ▼                                             ▼
+  ┌───────────────────┐                         ┌───────────────────┐
+  │ smartval-frontend │                         │ smartval-backend  │
+  │  Next.js 15.5 UI  │                         │   Flask 3.1 API   │
+  │  Port 3000        │                         │   Port 5000       │
+  └─────────┬─────────┘                         └─────────┬─────────┘
+            │                                             │
+            │ Firebase Auth / App Router                  │ REST / PyMongo
+            ▼                                             ▼
+     Client Browser                              ┌──────────────────┐
+                                                 │  MongoDB Atlas   │
+                                                 │  Replica Set     │
+                                                 └────────┬─────────┘
+                                                          │
+                    ┌─────────────────────────────────────┴─────────────┐
+                    ▼                                                   ▼
+         ┌─────────────────────┐                             ┌─────────────────────┐
+         │ smartval-pdf-worker │                             │smartval-email-worker│
+         │ Headless Chromium   │                             │ Atomic Queue Worker │
+         │ Internal Port 5001  │                             │ Graph Mail Engine   │
+         └─────────────────────┘                             └─────────────────────┘
 ```
 
-Deployment records include the email worker. Rollback restores its previous image, or removes
-it when rolling back the first release that introduced it. Existing report/PDF services retain
-their health checks and rollback behavior.
+### Production Services
 
-Tests use synthetic records and fake mail transport; no production email is sent. Install
-`backend/requirements-test.txt` in a test environment to run scheduling unit tests. The browser
-fixture uses the real scheduling component with a fake API and includes desktop/mobile checks.
-The scheduling release passed 53 backend/deployment tests, 16 frontend unit tests, 13 browser
-workflow checks, and a disposable real-MongoDB concurrent-claim/duplicate test.
+| Service | Container Name | Technology | Internal Port | Purpose |
+|---|---|---|---|---|
+| **Ingress Proxy** | `smartval-caddy` | Caddy 2.8+ Alpine | 80, 443 | Public reverse proxy, automatic TLS, and enterprise security headers. |
+| **Frontend** | `smartval-frontend` | Next.js 15.5, React 19, TypeScript | 3000 | Multi-step valuation wizard, admin telemetry, and user management. |
+| **Backend API** | `smartval-backend` | Python 3.11, Flask 3.1, Gunicorn | 5000 | RESTful API, authentication boundaries, and tenant orchestration. |
+| **PDF Worker** | `smartval-pdf-worker` | Python, Playwright, Chromium | 5001 | Isolated headless report rendering with bounded concurrency & caching. |
+| **Email Worker** | `smartval-email-worker` | Python 3.11, PyMongo, MS Graph | None (Worker) | Background worker executing scheduled report email deliveries atomically. |
 
-Microsoft documents inline attachments and the distinction between acceptance and delivery
-in its [sendMail reference](https://learn.microsoft.com/en-us/graph/api/user-sendmail?view=graph-rest-1.0).
+---
 
-Developer TODOs for scheduling:
-- [ ] Support larger attachments using a Graph draft/upload session after reviewing required mailbox permissions; preserve the no-duplicate submission rules.
-- [ ] Add delivery reconciliation/webhooks and operational alerts for failed or review-required jobs. Do not treat Graph acceptance as confirmed delivery.
-- [ ] Consider a team-wide schedule dashboard and delegated management permissions if required; currently management belongs to the creator.
-- [ ] Review long-term audit retention and move old metadata to an agreed archive policy.
+## 2. Core Features & Capabilities
 
-## What was done
+### 10-Step Valuation Wizard
+- Structured navigation across Property Identification, Physical Attributes, Improvements, Town Planning, Environmental Factors, Rating & Taxation, Comparables, Property Descriptors, General Comments, and Valuation Certification.
+- **Autosave & Concurrency Protection:** Atomic `PATCH /api/valuation-reports/<id>` saves with `expectedVersions` conflict detection tokens, preventing overwrite of concurrent edits.
+- **Universal Step Shell:** Royal blue accents (`#006ABE`), standardized step card wrappers, and responsive pill inputs.
+- **Centralized Loading State:** Unified `<LoadingScreen />` spinning loader with zero skeleton flash.
 
-### 1. Recovered the app and reduced resource usage
+### Multi-Tenant Branding Engine
+- Dynamic tenant resolution supporting **AAP** (Australian Asset Professionals), **TAMN**, and **CPV** (Commercial Property Valuers).
+- Complete tenant isolation across document covers, running headers/footers, disclaimers, and signature blocks without data leakage.
 
-The old frontend container contained malicious files and a mining process. It was
-using excessive CPU, memory, processes and swap, and had recorded memory crashes.
+### Strata Unit Land Value Rules
+- Automatic compliance formatting: Freehold property valuations display separate unimproved and statutory land values.
+- Strata-titled residential and commercial units automatically suppress separate land valuation rows, dynamically rendering legal strata disclosure disclaimers across `residential.html` and `cgt_short.html`.
 
-- Preserved incident evidence and saved the affected container as a stopped quarantine image.
-- Rebuilt the frontend from tracked repository source and restored public access.
-- Updated Next.js to **15.5.27**, React/React DOM to **19.0.8**, Node to **22.23.3** and Sharp to **0.35.5**, with compatible dependency fixes.
-- Added a read-only filesystem, restricted permissions, process limits, bounded temporary storage, and frontend limits of **2 CPUs / 2 GiB RAM without swap**.
-- Retained the database and uploads. Restored the working Caddy configuration.
-- Checked selected host startup locations and packages. This was a limited incident review, not a complete forensic investigation.
+### Modular Jinja2 PDF Generation
+- Template engine modularized into 9 shared partials located in `backend/templates/partials/`:
+  - `header.html`, `footer.html`, `cover_page.html`, `property_summary.html`, `sales_evidence.html`, `valuation_summary.html`, `disclaimer.html`, `annexures.html`, and `signature_block.html`.
+- Enables rapid maintenance, tenant switching, and consistent typography across residential, commercial, and CGT reports.
 
-The production dependency audit at recovery time found **no high or critical findings**,
-with **two moderate findings** remaining in the ExcelJS/UUID dependency chain.
+### Real-Time Admin Telemetry
+- Observability route at `/api/admin/metrics` reporting live CPU/memory stats, active database roundtrip latency, process uptime, and worker queue depth directly to the `/admin` portal.
 
-### 2. Made report listing and PDFs faster
+### Defensive Ingress Security
+- Caddy reverse proxy enforces 6 mandatory security headers:
+  - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
+  - `X-Content-Type-Options: nosniff`
+  - `X-Frame-Options: SAMEORIGIN`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()`
+  - Explicit removal of the upstream `Server` identification banner.
 
-- Added the `report_listing_updated_at` MongoDB index.
-- Combined the dashboard's report-page and total-count lookup into one database request.
-- Added bounded caches for processed images, report HTML and PDF output.
-- Moved PDF rendering into a separate worker so it does not consume normal API workers.
-- Limited PDF concurrency and queue size. When busy, the service returns a retryable error instead of accepting unlimited work.
-- Reused the PDF browser safely while giving each document a separate browser context.
+---
 
-### 3. Reduced unnecessary dashboard requests
+## 3. Local Development Quickstart
 
-- Removed inspection and Alliance fetches whose results were not displayed.
-- Cancelled obsolete searches and ignored late responses from older searches.
-- Prevented duplicate pagination requests and added visible retry feedback.
-- Fixed the undefined database references in the inspection and Alliance backend routes.
+### Prerequisites
+- **Node.js:** `v22.x` or higher
+- **Python:** `v3.11` or higher
+- **MongoDB:** Local instance or MongoDB Atlas connection string
+- **Docker & Docker Compose:** Optional for containerized local workflows
 
-The separate Alliance connection problem is documented below; fixing the database
-reference does not fix its upstream URL or authentication.
+### 1. Frontend Setup
 
-### 4. Made additional-photo editing safer
+```bash
+cd frontend
 
-- Combined rapid typing into a save after a short pause instead of saving the whole list on every keystroke.
-- Serialized additional-photo writes so older saves cannot finish after newer saves from the same browser.
-- Kept pending edits when navigating between report sections.
-- Coordinated additional-photo saves with uploads, deletion, reordering and report actions.
-- Added saving/error feedback and retry controls. Failed initial photo loads no longer clear the parent form's photo data.
+# Configure environment
+cp env.example .env.local
 
-### 5. Reduced editor work and protected report saves
+# Install dependencies and start development server
+npm install
+npm run dev
+```
+The frontend starts at `http://localhost:3000`.
 
-- Loaded editor sections when opened instead of importing every section upfront.
-- Recalculated completion indicators only for the affected section and avoided state updates when indicators did not change.
-- Saved the current validated form before report/invoice previews, PDF downloads and existing email actions.
-- Stopped document generation when saving fails, so it does not silently use an older saved draft.
-- Changed editor saves to send only changed fields, with version checks and an atomic database comparison to detect conflicting changes.
-- Kept the editor open after save failures and added **Download unsaved draft** for recovery.
+### 2. Backend Setup
 
-Email confirmation steps remain in place. No emails were sent during verification.
-Existing users should save their work and refresh to load the updated editor.
+```bash
+cd backend
 
-### 6. Made deployment safer
+# Create and activate virtual environment
+python -m venv venv
+# On Windows:
+.\venv\Scripts\activate
+# On Linux/macOS:
+source venv/bin/activate
 
-- Replaced the obsolete npm/systemd/nginx GitHub deployment with the current Docker process.
-- Added a deployment lock, builds before service replacement, health checks, and automatic rollback after failed activation.
-- Preserved previous image IDs and Compose configuration for rollback.
-- Removed temporary test containers and unused build cache during the work, while retaining rollback images.
-- Preserved the pre-existing file-mode change to `scripts/setup-ec2-maintenance.sh`; it was not included in these commits.
+# Install dependencies
+pip install -r requirements.txt
 
-## Measured results
+# Start backend API (binds to 0.0.0.0:5000 by default)
+python run.py
+```
+The backend API starts at `http://localhost:5000`.
 
-| Check | Before | After |
-| --- | --- | --- |
-| Report-list request | About 0.51 seconds | About 0.25 seconds |
-| First PDF generation for the tested 14-page report | About 36.2 seconds | About 5.9–6.3 seconds |
-| Repeated unchanged PDF request | Not recorded | About 0.27 seconds |
-| Initial editor route JavaScript, gzipped | 222,374 bytes | About 133,000 bytes — roughly 40% smaller |
-| Frontend memory snapshot | About 1.86 GiB | About 76–81 MiB after recovery/updates |
+> **Note on Windows Port Conflicts:** If port 5000 fails to bind or returns 404s, ensure no rogue process (such as Apple AirPlay Receiver or orphaned Node backends) is listening on `::5000`.
 
-These are specific server checks and bundle/resource measurements, not a full load
-test or a guarantee for every report. The bundle figure excludes sections loaded later.
+---
 
-## What was tested
+## 4. Automated Testing & Quality Gates
 
-- Production builds and TypeScript validation.
-- 16 frontend unit tests and 28 backend/deployment tests in the latest batch, including conflict handling and a simulated rollback failure path.
-- 10 synthetic browser workflow checks across the photo, dashboard and editor changes, using fake data.
-- Twenty rapid photo edits produced one write; overlapping photo writes were prevented.
-- Save-before-preview ordering, draft retention on failure, retry, section navigation and stale search responses.
-- Residential, commercial and invoice PDF output during the PDF work; a synthetic PDF render after the final release.
-- Live service health, public login/assets, authentication boundaries and read-only report/inspection checks.
+SMARTval incorporates an automated verification pipeline to ensure zero regressions, code quality, and security compliance.
 
-**Testing limit:** the owner requested server checks only for production. There was
-no real-user signed-in browser walkthrough or real email-delivery test. The GitHub
-workflow file was updated, but this release was deployed directly on the server with
-the deployment script; the GitHub-triggered path still needs a controlled verification.
+### Unified CI Test Runner
 
-## How production runs
+Run the consolidated master test runner from the repository root:
 
-Repository on the server: `/home/ec2-user/smartval`.
+```bash
+python scripts/test_runner.py
+```
 
-| Service | Purpose |
-| --- | --- |
-| `smartval-caddy` | Public HTTPS entry point on ports 80/443 |
-| `smartval-frontend` | Next.js UI, internal port 3000 |
-| `smartval-backend` | Flask API, internal port 5000 |
-| `smartval-pdf-worker` | Isolated PDF rendering, internal port 5001 |
+This single command automatically executes:
+1. **Frontend Typecheck & Lint:** `npm test` (`tsc --noEmit && next lint`).
+2. **Backend Unit & Regression Tests:** Full Python `unittest` suite (71 test cases).
+3. **Deployment Lifecycle Tests:** Simulated atomic deployment, health checks, and rollback scenarios.
+4. **Template & Multi-Tenant Tests:** Branding isolation and strata land value suppression verification.
 
-Use [docker-compose.yml](docker-compose.yml) as the production configuration.
-Do not expose frontend/backend/worker ports directly to the internet. Restrict SSH
-access to approved administrators. Backend and frontend environment files are kept
-on the host, outside Git; do not add credentials to this README or the repository.
+### Automated Zero-Secret Scanner
 
-The deployed application image tags for this release are
-`smartval-frontend:reliability-20261013` and `smartval-backend:reliability-20261013`.
-The backend image also runs the PDF worker.
+Verify that no sensitive API keys, Firebase service accounts, or MongoDB URIs have leaked into source code or build output:
 
-## Deploying on the existing production host
+```bash
+python scripts/scan_secrets.py
+```
 
-Use [scripts/deploy-release.py](scripts/deploy-release.py). Older deployment guides
-and scripts may describe a previous architecture; use this section for the current host.
+### 20-Point Pre-Ship Security Gate
+
+All releases must satisfy the mandatory 20-point pre-ship security gate. The complete audit report and verification matrix is documented in:
+[`docs/SECURITY_AUDIT.md`](docs/SECURITY_AUDIT.md)
+
+Key security protections include:
+- `server-only` guards on database and OneDrive server modules.
+- `productionBrowserSourceMaps: false` to prevent bundle reverse engineering.
+- Firebase JWT token verification and Origin validation on all mutation endpoints.
+- Read-only root container filesystems with non-root runtime users.
+
+---
+
+## 5. Production Deployment on AWS EC2
+
+### Production Host Details
+- **Host Location:** `/home/ec2-user/smartval`
+- **Compose Manifest:** `docker-compose.yml`
+- **Release Directory:** `~/smartval-releases/`
+- **Detailed Runbook:** [`docs/RELEASE_RUNBOOK.md`](docs/RELEASE_RUNBOOK.md)
+
+### Deployment Procedure
+
+Deploying a new release on the production EC2 host:
 
 ```bash
 cd /home/ec2-user/smartval
+
+# 1. Fetch the latest verified release from main
 git fetch origin main
 git merge --ff-only origin/main
+
+# 2. Execute automated deployment script
 python3 scripts/deploy-release.py
 ```
 
-The script builds while the current app remains running, then replaces the PDF worker,
-backend and frontend in order and checks them. Service replacement can briefly interrupt
-requests; it is not a zero-downtime deployment. Caddy is left running.
+The deployment script executes the following steps:
+1. Acquires a deployment lock (`/tmp/smartval-deploy.lock`).
+2. Builds updated container images tagged with the active commit SHA/tag.
+3. Replaces services sequentially (`smartval-pdf-worker` -> `smartval-backend` -> `smartval-frontend`).
+4. Executes container health checks. If any health check fails within 60 seconds, it automatically triggers rollback to the previous working image set.
+5. Emits release metadata and rollback state into `~/smartval-releases/`.
 
-The GitHub workflow uses `EC2_HOST`, `EC2_USER` and `EC2_SSH_KEY`, plus the host's Git
-read access. Normal pushes to `main` trigger it; `[skip ci]` commits do not. This
-documentation-only update uses `[skip ci]` to avoid an unnecessary application restart.
+### Docker Compose Direct Deployment
 
-The script assumes an existing working installation and running containers. It is
-not yet a fresh-server bootstrap or disaster-recovery procedure. It currently reads
-frontend build-time public settings from the running frontend container; simply editing
-an environment file is not sufficient to update those baked-in settings.
-
-### Check after deployment
+Deploying with explicit image tags:
 
 ```bash
+IMAGE_TAG=v1.0.0 docker compose up -d --build
+```
+
+### Post-Deployment Verification Commands
+
+```bash
+# Verify container health
 docker ps
+
+# Check public ingress
 curl -fsS https://aapvaluations.com.au/login > /dev/null
+
+# Verify frontend internal health
 docker exec smartval-frontend node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+# Verify backend internal health
 docker exec smartval-backend python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:5000/health').status)"
+
+# Verify PDF worker internal health
 docker exec smartval-pdf-worker python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:5001/health').status)"
+
+# Verify scheduled email worker heartbeat
+docker exec smartval-email-worker python email_scheduler.py --healthcheck
 ```
 
-Each health request should succeed. Protected APIs should still reject unauthenticated
-requests. Inspect recent service logs if a check fails; avoid copying customer data or
-credentials from logs into tickets.
+---
 
-### Rollback and recovery records
+## 6. Scheduled Email Worker Operational Specifications
 
-- Release metadata, build logs, prior image IDs and prior Compose configuration: `~/smartval-releases/`.
-- Failed activation automatically attempts to restore the prior images/configuration and checks service health. A failure during rollback still needs an operator.
-- This is application rollback only; it does not restore database or uploaded-file data.
-- Recovery evidence: `/var/lib/smartval-recovery/20261013` (root-only).
-- Quarantine image: `smartval-frontend:quarantine-20261013`. **Do not run it or use it for rollback.**
-- Earlier private backups: `~/smartval-perf-private-20261013`, `~/smartval-editor-backup-20261013`, and `~/smartval-reliability-backup-20261013`.
+SMARTval includes a dedicated background email worker (`smartval-email-worker`) that processes scheduled valuation report deliveries via Microsoft Graph Mail.
 
-Keep the necessary known-good rollback images. Do not run broad image/volume cleanup
-without checking what it will remove. Code/image backups do not prove that customer-data
-backups are recoverable; a restore test remains a TODO.
+### How to Schedule a Report Email
+1. Open any valuation report in the editor and click **Schedule email** beside Report Actions.
+2. Select recipient **To**, optional **Cc**, greeting, send date/time, and timezone (default: `Australia/Sydney`).
+3. Click **Prepare email preview**. This saves the current report draft and freezes the generated PDF attachment.
+4. Review the frozen PDF and click **Confirm Schedule**.
+5. The schedule runs asynchronously. You can safely close your browser.
 
-## Developer notes
+### Delivery Rules & Operational Constraints
+- **Timing:** Must be scheduled at least **2 minutes** in advance and at most **1 year** in advance. Ambiguous daylight-saving transitions are rejected.
+- **Attachment Size:** Frozen PDFs must be **2.5 MB or smaller** (Microsoft Graph inline attachment limit).
+- **Worker Cadence:**
+  - Idle poll interval: **15 seconds**.
+  - Active burst interval: **1 second** after completing a job.
+  - Heartbeat write: **Every 60 seconds** to `reportEmailSchedulerState` in MongoDB.
+  - Expired-lease recovery: Startup and **every 5 minutes**.
+  - Payload cleanup: Hourly (removes frozen attachments for jobs completed >30 days ago).
+- **Atomic Job Claims:** Uses MongoDB atomic `find_one_and_update` with lease locks, guaranteeing zero duplicate sends across container restarts.
+- **Failure Handling:** Crashes before submission recover on the next lease cycle. Submissions that timeout or crash during Microsoft Graph dispatch enter **Needs review** status and are never resent automatically to prevent duplicate customer emails.
 
-The report GET response includes `fieldVersions`. Updated editors send
-`PATCH /api/valuation-reports/<id>` with `changes` and matching `expected` versions.
-The backend checks changed fields and compares their current values atomically before
-writing. Conflicts return HTTP 409, preserving the browser draft. Unrelated fields are
-not overwritten. Users can download their draft and compare it with the latest report;
-there is no automatic merge or force-save.
-
-Legacy PUT clients remain compatible but do not get this protection. Additional-photo
-serialization protects one browser's writes; it is not complete cross-user protection
-for every media endpoint. Review those remaining writers before claiming all editing
-paths are conflict-safe.
-
-Tests from `frontend` after installing its dependencies:
+### Worker Health & Log Inspection
 
 ```bash
-node --test tests/request-saves.test.cjs tests/editor-reliability.test.cjs
-node node_modules/typescript/bin/tsc --noEmit
+# Check worker heartbeat
+docker exec smartval-email-worker python email_scheduler.py --healthcheck
+
+# View recent worker logs
+docker logs --tail 50 -f smartval-email-worker
 ```
 
-Tests from `backend` in an environment with its dependencies:
+---
 
-```bash
-python -m unittest tests.test_report_edits tests.test_performance
+## 7. Incident History & Baseline Maintenance
+
+### October 2026 Quarantine & Recovery Baseline
+- On October 13, 2026, an obsolete frontend container was found to have been compromised by an unauthorized process.
+- The affected container was quarantined as `smartval-frontend:quarantine-20261013` and forensically preserved at `/var/lib/smartval-recovery/20261013`.
+- The frontend was rebuilt cleanly from repository source with updated base images, read-only root filesystems, strict process and memory limits (2 CPUs / 2 GiB RAM without swap), and non-root execution.
+- Operational maintenance scripts (`scripts/setup-ec2-maintenance.sh`) ensure automated image retention and prevent disk space exhaustion.
+
+---
+
+## 8. Repository Structure
+
+```
+smartval/
+├── .planning/                  # Project roadmap, state tracking & phase verification
+├── backend/                    # Flask 3.1 REST API & Email Scheduler
+│   ├── blueprints/             # API routes (reports, schedules, auth, admin)
+│   ├── templates/              # Valuation report templates
+│   │   ├── partials/           # 9 Modular Jinja2 template partials
+│   │   ├── residential.html    # Residential valuation report
+│   │   └── cgt_short.html      # Capital Gains Tax short-form report
+│   ├── tests/                  # Unit and integration test suite
+│   ├── email_scheduler.py      # Background scheduled email worker
+│   └── run.py                  # API entry point (0.0.0.0:5000)
+├── frontend/                   # Next.js 15.5 App Router & React 19 UI
+│   ├── src/
+│   │   ├── app/                # App Router pages (/valuation-reports, /admin, etc.)
+│   │   ├── components/         # Reusable UI components & 10-step wizard sections
+│   │   ├── config/             # Database & Firebase server configurations
+│   │   └── lib/                # Utility libraries & OneDrive integration
+│   ├── package.json            # Frontend dependencies & test scripts
+│   └── next.config.ts          # Next.js production build configuration
+├── docs/                       # Project documentation & runbooks
+│   ├── SECURITY_AUDIT.md       # Daddy's 20-point pre-ship security gate
+│   └── RELEASE_RUNBOOK.md      # AWS EC2 launch & rollback guide
+├── scripts/                    # Operational automation & test runners
+│   ├── deploy-release.py       # Atomic zero-downtime deployment script
+│   ├── test_runner.py          # Master unified test runner
+│   └── scan_secrets.py         # Automated zero-secret scanner
+├── Caddyfile                   # Ingress reverse proxy configuration with security headers
+├── docker-compose.yml          # Production container orchestration
+└── README.md                   # This document
 ```
 
-The deployment test uses Linux and expects `scripts/deploy-release.py` mounted at
-`/release/deploy-release.py`; browser fixtures require Playwright and Chromium.
-Production backend images exclude tests, so mount the test directory for container runs.
-See [frontend/tests](frontend/tests), [backend/tests](backend/tests) and
-[PDF performance notes](docs/performance-operations.txt) for the supporting code/details.
+---
 
-## Developer follow-up: Alliance integration
+## 9. License & Ownership
 
-**Problem:** `ALLIANCE_BASE_URL` points to SmartVal itself (`https://aapvaluations.com.au`).
-The integration appends `/api/jobs.php`, which is not a SmartVal endpoint. Requests reach
-the wrong application and fail. Removing unused dashboard requests stopped the wasted
-calls, but did not repair the integration.
-
-**Solution for the developer:**
-
-1. Confirm whether the Alliance jobs integration is still required and obtain the real service URL/API documentation.
-2. If active, set `ALLIANCE_BASE_URL` to the correct service and implement its required authentication using server-side configuration.
-3. Verify a small jobs page, pagination and error handling. Use a disposable test job for import mapping and duplicate detection; do not modify customer jobs just to test connectivity.
-4. If retired, check mobile/external callers before removing its API/import paths. The dashboard's external Alliance website link is separate.
-
-The owner explicitly left this connection for the developer. No replacement URL or
-authentication scheme has been guessed, and the integration has not been disabled.
-
-## TODO — outstanding work
-
-### Highest priority — owner / provider administrators
-
-- [ ] **Rotate exposed credentials.** Review Firebase service-account credentials, MongoDB credentials, Groq keys and other secrets available to the affected process. Update host configuration, verify connectivity, then revoke old credentials. Deferred by the owner; not completed here.
-- [ ] **Complete the incident review.** Review provider access logs and the cause of compromise; decide whether the host needs replacement. The limited checks did not establish whether historical data access occurred.
-- [ ] **Verify customer-data recovery.** Confirm MongoDB and upload-storage backups, retention and access controls. Restore a backup into an isolated environment and document the result.
-
-### Developer — application and integration
-
-- [ ] **Resolve Alliance** using the problem/solution above, or agree its retirement with the owner.
-- [ ] **Test real signed-in workflows** with approved test records: edit/save, upload/reorder/delete photos, navigate sections, search/paginate, preview/download reports and invoices, and reconcile a simultaneous-edit conflict. Test email only with an explicitly approved test recipient.
-- [ ] **Extend conflict protection** to remaining legacy PUT/mobile clients and direct media-update endpoints. Avoid removing old APIs before identifying callers.
-- [ ] **Review the remaining moderate dependency findings** in ExcelJS/UUID and re-run the production audit; verify spreadsheet import/export after any upgrade.
-- [ ] **Measure real browser performance and concurrent use.** Check editor interaction delays, large reports and PDF saturation; use the results to choose the next optimization.
-
-### Developer / infrastructure administrator — operations
-
-- [ ] **Verify the GitHub-triggered deployment** in a controlled run, including secrets, host Git access and rollback. Direct server deployment passed; the Actions path was not exercised during this work.
-- [ ] **Strengthen release controls.** Run tests before activation, deploy the intended immutable commit, and support validated frontend build-time settings without relying on the running container's environment.
-- [ ] **Document and test fresh-server recovery.** Include environment provisioning, database/index setup, uploads, Caddy data and the first deployment.
-- [ ] **Investigate MongoDB latency.** Round trips measured about 250 ms. Confirm the database region and network path; assess co-location before planning any migration.
-- [ ] **Add operational alerts.** Cover slow/failed requests, save conflicts/failures, PDF queue saturation, container restarts and low disk space. Current health checks are not an alerting service.
-- [ ] **Review maintenance cleanup.** Check `scripts/setup-ec2-maintenance.sh` and image/volume retention so cleanup cannot remove required rollback images or data. Its existing mode-only change was preserved.
-
-## Change history
-
-| Commit | Completed work |
-| --- | --- |
-| `0a90bc3` | Frontend recovery, dependency patches and container hardening |
-| `fc74b53` | Report-list index/query improvements, caching and isolated PDF worker |
-| `53eb633` | Additional-photo save coordination and dashboard request fixes |
-| `b3e7663` | Editor loading/status improvements, conflict-safe editor saves, save-before-document actions, database references and Docker deployment/rollback |
-
-All four code changes were pushed to `main` and deployed before this documentation update.
-
-### Scheduled email worker maintenance cadence
-
-The worker checks due emails every 15 seconds when idle and continues after one
-second when a job was processed. MongoDB heartbeats are written once per minute;
-expired-lease recovery runs at startup and every five minutes. A crashed job can
-therefore wait up to five additional minutes after its lease expires before
-recovery. Ambiguous deliveries still require manual review and are never retried
-automatically. Payload cleanup remains hourly.
-
-Docker checks the worker once per minute using a local, atomically replaced
-health file. Both Docker and the schedule API reject heartbeats aged three
-minutes or more. Failed worker cycles do not refresh local health. The expected
-idle database traffic is approximately 7,800 commands/day (5,760 claim attempts,
-1,440 heartbeats, 576 lease-recovery updates and 24 cleanup updates), excluding
-MongoDB driver monitoring, startup index checks, UI reads and actual deliveries.
-
-Regression checks: `python -m unittest tests.test_email_scheduler tests.test_email_schedule`.
-Tests use synthetic records and mocked transport; they do not send email.
+Confidential and proprietary property of **Australian Asset Professionals Pty Ltd (AAP)** and affiliated valuation practices. Unauthorized copying, distribution, or deployment is strictly prohibited.

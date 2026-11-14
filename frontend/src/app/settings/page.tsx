@@ -18,6 +18,7 @@ import {
 import { apiRepository } from '@/lib/api-repository';
 import { getCurrentUser } from '@/lib/auth';
 import { RichTextEditor, type RichTextEditorHandle } from '@/components/RichTextEditor';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 interface TemplateVariable {
   token: string;
@@ -224,9 +225,9 @@ function TemplateEditor({
         </p>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
         <button onClick={onReset} disabled={isSaving}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-gray-700 bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-md transition-all disabled:opacity-50"
+          className="inline-flex items-center px-5 py-2.5 text-sm font-semibold rounded-full text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all disabled:opacity-50 cursor-pointer"
         >
           <RotateCcw className="w-4 h-4 mr-2" /> Reset to default
         </button>
@@ -392,14 +393,7 @@ export default function SettingsPage() {
   };
 
   if (!authChecked || isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 animate-pulse">Loading settings...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading settings..." />;
   }
 
   const PreviewModal = ({
@@ -433,56 +427,67 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100">
-      <div className="max-w-5xl mx-auto p-8">
-        {/* Header */}
-        <div className="flex items-center space-x-4 mb-8">
-          <button onClick={() => router.push('/valuation-reports')}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-gray-700 bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-300"
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        {/* navigation back to dashboard */}
+        <div className="mb-6">
+          <button
+            type="button"
+            onClick={() => router.push('/valuation-reports')}
+            className="group inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-full hover:border-[#006ABE] hover:text-[#006ABE] shadow-xs transition-all duration-200 cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-0.5 transition-transform" />
+            Back to Dashboard
           </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-            <p className="text-gray-600">Manage email templates</p>
-          </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex space-x-2 mb-6">
+        {/* page title */}
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#006ABE] tracking-tight">
+            Email Template Settings
+          </h1>
+          <p className="text-sm text-slate-500 font-medium">
+            Customize notification and invoice email templates sent to clients and partners
+          </p>
+        </div>
+
+        {/* segmented royal blue tabs */}
+        <div className="inline-flex items-center space-x-2 p-1.5 bg-slate-200/70 rounded-full mb-6">
           <button
+            type="button"
             onClick={() => setActiveTab('invoice')}
-            className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
+            className={`inline-flex items-center px-6 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
               activeTab === 'invoice'
-                ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-md'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                ? 'bg-[#006ABE] text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Mail className="w-4 h-4 mr-2" /> Invoice Email
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('report')}
-            className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
+            className={`inline-flex items-center px-6 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
               activeTab === 'report'
-                ? 'bg-green-50 text-green-700 border-green-300 shadow-md'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                ? 'bg-[#006ABE] text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <FileText className="w-4 h-4 mr-2" /> Report Email
           </button>
         </div>
 
-        {/* Card */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8">
+        {/* elevated card shell */}
+        <div className="bg-white rounded-3xl border border-blue-100 shadow-sm p-8 sm:p-10 space-y-6">
           {activeTab === 'invoice' && (
             <>
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-amber-600" />
+              <div className="flex items-center space-x-4 border-b border-slate-100 pb-6">
+                <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center text-[#006ABE] shadow-xs">
+                  <Mail className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Invoice Email Template</h2>
-                  <p className="text-sm text-gray-500">Sent when emailing an invoice from a valuation report.</p>
+                  <h2 className="text-xl font-bold text-slate-900">Invoice Email Template</h2>
+                  <p className="text-sm text-slate-500">Dispatched when sending an invoice directly from a valuation report.</p>
                 </div>
               </div>
               <TemplateEditor
@@ -502,13 +507,13 @@ export default function SettingsPage() {
 
           {activeTab === 'report' && (
             <>
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-green-600" />
+              <div className="flex items-center space-x-4 border-b border-slate-100 pb-6">
+                <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center text-[#006ABE] shadow-xs">
+                  <FileText className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Report Email Template</h2>
-                  <p className="text-sm text-gray-500">Sent when emailing a valuation report PDF to a client.</p>
+                  <h2 className="text-xl font-bold text-slate-900">Report Email Template</h2>
+                  <p className="text-sm text-slate-500">Dispatched when emailing a completed valuation report PDF to clients or partners.</p>
                 </div>
               </div>
               <TemplateEditor

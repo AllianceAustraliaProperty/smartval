@@ -1,0 +1,378 @@
+  {# Unified: New page with 1.4 Assumptions + Environmental Issues + 2. Market Analysis (both AAP and CPV) #}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="subtitle">1.4 Assumptions & Recommendations</div>
+    <div class="space-between-sm"></div>
+    <div style="line-height: 13px;">
+      <p>This executive summary must be read in conjunction with the remainder of this report. Executive summary is only
+        a synopsis designed to provide a brief overview and must not be acted upon in isolation to the content of the
+        valuation report.</p>
+      <p>The instructions and the information supplied contain a full disclosure of all information that is relevant.
+      </p>
+      <p>This report has been prepared for the private and confidential use of our client for the specified purpose. It
+        should not be reproduced in whole or part without the express written authority of {% if logo_type == 'CPV'
+        %}CPV Valuers{% elif logo_type == 'TAMN' %}TAMN Valuations{% else %}AAP Valuations{% endif %} or relied upon any other party for any purpose and the valuer
+        shall not have any liability to any party who does so. Our warning is registered here, that any party other than
+        those specifically named in this report should obtain their own valuation before acting in any way in respect of
+        the subject property.</p>
+      <p>Where a digital copy of the report has been provided and has not been received directly from us, the report
+        contents, especially the valuation and critical assumption should be verified by contacting the using office to
+        ensure contents are appropriate. In particular if this report appears to be suspicious - that the report is
+        tampered or altered, we recommend to contact the office.</p>
+      <p>This valuation should be read in its entirety, inclusive of any summary. The valuer and valuation firm does not
+        accept any responsibility where part of this report has been relied upon without reference to the full context
+        of the valuation report.</p>
+      <p><strong>GST:</strong> Valuations of residential property are undertaken on the basis that GST is not
+        applicable. This valuation is prepared on the assumption that the subject property does not constitute a 'new
+        residential property' as defined under ATO Ruling GSTR 2003/3. Further it is assumed that the subject property
+        will transact as a residential property between parties not registered (and not required to be registered) for
+        GST. The market valuation herein reflects a market transaction to which GST is not applicable.</p>
+      <p><strong>Building Area and Land Dimensions / Area:</strong> In the event actual surveyed areas of the property
+        are different to the areas adopted in this valuation the survey should be referred to the valuer for comment on
+        any valuation implications. We reserve the right to amend our valuation if a formal survey of areas and/or
+        dimensions differs from those detailed in this Report. This valuation has been based on information supplied
+        which is assumed to have been provided in good faith and contain a full and frank disclosure of all information
+        that is relevant to the valuation of the property. The valuer has not undertaken due diligence or verification
+        of the information supplied.</p>
+      <p><strong>Environmental Issues:</strong> The Subject property currently used for residential purposes which is
+        considered to be low environmental risk. The past uses of the subject property are not known to the valuer. The
+        property is considered to have a low to medium environmental risk profile. This valuation is subject to there
+        being no surface or subsurface soil problems including stability, toxic, or hazardous waste, toxic fibres,
+        asbestos or building material hazards in or on the property that would adversely affect its existing or
+        potential use or reduce its value/marketability. We reserve the right to review/reconsider our valuation should
+        an environmental audit reveal that the subject property is contaminated. The client acknowledges and recognises
+        that the valuer is not an expert in identifying environmental hazards and compliance requirements affecting
+        properties.</p>
+    </div>
+    <div class="space-between-md"></div>
+    <div class="banner">2. Market Analysis</div>
+    <div class="space-between-sm"></div>
+    <div class="subtitle">General Market Overview</div>
+    <div class="space-between-sm"></div>
+    <div style="margin-bottom: 15px; line-height: 13px;">
+      <p style="white-space: pre-line">
+        {{ valuation_report["generalComments"]["marketOverview"]|default('') }}
+      </p>
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="subtitle">General Property Comments</div>
+    <div class="space-between-sm"></div>
+    <div style="margin-bottom: 15px; line-height: 13px;">
+      <p style="white-space: pre-line">
+        {{ valuation_report["generalComments"]["propertyComments"]|default('') }}
+      </p>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">3. Location & Neighbourhood</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <p style="white-space: pre-line">
+        {{
+        valuation_report["locationDetails"]["suburbDescription"]|default('')
+        }}
+      </p>
+    </div>
+    <div>
+      <div>
+        <table>
+          <tr>
+            <td>Location Map</td>
+            <td>
+              {% if valuation_report["locationDetails"]["latitude"] and
+              valuation_report["locationDetails"]["longitude"] %}
+              <div style="position: relative">
+                <div class="map-infobox">
+                  {{ valuation_report["address"]["fullAddress"] }}
+                </div>
+                <img class="map" src="{{ map_roadmap_url }}" alt="">
+              </div>
+              {% endif %}
+              <div style="margin-top: 5px; font-size: 10px">
+                Source: Google Maps
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Services</td>
+          {% if valuation_report["locationDetails"]["includesGas"] %}
+          <td>
+            Electricity, town water, sewerage, gas and telephone services are
+            all connected
+          </td>
+          {% else %}
+          <td>
+            Electricity, town water, sewerage and telephone services are all
+            connected
+          </td>
+          {% endif %}
+        </tr>
+      </table>
+    </div>
+    <div class="space-between-sm"></div>
+    <div class="banner">4. Zoning & Planning</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Local Government Area</td>
+          <td>
+            {{
+            valuation_report["propertyDetails"]["councilArea"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Zoning</td>
+          <td>
+            {{ valuation_report["propertyDetails"]["zoning"]|default('N/A') }}
+          </td>
+        </tr>
+        <tr>
+          <td>Permissible Uses</td>
+          <td>
+            {{
+            valuation_report["propertyDetails"]["permissibleUses"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Existing Use</td>
+          <td>
+            Existing land use is a conforming land use with no adverse
+            effect/s.
+          </td>
+        </tr>
+        <tr>
+          <td>Zoning Effects</td>
+          <td>{{ valuation_report["propertyDetails"]["zoningEffects"]|default('Parramatta City Council Local Environment
+            Plan (LEP)') }}</td>
+        </tr>
+        <tr>
+          <td>Heritage Issue</td>
+          <td>
+            {{
+            valuation_report["propertyDetails"]["heritageIssue"]|default('N/A')
+            }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">5. Site</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Site Area</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["siteArea"]
+            %}Approximately {{
+            valuation_report["propertyDetails"]["siteArea"]|format_area_smart|default('N/A')
+            }}{% else %}N/A{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Site Description</td>
+          <td>
+            A{{ 'n' if valuation_report["propertyDetails"]["landShape"] and
+            valuation_report["propertyDetails"]["landShape"]|lower|default('N/A')|first
+            in 'aeiou' else '' }} {{
+            valuation_report["propertyDetails"]["landShape"]|lower|default('N/A')
+            }} shaped land parcel positioned at the road height position. The
+            pedestrian access provided along {{
+            valuation_report["address"]["streetNameOnly"]|default('N/A') }} is
+            good and the site appears to have satisfactory surface drainage.
+          </td>
+        </tr>
+        <tr>
+          <td>Access</td>
+          <td>
+            The subject property has good sealed roads with kerbs and improved
+            footpaths.
+          </td>
+        </tr>
+        <tr>
+          <td>Identification</td>
+          <td>Street number, online Cadastral plan, RP Data mapping.</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            {% if valuation_report.get("locationDetails", {}).get("map", {}).get("photo") %} <img class="map" src="{{
+              valuation_report["locationDetails"]["map"]["photo"] }}" alt=""> {%
+            else %} <img class="map" src="{{ map_hybrid_url }}" alt=""> {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            Source: {{ valuation_report.get("locationDetails", {}).get("map", {}).get("source", "Google") if valuation_report.get("locationDetails", {}).get("map") else "Google" }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="space-between-md"></div>
+    <div class="banner">6. Improvements</div>
+    <div class="space-between-sm"></div>
+    <div class="subtitle">6.1 Main Building</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Main Building Type</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["mainBuildingType"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("mainBuildingType") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {%- set gf_label = gf -%}
+            {%- if 'granny flat' not in gf|lower -%}
+            {%- set gf_label = gf ~ ' (Granny Flat)' -%}
+            {%- endif -%}
+            {{ main }} (Main Building) / {{ gf_label }}
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Rough Build Date</td>
+          <td>
+            {%- set main = valuation_report["propertyDetails"]["buildYear"]|default('N/A') -%}
+            {%- set gf = valuation_report["propertyDetails"].get("buildYearGrannyFlat") -%}
+            {%- if valuation_report["propertyDetails"].get("includeGrannyFlatBuildYear") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>External Wall</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["externalWalls"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("externalWalls") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Internal Wall</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["internalWalls"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("internalWalls") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Roofing</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["roofingType"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("roofingType") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Parking</td>
+          <td>
+            {%- set main = valuation_report["propertyDescriptors"]["parkingType"]|default('N/A') -%}
+            {%- set gf = (valuation_report["propertyDescriptors"].get("grannyFlat") or {}).get("parkingType") -%}
+            {%- if valuation_report["propertyDescriptors"].get("isGrannyFlat") and gf -%}
+            {{ main }} (Main Building) / {{ gf }} (Granny Flat)
+            {%- else -%}
+            {{ main }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <td>Flooring</td>
+          <td>
+            {{ valuation_report["photosSummary"]["floorings"]|join(',
+            ')|default('N/A') }}
+          </td>
+        </tr>
+        <tr>
+          <td>Accommodation</td>
+          <td>
+            {{
+            valuation_report["propertyDetails"]["accommodation"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        {% if valuation_report["ancillaryImprovements"]["showSection"] %}
+        <tr>
+          <td>Ancillaries</td>
+          {% set parts = [] %}
+          {% if valuation_report["ancillaryImprovements"]["driveway"] %}
+          {% set parts = parts + ['Driveway - ' ~ valuation_report["ancillaryImprovements"]["driveway"]] %}
+          {% endif %}
+          {% if valuation_report["ancillaryImprovements"]["fencing"] %}
+          {% set parts = parts + ['Fencing - ' ~ valuation_report["ancillaryImprovements"]["fencing"]] %}
+          {% endif %}
+          <td>{{ parts|join(', ') if parts else 'N/A' }}</td>
+        </tr>
+        {% if valuation_report["ancillaryImprovements"]["otherItems"] %}
+        <tr>
+          <td>Other Items</td>
+          <td>{{ valuation_report["ancillaryImprovements"]["otherItems"]|join(', ') }}</td>
+        </tr>
+        {% endif %}
+        {% endif %}
+      </table>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {# ---- Overflow detection for 6.2 + 6.3 page ---- #}
+  {% set _main_cats = valuation_report.get("photosSummary", {}).get("categories", []) %}
+  {% set _granny_cats = valuation_report.get("additionalPhotosSummary", {}).get("categories", []) %}
+  {% set _has_granny = valuation_report.get("additionalPhotosType") == "Granny Flat" %}
+  {% set _ns = namespace(rows=8) %}
+  {% for _c in _main_cats %}
+  {% if _c.get("primeCostItems") %}{% set _ns.rows = _ns.rows + 1 %}{% endif %}
+  {% if _c.get("featuresFixtures") or _c.get("floorings") %}{% set _ns.rows = _ns.rows + 1 %}{% endif %}
+  {% endfor %}
+  {% if _has_granny %}
+  {% for _c in _granny_cats %}
+  {% if _c.get("primeCostItems") %}{% set _ns.rows = _ns.rows + 1 %}{% endif %}
+  {% if _c.get("featuresFixtures") or _c.get("floorings") %}{% set _ns.rows = _ns.rows + 1 %}{% endif %}
+  {% endfor %}
+  {% endif %}
+  {% set overflow_62 = _ns.rows > 34 %}

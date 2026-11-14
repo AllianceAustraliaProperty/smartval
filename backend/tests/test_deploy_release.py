@@ -3,7 +3,13 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch, Mock
-spec = importlib.util.spec_from_file_location('release', '/release/deploy-release.py')
+release_script = Path('/release/deploy-release.py')
+if not release_script.exists():
+    candidate = Path(__file__).resolve().parent.parent.parent / 'scripts' / 'deploy-release.py'
+    if candidate.exists():
+        release_script = candidate
+
+spec = importlib.util.spec_from_file_location('release', str(release_script))
 release = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release)
 

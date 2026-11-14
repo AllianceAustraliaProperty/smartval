@@ -1,3 +1,4 @@
+import 'server-only';
 import fs from 'fs';
 import { Client } from '@microsoft/microsoft-graph-client';
 import 'isomorphic-fetch';

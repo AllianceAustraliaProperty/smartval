@@ -35,6 +35,7 @@ class CacheTests(unittest.TestCase):
             os.utime(path, (time.time() - 2, time.time() - 2))
             self.assertIsNone(cache.get('4'))
 
+    @unittest.skipIf(os.name == 'nt', "Cross-process file locking via fcntl is POSIX-only")
     def test_cross_process_single_flight(self):
         with tempfile.TemporaryDirectory() as root:
             calls = multiprocessing.Value('i', 0)
@@ -47,10 +48,12 @@ class CacheTests(unittest.TestCase):
             self.assertEqual(calls.value, 1)
 
     def test_unwritable_cache_is_optional(self):
-        cache = RenderCache('cache', root='/dev/null')
-        with cache.lock('key'):
-            self.assertIsNone(cache.get('key'))
-            cache.put('key', b'pdf')
+        with tempfile.NamedTemporaryFile() as unwritable_file:
+            cache = RenderCache('cache', root=unwritable_file.name)
+            with cache.lock('key'):
+                self.assertIsNone(cache.get('key'))
+                cache.put('key', b'pdf')
+                self.assertIsNone(cache.get('key'))
 
     def test_image_failures_not_cached(self):
         from utils import image_compress

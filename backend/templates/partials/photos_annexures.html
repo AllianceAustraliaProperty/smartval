@@ -1,0 +1,137 @@
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">Annexure</div>
+    <div class="space-between-sm"></div>
+
+    {% if has_floor_plans %}
+    <div style="padding: 0 10px;">
+      <p style="font-weight: bold; font-size: 14px; margin: 10px 0;">Appendix A: Floor plan</p>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="{{ valuation_report['floorPlans'][0]['photoUrl'] }}" alt="Floor Plan"
+          style="max-width: 100%; max-height: 380px; object-fit: contain;" />
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="padding: 0 10px;">
+      <p style="font-weight: bold; font-size: 14px; margin: 10px 0;">{% if has_floor_plans %}Appendix B{% else
+        %}Appendix A{% endif %}: Sources of Information</p>
+      <p style="margin-bottom: 10px;">The valuation was based on a range of reliable information sources, including:</p>
+      <ul style="list-style-type: disc; padding-left: 25px; line-height: 1.8;">
+        {% if valuation_report["valuationDetails"]["surveyType"] == "External/Desktop Valuation" %}
+        <li>An external/desktop valuation of the property.</li>
+        {% elif valuation_report["valuationDetails"]["surveyType"] == "Kerbside Valuation" %}
+        <li>A kerbside inspection of the property.</li>
+        {% else %}
+        <li>A physical inspection of the property.</li>
+        {% endif %}
+        <li>Title searches and local planning authority records.</li>
+        <li>Records from the RP Data and Pricefinder.</li>
+        <li>Real estate databases and recent sales evidence.</li>
+        <li>Building and construction cost reference guides.</li>
+        <li>Relevant economic indicators and market reports.</li>
+      </ul>
+    </div>
+
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+
+  {# Additional floor plans as continuation pages #}
+  {% if has_floor_plans and valuation_report["floorPlans"]|length > 1 %}
+  {% for floor_plan in valuation_report["floorPlans"] %}
+  {% if loop.index > 1 %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">Appendix A: Floor plan (cont'd)</div>
+    <div class="space-between-sm"></div>
+    <div class="floor-plan-container">
+      <img src="{{ floor_plan['photoUrl'] }}" alt="Floor Plan" />
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+  {% endif %}
+
+  <script>
+    const pageNums = document.querySelectorAll(".page-num");
+    pageNums.forEach((v, k) => {
+      v.textContent = k + 2;
+    });
+  
+    // TOC Dynamic Page Numbers (Text-based matching)
+    try {
+        const tocTables = document.querySelectorAll('.toc-table');
+        tocTables.forEach(table => {
+            const rows = table.querySelectorAll('tr.toc-main-row, tr.toc-subtitle-row');
+            rows.forEach(row => {
+                const nameTd = row.querySelector('td:nth-child(1)');
+                const numTd = row.querySelector('td:nth-child(2)');
+                if (!nameTd || !numTd) return;
+                
+                let rawName = nameTd.textContent.trim();
+                // Remove numbering like "1. ", "1.1 ", etc.
+                let cleanName = rawName.replace(/^[0-9.]+\s*/, '').trim().toLowerCase();
+                // Remove any leftover liquid tags if they were not rendered (just in case)
+                cleanName = cleanName.replace(/\{\{.*?\}\}/g, '').trim();
+                
+                if (!cleanName) return;
+
+                // Custom mappings where TOC text doesn't explicitly match banner text
+                if (cleanName === "general market overview") cleanName = "valuation comments";
+                if (cleanName === "income assessment") cleanName = "income statement";
+
+                if (cleanName === "environmental issues") cleanName = "environmental statement";
+                if (cleanName === "annexure") cleanName = "annexures";
+
+                // Find all possible headings/banners in the document
+                const candidates = document.querySelectorAll('.banner, h1, h2, h3, h4, .subtitle, .subtitle-lg');
+                
+                let targetElement = null;
+                for (let el of candidates) {
+                    // Skip elements inside the TOC itself
+                    if (el.closest('.toc-table')) continue;
+
+                     // Skip elements inside the Executive Summary
+                    if (el.closest('.executive-summary')) continue;
+                    
+                    let elText = el.textContent.trim().replace(/^[0-9.]+\s*/, '').trim().toLowerCase();
+                    elText = elText.replace(/\{\{.*?\}\}/g, '').trim();
+                    
+                    // Allow partial match for long enough strings
+                    if (elText === cleanName || 
+                       (elText.includes(cleanName) && cleanName.length > 5) || 
+                       (cleanName.includes(elText) && elText.length > 5)) {
+                        targetElement = el;
+                        break;
+                    }
+                }
+                
+                if (targetElement) {
+                    const parentPage = targetElement.closest('.page');
+                    if (parentPage) {
+                        const pageNumElement = parentPage.querySelector('.page-num');
+                        if (pageNumElement && pageNumElement.textContent.trim() !== '') {
+                            numTd.textContent = pageNumElement.textContent;
+                        }
+                    }
+                }
+            });
+        });
+    } catch (e) {
+        console.error("Error setting TOC page numbers:", e);
+    }
+</script>
+</body>
+
+</html>

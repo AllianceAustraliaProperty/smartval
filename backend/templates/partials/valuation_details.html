@@ -1,0 +1,156 @@
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="banner">{{ 8 + section_offset }}. Valuation Methodology</div>
+    <div class="space-between-md"></div>
+    <table>
+      <tr>
+        <td>Primary Methodology</td>
+        <td>Direct Comparison</td>
+      </tr>
+      <tr>
+        <td>Secondary Methodology</td>
+        <td>Summation</td>
+      </tr>
+    </table>
+    <div class="space-between-md"></div>
+    <div class="banner">{{ 9 + section_offset }}. Valuation Remarks</div>
+    <div class="space-between-xs"></div>
+    <div class="subtitle">Method 1: Direct Comparison</div>
+    <div class="space-between-xs"></div>
+    <div style="line-height: 13px">
+      <p style="white-space: pre-line">
+        {{
+        valuation_report["valuationDetails"]["directComparison"]|default('')
+        }}
+      </p>
+    </div>
+    <div class="space-between-md"></div>
+    <div class="subtitle">Method 2: Summation</div>
+    <div class="space-between-xs"></div>
+    <table>
+      {% set _prop_type = (valuation_report.get('propertyDetails', {}).get('propertyType') or '')|lower %}
+      {% set _is_unit = (valuation_report.get('valuationDetails', {}).get('isUnit') in [True, 'true', 1, '1']) or ('unit' in _prop_type) or ('apartment' in _prop_type) or ('flat' in _prop_type) or ('studio' in _prop_type) %}
+      {% if _is_unit %}
+      <tr>
+        <td>Land Value</td>
+        <td><em>No Separate Land Value (Strata Titled Unit)</em></td>
+      </tr>
+      {% elif valuation_report["valuationDetails"]["showLandValue"] %}
+      <tr>
+        <td>Land Value</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["landValue"]|format_currency|default('N/A')
+          }}
+        </td>
+      </tr>
+      {% endif %} {% if
+      valuation_report["valuationDetails"]["showImprovements"] %}
+      <tr>
+        <td>Improvements</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["improvements"]|format_currency|default('N/A')
+          }}{% if valuation_report["propertyDescriptors"].get("isGrannyFlat") %} (Main House + Granny Flat){% endif %}
+        </td>
+      </tr>
+      {% endif %}
+      {% if valuation_report["valuationDetails"].get("squareMeterRate") %}
+      <tr>
+        <td>Square Meter Rate</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["squareMeterRate"]|format_currency|default('N/A')
+          }}
+        </td>
+      </tr>
+      {% endif %}
+      {% if valuation_report["valuationDetails"].get("isUnit") %}
+      <tr>
+        <td>Valuation Amount</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["valuationAmount"]|format_currency|default('N/A')
+          }}
+        </td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td>Market Value</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A')
+          }}
+        </td>
+      </tr>
+      <tr>
+        <td>Interest Valued</td>
+        <td>
+          {{
+          valuation_report["valuationDetails"]["interestValued"]|default('N/A')
+          }}
+        </td>
+      </tr>
+    </table>
+    <div class="space-between-xs"></div>
+    <div style="display: flex; justify-content: center">
+      <p style="font-size: 14px">
+        {% if valuation_report["valuationDetails"]["currentDayValuation"] %}
+        Certificate of Property Valuation {% else %} Declaration {% endif %}
+      </p>
+    </div>
+    <div style="text-align: center; width: 60%; margin: 0 auto">
+      <hr />
+    </div>
+    {% if not valuation_report["valuationDetails"]["currentDayValuation"] %}
+    <div>
+      <p>
+        I hereby certify that I have carried out the assessments of the above
+        property as at that valuation on date of inspection. Neither I, nor to
+        the best of my knowledge, any member of this firm, has any conflict of
+        interest; direct, indirect or financial interest in relation to this
+        property that is not disclosed herein. This report is for the use only
+        of the party/s to which it is addressed for {{
+        valuation_report["valuationDetails"]["valuationType"]|default('N/A')|title|replace('Capital Gains', 'Capital
+        Gains Tax')
+        }} purposes only and is not to be used for any other purpose.
+      </p>
+    </div>
+    {% endif %}
+    <div>
+      <p>We certify the subject property:</p>
+      <p class="bold">
+        {{ valuation_report["address"]["fullAddress"]|default('') }}
+      </p>
+      <p>
+        We assess the subject property's Fair Market Value in its present
+        condition and on a vacant possession basis to be:
+      </p>
+      <p class="bold">
+        As at {{
+        valuation_report["valuationDetails"]["valuationDate"]|format_date|default('N/A')
+        }} (Date of Valuation)
+      </p>
+      <p class="bold">Fair Market Value -</p>
+      <p class="bold">
+        {{
+        valuation_report["valuationDetails"]["marketValue"]|format_currency|default('N/A')
+        }} ({{
+        valuation_report["valuationDetails"]["marketValue"]|format_currency_words|default('N/A')
+        }})
+      </p>
+      <div class="space-between-md"></div>
+      <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="" srcset="" />
+      <p>
+        JUGAL SAHA, AAPI CPV (Certified Practising Valuer 101474)
+        {% if valuation_report["address"]["state"] == 'WA' %}<br>WA License Number - LV45321{% endif %}
+        {% if valuation_report["address"]["state"] == 'QLD' %}&nbsp;&nbsp;QLD License no: 5429MR{% endif %}
+      </p>
+    </div>
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>

@@ -131,8 +131,12 @@ def title_address(value):
     return ' '.join(w.upper() if w in AU_STATE_ABBREVS else w for w in words)
 
 # Create the environment with custom filters
-from jinja2 import select_autoescape
-jinja_env = Environment(loader=TemplateLoader(), autoescape=select_autoescape(['html', 'xml']))
+from jinja2 import select_autoescape, FileSystemLoader, ChoiceLoader
+TEMPLATES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
+jinja_env = Environment(
+    loader=ChoiceLoader([FileSystemLoader(TEMPLATES_DIR), TemplateLoader()]),
+    autoescape=select_autoescape(['html', 'xml'])
+)
 jinja_env.filters['format_currency'] = format_currency
 jinja_env.filters['format_currency_no_decimal'] = format_currency_no_decimal
 jinja_env.filters['format_currency_words'] = format_currency_words
@@ -722,6 +726,7 @@ def _render_html_report(report, template_name):
             'house_cover_url': house_cover_b64,
             'aap_cover_design_url': aap_cover_design_b64,
             'tamn_page_logo_url': tamn_page_logo_b64,
+            'page_logo_url': tamn_page_logo_b64 if logo_type == 'TAMN' else (logo_data_url or effective_logo_url),
             'logo_type': logo_type,
             'now': now,
         }
@@ -1184,7 +1189,10 @@ def _render_html_report(report, template_name):
             template_data['sf_record'] = sf_record
 
         # Render the template using the pre-initialized environment
-        template = jinja_env.from_string(template_content)
+        if os.path.exists(os.path.join(TEMPLATES_DIR, template_name)):
+            template = jinja_env.get_template(template_name)
+        else:
+            template = jinja_env.from_string(template_content)
         html_content = template.render(**template_data)
         
         return html_content, True, None

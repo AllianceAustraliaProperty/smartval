@@ -2,7 +2,10 @@
 """Build before switching services, verify health and roll back failed releases."""
 import argparse
 from datetime import datetime, timezone
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
 import json
 from pathlib import Path
 import shutil
@@ -49,7 +52,8 @@ def deploy(repo, frontend_image=None, backend_image=None):
     releases = repo.parent / 'smartval-releases'
     releases.mkdir(mode=0o700, exist_ok=True)
     with (releases / 'deploy.lock').open('w') as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if fcntl:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         release = releases / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S') + '-' + revision)
         release.mkdir(mode=0o700)
         previous = {}

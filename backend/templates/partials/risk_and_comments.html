@@ -1,0 +1,247 @@
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="subtitle">6.2 Conditions & Repairs</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table class="compact-table">
+        <tr>
+          <td>Internal Condition</td>
+          <td>
+            {{
+            valuation_report["propertyDescriptors"]["internalCondition"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>External Condition</td>
+          <td>
+            {{
+            valuation_report["propertyDescriptors"]["externalCondition"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Essential Repairs</td>
+          <td>
+            {{
+            valuation_report["propertyDescriptors"]["repairsRequirements"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Repair Comments</td>
+          <td>
+            {{
+            valuation_report["propertyDescriptors"]["defects"]|default('N/A')
+            }}
+          </td>
+        </tr>
+        <tr>
+          <td>Internal Layout</td>
+          <td>Functional floor plan</td>
+        </tr>
+        <tr>
+          <td style="text-decoration: underline">Prime Cost Items</td>
+          <td></td>
+        </tr>
+        {% for category in valuation_report["photosSummary"]["categories"] %}
+        {% if category["primeCostItems"] %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>
+            {{ category["primeCostItems"]|join(', ')|default('')|capitalize }}
+          </td>
+        </tr>
+        {% endif %} {% endfor %}
+        {% if valuation_report.get("additionalPhotosType") == "Granny Flat" %}
+        {% for category in valuation_report.get("additionalPhotosSummary", {}).get("categories", []) %}
+        {% if category["primeCostItems"] %}
+        <tr>
+          <td>{{ category["category"]|default('') }} (Granny Flat)</td>
+          <td>
+            {{ category["primeCostItems"]|join(', ')|default('')|capitalize }}
+          </td>
+        </tr>
+        {% endif %} {% endfor %}
+        {% endif %}
+        <tr>
+          <td style="text-decoration: underline">Features & Fixtures</td>
+          <td></td>
+        </tr>
+
+        {% for category in valuation_report["photosSummary"]["categories"] %}
+        {% if "featuresFixtures" in category %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>
+            {{ category["floorings"]|join(', ')|default('') }}{% if
+            category["floorings"] and category["featuresFixtures"] %}, {%
+            endif %}{{ category["featuresFixtures"]|join(', ')|default('') }}
+          </td>
+        </tr>
+        {% elif category["floorings"] %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>{{ category["floorings"]|join(', ')|default('') }}</td>
+        </tr>
+        {% endif %} {% endfor %}
+        {% if valuation_report.get("additionalPhotosType") == "Granny Flat" and not overflow_62 %}
+        <tr>
+          <td style="text-decoration: underline">Features & Fixtures (Granny Flat)</td>
+          <td></td>
+        </tr>
+        {% for category in valuation_report.get("additionalPhotosSummary", {}).get("categories", []) %}
+        {% if "featuresFixtures" in category %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>
+            {{ category["floorings"]|join(', ')|default('') }}{% if
+            category["floorings"] and category["featuresFixtures"] %}, {%
+            endif %}{{ category["featuresFixtures"]|join(', ')|default('') }}
+          </td>
+        </tr>
+        {% elif category["floorings"] %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>{{ category["floorings"]|join(', ')|default('') }}</td>
+        </tr>
+        {% endif %} {% endfor %}
+        {% endif %}
+      </table>
+    </div>
+
+    {% if not overflow_62 %}
+    {# Building Area added under Conditions & Repairs (unified for both AAP and CPV) #}
+    <div class="space-between-md"></div>
+    <div class="subtitle">6.3 Building Area</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Living Area</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["livingArea"] %}Approximately {{
+            valuation_report["propertyDetails"]["livingArea"] }} sqm{% else %}N/A{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>External Area{% if valuation_report["propertyDetails"]["includeGrannyFlatExternalArea"] %} (Granny Flat){%
+            endif %}</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["includeGrannyFlatExternalArea"] and
+            valuation_report["propertyDetails"]["externalAreaGrannyFlat"] %}
+            Approximately {{ valuation_report["propertyDetails"]["externalAreaGrannyFlat"] }} sqm
+            {% elif valuation_report["propertyDetails"]["externalArea"] %}
+            Approximately {{ valuation_report["propertyDetails"]["externalArea"] }} sqm
+            {% else %}
+            N/A
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Parking Area</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["parkingArea"] %}Approximately {{
+            valuation_report["propertyDetails"]["parkingArea"] }} sqm{% else %}N/A{% endif %}
+          </td>
+        </tr>
+        {% if valuation_report["propertyDetails"]["otherArea"] %}
+        <tr>
+          <td>Other Areas</td>
+          <td>Approximately {{ valuation_report["propertyDetails"]["otherArea"] }} sqm</td>
+        </tr>
+        {% endif %}
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+
+  {% if overflow_62 %}
+  <div class="page">
+    <div class="header-container">
+      <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+    </div>
+    <div class="subtitle">6.2 Conditions & Repairs (continued)</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table class="compact-table">
+        {% if _has_granny %}
+        <tr>
+          <td style="text-decoration: underline">Features & Fixtures (Granny Flat)</td>
+          <td></td>
+        </tr>
+        {% for category in _granny_cats %}
+        {% if "featuresFixtures" in category %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>
+            {{ category["floorings"]|join(', ')|default('') }}{% if
+            category["floorings"] and category["featuresFixtures"] %}, {%
+            endif %}{{ category["featuresFixtures"]|join(', ')|default('') }}
+          </td>
+        </tr>
+        {% elif category["floorings"] %}
+        <tr>
+          <td>{{ category["category"]|default('') }}</td>
+          <td>{{ category["floorings"]|join(', ')|default('') }}</td>
+        </tr>
+        {% endif %} {% endfor %}
+        {% endif %}
+      </table>
+    </div>
+
+    <div class="space-between-md"></div>
+    <div class="subtitle">6.3 Building Area</div>
+    <div class="space-between-sm"></div>
+    <div>
+      <table>
+        <tr>
+          <td>Living Area</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["livingArea"] %}Approximately {{
+            valuation_report["propertyDetails"]["livingArea"] }} sqm{% else %}N/A{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>External Area{% if valuation_report["propertyDetails"]["includeGrannyFlatExternalArea"] %} (Granny Flat){%
+            endif %}</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["includeGrannyFlatExternalArea"] and
+            valuation_report["propertyDetails"]["externalAreaGrannyFlat"] %}
+            Approximately {{ valuation_report["propertyDetails"]["externalAreaGrannyFlat"] }} sqm
+            {% elif valuation_report["propertyDetails"]["externalArea"] %}
+            Approximately {{ valuation_report["propertyDetails"]["externalArea"] }} sqm
+            {% else %}
+            N/A
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Parking Area</td>
+          <td>
+            {% if valuation_report["propertyDetails"]["parkingArea"] %}Approximately {{
+            valuation_report["propertyDetails"]["parkingArea"] }} sqm{% else %}N/A{% endif %}
+          </td>
+        </tr>
+        {% if valuation_report["propertyDetails"]["otherArea"] %}
+        <tr>
+          <td>Other Areas</td>
+          <td>Approximately {{ valuation_report["propertyDetails"]["otherArea"] }} sqm</td>
+        </tr>
+        {% endif %}
+      </table>
+    </div>
+
+    <div class="footer-container">
+      <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+      <span class="page-num"></span>
+    </div>
+  </div>
+  {% endif %}

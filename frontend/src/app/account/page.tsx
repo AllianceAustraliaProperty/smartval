@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building, Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2, AlertCircle, MapPin } from 'lucide-react';
+import { User as UserIcon, Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2, AlertCircle, MapPin, Shield } from 'lucide-react';
 import { getCurrentUser, changePassword, type User } from '@/lib/auth';
-
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 export default function AccountPage() {
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function AccountPage() {
     load();
   }, [router]);
 
-  // Fetch approximate sign-in location
+  // fetch approximate sign-in location with graceful fallback
   useEffect(() => {
     const fetchIp = async () => {
       try {
@@ -98,169 +98,187 @@ export default function AccountPage() {
   };
 
   if (isLoading) {
-    return (
-      <div
-        className={`min-h-screen relative overflow-hidden flex items-center justify-center`}
-        style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
-      >
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
-            backgroundSize: '20px 20px'
-          }}
-        ></div>
-        <div
-          className="absolute inset-0 pointer-events-none animate-breath origin-bottom"
-          style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
-        ></div>
-        
-        <div className="relative z-10 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#0b70c5] border-t-transparent mx-auto mb-4"></div>
-          <p className="text-slate-700 font-medium tracking-wide animate-pulse">Loading Account...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading Account Settings..." />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/3 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl animate-pulse"></div>
-      </div>
-
-      <div className="relative z-10 max-w-3xl mx-auto p-8">
-        <div className="flex items-center mb-8">
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        {/* navigation back to dashboard */}
+        <div className="mb-6">
           <button
+            type="button"
             onClick={() => router.push('/valuation-reports')}
-            className="inline-flex items-center text-blue-700 hover:text-blue-800 font-medium"
+            className="group inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-full hover:border-[#006ABE] hover:text-[#006ABE] shadow-xs transition-all duration-200 cursor-pointer"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" /> Back to Dashboard
+            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-0.5 transition-transform" />
+            Back to Dashboard
           </button>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8">
-          <div className="flex items-center mb-6">
-            <div className="relative w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center shadow-2xl mr-4">
-              <Building className="w-7 h-7 text-white" />
+        {/* main elevated card shell matching report wizard aesthetic */}
+        <div className="bg-white rounded-3xl border border-blue-100 shadow-sm p-8 sm:p-10 space-y-8">
+          {/* header with royal blue brand badge */}
+          <div className="flex items-center space-x-4 border-b border-slate-100 pb-6">
+            <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center text-[#006ABE] shadow-xs">
+              <UserIcon className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 bg-clip-text text-transparent">Account Settings</h1>
-              <p className="text-gray-600">Manage your account details</p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#006ABE] tracking-tight">
+                Account Settings
+              </h1>
+              <p className="text-sm text-slate-500 font-medium">
+                Manage your credentials and security preferences
+              </p>
             </div>
           </div>
 
-          {/* Email Display */}
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-            <div className="flex items-center px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-700">
-              <Mail className="w-5 h-5 mr-3 text-gray-400" />
-              <span className="font-medium">{currentUser?.email}</span>
+          {/* email address display */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+              Registered Email
+            </label>
+            <div className="flex items-center px-5 py-3 border border-slate-200 rounded-full bg-slate-50/70 text-slate-800 text-sm font-semibold">
+              <Mail className="w-4 h-4 mr-3 text-slate-400" />
+              <span>{currentUser?.email}</span>
             </div>
           </div>
 
-          {/* Approximate Sign-in Location */}
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Approximate Sign-in Location</label>
-            <div className="flex items-center px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-700">
-              <MapPin className="w-5 h-5 mr-3 text-gray-400" />
+          {/* approximate sign-in location */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+              Approximate Sign-in Location
+            </label>
+            <div className="flex items-center px-5 py-3 border border-slate-200 rounded-full bg-slate-50/70 text-slate-800 text-sm">
+              <MapPin className="w-4 h-4 mr-3 text-slate-400 shrink-0" />
               {ipLoading ? (
-                <span className="text-gray-600">Detecting location…</span>
+                <span className="text-slate-500 text-sm">Detecting connection info…</span>
               ) : ipInfo && (ipInfo.city || ipInfo.region || ipInfo.country) ? (
-                <div className="flex flex-col">
-                  <span className="font-medium">{[ipInfo.city, ipInfo.region, ipInfo.country].filter(Boolean).join(', ')}</span>
-                  <span className="text-xs text-gray-500">IP: {ipInfo?.ip || 'N/A'} {ipInfo?.timezone ? `• ${ipInfo.timezone}` : ''}</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-slate-800">
+                    {[ipInfo.city, ipInfo.region, ipInfo.country].filter(Boolean).join(', ')}
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono">
+                    ({ipInfo?.ip || 'N/A'}{ipInfo?.timezone ? ` • ${ipInfo.timezone}` : ''})
+                  </span>
                 </div>
               ) : (
-                <span className="text-gray-600">Location unavailable</span>
+                <span className="text-slate-500 font-medium text-sm">
+                  Approximate location not detected
+                </span>
               )}
             </div>
-            <p className="mt-1 text-xs text-gray-500">City/region is approximate and derived from IP.</p>
+            <p className="text-xs text-slate-400 pl-2">
+              Derived from connection IP when available.
+            </p>
           </div>
 
-          {/* Change Password */}
-          <form onSubmit={onSubmit} className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Change Password</h2>
+          {/* change password form */}
+          <form onSubmit={onSubmit} className="pt-6 border-t border-slate-100 space-y-6">
+            <div className="flex items-center space-x-2">
+              <Shield className="w-5 h-5 text-[#006ABE]" />
+              <h2 className="text-lg font-bold text-slate-900">Change Password</h2>
+            </div>
 
             {errorMsg && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 flex items-center">
-                <AlertCircle className="w-5 h-5 mr-2" /> {errorMsg}
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-700 text-sm font-medium flex items-center space-x-3">
+                <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                <span>{errorMsg}</span>
               </div>
             )}
             {successMsg && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-700 flex items-center">
-                <CheckCircle2 className="w-5 h-5 mr-2" /> {successMsg}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-emerald-800 text-sm font-medium flex items-center space-x-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span>{successMsg}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                Current Password <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
                 <input
                   type={showCurrent ? 'text' : 'password'}
-                  className="block w-full pr-12 pl-4 py-3 border-2 border-gray-200 rounded-xl bg-white/70 text-gray-900"
+                  className="w-full h-11 px-5 pr-12 rounded-full border border-slate-300 bg-white text-slate-900 font-medium text-sm outline-none transition-all hover:border-[#006ABE] focus:border-[#006ABE] focus:ring-2 focus:ring-[#006ABE]/15"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   required
                   autoComplete="current-password"
                 />
-                <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={() => setShowCurrent(!showCurrent)}>
-                  {showCurrent ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-slate-400 hover:text-slate-600"
+                  onClick={() => setShowCurrent(!showCurrent)}
+                >
+                  {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  New Password <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <input
                     type={showNew ? 'text' : 'password'}
-                    className="block w-full pr-12 pl-4 py-3 border-2 border-gray-200 rounded-xl bg-white/70 text-gray-900"
+                    className="w-full h-11 px-5 pr-12 rounded-full border border-slate-300 bg-white text-slate-900 font-medium text-sm outline-none transition-all hover:border-[#006ABE] focus:border-[#006ABE] focus:ring-2 focus:ring-[#006ABE]/15"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     minLength={8}
                     autoComplete="new-password"
                   />
-                  <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={() => setShowNew(!showNew)}>
-                    {showNew ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-slate-400 hover:text-slate-600"
+                    onClick={() => setShowNew(!showNew)}
+                  >
+                    {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
+
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Confirm New Password <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <input
                     type={showConfirm ? 'text' : 'password'}
-                    className="block w-full pr-12 pl-4 py-3 border-2 border-gray-200 rounded-xl bg-white/70 text-gray-900"
+                    className="w-full h-11 px-5 pr-12 rounded-full border border-slate-300 bg-white text-slate-900 font-medium text-sm outline-none transition-all hover:border-[#006ABE] focus:border-[#006ABE] focus:ring-2 focus:ring-[#006ABE]/15"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     minLength={8}
                     autoComplete="new-password"
                   />
-                  <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={() => setShowConfirm(!showConfirm)}>
-                    {showConfirm ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-slate-400 hover:text-slate-600"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                  >
+                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="mt-2 inline-flex items-center px-6 py-2.5 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all duration-200 disabled:opacity-50 cursor-pointer"
-            >
-              <Lock className="w-4 h-4 mr-2" />
-              {submitting ? 'Updating...' : 'Update Password'}
-            </button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center justify-center px-7 py-3 text-sm font-bold rounded-full text-white bg-[#006ABE] hover:bg-[#00589e] shadow-sm hover:shadow transition-all duration-200 disabled:opacity-50 cursor-pointer"
+              >
+                <Lock className="w-4 h-4 mr-2" />
+                {submitting ? 'Updating...' : 'Update Password'}
+              </button>
+            </div>
           </form>
         </div>
       </div>
     </div>
   );
 }
-
-

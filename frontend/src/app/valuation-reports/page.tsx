@@ -12,6 +12,7 @@ import { PreviewReportModal } from '@/components/PreviewReportModal';
 import { Dancing_Script, Poppins, Montserrat } from 'next/font/google';
 import Image from 'next/image';
 import aapLogo from '../aap-white.svg';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 const dancingScript = Dancing_Script({ subsets: ['latin'] });
 const poppins = Poppins({ weight: '700', subsets: ['latin'] });
@@ -430,29 +431,7 @@ export default function ValuationReportsPage() {
 
 
   if (isLoading) {
-    return (
-      <div
-        className={`min-h-screen relative overflow-hidden flex items-center justify-center`}
-        style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
-      >
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
-            backgroundSize: '20px 20px'
-          }}
-        ></div>
-        <div
-          className="absolute inset-0 pointer-events-none animate-breath origin-bottom"
-          style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
-        ></div>
-        
-        <div className="relative z-10 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#0b70c5] border-t-transparent mx-auto mb-4"></div>
-          <p className="text-slate-700 font-medium tracking-wide animate-pulse">Loading Valuation Reports...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading Valuation Reports..." />;
   }
 
   return (

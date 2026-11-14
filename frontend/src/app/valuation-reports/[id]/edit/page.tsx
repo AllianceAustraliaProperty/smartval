@@ -19,9 +19,9 @@ const montserrat = Montserrat({ subsets: ['latin'] });
 
 import { Save, ArrowLeft, CheckCircle, X, ChevronLeft, ChevronRight, FilePlus2, FileText, FileSearch, Download, AlertTriangle, Receipt, ChevronDown, Send } from 'lucide-react';
 import { PreviewReportModal } from '@/components/PreviewReportModal';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
-
-const SectionLoading = () => <p role="status" className="p-6 text-gray-600">Loading section…</p>;
+const SectionLoading = () => <LoadingScreen fullScreen={false} message="Loading section..." />;
 const AddressAndContactSection = dynamic(() => import('@/components/sections/AddressAndContactSection').then(module => module.AddressAndContactSection), { loading: SectionLoading });
 const PropertyDetailsSection = dynamic(() => import('@/components/sections/PropertyDetailsSection').then(module => module.PropertyDetailsSection), { loading: SectionLoading });
 const LocationDetailsSection = dynamic(() => import('@/components/sections/LocationDetailsSection').then(module => module.LocationDetailsSection), { loading: SectionLoading });
@@ -607,29 +607,7 @@ export default function ValuationReportEditPage() {
   };
 
   if (isLoading) {
-    return (
-      <div
-        className={`min-h-screen relative overflow-hidden flex items-center justify-center`}
-        style={{ background: 'radial-gradient(ellipse 80% 75% at bottom center, #1f7cc6 20%, #ddeaf4 70%, #ffffff 90%)' }}
-      >
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, #ffffff 2px, transparent 0)',
-            backgroundSize: '20px 20px'
-          }}
-        ></div>
-        <div
-          className="absolute inset-0 pointer-events-none animate-breath origin-bottom"
-          style={{ background: 'radial-gradient(ellipse 80% 80% at bottom center, #1f7cc6 0%, transparent 70%)'}}
-        ></div>
-        
-        <div className="relative z-10 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#0b70c5] border-t-transparent mx-auto mb-4"></div>
-          <p className="text-slate-700 font-medium tracking-wide animate-pulse">Loading Valuation Report...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading Valuation Report..." />;
   }
 
   if (error || !property) {

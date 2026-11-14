@@ -6,6 +6,7 @@ import { apiRepository } from '@/lib/api-repository';
 import { ArrowLeft, X, FilePlus2, ChevronDown, Loader2 } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 import { Select } from '@/components/ui/FormField';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 const montserrat = Montserrat({ subsets: ['latin'] });
 
@@ -74,6 +75,7 @@ export default function NewValuationReportPage() {
 
   return (
     <div className={`${montserrat.className} min-h-screen bg-[#F8F9FA]`}>
+      {isCreating && <LoadingScreen message="Initializing new valuation report..." fullScreen={true} />}
       <div className="p-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
