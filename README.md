@@ -69,6 +69,7 @@ SMARTval is an enterprise-grade web application and automated report generation 
 ### Multi-Tenant Branding Engine
 - Dynamic tenant resolution supporting **AAP** (Australian Asset Professionals), **TAMN**, and **CPV** (Commercial Property Valuers).
 - Complete tenant isolation across document covers, running headers/footers, disclaimers, and signature blocks without data leakage.
+- Legal entity formatting: Valuation report cover page footers under CPV render **Alliance Australia Property Pty Ltd** for all properties.
 
 ### Strata Unit Land Value Rules
 - Automatic compliance formatting: Freehold property valuations display separate unimproved and statutory land values.

@@ -98,12 +98,30 @@ class MultiTenantBrandingTests(unittest.TestCase):
             now=now
         )
         cover = html.split('<div class="page executive-summary">')[0]
-        self.assertIn("Commercial Property Valuations (CPV)", cover)
-        self.assertNotIn("Alliance Australia Property Pty Ltd", cover)
+        self.assertIn("Alliance Australia Property Pty Ltd", cover)
+        self.assertNotIn("Commercial Property Valuations (CPV)", cover)
         self.assertNotIn("AAP VALUATIONS", cover)
         self.assertNotIn("Tamn Property Valuers", cover)
         self.assertIn("CPV Valuers or relied upon any other party", html)
-        print("✓ CPV tenant branding fully isolated with zero leaks!")
+        print("✓ CPV tenant branding uses Alliance Australia Property Pty Ltd for cover footer!")
+
+    def test_cpv_unit_uses_alliance_australia_property(self):
+        template = self.env.get_template('residential.html')
+        report = build_mock_report('CPV', 'Unit', is_unit=True)
+        html = template.render(
+            valuation_report=report,
+            property=report['address'],
+            logo_type='CPV',
+            logo_url='https://example.com/cpv-logo.png',
+            page_logo_url='https://example.com/cpv-logo.png',
+            tamn_page_logo_url=None,
+            aap_cover_design_url=None,
+            now=now
+        )
+        cover = html.split('<div class="page executive-summary">')[0]
+        self.assertIn("Alliance Australia Property Pty Ltd", cover)
+        self.assertNotIn("Commercial Property Valuations (CPV)", cover)
+        print("✓ CPV unit branding uses Alliance Australia Property Pty Ltd!")
 
 
 if __name__ == '__main__':

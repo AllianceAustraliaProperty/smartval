@@ -186,11 +186,31 @@ class ModularTemplateTests(unittest.TestCase):
             cover_photo=None,
             now=now
         )
-        self.assertIn("Commercial Property Valuations (CPV)", html)
-        # Verify CPV cover page does not contain Alliance Australia Property
         cover_section = html.split('<div class="page executive-summary">')[0]
-        self.assertNotIn("Alliance Australia Property Pty Ltd", cover_section)
-        print("✓ test_cpv_cover_page_has_no_aap_leak passed!")
+        self.assertIn("Alliance Australia Property Pty Ltd", cover_section)
+        self.assertNotIn("Commercial Property Valuations (CPV)", cover_section)
+        self.assertNotIn("AAP VALUATIONS", cover_section)
+        print("✓ test_cpv_cover_page passed with Alliance Australia Property Pty Ltd!")
+
+    def test_cpv_unit_cover_page_uses_alliance_australia_property(self):
+        template = self.env.get_template('residential.html')
+        report = build_mock_report('CPV', 'Unit', is_unit=True)
+        html = template.render(
+            valuation_report=report,
+            property=report['address'],
+            logo_type='CPV',
+            logo_url='https://example.com/cpv-logo.png',
+            page_logo_url='https://example.com/cpv-logo.png',
+            tamn_page_logo_url='https://example.com/tamn-logo.png',
+            aap_cover_design_url=None,
+            house_cover_url=None,
+            cover_photo=None,
+            now=now
+        )
+        cover_section = html.split('<div class="page executive-summary">')[0]
+        self.assertIn("Alliance Australia Property Pty Ltd", cover_section)
+        self.assertNotIn("Commercial Property Valuations (CPV)", cover_section)
+        print("✓ test_cpv_unit_cover_page_uses_alliance_australia_property passed!")
 
     def test_disclaimer_uses_dynamic_tenant_name(self):
         template = self.env.get_template('residential.html')
