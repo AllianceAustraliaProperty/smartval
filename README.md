@@ -73,7 +73,7 @@ SMARTval is an enterprise-grade web application and automated report generation 
 
 ### Strata Unit Land Value Rules
 - Automatic compliance formatting: Freehold property valuations display separate unimproved and statutory land values.
-- Strata-titled residential and commercial units automatically suppress separate land valuation rows, dynamically rendering legal strata disclosure disclaimers across `residential.html` and `cgt_short.html`.
+- Strata-titled units automatically suppress separate land valuation rows completely across Method 2 Summation tables in `residential.html` and `cgt_short.html`.
 
 ### Modular Jinja2 PDF Generation
 - Template engine modularized into 9 shared partials located in `backend/templates/partials/`:

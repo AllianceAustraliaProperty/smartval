@@ -247,7 +247,8 @@ class ModularTemplateTests(unittest.TestCase):
             page_logo_url='https://example.com/logo.png',
             now=now
         )
-        self.assertIn("No Separate Land Value (Strata Titled Unit)", html_unit)
+        self.assertNotIn("<td>Land Value</td>", html_unit)
+        self.assertNotIn("No Separate Land Value (Strata Titled Unit)", html_unit)
 
         # Freehold house should show actual land value
         report_house = build_mock_report('AAP', 'House', is_unit=False)

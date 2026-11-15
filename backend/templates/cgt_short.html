@@ -419,7 +419,10 @@
     {% set final_market_value = valuation_report.get('valuationDetails', {}).get('marketValue') or 0 %}
     {% set final_improvements = valuation_report.get('valuationDetails', {}).get('improvements') or (final_market_value - final_land_value if final_market_value > final_land_value else 0) %}
     {% set _prop_type = (valuation_report.get('propertyDetails', {}).get('propertyType') or valuation_report.get('propertyType') or '')|lower %}
-    {% set _is_unit = (valuation_report.get('valuationDetails', {}).get('isUnit') in [True, 'true', 'True', 1, '1']) or ('unit' in _prop_type) or ('apartment' in _prop_type) or ('flat' in _prop_type) or ('studio' in _prop_type) %}
+    {% set _unit_num = (valuation_report.get('address', {}).get('unitNumber') or '')|string|trim %}
+    {% set _street_name = (valuation_report.get('address', {}).get('streetName') or '')|string %}
+    {% set _full_addr = (valuation_report.get('address', {}).get('fullAddress') or '')|string %}
+    {% set _is_unit = (valuation_report.get('valuationDetails', {}).get('isUnit') in [True, 'true', 'True', 1, '1']) or ('unit' in _prop_type) or ('apartment' in _prop_type) or ('flat' in _prop_type) or ('studio' in _prop_type) or ('strata' in _prop_type) or (_unit_num != '') or ('/' in _street_name) or ('/' in _full_addr) %}
     {% set _show_land_value = (valuation_report.get('valuationDetails', {}).get('showLandValue') not in [False, 'false', 'False', 0, '0']) and not _is_unit %}
     {% set _show_improvements = (valuation_report.get('valuationDetails', {}).get('showImprovements') not in [False, 'false', 'False', 0, '0']) and not _is_unit %}
 

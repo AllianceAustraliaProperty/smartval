@@ -69,8 +69,9 @@ class UnitLandRuleTests(unittest.TestCase):
             page_logo_url='https://example.com/logo.png',
             now=now
         )
-        self.assertIn("No Separate Land Value (Strata Titled Unit)", html)
-        print("✓ Strata unit correctly denotes strata disclosure in residential.html!")
+        self.assertNotIn("<td>Land Value</td>", html)
+        self.assertNotIn("No Separate Land Value (Strata Titled Unit)", html)
+        print("✓ Strata unit correctly suppresses Land Value row completely in residential.html!")
 
     def test_cgt_short_unit_land_value_suppression(self):
         template = self.env.get_template('cgt_short.html')

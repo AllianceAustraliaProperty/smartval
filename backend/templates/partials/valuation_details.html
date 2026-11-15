@@ -30,14 +30,12 @@
     <div class="subtitle">Method 2: Summation</div>
     <div class="space-between-xs"></div>
     <table>
-      {% set _prop_type = (valuation_report.get('propertyDetails', {}).get('propertyType') or '')|lower %}
-      {% set _is_unit = (valuation_report.get('valuationDetails', {}).get('isUnit') in [True, 'true', 1, '1']) or ('unit' in _prop_type) or ('apartment' in _prop_type) or ('flat' in _prop_type) or ('studio' in _prop_type) %}
-      {% if _is_unit %}
-      <tr>
-        <td>Land Value</td>
-        <td><em>No Separate Land Value (Strata Titled Unit)</em></td>
-      </tr>
-      {% elif valuation_report["valuationDetails"]["showLandValue"] %}
+      {% set _prop_type = (valuation_report.get('propertyDetails', {}).get('propertyType') or valuation_report.get('propertyType') or '')|lower %}
+      {% set _unit_num = (valuation_report.get('address', {}).get('unitNumber') or '')|string|trim %}
+      {% set _street_name = (valuation_report.get('address', {}).get('streetName') or '')|string %}
+      {% set _full_addr = (valuation_report.get('address', {}).get('fullAddress') or '')|string %}
+      {% set _is_unit = (valuation_report.get('valuationDetails', {}).get('isUnit') in [True, 'true', 'True', 1, '1']) or ('unit' in _prop_type) or ('apartment' in _prop_type) or ('flat' in _prop_type) or ('studio' in _prop_type) or ('strata' in _prop_type) or (_unit_num != '') or ('/' in _street_name) or ('/' in _full_addr) %}
+      {% if not _is_unit and valuation_report["valuationDetails"]["showLandValue"] %}
       <tr>
         <td>Land Value</td>
         <td>
