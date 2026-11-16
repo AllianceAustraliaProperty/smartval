@@ -418,11 +418,19 @@
     {% set final_land_value = valuation_report.get('valuationDetails', {}).get('landValue') or land_value_rounded or land_value or 0 %}
     {% set final_market_value = valuation_report.get('valuationDetails', {}).get('marketValue') or 0 %}
     {% set final_improvements = valuation_report.get('valuationDetails', {}).get('improvements') or (final_market_value - final_land_value if final_market_value > final_land_value else 0) %}
+    {% set _is_unit_raw = valuation_report.get('valuationDetails', {}).get('isUnit') %}
     {% set _prop_type = (valuation_report.get('propertyDetails', {}).get('propertyType') or valuation_report.get('propertyType') or '')|lower %}
-    {% set _unit_num = (valuation_report.get('address', {}).get('unitNumber') or '')|string|trim %}
-    {% set _street_name = (valuation_report.get('address', {}).get('streetName') or '')|string %}
-    {% set _full_addr = (valuation_report.get('address', {}).get('fullAddress') or '')|string %}
-    {% set _is_unit = (valuation_report.get('valuationDetails', {}).get('isUnit') in [True, 'true', 'True', 1, '1']) or ('unit' in _prop_type) or ('apartment' in _prop_type) or ('flat' in _prop_type) or ('studio' in _prop_type) or ('strata' in _prop_type) or (_unit_num != '') or ('/' in _street_name) or ('/' in _full_addr) %}
+    {% if _is_unit_raw is defined and _is_unit_raw in [False, 'false', 'False', 0, '0'] %}
+      {% set _is_unit = false %}
+    {% elif _is_unit_raw in [True, 'true', 'True', 1, '1'] %}
+      {% set _is_unit = true %}
+    {% elif ('house' in _prop_type) or ('residential' in _prop_type and 'unit' not in _prop_type) or ('dwelling' in _prop_type) %}
+      {% set _is_unit = false %}
+    {% elif ('unit' in _prop_type) or ('apartment' in _prop_type) or ('flat' in _prop_type) or ('studio' in _prop_type) or ('strata' in _prop_type) %}
+      {% set _is_unit = true %}
+    {% else %}
+      {% set _is_unit = false %}
+    {% endif %}
     {% set _show_land_value = (valuation_report.get('valuationDetails', {}).get('showLandValue') not in [False, 'false', 'False', 0, '0']) and not _is_unit %}
     {% set _show_improvements = (valuation_report.get('valuationDetails', {}).get('showImprovements') not in [False, 'false', 'False', 0, '0']) and not _is_unit %}
 
