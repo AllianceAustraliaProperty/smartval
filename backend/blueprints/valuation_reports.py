@@ -579,9 +579,12 @@ def _render_html_report(report, template_name):
     try:
         # Be defensive about missing fields
         valuation_type = (report.get("valuationDetails", {}).get("valuationType") or "").lower()
+        property_type = (report.get("propertyDetails", {}).get("propertyType") or "").lower()
 
-        if template_name != "cgt_short.html":
-            if "cgt 2027" in valuation_type or "cgt short" in valuation_type or "short report (cgt" in valuation_type or "short cgt" in valuation_type or ("short" in valuation_type and "cgt" in valuation_type) or ("short" in valuation_type and "capital gains" in valuation_type):
+        if template_name not in ["cgt_short.html", "unit-block.html"]:
+            if "unit block" in valuation_type or "unit block" in property_type or "block of units" in valuation_type or "block of units" in property_type or "unit-block" in valuation_type or "unit-block" in property_type:
+                template_name = "unit-block.html"
+            elif "cgt 2027" in valuation_type or "cgt short" in valuation_type or "short report (cgt" in valuation_type or "short cgt" in valuation_type or ("short" in valuation_type and "cgt" in valuation_type) or ("short" in valuation_type and "capital gains" in valuation_type):
                 template_name = "cgt_short.html"
             elif valuation_type == "commercial":
                 template_name = "commercial_long.html"
@@ -731,8 +734,8 @@ def _render_html_report(report, template_name):
             'now': now,
         }
 
-        # Add record and sf_record mapping for commercial_long.html
-        if template_name == "commercial_long.html":
+        # Add record and sf_record mapping for commercial_long.html and unit-block.html
+        if template_name in ["commercial_long.html", "unit-block.html"]:
             # Map report data to 'record' structure expected by commercial_long.html
             # Helper to chunk lists
             def chunk_list(lst, n):
@@ -897,6 +900,7 @@ def _render_html_report(report, template_name):
                 "estimated_outgoings": report.get("valuationDetails", {}).get("outgoings"),
                 "listing_comparables": listing_comparables,
                 "sales_comparables": sales_comparables,
+                "raw_sales_comps": mapped_sales,
                 "direct_comparison_min": float(val_details.get("lowestValueSqm") or 0),
                 "direct_comparison_max": float(val_details.get("highestValueSqm") or 0),
                 "direct_comparison_summation": float(val_details.get("nla") or 0) * float(val_details.get("squareMeterRate") or 0),
@@ -1208,7 +1212,8 @@ def _render_html_report(report, template_name):
 def generate_report_preview(report_id):
     """Generate HTML report preview using Jinja template"""
     try:
-        html_content, success, error_message = generate_html_report(report_id)
+        req_template = request.args.get('template') or (request.get_json(silent=True) or {}).get('template')
+        html_content, success, error_message = generate_html_report(report_id, template_name=req_template or 'residential.html')
     except TimeoutError as e:
         return jsonify({'error': str(e)}), 503, {'Retry-After': '5'}
     
@@ -1223,7 +1228,8 @@ def generate_report_pdf(report_id):
     """Generate PDF report from HTML template"""
     try:
         # Generate HTML content first
-        html_content, success, error_message = generate_html_report(report_id)
+        req_template = request.args.get('template') or (request.get_json(silent=True) or {}).get('template')
+        html_content, success, error_message = generate_html_report(report_id, template_name=req_template or 'residential.html')
         
         if not success:
             return jsonify({'error': error_message}), 404 if 'not found' in error_message else 500

@@ -127,3 +127,6 @@ scratch/
 # Planning
 .planning/
 
+# Local context files
+REPORT_FILLING_CONTEXT.md
+
