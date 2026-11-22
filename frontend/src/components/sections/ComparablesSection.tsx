@@ -31,6 +31,7 @@ interface Comparable {
   rentalRate?: number;
   description?: string;
   passingRent?: number;
+  zoning?: string;
 }
 
 interface BulkLogEntry {
@@ -338,6 +339,7 @@ const searchComparablesAPI = async (params: {
         photoUrl: core.propertyPhotoUri || rapid.imageUrls?.mediumImageUrl || '',
         isComparable: false,
         zoning: core.zoning || rapid.zoning || core.zone || rapid.zone || '',
+        description: item.description || listings.description || listings.propertyDescription || listings.listingDescription || listings.headline || listings.comments || core.propertyDescription || core.description || rapid.description || '',
         // Additional useful data
         propertyType: core.propertyType || rapid.type || '',
         suburb: core.suburb || rapid.addressSuburb || '',
@@ -1987,19 +1989,67 @@ const ComparableCard: React.FC<{
                     setGeneratingDescId(compId);
                     try {
                       const comp = watch(`comparables.${type}.${index}`);
+                      const compRpId = comp?.rpId;
+
+                      // 1. Try to fetch property description from RP Data first if rpId is available
+                      if (compRpId) {
+                        try {
+                          const descRes = await fetch(`${API_BASE_URL}/rpdata/property-description/${encodeURIComponent(String(compRpId))}`);
+                          if (descRes.ok) {
+                            const descJson = await descRes.json();
+                            if (descJson?.description && typeof descJson.description === 'string' && descJson.description.trim()) {
+                              setValue(`comparables.${type}.${index}.description`, descJson.description.trim(), { shouldDirty: true, shouldTouch: true });
+                              return;
+                            }
+                          }
+                        } catch (rpErr) {
+                          console.warn('RP Data property description fetch failed, falling back to AI generator:', rpErr);
+                        }
+                      }
+
+                      // 2. Fallback to generating tailored description
                       const subjectZone = watch('propertyDetails.zoning');
                       const zone = comp?.zoning || subjectZone || '[Zone]';
                       const bldArea = comp?.buildingArea || '[building area]';
+                      const siteArea = comp?.siteArea || '[site area]';
                       const dist = comp?.distance || '[distance]';
+                      const beds = comp?.bedrooms;
+                      const baths = comp?.bathrooms;
+                      const cars = comp?.carSpaces;
+                      const propType = watch('propertyDetails.propertyType') || watch('propertyType') || '';
 
-                      const promptText = `Generate a professional, concise property description for a comparable property used in a real estate valuation report.
+                      let promptText = '';
+                      if (propType === 'Block of Units' || propType === 'block_of_units') {
+                        promptText = `Generate a professional, concise property description for a comparable block of units property used in a real estate valuation report.
+Property Details:
+- Building Area: ${bldArea} sqm
+- Site Area: ${siteArea} sqm
+- Zoning: ${zone}
+- Distance from subject property: ${dist} km
+
+Format example: "A multi-unit residential block comprising well-presented self-contained units with a total building area of approximately ${bldArea} sqm, situated on a ${siteArea} sqm allotment within the ${zone} zone. The property features on-site parking and established grounds, situated approximately ${dist} km from the subject property."
+Return only the concise description text.`;
+                      } else if (beds || baths) {
+                        promptText = `Generate a professional, concise property description for a comparable residential property used in a real estate valuation report.
+Property Details:
+- Accommodation: ${beds || '-'} bedrooms, ${baths || '-'} bathrooms, ${cars || '-'} car spaces
+- Building Area: ${bldArea} sqm
+- Site Area: ${siteArea} sqm
+- Zoning: ${zone}
+- Distance from subject property: ${dist} km
+
+Format example: "A well-presented residential dwelling comprising ${beds || ''} bedrooms, ${baths || ''} bathrooms, open-plan living areas, functional kitchen and amenities, situated on an allotment of approximately ${siteArea} sqm within the ${zone} zone, located approximately ${dist} km from the subject property."
+Return only the concise description text.`;
+                      } else {
+                        promptText = `Generate a professional, concise property description for a comparable property used in a real estate valuation report.
 Property Details:
 - Building Area: ${bldArea} sqm
 - Zoning: ${zone}
 - Distance from subject property: ${dist} km
 
-The description should be in a similar format to: "Commercial retail premises with a building area of approximately [building area] sqm, situated within the [Zone]. The property comprises a well-presented ground-floor commercial unit suitable for retail, showroom, or light commercial use, featuring an open-plan retail/display area, ancillary storage, staff amenities, and convenient on-site and street parking. The property is located approximately [distance] km from the subject property."
-Make it professional and adapt it appropriately based on typical commercial retail premises. Do not include introductory phrases like "Here is a description". Return only the description text.`;
+Format example: "Commercial/mixed premises with a building area of approximately ${bldArea} sqm, situated within the ${zone} zone, located approximately ${dist} km from the subject property."
+Return only the concise description text.`;
+                      }
 
                       const response = await fetch('/internal-api/generate-text', {
                         method: 'POST',
@@ -2009,20 +2059,20 @@ Make it professional and adapt it appropriately based on typical commercial reta
 
                       if (response.ok) {
                         const { data } = await response.json();
-                        setValue(`comparables.${type}.${index}.description`, data, { shouldDirty: true });
+                        setValue(`comparables.${type}.${index}.description`, data, { shouldDirty: true, shouldTouch: true });
                       } else {
                         throw new Error('Failed to generate description');
                       }
                     } catch (error) {
                       console.error(error);
-                      alert('Failed to generate description');
+                      alert('Failed to fetch or generate description');
                     } finally {
                       setGeneratingDescId(null);
                     }
                   }}
                   disabled={generatingDescId === `${type}-${index}`}
                   className="h-8 px-3.5 text-[#006ABE] hover:text-[#00589e] hover:bg-blue-100/70 rounded-full border border-blue-200/80 bg-white transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-bold disabled:opacity-50 shadow-2xs"
-                  title="Auto-generate property description"
+                  title="Fetch description from RP Data or auto-generate"
                 >
                   {generatingDescId === `${type}-${index}` ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -2030,7 +2080,7 @@ Make it professional and adapt it appropriately based on typical commercial reta
                     <Wand2 className="w-3.5 h-3.5 text-[#006ABE]" />
                   )}
                   <span className="text-xs font-semibold">
-                    {generatingDescId === `${type}-${index}` ? 'Generating...' : 'Auto-generate'}
+                    {generatingDescId === `${type}-${index}` ? 'Fetching...' : 'Fetch / Generate'}
                   </span>
                 </button>
               </div>
@@ -2852,6 +2902,21 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                             const rapid = item.rapid || {};
                             const listings = item.listings || {};
 
+                            let fetchedDescription = item.description || listings.description || listings.propertyDescription || listings.headline || listings.comments || core.propertyDescription || core.description || rapid.description || '';
+                            if (!fetchedDescription && propertyId) {
+                              try {
+                                const descResp = await fetch(`${API_BASE_URL}/rpdata/property-description/${encodeURIComponent(String(propertyId))}`);
+                                if (descResp.ok) {
+                                  const descData = await descResp.json();
+                                  if (descData?.description && typeof descData.description === 'string') {
+                                    fetchedDescription = descData.description.trim();
+                                  }
+                                }
+                              } catch (e) {
+                                console.warn('Could not fetch property description:', e);
+                              }
+                            }
+
                             const newComparable: Comparable = {
                               id: core.propertyId?.toString() || `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                               fullAddress: core.singleLineAddress || core.address?.singleLine || '',
@@ -2869,7 +2934,9 @@ const ComparableGroup: React.FC<SectionProps & { type: 'sales' | 'rentals'; titl
                               comparison: '',
                               rpId: core.propertyId?.toString() || rapid.id?.toString() || '',
                               photoUrl: core.propertyPhotoUri || rapid.imageUrls?.mediumImageUrl || '',
-                              isComparable: false
+                              isComparable: false,
+                              zoning: core.zoning || rapid.zoning || core.zone || rapid.zone || '',
+                              description: fetchedDescription
                             };
 
                             console.log('Adding comparable:', newComparable);
@@ -3395,6 +3462,21 @@ export const ComparablesSection: React.FC<SectionProps> = (props) => {
     try {
       console.log('Adding to sales:', result);
 
+      let initialDesc = result.description || '';
+      if (!initialDesc && result.rpId) {
+        try {
+          const descResp = await fetch(`${API_BASE_URL}/rpdata/property-description/${encodeURIComponent(String(result.rpId))}`);
+          if (descResp.ok) {
+            const descData = await descResp.json();
+            if (descData?.description && typeof descData.description === 'string') {
+              initialDesc = descData.description.trim();
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fetch property description on add to sales:', e);
+        }
+      }
+
       // Convert search result to comparable and add to sales
       const newComparable: Comparable = {
         id: result.id,
@@ -3413,7 +3495,9 @@ export const ComparablesSection: React.FC<SectionProps> = (props) => {
         comparison: result.comparison,
         rpId: result.rpId,
         photoUrl: result.photoUrl,
-        isComparable: result.isComparable
+        isComparable: result.isComparable,
+        description: initialDesc,
+        zoning: result.zoning || '',
       };
 
       console.log('Created comparable:', newComparable);
@@ -3460,6 +3544,21 @@ export const ComparablesSection: React.FC<SectionProps> = (props) => {
     try {
       console.log('Adding to rentals:', result);
 
+      let initialDesc = result.description || '';
+      if (!initialDesc && result.rpId) {
+        try {
+          const descResp = await fetch(`${API_BASE_URL}/rpdata/property-description/${encodeURIComponent(String(result.rpId))}`);
+          if (descResp.ok) {
+            const descData = await descResp.json();
+            if (descData?.description && typeof descData.description === 'string') {
+              initialDesc = descData.description.trim();
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fetch property description on add to rentals:', e);
+        }
+      }
+
       // Convert search result to comparable and add to rentals
       const newComparable: Comparable = {
         id: result.id,
@@ -3478,7 +3577,9 @@ export const ComparablesSection: React.FC<SectionProps> = (props) => {
         comparison: result.comparison,
         rpId: result.rpId,
         photoUrl: result.photoUrl,
-        isComparable: result.isComparable
+        isComparable: result.isComparable,
+        description: initialDesc,
+        zoning: result.zoning || '',
       };
 
       console.log('Created comparable:', newComparable);

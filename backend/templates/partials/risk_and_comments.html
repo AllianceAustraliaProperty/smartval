@@ -46,7 +46,7 @@
           <td style="text-decoration: underline">Prime Cost Items</td>
           <td></td>
         </tr>
-        {% for category in valuation_report["photosSummary"]["categories"] %}
+        {% for category in valuation_report.get("photosSummary", {}).get("categories", []) %}
         {% if category["primeCostItems"] %}
         <tr>
           <td>{{ category["category"]|default('') }}</td>
@@ -71,7 +71,7 @@
           <td></td>
         </tr>
 
-        {% for category in valuation_report["photosSummary"]["categories"] %}
+        {% for category in valuation_report.get("photosSummary", {}).get("categories", []) %}
         {% if "featuresFixtures" in category %}
         <tr>
           <td>{{ category["category"]|default('') }}</td>

@@ -12,7 +12,12 @@ export const ResidentialPropertyTypes = [
   "Terrace House",
   "Granny Flat",
   "Semi-detached",
-  "Unit"
+  "Unit",
+  "Block of Units"
+] as const;
+
+export const BlockOfUnitsPropertyTypes = [
+  "Block of Units"
 ] as const;
 
 export const CommercialPropertyTypes = [
@@ -67,6 +72,18 @@ export function mapRpDataPropertyType(rawType?: string, rawSubType?: string): Pr
   if (lowerSub.includes('studio') || lowerMain.includes('studio')) return 'Studio';
   if (lowerSub.includes('office') || combined.includes('office')) return 'Commercial (Office)';
   if (lowerSub.includes('retail') || lowerSub.includes('shop') || combined.includes('retail')) return 'Commercial (Retail)';
+  if (
+    lowerSub.includes('block of units') ||
+    lowerMain.includes('block of units') ||
+    lowerSub.includes('unit block') ||
+    lowerMain.includes('unit block') ||
+    lowerSub.includes('block of flats') ||
+    lowerMain.includes('block of flats') ||
+    combined.includes('block of units') ||
+    combined.includes('unit block')
+  ) {
+    return 'Block of Units';
+  }
   if (lowerSub.includes('warehouse') || lowerSub.includes('industrial') || combined.includes('warehouse')) return 'Commercial (Warehouse)';
   if (lowerSub.includes('unit') || lowerSub.includes('flat') || lowerMain.includes('unit') || lowerMain.includes('flat')) return 'Unit';
   if (lowerSub.includes('house') || lowerMain.includes('house') || lowerMain.includes('dwelling')) return 'House';

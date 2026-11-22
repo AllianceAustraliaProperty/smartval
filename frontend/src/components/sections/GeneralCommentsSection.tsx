@@ -126,7 +126,7 @@ export const GeneralCommentsSection: React.FC<SectionProps> = ({ register, error
     const propertyType = watch('propertyDetails.propertyType')?.toLowerCase() || '';
 
     // Determine land area text based on property type
-    const landTypesWithTotalArea = ['house', 'duplex', 'triplex', 'house & granny flat', 'terrace', 'granny flat', 'rural', 'land'];
+    const landTypesWithTotalArea = ['house', 'duplex', 'triplex', 'house & granny flat', 'terrace', 'granny flat', 'rural', 'land', 'block of units'];
     const landAreaText = landTypesWithTotalArea.includes(propertyType)
       ? 'has a total land area of'
       : 'has a parent land area of';

@@ -1,1307 +1,839 @@
-<!DOCTYPE html>
-<html lang="en">
+{# SMARTval Unit Block Valuation Report Template - Modular Orchestrator #}
+{% set page_logo_url = tamn_page_logo_url if logo_type == 'TAMN' else logo_url %}
+{% set has_rentals = valuation_report.get("comparables", {}).get("rentals", [])|length > 0 %}
+{% set section_offset = 1 if has_rentals else 0 %}
+{% set has_floor_plans = valuation_report.get("floorPlans") and valuation_report["floorPlans"]|length > 0 %}
+{% set has_annexures = valuation_report.get("photos", [])|selectattr("isAnnexure")|list|length > 0 %}
+{% set has_additional_photos = valuation_report.get("additionalPhotos", [])|length > 0 %}
+{% set gallery_photo_count = valuation_report.get("gallery_photos_groups", [])|length %}
+{% set extra_photo_pages = [gallery_photo_count - 1, 0]|max %}
+{% set additional_photo_pages = ((valuation_report.get("additionalPhotos", [])|length / 6)|round(0, 'ceil')|int) if has_additional_photos else 0 %}
+{% set annexure_page = 13 + section_offset + extra_photo_pages + additional_photo_pages %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unit Block Valuation Report</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        @page {
-            size: A4 portrait;
-            margin: 0;
-        }
+{# Safe variable fallbacks for valuation_report and record contexts #}
+{% set _addr = valuation_report.address if (valuation_report is defined and valuation_report.address is defined) else (record.location_details if (record is defined and record.location_details is defined) else {}) %}
+{% set _val_details = valuation_report.valuationDetails if (valuation_report is defined and valuation_report.valuationDetails is defined) else (record.property_valuation if (record is defined and record.property_valuation is defined) else {}) %}
+{% set _prop_details = valuation_report.propertyDetails if (valuation_report is defined and valuation_report.propertyDetails is defined) else (record.property_details if (record is defined and record.property_details is defined) else {}) %}
+{% set _prop_desc = valuation_report.propertyDescriptors if (valuation_report is defined and valuation_report.propertyDescriptors is defined) else (record.property_descriptors if (record is defined and record.property_descriptors is defined) else {}) %}
+{% set _loc_details = valuation_report.locationDetails if (valuation_report is defined and valuation_report.locationDetails is defined) else (record.location_details if (record is defined and record.location_details is defined) else {}) %}
+{% set _gen_comm = valuation_report.generalComments if (valuation_report is defined and valuation_report.generalComments is defined) else (record.general_comments if (record is defined and record.general_comments is defined) else {}) %}
 
-        * {
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
+{% set _street = _addr.street if (_addr.street is defined and _addr.street) else ((_addr.unitNumber|default('') ~ ('/' if _addr.unitNumber else '') ~ _addr.streetNumber|default('') ~ ' ' ~ _addr.streetName|default(''))|trim) %}
+{% set _suburb = _addr.suburb|default('') %}
+{% set _state = _addr.state|default('') %}
+{% set _postcode = _addr.postcode|default('') %}
+{% set _full_addr = (_addr.fullAddress if (_addr.fullAddress is defined and _addr.fullAddress) else (_street ~ ' ' ~ _suburb ~ ' ' ~ _state ~ ' ' ~ _postcode))|trim %}
+{% set _job_no = valuation_report.fileNumber|default('PV020935') %}
+{% set _val_date = _val_details.valuationDate|format_date %}
+{% set _issue_date = _val_details.dateIssued|format_date if _val_details.dateIssued else _val_date %}
+{% set _instruct_party = valuation_report.primaryContact.firstName ~ ' ' ~ valuation_report.primaryContact.lastName if (valuation_report.primaryContact and (valuation_report.primaryContact.firstName or valuation_report.primaryContact.lastName)) else (_val_details.instructingParty|default('Client')) %}
+{% set _mv = _val_details.marketValue|default(3100000) %}
+{% set _cap_rate = _val_details.capRateMid|default(_val_details.capitalisationRate)|default('5.50') %}
+{% set _cap_low = _val_details.capRateLow|default('4.75') %}
+{% set _cap_high = _val_details.capRateHigh|default('5.75') %}
+{% set _net_rent = _val_details.assessedNetRental if _val_details.assessedNetRental else (((_val_details.grossRentalRate|default(170) - _val_details.outgoingsRate|default(30)) * (_prop_details.buildingArea or _prop_details.livingArea or 1))|round|int if _val_details.grossRentalRate else ((_mv * (_cap_rate|float / 100))|round|int)) %}
+{% set _adopted_cap = _val_details.adoptedCapValue|default(_mv) %}
+{% set _site_area = _prop_details.siteArea|default(2006) %}
+{% set _building_area = _prop_details.buildingArea|default(_prop_details.livingArea)|default(720) %}
+{% set _zoning = _prop_details.zoning|default('R40 - Residential') %}
+{% set _council = _prop_details.councilArea|default('City of Stirling') %}
+{% set _units_count = _prop_desc.numberOfUnits or _prop_desc.noOfUnits or _prop_desc.no_of_units or (valuation_report.get("propertyDescriptors", {}).get("numberOfUnits") if valuation_report is defined and valuation_report.get is defined else None) or (valuation_report.get("propertyDescriptors", {}).get("noOfUnits") if valuation_report is defined and valuation_report.get is defined else None) or (record.property_descriptors.no_of_units if record is defined and record.property_descriptors is defined else None) %}
+{% set _prop_type = ('Residential block of ' ~ _units_count ~ (' unit' if _units_count|int == 1 else ' units')) if _units_count else (_prop_details.propertyType|default('Block of Units')) %}
+{% set _valuer_name = _val_details.valuerName|default('JUGAL SAHA') %}
 
-        body {
-            font-family: "Avenir Next", Arial, Helvetica, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            font-size: 11px;
-            color: #222222;
-            line-height: 1.45;
-        }
+{% include 'partials/document_head.html' %}
 
-        p {
-            text-align: justify !important;
-            margin: 0 0 8px 0;
-            line-height: 1.45;
-        }
+<style>
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .data-table td {
+    padding: 3px 6px;
+    vertical-align: top;
+    line-height: 1.35;
+  }
+  .data-table tr td:first-child {
+    width: 42%;
+    font-weight: 600;
+    color: #111111;
+    text-align: left !important;
+  }
+  .data-table tr td:last-child {
+    width: 58%;
+    color: #222222;
+    text-align: left !important;
+  }
 
-        .page {
-            height: 297.35mm;
-            width: 211mm;
-            box-sizing: border-box;
-            position: relative;
-            page-break-after: always;
-            background-color: #ffffff;
-            margin: 0;
-            padding: 55px 45px 75px 45px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+  /* Commercial Long Replicated Comparable Styles */
+  .comparable {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .comparable table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .comparable td {
+    text-align: left;
+    line-height: 1.6;
+    width: unset;
+    padding-right: 0;
+    vertical-align: top;
+    font-weight: normal !important;
+  }
+  .subtitle-md {
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 6px;
+  }
+</style>
 
-        /* Top Header Logo Container */
-        .header-container {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-top: -25px;
-            margin-bottom: 15px;
-            min-height: 55px;
-        }
+{% include 'partials/cover_pages.html' %}
 
-        .header-logo {
-            display: block;
-            width: auto !important;
-            max-width: 320px;
-            height: 60px;
-            object-fit: contain !important;
-        }
+<!-- ==================== PAGE 2: VALUATION EXECUTIVE SUMMARY ==================== -->
+<div class="page executive-summary">
+  <div class="header-container">
+    <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
+  </div>
+  <div class="banner" style="display: flex; justify-content: space-between; align-items: center;">
+    <span style="font-size: 18px; font-weight: bold;">Valuation Executive Summary</span>
+    <span style="font-size: 13px; font-weight: 600;">{{ _val_date }}</span>
+  </div>
+  <div style="font-size: 12px; font-weight: 700; color: #111; margin-top: -2px; margin-bottom: 8px;">{{ _full_addr }}</div>
 
-        /* Gray Section Banners matching reference PDF */
-        .banner {
-            background-color: #f1f2f6;
-            padding: 10px 14px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #111111;
-            border-radius: 2px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+  <!-- Cover Photo -->
+  {% set cover_photo_url = valuation_report.photos|selectattr('isCover')|first %}
+  {% if cover_photo_url and cover_photo_url['photoUrl'] %}
+  <div style="margin-bottom: 10px;">
+    <img src="{{ cover_photo_url['photoUrl'] }}" style="width: 100%; height: 260px; object-fit: cover; border-radius: 2px;" alt="Subject Property Cover" />
+  </div>
+  {% elif cover_photo and cover_photo['photoUrl'] %}
+  <div style="margin-bottom: 10px;">
+    <img src="{{ cover_photo['photoUrl'] }}" style="width: 100%; height: 260px; object-fit: cover; border-radius: 2px;" alt="Subject Property Cover" />
+  </div>
+  {% else %}
+  <div style="width: 100%; height: 200px; background-color: #e5e7eb; border-radius: 2px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 13px;">
+    Property Photograph
+  </div>
+  {% endif %}
 
-        .banner-title {
-            font-size: 16px;
-            font-weight: 700;
-        }
+  <!-- Two Column Layout -->
+  <div style="display: flex; gap: 20px;">
+    <!-- Left Column -->
+    <div style="flex: 1;">
+      <div style="font-size: 12.5px; font-weight: 700; color: #111; border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-bottom: 6px;">Property Description</div>
+      <table class="data-table">
+        <tr>
+          <td style="width: 44%;">Property Type</td>
+          <td>{{ _prop_type }}</td>
+        </tr>
+        <tr>
+          <td>Accommodation</td>
+          <td>{{ _prop_details.accommodation|default(_prop_desc.accommodation)|default('N/A') }}</td>
+        </tr>
+        <tr>
+          <td>Internal Area</td>
+          <td>Approximately {{ _building_area }} sqm</td>
+        </tr>
+        <tr>
+          <td>Car Parking</td>
+          <td>{{ _prop_desc.parkingType|default(_prop_desc.carSpaces)|default('N/A') }}</td>
+        </tr>
+        <tr>
+          <td>Year Built</td>
+          <td>{{ _prop_details.buildYear|default(_prop_details.yearBuilt)|default('N/A') }}</td>
+        </tr>
+        <tr>
+          <td>Site Area</td>
+          <td>{{ _site_area|format_area_smart|default('N/A') }}</td>
+        </tr>
+        <tr>
+          <td>Zoning</td>
+          <td>{{ _zoning }}</td>
+        </tr>
+      </table>
 
-        .banner-right {
-            font-size: 13px;
-            font-weight: 600;
-            color: #333333;
-        }
+      <div style="font-size: 12.5px; font-weight: 700; color: #111; border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-top: 10px; margin-bottom: 6px;">Occupancy Summary</div>
+      <table class="data-table">
+        <tr>
+          <td style="width: 44%;">Status</td>
+          <td>{{ _val_details.occupancy|default(_val_details.occupancyStatus)|default('Tenant Occupied') }}</td>
+        </tr>
+      </table>
 
-        .property-address-sub {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #111111;
-            margin-top: -2px;
-            margin-bottom: 10px;
-            padding-left: 2px;
-        }
+      <div style="margin-top: 18px;">
+        <img src="https://valai.duo.tax/assets/member-api-logo.png" style="width: 155px; height: auto;" alt="Australian Property Institute Member" />
+      </div>
+    </div>
 
-        /* Table Styling */
-        table {
-            width: 100%;
-            border-spacing: 0;
-            border-collapse: collapse;
-            font-size: 11px;
-        }
+    <!-- Right Column -->
+    <div style="flex: 1.15;">
+      <div style="font-size: 12.5px; font-weight: 700; color: #111; border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-bottom: 6px;">Instructions:</div>
+      <table class="data-table">
+        <tr>
+          <td style="width: 42%;">Instructing Party</td>
+          <td>{{ _instruct_party }}</td>
+        </tr>
+        <tr>
+          <td>Interest Valued</td>
+          <td>{{ _val_details.interestValued|default('Fee Simple Vacant Possession') }}</td>
+        </tr>
+        <tr>
+          <td>Date of Instruction</td>
+          <td>{{ _val_details.dateOfInstruction|format_date|default(_val_date) }}</td>
+        </tr>
+      </table>
 
-        .data-table td {
-            padding: 4px 6px;
-            vertical-align: top;
-            line-height: 1.4;
-        }
+      <div style="font-size: 12.5px; font-weight: 700; color: #111; border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-top: 10px; margin-bottom: 6px;">Valuation Summary</div>
+      <table class="data-table">
+        <tr>
+          <td style="width: 42%;">Date of Valuation</td>
+          <td>{{ _val_date }}</td>
+        </tr>
+        <tr>
+          <td>Highest & Best Use</td>
+          <td>Existing Use</td>
+        </tr>
+        <tr>
+          <td>Assessed Net Rental</td>
+          <td>{{ _net_rent|format_currency }}/Per Annum</td>
+        </tr>
+        <tr>
+          <td>Yield Adopted</td>
+          <td>{{ _cap_rate }}%</td>
+        </tr>
+        <tr>
+          <td>Valuation Amount</td>
+          <td><strong style="font-size: 12.5px;">{{ _mv|format_currency }}</strong> (Exclusive GST)<br><span style="font-size: 9.5px; color: #444;">({{ _mv|format_currency_words }})</span></td>
+        </tr>
+      </table>
 
-        .data-table tr td:first-child {
-            width: 36%;
-            font-weight: 600;
-            color: #111111;
-        }
+      <div style="font-size: 12.5px; font-weight: 700; color: #111; border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-top: 12px; margin-bottom: 6px;">Prepared By</div>
+      <div style="line-height: 1.45; font-size: 11px;">
+        <strong>{{ _valuer_name }}, Property Valuer, AAPI, CPV</strong><br>
+        Certified Practising Valuer 101474<br>
+        {% if _state == 'WA' %}WA License Number - LV45321{% elif _state == 'QLD' %}QLD License no: 5429MR{% else %}Licensed Property Valuer{% endif %}
+      </div>
+    </div>
+  </div>
 
-        .data-table tr td:last-child {
-            width: 64%;
-            color: #222222;
-        }
-
-        .bordered-table td {
-            border-bottom: 1px solid #e5e7eb;
-            padding: 4.5px 6px;
-        }
-
-        .section-heading {
-            font-size: 13px;
-            font-weight: 700;
-            color: #111111;
-            margin-top: 10px;
-            margin-bottom: 6px;
-        }
-
-        .subsection-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: #111111;
-            margin-top: 8px;
-            margin-bottom: 4px;
-        }
-
-        /* Footer Bar */
-        .footer-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 9.5px;
-            font-weight: 600;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 10px 35px;
-            letter-spacing: 0.3px;
-        }
-
-        .footer-address {
-            color: white;
-            line-height: 1.3;
-        }
-
-        .footer-container .page-num {
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-        }
-
-        /* Comparable card styles */
-        .comp-card {
-            margin-bottom: 12px;
-            border-bottom: 1px dashed #d1d5db;
-            padding-bottom: 10px;
-        }
-
-        .comp-card:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .comp-header {
-            background-color: #f3f4f6;
-            padding: 6px 10px;
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #111111;
-            border-radius: 2px;
-            margin-bottom: 6px;
-        }
-
-        .comp-meta-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            margin-bottom: 6px;
-            padding: 0 4px;
-        }
-
-        .comp-grid {
-            display: flex;
-            gap: 15px;
-            padding: 0 4px;
-        }
-
-        .comp-left {
-            flex: 1.2;
-        }
-
-        .comp-right {
-            flex: 1;
-        }
-
-        .matrix-table td {
-            padding: 2.5px 4px;
-            font-size: 10.5px;
-        }
-
-        .matrix-table td:first-child {
-            width: 48%;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .matrix-table td:last-child {
-            width: 52%;
-            color: #111111;
-        }
-
-        /* Photo gallery */
-        .photos-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .photos-container img {
-            width: calc(50% - 4px);
-            height: 250px;
-            object-fit: cover;
-            border: 1px solid #222222;
-            border-radius: 2px;
-        }
-
-        /* TOC specific */
-        .toc-table td {
-            padding: 8px 10px;
-            font-size: 12px;
-        }
-
-        .toc-table tr td:first-child {
-            text-align: left;
-            font-weight: 600;
-        }
-
-        .toc-table tr td:last-child {
-            text-align: right;
-            font-weight: 700;
-            width: 10%;
-        }
-
-        .toc-subitem td:first-child {
-            padding-left: 30px;
-            font-weight: normal;
-            color: #374151;
-        }
-    </style>
-
+  <!-- Compliance Disclaimer Notice above footer -->
+  <div style="margin-top: auto; padding-bottom: 6px; font-size: 8.5pt; text-align: center; color: #555; border-top: 1px solid #e5e7eb; padding-top: 6px;">
     {% if logo_type == 'CPV' %}
-    <style>
-        .header-logo {
-            height: 80px !important;
-        }
-        .footer-container {
-            background: #f97316 !important;
-        }
-    </style>
+    Certified Property Valuer | 0485 008 806 | info@certifiedpropertyvaluer.com.au | www.certifiedpropertyvaluer.com.au<br>
     {% elif logo_type == 'TAMN' %}
-    <style>
-        .header-logo {
-            height: 65px !important;
-        }
-        .footer-container {
-            background: #7d6118 !important;
-        }
-    </style>
+    Tamn Property Valuers | ABN 92 605 356 983 | info@tamn.com.au | 1300 226 482 | www.tamn.com.au<br>
     {% else %}
-    <style>
-        .header-logo {
-            height: 70px !important;
-        }
-        .footer-container {
-            background: #2563eb !important;
-        }
-    </style>
+    Alliance Australia Property Pty Ltd | ABN 35 641 373 702 | admin@aapvaluations.com.au | 043 1300 800<br>
     {% endif %}
-</head>
+    <em>Liability Limited by a scheme approved under Professional Standards Legislation</em>
+  </div>
 
-<body>
-    {% set page_logo_url = tamn_page_logo_url if logo_type == 'TAMN' else logo_url %}
+  <div class="footer-container">
+    <span>{{ _full_addr }}</span>
+    <span class="page-num"></span>
+  </div>
+</div>
 
-    {# Safe nested variable lookups #}
-    {% set _addr = record.location_details if (record is defined and record.location_details is defined) else (valuation_report.address if (valuation_report is defined and valuation_report.address is defined) else {}) %}
-    {% set _val_details = record.property_valuation if (record is defined and record.property_valuation is defined) else (valuation_report.valuationDetails if (valuation_report is defined and valuation_report.valuationDetails is defined) else {}) %}
-    {% set _prop_details = record.property_details if (record is defined and record.property_details is defined) else (valuation_report.propertyDetails if (valuation_report is defined and valuation_report.propertyDetails is defined) else {}) %}
-    {% set _prop_desc = record.property_descriptors if (record is defined and record.property_descriptors is defined) else (valuation_report.propertyDescriptors if (valuation_report is defined and valuation_report.propertyDescriptors is defined) else {}) %}
-    {% set _loc_details = record.location_details if (record is defined and record.location_details is defined) else (valuation_report.locationDetails if (valuation_report is defined and valuation_report.locationDetails is defined) else {}) %}
-    {% set _site_det = record.site_details if (record is defined and record.site_details is defined) else {} %}
-    {% set _plan_det = record.planning_details if (record is defined and record.planning_details is defined) else (valuation_report.planningDetails if (valuation_report is defined and valuation_report.planningDetails is defined) else {}) %}
-    {% set _gen_comm = record.general_comments if (record is defined and record.general_comments is defined) else (valuation_report.generalComments if (valuation_report is defined and valuation_report.generalComments is defined) else {}) %}
-    {% set _cap_method = record.capitalisation_method if (record is defined and record.capitalisation_method is defined) else {} %}
-    {% set _sf = sf_record if sf_record is defined else {} %}
-    {% set _valuer_dict = _sf.PropertyValuer__r if (_sf is defined and _sf.PropertyValuer__r is defined) else {} %}
+<!-- ==================== PAGE 3: TABLE OF CONTENTS ==================== -->
+<div class="page">
+  <div class="header-container">
+    <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+  </div>
+  <div class="banner" style="background-color: #e5e5e5; text-align: left; padding-left: 10px">
+    Table of Contents
+  </div>
+  <div class="space-between-sm"></div>
+  <div style="padding: 0 50px">
+    <table class="toc-table" style="width: 100%; border-collapse: collapse">
+      <tr class="toc-main-row">
+        <td style="text-align: left; width: 90%; font-weight: bold">1. Valuation Summary</td>
+        <td style="text-align: right; width: 10%">4</td>
+      </tr>
+      <tr class="toc-subtitle-row">
+        <td style="text-align: left; padding-left: 30px">1.1 Instructions</td>
+        <td style="text-align: right">4</td>
+      </tr>
+      <tr class="toc-subtitle-row">
+        <td style="text-align: left; padding-left: 30px">1.2 Property Details</td>
+        <td style="text-align: right">4</td>
+      </tr>
+      <tr class="toc-subtitle-row">
+        <td style="text-align: left; padding-left: 30px">1.3 Valuation Details</td>
+        <td style="text-align: right">4</td>
+      </tr>
+      <tr class="toc-subtitle-row">
+        <td style="text-align: left; padding-left: 30px">1.4 Assumptions & Recommendations</td>
+        <td style="text-align: right">5</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">2. Market Analysis</td>
+        <td style="text-align: right">5</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">3. Location & Neighbourhood</td>
+        <td style="text-align: right">6</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">4. Zoning & Planning</td>
+        <td style="text-align: right">6</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">5. Site</td>
+        <td style="text-align: right">7</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">6. Improvements</td>
+        <td style="text-align: right">7</td>
+      </tr>
+      <tr class="toc-subtitle-row">
+        <td style="text-align: left; padding-left: 30px">6.1 Main Building</td>
+        <td style="text-align: right">7</td>
+      </tr>
+      <tr class="toc-subtitle-row">
+        <td style="text-align: left; padding-left: 30px">6.2 Conditions & Repairs</td>
+        <td style="text-align: right">8</td>
+      </tr>
+      <tr class="toc-subtitle-row">
+        <td style="text-align: left; padding-left: 30px">6.3 Building Area</td>
+        <td style="text-align: right">8</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">7. Market Evidence</td>
+        <td style="text-align: right">9</td>
+      </tr>
+      {% if has_rentals %}
+      <tr class="toc-main-row">
+        <td style="text-align: left">8. Rental Evidence</td>
+        <td style="text-align: right">10</td>
+      </tr>
+      {% endif %}
+      <tr class="toc-main-row">
+        <td style="text-align: left">{{ 8 + section_offset }}. Valuation Methodology</td>
+        <td style="text-align: right">{{ 10 + section_offset }}</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">{{ 9 + section_offset }}. Valuation Remarks</td>
+        <td style="text-align: right">{{ 10 + section_offset }}</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">{{ 10 + section_offset }}. Assumptions, Conditions & Limitations</td>
+        <td style="text-align: right">{{ 11 + section_offset }}</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">{{ 11 + section_offset }}. Photographs</td>
+        <td style="text-align: right">{{ 12 + section_offset }}</td>
+      </tr>
+      <tr class="toc-main-row">
+        <td style="text-align: left">Annexure</td>
+        <td style="text-align: right">{{ annexure_page }}</td>
+      </tr>
+    </table>
+  </div>
+  <div class="footer-container">
+    <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+    <span class="page-num"></span>
+  </div>
+</div>
 
-    {% set _street = _addr.street if (_addr.street is defined and _addr.street) else ((_addr.streetNumber|default('') ~ ' ' ~ _addr.streetName|default(''))|trim) %}
-    {% set _suburb = _addr.suburb|default('') %}
-    {% set _state = _addr.state|default('') %}
-    {% set _postcode = _addr.postcode|default('') %}
-    {% set _full_addr = (_street ~ ' ' ~ _suburb ~ ' ' ~ _state ~ ' ' ~ _postcode)|trim %}
-    {% set _job_no = _sf.Job_Number__c if (_sf.Job_Number__c is defined and _sf.Job_Number__c) else valuation_report.fileNumber|default('PV351462') %}
-    {% set _val_date = record.valuation_date|default(_val_details.valuationDate)|format_date %}
-    {% set _issue_date = record.date_issued|default(_val_details.dateIssued)|format_date %}
-    {% if _issue_date == 'N/A' %}{% set _issue_date = _val_date %}{% endif %}
-    {% set _instruct_date = _val_details.date_of_instruction|default(_val_details.dateOfInstruction)|format_date %}
-    {% if _instruct_date == 'N/A' %}{% set _instruct_date = _val_date %}{% endif %}
-    {% set _instruct_party = _val_details.instructing_party if (_val_details.instructing_party is defined and _val_details.instructing_party) else (_val_details.instructingParty if (_val_details.instructingParty is defined and _val_details.instructingParty) else (_sf.Owners__c if (_sf.Owners__c is defined and _sf.Owners__c) else 'G Bertilone Nominees Pty Ltd')) %}
-    {% set _mv = _val_details.market_value if (_val_details.market_value is defined and _val_details.market_value) else (_val_details.marketValue if (_val_details.marketValue is defined and _val_details.marketValue) else 3100000) %}
-    {% set _cap_rate = _val_details.capitalisation_rate if (_val_details.capitalisation_rate is defined and _val_details.capitalisation_rate) else (_val_details.capitalisationRate if (_val_details.capitalisationRate is defined and _val_details.capitalisationRate) else '5.55') %}
-    {% set _net_rent = _val_details.assessed_net_rental if (_val_details.assessed_net_rental is defined and _val_details.assessed_net_rental) else (_val_details.assessedNetRental if (_val_details.assessedNetRental is defined and _val_details.assessedNetRental) else 168500) %}
-    {% set _gross_rent = _cap_method.total_gross_rental if (_cap_method.total_gross_rental is defined and _cap_method.total_gross_rental) else (_val_details.totalGrossRental if (_val_details.totalGrossRental is defined and _val_details.totalGrossRental) else 210600) %}
-    {% set _outgoings = _cap_method.outgoings_amount if (_cap_method.outgoings_amount is defined and _cap_method.outgoings_amount) else (_val_details.outgoingsAmount if (_val_details.outgoingsAmount is defined and _val_details.outgoingsAmount) else 42100) %}
-    {% set _site_area = _prop_details.site_area if (_prop_details.site_area is defined and _prop_details.site_area) else (_prop_details.siteArea if (_prop_details.siteArea is defined and _prop_details.siteArea) else 2006) %}
-    {% set _building_area = _prop_details.lettable_area if (_prop_details.lettable_area is defined and _prop_details.lettable_area) else (_prop_details.buildingArea if (_prop_details.buildingArea is defined and _prop_details.buildingArea) else 720) %}
-    {% set _zoning = _prop_details.zoning if (_prop_details.zoning is defined and _prop_details.zoning) else 'R40 - Residential' %}
-    {% set _council = _prop_details.council_area if (_prop_details.council_area is defined and _prop_details.council_area) else (_prop_details.councilArea if (_prop_details.councilArea is defined and _prop_details.councilArea) else 'City of Stirling') %}
-    {% set _prop_type = _prop_details.property_type if (_prop_details.property_type is defined and _prop_details.property_type) else (_prop_details.propertyType if (_prop_details.propertyType is defined and _prop_details.propertyType) else 'Residential block of 8 units') %}
-    {% set _valuer_name = _valuer_dict.Name if (_valuer_dict.Name is defined and _valuer_dict.Name) else (_val_details.valuerName if (_val_details.valuerName is defined and _val_details.valuerName) else 'JUGAL SAHA') %}
+<!-- ==================== PAGE 4: 1. VALUATION SUMMARY ==================== -->
+<div class="page">
+  <div class="header-container">
+    <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+  </div>
+  <div class="banner">1. Valuation Summary</div>
+  <div class="space-between-sm"></div>
+  <div class="subtitle">1.1 Instructions</div>
+  <div class="space-between-sm"></div>
+  <div>
+    <table>
+      <tr>
+        <td>Instructing Party</td>
+        <td>
+          {% if valuation_report["primaryContact"]["firstName"] or valuation_report["primaryContact"]["lastName"] %}
+          {{ valuation_report["primaryContact"]["firstName"]|default('') }} {{
+          valuation_report["primaryContact"]["lastName"]|default('') }}
+          {% else %}
+          N/A
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Client Authorised Party</td>
+        <td>
+          {% if valuation_report["primaryContact"]["firstName"] or valuation_report["primaryContact"]["lastName"] %}
+          {{ valuation_report["primaryContact"]["firstName"]|default('') }} {{
+          valuation_report["primaryContact"]["lastName"]|default('') }}
+          {% else %}
+          N/A
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Valuation Purpose</td>
+        <td>
+          {% if valuation_report["valuationDetails"]["purposeOfReport"] %}
+          {{ valuation_report["valuationDetails"]["purposeOfReport"] }} {%
+          else %} To determine the {{ 'current' if
+          valuation_report["valuationDetails"]["currentDayValuation"] else
+          'retrospective' }} market value for {{
+          valuation_report["valuationDetails"]["valuationType"]|default('N/A')|title|replace('Capital Gains', 'Capital
+          Gains Tax')
+          }} purposes only.{% endif %} Please note this report does not meet
+          practice standard for mortgage purposes and is specifically not
+          suitable for that purpose.
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="space-between-sm"></div>
+  <div class="subtitle">1.2 Property Details</div>
+  <div class="space-between-sm"></div>
+  <div>
+    <table>
+      <tr>
+        <td>Property Address</td>
+        <td>
+          {{ valuation_report["address"]["fullAddress"]|default('N/A') }}
+        </td>
+      </tr>
+      <tr>
+        <td>Property Description</td>
+        <td>
+          {{
+          valuation_report["generalComments"]["propertyDescription"]|default('N/A')
+          }}
+        </td>
+      </tr>
+      <tr>
+        <td>Title Reference</td>
+        <td>
+          {{
+          valuation_report["propertyDetails"]["titleReference"]|default('N/A')
+          }}
+        </td>
+      </tr>
+      <tr>
+        <td>Tenure Type</td>
+        <td>{{ valuation_report["propertyDetails"]["tenureType"]|default('Freehold') }}</td>
+      </tr>
+      <tr>
+        <td>Highest & Best Use</td>
+        <td>Existing use</td>
+      </tr>
+      <tr>
+        <td>Encumbrances</td>
+        <td>None Apparent</td>
+      </tr>
+      <tr>
+        <td>Zoning</td>
+        <td>
+          {{ valuation_report["propertyDetails"]["zoning"]|default('N/A') }}
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="space-between-sm"></div>
 
-    <!-- ==================== PAGE 1: COVER PAGE ==================== -->
-    {% if logo_type == 'TAMN' %}
-    <div class="page" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <div style="text-align: center; margin-top: 60px;">
-            <img src="{{ logo_url }}" alt="TAMN Logo" style="height: 130px; width: auto; object-fit: contain; display: block; margin: 0 auto 20px auto;" />
-        </div>
-        <div style="text-align: center; margin-top: 80px;">
-            <p style="font-weight: bold; font-size: 28px; margin-bottom: 18px; color: #111;">Valuation Report</p>
-            <p style="font-weight: bold; font-size: 18px; margin: 6px 0; color: #333;">{{ _street }}</p>
-            <p style="font-weight: bold; font-size: 18px; margin: 6px 0; color: #333;">{{ _suburb }} {{ _state }} {{ _postcode }}</p>
-            <p style="font-size: 14px; margin-top: 20px; color: #555;">Ref #{{ _job_no }}</p>
-        </div>
-        <div style="position: absolute; bottom: 35px; left: 50px; right: 50px; text-align: center;">
-            <div style="font-size: 9pt; font-weight: bold; margin-bottom: 4px;">Tamn Property Valuers | ABN 92 605 356 983 | 1300 226 482 | www.tamn.com.au</div>
-            <span style="font-size: 8.5pt; font-style: italic; color: #666;">Liability Limited by a scheme approved under Professional Standards’ Legislation</span>
-        </div>
-    </div>
-    {% elif logo_type == 'CPV' %}
-    <div class="page" style="position: relative; display: flex; flex-direction: column; align-items: center;">
-        <div style="position: absolute; top: 50px; left: 50px;">
-            <img src="{{ logo_url }}" alt="CPV Logo" style="height: 90px; width: auto; object-fit: contain;" />
-        </div>
-        <div style="text-align: center; margin-top: 210px;">
-            <p style="font-weight: bold; font-size: 18px; margin-bottom: 12px; color: #111;">Certified Property Valuer</p>
-            <div style="display: inline-block; text-align: left; line-height: 1.8;">
-                <p style="font-size: 13.5px; margin: 4px 0; color: #333;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>0485 008 806</span>
-                </p>
-                <p style="font-size: 13.5px; margin: 4px 0; color: #333;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:info@certifiedpropertyvaluer.com.au" style="color: #2563eb; text-decoration: none;">info@certifiedpropertyvaluer.com.au</a>
-                </p>
-                <p style="font-size: 13.5px; margin: 4px 0; color: #333;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><a href="https://www.certifiedpropertyvaluer.com.au" style="color: #2563eb; text-decoration: none;">www.certifiedpropertyvaluer.com.au</a>
-                </p>
-            </div>
-        </div>
-        <div style="width: 70%; height: 2px; background-color: #f97316; margin: 45px auto 40px auto;"></div>
-        <div style="text-align: center;">
-            <p style="font-weight: bold; font-size: 32px; margin-bottom: 16px; color: #111;">Valuation Report</p>
-            <p style="font-weight: bold; font-size: 18px; margin: 6px 0; color: #333;">{{ _street }}</p>
-            <p style="font-weight: bold; font-size: 18px; margin: 6px 0; color: #333;">{{ _suburb }} {{ _state }} {{ _postcode }}</p>
-            <p style="font-size: 14px; margin-top: 20px; color: #555;">Ref #{{ _job_no }}</p>
-        </div>
-        <div style="position: absolute; bottom: 35px; left: 50px; right: 50px; text-align: center;">
-            <div style="font-size: 9pt; font-weight: bold; margin-bottom: 3px;">Alliance Australia Property Pty Ltd</div>
-            <span style="font-size: 8.5pt; font-style: italic; color: #666;">Liability Limited by a scheme approved under Professional Standards’ Legislation</span>
-        </div>
-    </div>
-    {% else %}
-    <!-- AAP Cover Page -->
-    <div class="page" style="position: relative; padding: 60px 0 0 0; font-family: Arial, Helvetica, sans-serif;">
-        <div style="padding: 0 70px;">
-            <div>
-                <h2 style="font-family: Arial, Helvetica, sans-serif; font-size: 26px; font-weight: 900; letter-spacing: 1px; margin: 0; color: #000;">AAP VALUATIONS.</h2>
-                <p style="color: #c00000; font-size: 11px; font-weight: 600; margin: 3px 0 0 4px;">Trusted property valuers</p>
-            </div>
-            <div style="margin-top: 130px; display: flex; font-size: 12px; font-weight: bold;">
-                <div style="width: 45%; line-height: 1.6;">
-                    <p style="margin: 0;"><a href="mailto:admin@aapvaluations.com.au" style="color: #000; text-decoration: none;">admin@aapvaluations.com.au</a></p>
-                </div>
-                <div style="width: 55%; padding-left: 50px; line-height: 1.6;">
-                    <p style="margin: 0;"><a href="https://allianceaustraliaproperty.com.au" style="color: #000; text-decoration: none;">allianceaustraliaproperty.com.au</a></p>
-                </div>
-            </div>
-            <div style="margin-top: 170px; text-align: center !important;">
-                <p style="font-weight: bold; font-size: 36px; margin: 0 0 15px 0; color: #000;">Valuation Report</p>
-                <p style="font-size: 20px; margin: 4px 0; color: #222;">{{ _street }}</p>
-                <p style="font-size: 20px; margin: 4px 0; color: #222;">{{ _suburb }} {{ _state }} {{ _postcode }}</p>
-                <p style="font-size: 18px; margin-top: 20px; color: #555;">Ref #{{ _job_no }}</p>
-            </div>
-        </div>
-        <div style="position: absolute; bottom: 230px; left: 0; right: 0; text-align: center !important; z-index: 2;">
-            <div style="display: inline-block; text-align: center;">
-                <p style="font-size: 10pt; font-weight: bold; margin: 0 0 4px 0; color: #000;">Alliance Australia Property Pty Ltd &nbsp;&nbsp;ABN 35 641 373 702&nbsp;&nbsp; Phone: 043 1300 800</p>
-                <p style="font-size: 8.5pt; font-style: normal; margin: 0; color: #444;">Liability limited by a scheme approved under Professional Standards Legislation.</p>
-            </div>
-        </div>
-        {% if aap_cover_design_url %}
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; width: 100%; font-size: 0; z-index: 1;">
-            <img src="{{ aap_cover_design_url }}" alt="" style="width: 100%; height: auto; display: block;" />
-            <div style="width: 100%; height: 4px; background-color: #2563eb;"></div>
+  <div class="subtitle">1.3 Valuation Details</div>
+  <div class="space-between-sm"></div>
+  <div>
+    <table>
+      <tr>
+        <td>Market Value</td>
+        <td>
+          {{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('') }}
+        </td>
+      </tr>
+      {% if valuation_report["valuationDetails"].get("isUnit") %}
+      <tr>
+        <td>Valuation Amount</td>
+        <td>
+          {{ valuation_report["valuationDetails"]["valuationAmount"]|format_currency|default('N/A') }} ({{
+          valuation_report["valuationDetails"]["valuationAmount"]|format_currency_words|default('N/A') }})
+        </td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td>Interest Valued</td>
+        <td>
+          {{ valuation_report["valuationDetails"]["interestValued"]|default('N/A') }}
+        </td>
+      </tr>
+      <tr>
+        <td>Date of Inspection</td>
+        <td>
+          {% if valuation_report["valuationDetails"].get("externalDesktopValuation") %}
+          External/Desktop Valuation
+          {% elif valuation_report["valuationDetails"].get("inspectionDate") %}
+          {{ valuation_report["valuationDetails"]["inspectionDate"]|format_date|default('N/A') }}
+          {% else %} N/A {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Date of Valuation</td>
+        <td>
+          {{ valuation_report["valuationDetails"]["valuationDate"]|format_date|default('N/A') }}
+        </td>
+      </tr>
+      <tr>
+        <td>Date Issued</td>
+        <td>{% if valuation_report["valuationDetails"].get("dateIssued") %}{{
+          valuation_report["valuationDetails"]["dateIssued"]|format_date }}{% else %}{{ now() }}{% endif %}</td>
+      </tr>
+      {% if valuation_report["valuationDetails"]["showCurrencyOfValuation"] %}
+      <tr>
+        <td>Currency of Valuation</td>
+        <td>
+          90 days from the date of valuation or such earlier date if you
+          become aware of any factors that have any effects on the valuation.
+        </td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td>Pecuniary Interest</td>
+        <td>
+          We confirm that the valuer does not have any pecuniary interest
+          that would conflict with the proper valuation of the property.
+        </td>
+      </tr>
+      <tr>
+        <td>Signature</td>
+        <td>
+          <img src="https://valai.duo.tax/assets/jugal-signature.png" alt="" srcset="" />
+        </td>
+      </tr>
+      <tr>
+        <td>Valuer</td>
+        <td>
+          Jugal Saha, Property Valuer, AAPI, CPV.<br>
+          Certified Practicing Valuer 101474
+          {% if valuation_report["address"]["state"] == 'WA' %}<br>WA License Number - LV45321{% endif %}
+          {% if valuation_report["address"]["state"] == 'QLD' %}<br>QLD License no: 5429MR{% endif %}
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="footer-container">
+    <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+    <span class="page-num"></span>
+  </div>
+</div>
+
+<!-- ==================== SECTIONS 2, 3, 4, 5, 6: PROPERTY DESCRIPTION ==================== -->
+{% include 'partials/property_description.html' %}
+
+<!-- ==================== SECTION 6.2, 6.3: CONDITIONS & REPAIRS & AREA ==================== -->
+{% include 'partials/risk_and_comments.html' %}
+
+<!-- ==================== SECTION 7: MARKET EVIDENCE (REPLICATED FROM COMMERCIAL LONG WITH RESIDENTIAL CONTENT) ==================== -->
+{% set sales_list = [] %}
+{% if record is defined and record.sales_comparables %}
+  {% set sales_batches = record.sales_comparables %}
+{% elif valuation_report.get("comparables", {}).get("sales") %}
+  {% set sales_batches = valuation_report["comparables"]["sales"]|batch(3)|list %}
+{% else %}
+  {% set sales_batches = [] %}
+{% endif %}
+
+{% if sales_batches|length > 0 %}
+{% for sales_comparables in sales_batches %}
+<div class="page">
+  <div class="header-container">
+    <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+  </div>
+  <div class="banner">7. Market Evidence {{ "(cont’d)" if loop.index > 1 else "" }}</div>
+  <div class="space-between-sm"></div>
+  {% if loop.first %}
+  <p style="font-size: 11px; line-height: 1.4; margin-bottom: 8px;">
+    The following sales have been considered as comparable evidence for this valuation. Sales in the area have been analysed to establish value levels and market trends applicable to the subject property.
+  </p>
+  {% endif %}
+  <div id="market-evidence">
+    {% for comparable in sales_comparables %}
+    <div class="comparable">
+      <div style="display: flex; gap: 20px;">
+        <table>
+          <colgroup>
+            <col style="width: 16%;"> <!-- Label -->
+            <col style="width: 34%;"> <!-- Value -->
+            <col style="width: 18%;"> <!-- Label -->
+            <col style="width: 32%;"> <!-- Value -->
+          </colgroup>
+          <tr>
+            <td>Address</td>
+            <td colspan="3"><b>{{ (comparable.full_address or comparable.get('full_address') or comparable.get('fullAddress') or 'N/A')|title_address }}</b></td>
+          </tr>
+          <tr>
+            <td>Sale Date</td>
+            <td>{{ (comparable.sale_lease_date or comparable.get('sale_lease_date') or comparable.get('saleLeaseDate'))|format_date|default('N/A') }}</td>
+            <td>Sale Price</td>
+            <td><b>{{ (comparable.sale_lease_price or comparable.get('sale_lease_price') or comparable.get('saleLeasePrice'))|format_currency|default('N/A') }}</b></td>
+          </tr>
+          <tr>
+            <td>Bed / Bath / Car</td>
+            <td>
+              {% set b = comparable.bedrooms if comparable.bedrooms is defined else comparable.get('bedrooms') %}
+              {% set ba = comparable.bathrooms if comparable.bathrooms is defined else comparable.get('bathrooms') %}
+              {% set c = comparable.car_spaces if comparable.car_spaces is defined else (comparable.get('car_spaces') or comparable.get('carSpaces')) %}
+              {{ b|default('-', true) }} Bed / {{ ba|default('-', true) }} Bath / {{ c|default('-', true) }} Car
+            </td>
+            <td>Year Built</td>
+            <td>{{ comparable.build_year or comparable.get('build_year') or comparable.get('buildYear') or '-' }}</td>
+          </tr>
+          <tr>
+            <td>Site Area</td>
+            <td>{{ (comparable.site_area or comparable.get('site_area') or comparable.get('siteArea'))|format_area_smart|default('-') }}</td>
+            <td>Building Area</td>
+            <td>{{ (comparable.building_area or comparable.get('building_area') or comparable.get('buildingArea'))|format_area|default('-') }}</td>
+          </tr>
+          <tr>
+            <td>DOM</td>
+            <td>{{ comparable.days_on_market or comparable.get('days_on_market') or comparable.get('daysOnMarket') or '-' }}</td>
+            <td>Distance</td>
+            <td>{{ comparable.distance if comparable.distance is defined else comparable.get('distance')|default('-') }}{% if (comparable.distance or comparable.get('distance')) %} km{% endif %}</td>
+          </tr>
+        </table>
+        {% set comp_img = comparable.image_url or comparable.get('image_url') or comparable.get('photoUrl') or comparable.get('imageUrl') %}
+        {% if comp_img %}
+        <div style="flex-shrink: 0;">
+          <img src="{{ comp_img }}" width="130" height="130"
+            style="object-fit: cover; width: 130px; height: 130px;" alt="" />
         </div>
         {% endif %}
+      </div>
+      {% set comp_desc = comparable.description or comparable.get('description') %}
+      {% if comp_desc %}
+      <div style="display: flex; gap: 15px; margin: 4px 0 2px 0;">
+        <p style="margin: 0; white-space: nowrap;"><b>Description</b></p>
+        <p style="margin: 0;">{{ comp_desc }}</p>
+      </div>
+      {% endif %}
+      {% set comp_comp = comparable.comparison or comparable.get('comparison') %}
+      <div>
+        <p style="margin-top: 4px; margin-bottom: 4px;">Comparison to Subject: <i>{{
+          comp_comp|default('Similar physical characteristics and location metrics considered in determining subject market value.', true) }}</i></p>
+      </div>
+      {% if not loop.last %}
+      <hr style="margin: 8px 0;">
+      {% endif %}
     </div>
-    {% endif %}
-
-    <!-- ==================== PAGE 2: VALUATION EXECUTIVE SUMMARY ==================== -->
-    <div class="page executive-summary">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">Valuation Executive Summary</span>
-            <span class="banner-right">{{ _val_date }}</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <!-- Cover Photo -->
-        {% if record.cover_photo or cover_photo %}
-        <div style="margin-bottom: 14px;">
-            <img src="{{ record.cover_photo.large or record.cover_photo.base or cover_photo.photoUrl }}" style="width: 100%; height: 260px; object-fit: cover; border-radius: 2px;" alt="Subject Property Cover" />
-        </div>
-        {% else %}
-        <div style="width: 100%; height: 200px; background-color: #e5e7eb; border-radius: 2px; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 13px;">
-            Property Photograph
-        </div>
-        {% endif %}
-
-        <!-- Two Column Layout -->
-        <div style="display: flex; gap: 24px;">
-            <!-- Left Column -->
-            <div style="flex: 1;">
-                <div class="section-heading" style="border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-bottom: 6px;">Property Description</div>
-                <table class="data-table">
-                    <tr>
-                        <td style="width: 44%;">Property Type</td>
-                        <td>{{ _prop_type }}</td>
-                    </tr>
-                    <tr>
-                        <td>Accommodation</td>
-                        <td>{{ _prop_desc.accommodation|default('8 - Two Bedroom Villas') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Internal Area</td>
-                        <td>Approximately {{ _building_area }} sqm</td>
-                    </tr>
-                    <tr>
-                        <td>Car Parking</td>
-                        <td>{{ _prop_desc.car_spaces|default('Car port') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Year Built</td>
-                        <td>{{ _prop_details.build_year|default(_prop_details.yearBuilt)|default('1980') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Site Area</td>
-                        <td>{{ _site_area|format_area_smart|default('2006 sqm') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Zoning</td>
-                        <td>{{ _zoning }}</td>
-                    </tr>
-                </table>
-
-                <div class="section-heading" style="border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-top: 14px; margin-bottom: 6px;">Occupancy Summary</div>
-                <table class="data-table">
-                    <tr>
-                        <td style="width: 44%;">Status</td>
-                        <td>{{ _val_details.occupancy_status|default(_val_details.occupancy)|default('Tenant Occupied') }}</td>
-                    </tr>
-                </table>
-
-                <!-- API Logo Badge at Bottom of Left Column -->
-                <div style="margin-top: 25px;">
-                    <img src="https://valai.duo.tax/assets/member-api-logo.png" style="width: 165px; height: auto;" alt="Australian Property Institute Member" />
-                </div>
-            </div>
-
-            <!-- Right Column -->
-            <div style="flex: 1.15;">
-                <div class="section-heading" style="border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-bottom: 6px;">Instructions:</div>
-                <table class="data-table">
-                    <tr>
-                        <td style="width: 40%;">Instructing Party</td>
-                        <td>{{ _instruct_party }}</td>
-                    </tr>
-                    <tr>
-                        <td>Interest Valued</td>
-                        <td>{{ _val_details.interest_valued|default('Freehold Villa Dwelling') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Date of Instruction</td>
-                        <td>{{ _instruct_date }}</td>
-                    </tr>
-                </table>
-
-                <div class="section-heading" style="border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-top: 12px; margin-bottom: 6px;">Valuation Summary</div>
-                <table class="data-table">
-                    <tr>
-                        <td style="width: 40%;">Date of Valuation</td>
-                        <td>{{ _val_date }}</td>
-                    </tr>
-                    <tr>
-                        <td>Highest & Best Use</td>
-                        <td>{{ _val_details.highest_best_use|default('Existing Use') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Assessed Net Rental</td>
-                        <td>{{ _net_rent|format_currency }}/Per Annum</td>
-                    </tr>
-                    <tr>
-                        <td>Yield Adopted</td>
-                        <td>{{ _cap_rate }}%</td>
-                    </tr>
-                    <tr>
-                        <td>Valuation Amount</td>
-                        <td><strong style="font-size: 12.5px;">{{ _mv|format_currency }}</strong> (Exclusive GST)<br><span style="font-size: 10px; color: #444;">({{ _mv|format_currency_words }})</span></td>
-                    </tr>
-                </table>
-
-                <div class="section-heading" style="border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-top: 14px; margin-bottom: 6px;">Prepared By</div>
-                <div style="line-height: 1.5; font-size: 11px;">
-                    <strong>{{ _valuer_name }}, Property Valuer, AAPI, CPV</strong><br>
-                    Certified Practicing Valuer 101474<br>
-                    {% if _state == 'WA' %}WA License Number - LV45321{% elif _state == 'QLD' %}QLD License no: 5429MR{% else %}Licensed Valuer{% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Compliance Disclaimer Notice above footer -->
-        <div style="margin-top: auto; padding-bottom: 8px; font-size: 8.5pt; text-align: center; color: #555; border-top: 1px solid #e5e7eb; padding-top: 6px;">
-            {% if logo_type == 'CPV' %}
-            Certified Property Valuer | 0485 008 806 | info@certifiedpropertyvaluer.com.au | www.certifiedpropertyvaluer.com.au<br>
-            {% elif logo_type == 'TAMN' %}
-            Tamn Property Valuers | ABN 92 605 356 983 | info@tamn.com.au | 1300 226 482 | www.tamn.com.au<br>
-            {% else %}
-            Alliance Australia Property Pty Ltd | ABN 35 641 373 702 | admin@aapvaluations.com.au | 043 1300 800<br>
-            {% endif %}
-            <em>Liability Limited by a scheme approved under Professional Standards’ Legislation</em>
-        </div>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 3: TABLE OF CONTENTS ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">Table of Contents</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <div style="padding: 20px 20px 0 20px;">
-            <table class="toc-table">
-                <tr>
-                    <td>Instructions Details</td>
-                    <td>4</td>
-                </tr>
-                <tr class="toc-subitem">
-                    <td>Date of Inspection and Valuation</td>
-                    <td>4</td>
-                </tr>
-                <tr>
-                    <td>Property Title and Environmental Considerations</td>
-                    <td>4</td>
-                </tr>
-                <tr class="toc-subitem">
-                    <td>Property Summary Details and Site details</td>
-                    <td>5</td>
-                </tr>
-                <tr class="toc-subitem">
-                    <td>Planning Controls</td>
-                    <td>5</td>
-                </tr>
-                <tr>
-                    <td>Location & Neighbourhood</td>
-                    <td>6</td>
-                </tr>
-                <tr>
-                    <td>Improvements</td>
-                    <td>6</td>
-                </tr>
-                <tr>
-                    <td>Residential Market Analysis & Rental Details</td>
-                    <td>7</td>
-                </tr>
-                <tr>
-                    <td>Property Sales Evidence and Assessment</td>
-                    <td>8</td>
-                </tr>
-                <tr>
-                    <td>Valuation Methodology</td>
-                    <td>10</td>
-                </tr>
-                <tr>
-                    <td>Valuation Remarks</td>
-                    <td>11</td>
-                </tr>
-                <tr>
-                    <td>Assumptions, Conditions and Limitations</td>
-                    <td>12</td>
-                </tr>
-                <tr>
-                    <td>Photographs</td>
-                    <td>13</td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 4: INSTRUCTION DETAILS & TITLE/ENVIRONMENTAL ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">Instruction Details</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <div class="section-heading">1.1 Instructions</div>
-        <table class="data-table bordered-table">
-            <tr>
-                <td style="width: 32%;">Instructing Party</td>
-                <td>{{ _instruct_party }}</td>
-            </tr>
-            <tr>
-                <td>Client/Authorised Party</td>
-                <td>{{ _instruct_party }}</td>
-            </tr>
-            <tr>
-                <td>Purpose of the Report:</td>
-                <td>{{ record.purpose_of_report|default(_val_details.purposeOfReport)|default('To determine the current market value for Market Assessment purposes only.') }}</td>
-            </tr>
-        </table>
-
-        <div class="section-heading" style="margin-top: 14px;">1.2 Date of Inspection and Valuation</div>
-        <table class="data-table bordered-table">
-            <tr>
-                <td style="width: 32%;">Date of Inspection</td>
-                <td>{{ 'External/Desktop Valuation' if _val_details.external_desktop_valuation else _sf.InspectionDate__c|format_date|default('External/Desktop Valuation') }}</td>
-            </tr>
-            <tr>
-                <td>Date of Valuation</td>
-                <td>{{ _val_date }}</td>
-            </tr>
-            <tr>
-                <td>Date of Issue</td>
-                <td>{{ _issue_date }}</td>
-            </tr>
-            <tr>
-                <td>Interest Valued</td>
-                <td>{{ _val_details.interest_valued|default('Fee simple vacant possession') }}</td>
-            </tr>
-        </table>
-
-        <div class="banner" style="margin-top: 20px;">
-            <span class="banner-title">Property Title and Environmental Considerations</span>
-        </div>
-
-        <table class="data-table bordered-table">
-            <tr>
-                <td style="width: 32%;">Title Searched</td>
-                <td><strong>Legal Description</strong><br>{{ _prop_details.title_reference|default(_prop_details.titleReference)|default('Lot 15 in Deposited Plan 64745 see title annexed to this report') }}</td>
-            </tr>
-            <tr>
-                <td>Registered Vendor:</td>
-                <td>{{ _prop_details.owner|default(_sf.Owners__c)|default(_instruct_party) }}</td>
-            </tr>
-            <tr>
-                <td>Easements and encumbrances noted and considered:</td>
-                <td>Crown reservation/s. Property valuation is subject to the title not having any easements/encumbrances, subsequent mortgages to first mortgage, caveats or covenants etc.</td>
-            </tr>
-            <tr>
-                <td>Local Government Authority:</td>
-                <td>{{ _council }}</td>
-            </tr>
-            <tr>
-                <td>Zoning:</td>
-                <td>{{ _zoning }}</td>
-            </tr>
-            <tr>
-                <td>Existing use:</td>
-                <td>{{ _plan_det.current_use|default(_val_details.currentUse)|default('Residential villa dwelling with 8 units') }}</td>
-            </tr>
-            <tr>
-                <td>Effect of Planning control:</td>
-                <td>The existing land use is a conforming land use with no adverse effect/s</td>
-            </tr>
-            <tr>
-                <td>Road Details:</td>
-                <td>{{ _loc_details.access|default(_street ~ ' is a local residential road that is sealed curbed, with a footpath.') }}</td>
-            </tr>
-            <tr>
-                <td>Services:</td>
-                <td>All the usual urban services including electricity, gas, telephone, water and sewer are understood to be connected or available to the immediate area. In our reference to the availability of services, we have either relied on the information provided by the instructing party or has had reference to the information provided verbally or written by various parties. Unless noted to the contrary, formal searches have not been undertaken to establish whether the services are capable of being provided and connected to the subject property and have assumed that this is permissible and feasible.</td>
-            </tr>
-            <tr>
-                <td>Environmental Issue/s:</td>
-                <td>To the best of the valuer’s knowledge, the land is not affected by unstable, hazardous, or toxic soil material; however, no searches have been undertaken in this regard. This valuation assumes that there are no problems, however, should any such issues arise, then this matter should be referred to the valuer for further comment.</td>
-            </tr>
-        </table>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 5: PROPERTY SUMMARY & PLANNING CONTROLS & SITE MAP ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">2.1 Property Summary Details and Site details</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <table class="data-table" style="margin-bottom: 12px;">
-            <tr>
-                <td style="width: 25%; font-weight: 700;">Property Type:</td>
-                <td>{{ _prop_type }}</td>
-            </tr>
-            <tr>
-                <td style="font-weight: 700;">Property Address:</td>
-                <td>{{ _full_addr }}</td>
-            </tr>
-            <tr>
-                <td style="font-weight: 700;">Dimensions & Site Area:</td>
-                <td>{{ _site_det.description|default('The subject property is set on an irregular shaped allotment, level slope rear to front and with satisfactory site drainage, in dry conditions. Dimensions are approximately 43.0 metres frontage and 50.0 metres depth. Site area is approximately ' ~ _site_area ~ ' Square Metres (SQM), subject to survey. It is located towards the middle of ' ~ _street ~ '. It is a Circa 1980 built Brick veneer Villa complex with Terracotta tiled roofing. The property consists of 16 bedrooms, 8 bathrooms, car port, with kitchen, dining and living. Subject property has land area ' ~ _site_area ~ ' sqm and internal area of ' ~ _building_area ~ ' sqm approximately.') }}</td>
-            </tr>
-        </table>
-
-        <div class="section-heading" style="font-size: 14px; margin-top: 10px; margin-bottom: 4px;">2.2 Planning Controls</div>
-        <p style="font-size: 10.5px; margin-bottom: 6px;">The development and use of the land at {{ _full_addr }} are governed by the applicable Local Planning Scheme. The key planning controls applicable to the property are summarised below:</p>
-
-        <div style="font-size: 10.5px; line-height: 1.4;">
-            <strong>1. Zoning</strong><br>
-            The subject property is located within the {{ _zoning }}.<br>
-            The objectives of the zone are:
-            <ul style="margin: 2px 0 6px 0; padding-left: 20px;">
-                <li>To provide for the housing needs of the community within a high density residential environment.</li>
-                <li>To provide a variety of housing types within a high density residential environment.</li>
-                <li>To enable other land uses that provide facilities or services to meet the day-to-day needs of residents.</li>
-                <li>To minimise conflict between land uses within this zone and land uses within adjoining zones.</li>
-                <li>To allow for increased residential density in accessible locations to maximise public transport patronage and encourage walking and cycling.</li>
-                <li>To promote a high standard of urban design and local amenity.</li>
-            </ul>
-
-            <strong>2. Permitted without a planning permit</strong><br>
-            <p style="font-size: 10px; margin-bottom: 4px;">Home occupations are permitted without a planning permit within the {{ _zoning }} zone, provided they comply with the relevant conditions and do not result in amenity impacts. These may include small-scale home-based activities that generate minimal traffic, noise, or signage.</p>
-
-            <strong>3. Permitted with a planning permit</strong><br>
-            <p style="font-size: 10px; margin-bottom: 4px;">A range of land uses and developments are permitted with a planning permit within the {{ _zoning }} zone. These include attached dwellings, bed and breakfast accommodation, boarding houses, building identification signs, business identification signs, car parks, centre-based child care facilities, community facilities, dwelling houses, early education and care facilities, multi dwelling housing, neighbourhood shops, residential flat buildings, respite day care centres, roads, secondary dwellings, serviced apartments, and shop top housing.</p>
-
-            <strong>4. Prohibited</strong><br>
-            <p style="font-size: 10px; margin-bottom: 8px;">Land uses that are not listed as either permitted without a permit or permitted with a permit are considered prohibited within the zone.</p>
-        </div>
-
-        <div style="margin-top: auto; margin-bottom: 6px;">
-            <div style="font-weight: 700; font-size: 11px; margin-bottom: 3px;">Site Map</div>
-            {% if map_hybrid_url %}
-            <img src="{{ map_hybrid_url }}" style="width: 100%; height: 215px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 2px;" alt="Site Cadastral / Aerial Map" />
-            {% else %}
-            <div style="width: 100%; height: 200px; background-color: #f3f4f6; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; color: #6b7280;">Site Map Placeholder</div>
-            {% endif %}
-        </div>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 6: LOCATION & IMPROVEMENTS ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">Location & Neighbourhood</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <p style="font-size: 11px; line-height: 1.45; margin-bottom: 10px;">
-            {{ _loc_details.suburb_description|default('The Subject property is situated in ' ~ _suburb ~ ', a residential suburb of ' ~ _state ~ ' within the local government area of ' ~ _council ~ '. The nearest public bus services are readily accessible. Shopping centres, educational institutions, parks, and essential community facilities are available in the surrounding vicinity. Road transport provides efficient direct connectivity to the CBD, covering approximately 8 to 10 kilometres.') }}
-        </p>
-
-        <div style="margin-bottom: 10px;">
-            <div style="font-weight: 700; font-size: 11px; margin-bottom: 3px;">Location Map</div>
-            {% if map_roadmap_url %}
-            <img src="{{ map_roadmap_url }}" style="width: 100%; height: 240px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 2px;" alt="Location Map" />
-            {% else %}
-            <div style="width: 100%; height: 220px; background-color: #f3f4f6; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; color: #6b7280;">Location Map Placeholder</div>
-            {% endif %}
-            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #4b5563; margin-top: 3px;">
-                <span>Source: Google Maps</span>
-                <span><strong>Services:</strong> Public bus and transport services available locally</span>
-            </div>
-        </div>
-
-        <div class="banner" style="margin-top: 10px;">
-            <span class="banner-title">Improvements</span>
-        </div>
-
-        <div style="margin-bottom: 8px;">
-            <div class="subsection-title">Property Type</div>
-            <div style="font-size: 11px;">{{ _prop_type }} (villas)</div>
-        </div>
-
-        <div style="margin-bottom: 10px;">
-            <div class="subsection-title">General Improvements</div>
-            <p style="font-size: 11px; line-height: 1.45;">{{ _gen_comm.improvements|default('Circa 1980s, a single-storey brick veneer block comprising 8 villas, each with 2 bedrooms, living room, dining area, kitchen, bathroom, laundry, and a carport.') }}</p>
-        </div>
-
-        <div class="subsection-title" style="margin-bottom: 4px;">General Construction</div>
-        <p style="font-size: 10.5px; margin-bottom: 4px; color: #4b5563;">The building is constructed with the following materials:</p>
-        <table class="data-table bordered-table">
-            <tr>
-                <td style="width: 32%;">Foundations</td>
-                <td>{{ _prop_desc.foundations|default('Concrete slab / brick footings') }}</td>
-            </tr>
-            <tr>
-                <td>External Walls</td>
-                <td>{{ _prop_desc.external_walls|default('Brick veneer') }}</td>
-            </tr>
-            <tr>
-                <td>Internal Walls</td>
-                <td>{{ _prop_desc.internal_walls|default('Plasterboard') }}</td>
-            </tr>
-            <tr>
-                <td>Ceilings</td>
-                <td>{{ _prop_desc.ceilings|default('Plasterboard') }}</td>
-            </tr>
-            <tr>
-                <td>Roof</td>
-                <td>{{ _prop_desc.roofing_type|default('Terracotta tiled') }}</td>
-            </tr>
-            <tr>
-                <td>Window</td>
-                <td>{{ _prop_desc.window_type|default('Aluminium framed') }}</td>
-            </tr>
-            <tr>
-                <td>Car Spaces</td>
-                <td>{{ _prop_desc.car_spaces|default('One car port for each unit') }}</td>
-            </tr>
-        </table>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 7: ACCOMMODATION, MARKET ANALYSIS & RENTAL ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-
-        <div class="section-heading" style="font-size: 13px; margin-top: 0; margin-bottom: 4px;">Accommodation PC Fixtures</div>
-        <ul style="font-size: 11px; line-height: 1.6; margin: 0 0 12px 0; padding-left: 20px;">
-            <li>16 Bedrooms with carpet flooring, and aluminium framed windows</li>
-            <li>Lounge area with carpet flooring, and aluminium framed windows</li>
-            <li>Kitchen and dining with laminated flooring/vinyl flooring, sink, cupboards, freestanding cooktop, and aluminium framed windows</li>
-            <li>8 Bathrooms with tile flooring, toilet suite, shower, vanity, and aluminium framed windows</li>
-            <li>8 Laundries with tile flooring and aluminium framed windows</li>
-            <li>General features includes hot water system, smoke alarm, ducted air-conditioning, exhaust fan, and split air-conditioning</li>
-        </ul>
-
-        <div class="section-heading" style="font-size: 13px; margin-top: 6px; margin-bottom: 4px;">Condition & Repairs</div>
-        <div style="font-size: 10.5px; line-height: 1.45;">
-            <p>The improvements appeared to be in good condition overall. No major structural defects were noted however we advise that we are not qualified to advise on structural matters.</p>
-            <p>We understand that the apartments are gradually being renovated as they become vacant.</p>
-            <p>Although the subject building is not Strata Titled, currently all strata buildings in Western Australia must be fitted with devices that enable their windows to be locked at 12.5cm when the devices are engaged.</p>
-            <p>The Owners corporations must have devices installed on all common property windows above the ground.</p>
-        </div>
-
-        <div class="banner" style="margin-top: 14px;">
-            <span class="banner-title">Residential Market Analysis & Rental Details</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <div class="section-heading" style="font-size: 12.5px; margin-top: 4px; margin-bottom: 4px;">Residential Apartment Market Analysis</div>
-        <p style="font-size: 10.5px; line-height: 1.45; margin-bottom: 6px;">
-            Demand for residential villa blocks within the {{ _suburb }} market is affected by several factors including interest rates, general economic conditions and demand for rental property.
-        </p>
-        <p style="font-size: 10.5px; line-height: 1.45; margin-bottom: 12px;">
-            Our investigations with agents active in this market have revealed that demand for residential apartment blocks remains strong. The current median unit price in {{ _suburb }} sits at a healthy level with strong rental demand, allowing property owners to achieve competitive gross rental yields. Strong underlying capital growth over recent years has translated to robust returns compared with broader regional averages.
-        </p>
-
-        <div class="section-heading" style="font-size: 12.5px; margin-top: 6px; margin-bottom: 4px;">Rental Details</div>
-        <p style="font-size: 11px; line-height: 1.45; margin-bottom: 10px;">
-            The subject property has a combined gross annual rental of <strong>{{ _gross_rent|format_currency }}</strong>.
-        </p>
-
-        <div class="section-heading" style="font-size: 12.5px; margin-top: 6px; margin-bottom: 4px;">Net Rental Income</div>
-        <p style="font-size: 11px; line-height: 1.45;">
-            After deducting the annual outgoings of <strong>{{ _outgoings|format_currency }}</strong> from the gross annual rental of <strong>{{ _gross_rent|format_currency }}</strong>; an annual rental of <strong>{{ _net_rent|format_currency }}</strong> net p.a. is calculated. The percentage of outgoings as to the gross rent is approximately {{ ((_outgoings / _gross_rent * 100)|round|int) if (_gross_rent and _outgoings) else 20 }}%.
-        </p>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== COMPARABLES MACRO ==================== -->
-    {% macro render_comparable(comp, default_addr, default_date, default_price, default_land, default_desc, default_yield, default_overall) %}
-    <div class="comp-card">
-        <div class="comp-header">
-            {{ comp.full_address|default(default_addr) }}
-        </div>
-        <div class="comp-meta-row">
-            <div><strong>Sold Price & Date of Sale:</strong> {{ comp.sale_lease_date|format_date|default(default_date) }} &nbsp;&nbsp;&nbsp;&nbsp; <strong>{{ comp.sale_lease_price|format_currency_no_decimal if comp.sale_lease_price else default_price }}</strong></div>
-            <div><strong>Approx. land size:</strong> {{ comp.site_area|format_area_smart if comp.site_area else default_land }}</div>
-        </div>
-        <div class="comp-grid">
-            <div class="comp-left">
-                <div style="font-weight: 700; font-size: 11px; margin-bottom: 3px;">Property description:</div>
-                <p style="font-size: 10.5px; line-height: 1.4; margin: 0 0 6px 0;">
-                    {{ comp.description|default(default_desc) }}
-                </p>
-                {% if comp.image_url %}
-                <img src="{{ comp.image_url }}" style="width: 100%; max-height: 115px; object-fit: cover; border-radius: 2px; border: 1px solid #e5e7eb;" alt="Comparable Photo">
-                {% endif %}
-            </div>
-            <div class="comp-right">
-                <table class="matrix-table" style="background-color: #fafafa; border: 1px solid #e5e7eb; border-radius: 2px; padding: 4px;">
-                    <tr>
-                        <td>Location:</td>
-                        <td>{{ (comp.comparison.location if comp.comparison is defined and comp.comparison.location is defined else 'Similar') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Zoning:</td>
-                        <td>{{ comp.zoning|default(_zoning) }}</td>
-                    </tr>
-                    <tr>
-                        <td>Land area:</td>
-                        <td>{{ (comp.comparison.land_area if comp.comparison is defined and comp.comparison.land_area is defined else 'Similar') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Land slope:</td>
-                        <td>{{ (comp.comparison.land_slope if comp.comparison is defined and comp.comparison.land_slope is defined else 'Similar') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Building condition:</td>
-                        <td>{{ (comp.comparison.building_condition if comp.comparison is defined and comp.comparison.building_condition is defined else 'Similar') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Accommodation:</td>
-                        <td>{{ (comp.comparison.accommodation if comp.comparison is defined and comp.comparison.accommodation is defined else 'Similar') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Market yield:</td>
-                        <td>{{ comp.yield_|default(default_yield) }}</td>
-                    </tr>
-                    <tr style="border-top: 1px solid #d1d5db;">
-                        <td><strong>Overall:</strong></td>
-                        <td><strong>{{ (comp.comparison.overall if comp.comparison is defined and comp.comparison.overall is defined else default_overall) }}</strong></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
-    {% endmacro %}
-
-    {% set raw_comps = record.raw_sales_comps if (record is defined and record.raw_sales_comps is defined) else (valuation_report.comparables.sales if (valuation_report is defined and valuation_report.comparables is defined and valuation_report.comparables.sales is defined) else []) %}
-    {% set c1 = raw_comps[0] if raw_comps|length > 0 else {} %}
-    {% set c2 = raw_comps[1] if raw_comps|length > 1 else {} %}
-    {% set c3 = raw_comps[2] if raw_comps|length > 2 else {} %}
-    {% set c4 = raw_comps[3] if raw_comps|length > 3 else {} %}
-    {% set c5 = raw_comps[4] if raw_comps|length > 4 else {} %}
-
-    <!-- ==================== PAGE 8: PROPERTY SALES EVIDENCE (1 & 2) ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">Property Sales Evidence and Assessment</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <p style="font-size: 10.5px; line-height: 1.4; margin-bottom: 4px;">
-            The following sales have been considered as comparable evidence for this valuation. Sales information has been obtained from CoreLogic/RP Data and other property and agent resources.
-        </p>
-        <p style="font-size: 10.5px; line-height: 1.4; margin-bottom: 12px;">
-            We have investigated market activity at {{ _suburb }} and surrounding suburbs in order to obtain sales of residential apartment blocks of a comparable nature to the subject property. The more relevant sales are summarised in the following schedule:
-        </p>
-
-        <!-- Comparable 1 -->
-        {{ render_comparable(
-            c1,
-            '255 Main Street Osborne Park WA 6017',
-            '03 May 2024',
-            '$2,450,000',
-            '2,005 sqm',
-            'Circa 1980s, a two-storey brick veneer block comprising 8 units, each with 2 bedrooms, living room, dining area, kitchen, bathroom, laundry, and a car space. Located 1.87km away from the subject property.',
-            '4.47%',
-            'Inferior'
-        ) }}
-
-        <!-- Comparable 2 -->
-        {{ render_comparable(
-            c2,
-            '76 Deanmore Road Scarborough WA 6019',
-            '22 May 2025',
-            '$2,850,000',
-            '1012 sqm',
-            'Circa 1980s, a two-storey brick veneer block comprising 8 units, each with 1 bedrooms, living room, dining area, kitchen, bathroom, laundry, and a car space. Located 5.97km away from the subject property.',
-            '6.36%',
-            'Inferior'
-        ) }}
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 9: PROPERTY SALES EVIDENCE (3 & 4) ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">Property Sales Evidence and Assessment (cont'd)</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <!-- Comparable 3 -->
-        {{ render_comparable(
-            c3,
-            '17 Anthony Way Tuart Hill WA 6060',
-            '27 November 2024',
-            '$3,000,000',
-            '2,266 sqm',
-            'Circa 1970s, a single-storey brick veneer block comprising 8 units, each with 2 bedrooms, living room, dining area, kitchen, bathroom, laundry, and a car space. Located 1.1 km away from the subject property.',
-            '5.55%',
-            'Similar'
-        ) }}
-
-        <!-- Comparable 4 -->
-        {{ render_comparable(
-            c4,
-            '2 Frederic Street Midland WA 6056',
-            '27 November 2024',
-            '$3,850,000',
-            '1,948 sqm',
-            'Circa 1995s, a single-storey brick veneer block comprising 10 units, each with 2 bedrooms, living room, dining area, kitchen, bathroom, laundry, and a car space. Located 16.4 km away from the subject property.',
-            '4.99%',
-            'Slightly Superior'
-        ) }}
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 10: COMPARABLE 5 & VALUATION METHODOLOGY ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-
-        <!-- Comparable 5 -->
-        {{ render_comparable(
-            c5,
-            '157 Wanneroo Road Tuart Hill WA 6060',
-            '08 May 2025',
-            '$4,000,000',
-            '3,719 sqm',
-            'Circa 1975s, a single-storey brick veneer block comprising 14 units, each with 2 bedrooms, living room, dining area, kitchen, bathroom, laundry, and a car space. Located 1.14 km away from the subject property.',
-            '6.72%',
-            'Superior'
-        ) }}
-
-        <div class="banner" style="margin-top: 15px;">
-            <span class="banner-title">Valuation Methodology</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <div style="font-size: 11px; margin-bottom: 8px;">
-            <span style="margin-right: 25px;"><strong>➢ &nbsp; Direct Comparison</strong></span>
-            <span><strong>➢ &nbsp; Capitalisation Methods</strong></span>
-        </div>
-
-        <div style="font-size: 10.5px; line-height: 1.45;">
-            <p>In assessing the current market value of the subject premises, the two main Valuation methods were adopted which are Direct Comparison Approach and Analysis by Capitalisation Rate.</p>
-            <p>The preferred valuation approach for a block of units property of this type is to consider the valuation of the property under the <strong>Direct Comparison Approach</strong>. This involves the analysis of the sale of similar properties to determine per unit value which is applied to the number of units to determine the market value.</p>
-            <p>The secondary or check method is called <strong>Analysis by Capitalisation Rate</strong>, and this entails determining a Net Market Rental for the property and then capitalizing this potential income stream at an appropriate Capitalisation Rate.</p>
-            <p>In completing our valuation of the subject property, we have considered relevant general economic factors and have investigated recent sales transactions of comparable properties that have sold in the local market.</p>
-            <p>Our secondary method of assessment has been the Capitalisation Approach which is a traditional investment basis whereby the estimated net annual income is capitalised at an appropriate yield derived from market-based sales evidence.</p>
-        </div>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 11: VALUATION REMARKS & DECLARATION ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">Valuation Remarks</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <div class="section-heading" style="font-size: 13px; margin-top: 0; margin-bottom: 4px;">Capitalisation Approach</div>
-        <p style="font-size: 10.5px; line-height: 1.45; margin-bottom: 6px;">
-            Our report details the sales evidence we have considered in completing our assessment. Our sales evidence indicates a yield ranging from 4.47% - 6.72%. Factors such as location, condition of building, views, further development potential and whether the rents are at market levels impact upon the stated yields. After considering the sales evidence available and with due regard to the factors mentioned above, we have adopted a yield of <strong>{{ _cap_rate }}%</strong> for the subject property. We have adopted this yield in view of the potential to increase the current rents and enhanced value that can be achieved by converting the current ownership to Strata Title.
-        </p>
-
-        <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 3px; padding: 10px 18px; margin-bottom: 12px; font-size: 11px;">
-            <div style="font-weight: 700; margin-bottom: 4px;">Our workings are as follows:</div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>{{ _cap_rate }}% &nbsp;@&nbsp; {{ _net_rent|format_currency }}/per annum</span>
-                <span><strong>$3,036,000 &nbsp;round off&nbsp; {{ _mv|format_currency }}</strong></span>
-            </div>
-        </div>
-
-        <div class="section-heading" style="font-size: 13px; margin-top: 4px; margin-bottom: 4px;">Direct Comparison Approach</div>
-        <p style="font-size: 10.5px; line-height: 1.45; margin-bottom: 12px;">
-            Sales evidence reflects 17 Anthony Way Tuart Hill WA 6060 has a similar accommodation and has 8 units, each with 2 bedrooms, 1 bathroom and 1 car space with cavity brick walls and a concrete tile roof. In comparison to subject: Similar Location. Similar Internal area. Similar Features. Overall Similar. On balance, the considered indicative market value of the subject property is <strong>{{ _mv|format_currency }}</strong>.
-        </p>
-
-        <p style="font-size: 10px; line-height: 1.4; color: #4b5563; margin-bottom: 15px;">
-            I hereby certify that I have carried out the assessments of the above property as at that valuation on date of inspection. Neither I, nor to the best of my knowledge, any member of this firm, has any conflict of interest; direct, indirect or financial interest in relation to this property that is not disclosed herein. This report is for the use only of the party/s to which it is addressed for retrospective capital gain tax purposes only and is not to be used for any other purpose.
-        </p>
-
-        <!-- Divider with DECLARATION heading -->
-        <div style="text-align: center; margin: 12px 0 10px 0;">
-            <div style="font-size: 15px; font-weight: 800; letter-spacing: 1px; color: #111;">DECLARATION</div>
-            <div style="width: 50%; height: 1.5px; background-color: #111; margin: 4px auto 0 auto;"></div>
-        </div>
-
-        <div style="font-size: 11px; line-height: 1.45;">
-            <p style="margin-bottom: 4px;">We certify that the following property has been done by myself on the {{ _issue_date }}:</p>
-            <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">{{ _full_addr }}</div>
-            <p style="margin-bottom: 4px;">We assess the subject property’s Fair Market Value in its present condition and on a vacant possession basis to be:</p>
-            <div style="font-weight: 700; margin-bottom: 4px;">As at {{ _val_date }} (Date of Valuation)</div>
-            <div style="font-size: 12px; font-weight: 700; margin-top: 6px;">Fair Market Value -</div>
-            <div style="font-size: 20px; font-weight: 800; color: #111; margin: 4px 0 10px 0;">
-                {{ _mv|format_currency }} ({{ _mv|format_currency_words }})
-            </div>
-
-            <!-- Signature -->
-            <div style="margin-top: 10px;">
-                <img src="https://valai.duo.tax/assets/jugal-signature.png" style="height: 50px; width: auto; object-fit: contain;" alt="Valuer Signature" />
-            </div>
-            <div style="font-weight: 700; font-size: 11.5px; margin-top: 4px;">
-                {{ _valuer_name }}, AAPI CPV (Certified Practicing Valuer 101474)
-            </div>
-            <div style="font-size: 11px; color: #374151;">
-                {% if _state == 'WA' %}WA License Number - LV45321{% elif _state == 'QLD' %}QLD License no: 5429MR{% else %}Licensed Property Valuer{% endif %}
-            </div>
-        </div>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 12: ASSUMPTIONS, CONDITIONS AND LIMITATIONS ==================== -->
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">Assumptions, Conditions and Limitations</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <div style="font-size: 9.5px; line-height: 1.4; color: #1f2937;">
-            <p>The valuation is made on the basis of "Market Value" as adopted by the Australian Property Institute from the International Valuation Standards Council definition. That is: "The estimated amount for which an asset should exchange on the date of valuation between a willing buyer and a willing seller in an arm's length transaction after proper marketing wherein the parties had each acted knowledgeably, Prudently, and without compulsion".</p>
-            <p>This valuation is for the use of the party or parties to whom it is addressed and is not to be used for any other purposes. The report is subject to the definitions, qualifiers and disclaimers contained herein and which form part of this report. No liability or responsibility is accepted or undertaken to any third party or parties which may use or rely on the whole or any part of this report or its conclusion. No liability or responsibility is accepted or undertaken in the event that the party or parties to which it is addressed use this report for any other purpose apart from that expressly outlined.</p>
-            <p>No part of this valuation or any reference to it may be included in any other document or reproduced or published in any way without written approval of the form and context in which it is to appear. Only a signed original of this valuation should be relied upon and no responsibility will be accepted for photocopies of the report or signatures to the report. The Valuer nor, to the best of my knowledge, any member of this firm, has any conflict of interest; direct, indirect or financial interest pecuniary or otherwise in the said property that is not disclosed herein.</p>
-            <p>This valuation is current at the date of valuation only. The value assessed herein may change significantly and unexpectedly over a relatively short period including as a result of general market movements or factors specific to the particular property. We do not accept liability for losses arising from such subsequent changes in value including consequential or economic loss. Without limiting the generality of the above comment, we do not assume any responsibility or accept any liability where this valuation is relied upon after the expiration of three months from the date of the valuation, or such earlier date if you become aware of any factors that have any effect on the valuation.</p>
-            <p>Unless specifically stated, where the valuation relates to a Strata Titled property, all parties should be aware that the market value is assessed without knowledge of orders against the Strata Company and without the benefit of a search of the Strata Company's records, particularly relating to reserve funds. All parties should make their own enquiries in relation to this matter.</p>
-            <p>Plant and equipment and other items have not been individually tested or inspected to a standard other than that required by a prudent valuer in making this assessment. Sufficient enquiry has been made to enable the valuer to arrive at a fair assessment and the right to amend any valuation should an unknown condition or impediment be established by competent analysis is therefore reserved.</p>
-            <p>No soil tests or environmental studies have been made available for the valuer's perusal. Therefore, it should be noted that the valuation is subject to there being no surface or sub-surface soil problems including instability, toxic/ hazardous wastes, toxic mould, asbestos or building material hazards in or on the property that would adversely affect, its existing or potential use or reduce its marketability. Should a problem be known or arise the valuation should be referred to the valuer for comment and review as deemed appropriate. We are not experts in this regard and if more detailed advice is required, an environmental consultant should be retained. The client acknowledges and recognizes that the Valuer is not expert in identifying environmental hazards and compliance requirements affecting properties. The Valuer has endeavoured to identify all matters of environmental concern and the effect they might have on the value of the property. However, the Valuer will not be held liable nor responsible for his/her failure to identify all such matters of environmental concern and the impact which any environmental related issue has on the property and its value.</p>
-            <p>Unless stated as otherwise in this report we advise that a copy of the current Certificate of Title has not been provided or searched. This valuation assumes clear title. Should any encumbrances, easements, leases or other restrictions not mentioned in this report be known or discovered then the valuation should be referred to the Valuer for comment.</p>
-            <p>For retrospective valuations where the valuer does not have access to conduct an internal inspection, we will proceed on the basis of a desktop assessment. The information and photographs of the subject property including condition and presentation will be sourced from a combination but not limited to our internal database, online property searches, local agent and government resources. Should the information noted in our report be revealed inaccurate/incorrect at a future date, we reserve the right to amend our valuation report.</p>
-            <p>It is noted that our Valuation Report is not suitable for Court Purposes. This report should not be used for litigation proceedings and does not meet the criteria of Property Disputes, Expert Witness and/or Family Court Matters.</p>
-        </div>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
-    </div>
-
-    <!-- ==================== PAGE 13: PHOTOGRAPHS ==================== -->
-    {% set photos_list = valuation_report.photos if (valuation_report is defined and valuation_report.photos is defined) else [] %}
-    {% set all_photos = [] %}
-    {% for p in photos_list %}
-        {% if p.photoUrl and not p.isAnnexure %}
-            {% set _ = all_photos.append(p) %}
-        {% endif %}
     {% endfor %}
+  </div>
 
-    {% if all_photos|length == 0 and (record.cover_photo or cover_photo) %}
-        {% set _ = all_photos.append({'photoUrl': (record.cover_photo.large if record.cover_photo is defined and record.cover_photo.large else (record.cover_photo.base if record.cover_photo is defined and record.cover_photo.base else (cover_photo.photoUrl if cover_photo is defined else ''))), 'caption': 'Subject Property Front View'}) %}
-    {% endif %}
+  <div class="footer-container">
+    <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+    <span class="page-num"></span>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="page">
+  <div class="header-container">
+    <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+  </div>
+  <div class="banner">7. Market Evidence</div>
+  <div class="space-between-sm"></div>
+  <div id="market-evidence">
+    <p style="padding: 20px; text-align: center; color: #777;">No comparable sales evidence recorded.</p>
+  </div>
+  <div class="footer-container">
+    <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+    <span class="page-num"></span>
+  </div>
+</div>
+{% endif %}
 
-    {% if all_photos|length > 0 %}
-        {% for batch in all_photos|batch(6) %}
-        <div class="page">
-            <div class="header-container">
-                <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-            </div>
-            <div class="banner">
-                <span class="banner-title">Photographs {{ "(cont'd)" if loop.index > 1 else "" }}</span>
-            </div>
-            <div class="property-address-sub">{{ _full_addr }}</div>
+<!-- ==================== SECTION 8: RENTAL EVIDENCE (ONLY IF RENTALS EXIST) ==================== -->
+{% set rental_batches = [] %}
+{% if record is defined and record.listing_comparables %}
+  {% set rental_batches = record.listing_comparables %}
+{% elif valuation_report.get("comparables", {}).get("rentals") %}
+  {% set rental_batches = valuation_report["comparables"]["rentals"]|batch(3)|list %}
+{% endif %}
 
-            <div class="photos-container">
-                {% for photo in batch %}
-                <img src="{{ photo.photoUrl }}" alt="{{ photo.caption|default('Property Photograph') }}" />
-                {% endfor %}
-            </div>
-
-            <div class="footer-container">
-                <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-                <span class="page-num"></span>
-            </div>
+{% if has_rentals and rental_batches|length > 0 %}
+{% for listing_comparables in rental_batches %}
+<div class="page">
+  <div class="header-container">
+    <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+  </div>
+  <div class="banner">8. Rental Evidence {{ "(cont’d)" if loop.index > 1 else "" }}</div>
+  <div class="space-between-sm"></div>
+  {% if loop.first %}
+  <p style="font-size: 11px; line-height: 1.4; margin-bottom: 8px;">
+    The following rental evidence has been considered to establish current market rental value for the subject property.
+  </p>
+  {% endif %}
+  <div id="rental-evidence">
+    {% for comparable in listing_comparables %}
+    <div class="comparable">
+      <div style="display: flex; gap: 20px;">
+        <table>
+          <colgroup>
+            <col style="width: 16%;"> <!-- Label -->
+            <col style="width: 34%;"> <!-- Value -->
+            <col style="width: 18%;"> <!-- Label -->
+            <col style="width: 32%;"> <!-- Value -->
+          </colgroup>
+          <tr>
+            <td>Address</td>
+            <td colspan="3"><b>{{ (comparable.full_address or comparable.get('full_address') or comparable.get('fullAddress') or 'N/A')|title_address }}</b></td>
+          </tr>
+          <tr>
+            <td>Lease Date</td>
+            <td>{{ (comparable.sale_lease_date or comparable.get('sale_lease_date') or comparable.get('saleLeaseDate'))|format_date|default('N/A') }}</td>
+            <td>Rental Price</td>
+            <td><b>{{ (comparable.rental_price or comparable.sale_lease_price or comparable.get('rental_price') or comparable.get('saleLeasePrice'))|format_currency|default('N/A') }} {{ (comparable.rental_frequency or comparable.get('rentalFrequency') or 'pw')|format_rental_frequency }}</b></td>
+          </tr>
+          <tr>
+            <td>Bed / Bath / Car</td>
+            <td>
+              {% set b = comparable.bedrooms if comparable.bedrooms is defined else comparable.get('bedrooms') %}
+              {% set ba = comparable.bathrooms if comparable.bathrooms is defined else comparable.get('bathrooms') %}
+              {% set c = comparable.car_spaces if comparable.car_spaces is defined else (comparable.get('car_spaces') or comparable.get('carSpaces')) %}
+              {{ b|default('-', true) }} Bed / {{ ba|default('-', true) }} Bath / {{ c|default('-', true) }} Car
+            </td>
+            <td>Year Built</td>
+            <td>{{ comparable.build_year or comparable.get('build_year') or comparable.get('buildYear') or '-' }}</td>
+          </tr>
+          <tr>
+            <td>Site Area</td>
+            <td>{{ (comparable.site_area or comparable.get('site_area') or comparable.get('siteArea'))|format_area_smart|default('-') }}</td>
+            <td>Building Area</td>
+            <td>{{ (comparable.building_area or comparable.get('building_area') or comparable.get('buildingArea'))|format_area|default('-') }}</td>
+          </tr>
+          <tr>
+            <td>Distance</td>
+            <td>{{ comparable.distance if comparable.distance is defined else comparable.get('distance')|default('-') }}{% if (comparable.distance or comparable.get('distance')) %} km{% endif %}</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </table>
+        {% set comp_img = comparable.image_url or comparable.get('image_url') or comparable.get('photoUrl') or comparable.get('imageUrl') %}
+        {% if comp_img %}
+        <div style="flex-shrink: 0;">
+          <img src="{{ comp_img }}" width="110" height="110"
+            style="object-fit: cover; width: 110px; height: 110px;" alt="" />
         </div>
-        {% endfor %}
-    {% else %}
-    <div class="page">
-        <div class="header-container">
-            <img src="{{ page_logo_url }}" class="header-logo" alt="Logo" />
-        </div>
-        <div class="banner">
-            <span class="banner-title">Photographs</span>
-        </div>
-        <div class="property-address-sub">{{ _full_addr }}</div>
-
-        <div class="photos-container">
-            <div style="width: 100%; height: 300px; display: flex; align-items: center; justify-content: center; background-color: #f3f4f6; color: #6b7280; border: 1px dashed #9ca3af; border-radius: 4px;">
-                Photographs Annexure
-            </div>
-        </div>
-
-        <div class="footer-container">
-            <div class="footer-address">{{ _street }}<br>{{ _suburb }} {{ _state }} {{ _postcode }}</div>
-            <span class="page-num"></span>
-        </div>
+        {% endif %}
+      </div>
+      {% set comp_desc = comparable.description or comparable.get('description') %}
+      {% if comp_desc %}
+      <div style="display: flex; gap: 15px; margin: 4px 0 2px 0;">
+        <p style="margin: 0; white-space: nowrap;"><b>Description</b></p>
+        <p style="margin: 0;">{{ comp_desc }}</p>
+      </div>
+      {% endif %}
+      {% set comp_comp = comparable.comparison or comparable.get('comparison') %}
+      <div>
+        <p style="margin-top: 4px; margin-bottom: 4px;">Comparison to Subject: <i>{{
+          comp_comp|default('Similar rental accommodation and physical condition considered in determining subject market rental value.', true) }}</i></p>
+      </div>
+      {% if not loop.last %}
+      <hr style="margin: 8px 0;">
+      {% endif %}
     </div>
-    {% endif %}
+    {% endfor %}
+  </div>
 
-    <!-- Page Numbering Script -->
-    <script>
-        const pageNums = document.querySelectorAll('.page-num');
-        pageNums.forEach((v, k) => {
-            v.textContent = k + 2;
-        });
-    </script>
-</body>
+  <div class="footer-container">
+    <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+    <span class="page-num"></span>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
 
-</html>
+<!-- ==================== SECTION 8 & 9: VALUATION METHODOLOGY & VALUATION REMARKS ==================== -->
+<div class="page">
+  <div class="header-container">
+    <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+  </div>
+  <div class="banner">{{ 8 + section_offset }}. Valuation Methodology</div>
+  <div class="space-between-md"></div>
+  <table>
+    <tr>
+      <td>Primary Methodology</td>
+      <td>Direct Comparison</td>
+    </tr>
+    <tr>
+      <td>Secondary Methodology</td>
+      <td>{{ valuation_report.valuationDetails.secondaryMethod if valuation_report.valuationDetails.secondaryMethod else 'Summation' }}</td>
+    </tr>
+  </table>
+  <div class="space-between-md"></div>
+  <div class="banner">{{ 9 + section_offset }}. Valuation Remarks</div>
+  <div class="space-between-xs"></div>
+
+  <div class="subtitle" style="padding-left: 0; font-weight: bold;">Method 1: Capitalisation Approach</div>
+  <div class="space-between-xs"></div>
+  <div style="font-size: 11px; line-height: 1.45; margin-bottom: 8px;">
+    <p>Our report details the sales evidence we have considered in completing our assessment. Our sales evidence indicates a yield ranging from {{ _cap_low }}% - {{ _cap_high }}%. Factors such as location, condition of building, views, further development potential and whether the rents are at market levels impact upon the stated yields. After considering the sales evidence available and with due regard to the factors mentioned above, we have adopted a yield of <strong>{{ _cap_rate }}%</strong> for the subject property.</p>
+  </div>
+
+  <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 3px; padding: 6px 14px; margin-bottom: 10px; font-size: 11px;">
+    <div style="font-weight: 700; margin-bottom: 3px;">Our workings are as follows:</div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span>{{ _cap_rate }}% &nbsp;@&nbsp; {{ _net_rent|format_currency }}/per annum</span>
+      <span><strong>{{ _adopted_cap|format_currency }} &nbsp;round off&nbsp; {{ _mv|format_currency }}</strong></span>
+    </div>
+  </div>
+
+  <div class="subtitle" style="padding-left: 0; font-weight: bold;">Method 2: Direct Comparison Approach</div>
+  <div class="space-between-xs"></div>
+  <div style="font-size: 11px; line-height: 1.45; margin-bottom: 10px;">
+    <p style="white-space: pre-line">
+      {{ _val_details.directComparison|default('Sales evidence analysed across the immediate locality indicates consistent demand for multi-unit residential assets. In comparison to subject: Similar Location, Comparable Physical Metrics, and Overall Alignment. On balance, the considered indicative market value of the subject property is ' ~ _mv|format_currency ~ '.') }}
+    </p>
+  </div>
+
+  <div style="font-size: 10px; line-height: 1.35; color: #4b5563; margin-bottom: 8px;">
+    <p>I hereby certify that I have carried out the assessments of the above property as at that valuation on date of inspection. Neither I, nor to the best of my knowledge, any member of this firm, has any conflict of interest; direct, indirect or financial interest in relation to this property that is not disclosed herein. This report is for the use only of the party/s to which it is addressed for {{ _val_details.valuationType|default('Valuation')|title }} purposes only and is not to be used for any other purpose.</p>
+  </div>
+
+  <!-- Divider with DECLARATION heading -->
+  <div style="text-align: center; margin: 8px 0 6px 0;">
+    <div style="font-size: 13px; font-weight: 800; letter-spacing: 1px; color: #111;">{% if _val_details.currentDayValuation %}CERTIFICATE OF PROPERTY VALUATION{% else %}DECLARATION{% endif %}</div>
+    <div style="width: 50%; height: 1.5px; background-color: #111; margin: 3px auto 0 auto;"></div>
+  </div>
+
+  <div style="font-size: 10.5px; line-height: 1.35;">
+    <p style="margin-bottom: 2px;">We certify that the following property valuation has been completed by myself on {{ _issue_date }}:</p>
+    <div style="font-size: 12.5px; font-weight: 700; margin-bottom: 4px;">{{ _full_addr }}</div>
+    <p style="margin-bottom: 2px;">We assess the subject property’s Fair Market Value in its present condition and on a vacant possession basis to be:</p>
+    <div style="font-weight: 700; margin-bottom: 2px;">As at {{ _val_date }} (Date of Valuation)</div>
+    <div style="font-size: 11.5px; font-weight: 700; margin-top: 3px;">Fair Market Value -</div>
+    <div style="font-size: 16px; font-weight: 800; color: #111; margin: 2px 0 6px 0;">
+      {{ _mv|format_currency }} ({{ _mv|format_currency_words }})
+    </div>
+
+    <!-- Signature -->
+    <div style="margin-top: 6px;">
+      <img src="https://valai.duo.tax/assets/jugal-signature.png" style="height: 44px; width: auto; object-fit: contain;" alt="Valuer Signature" />
+    </div>
+    <div style="font-weight: 700; font-size: 11px; margin-top: 2px;">
+      {{ _valuer_name }}, AAPI CPV (Certified Practising Valuer 101474)
+    </div>
+    <div style="font-size: 10px; color: #374151;">
+      {% if _state == 'WA' %}WA License Number - LV45321{% elif _state == 'QLD' %}QLD License no: 5429MR{% else %}Licensed Property Valuer{% endif %}
+    </div>
+  </div>
+
+  <div class="footer-container">
+    <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+    <span class="page-num"></span>
+  </div>
+</div>
+
+<!-- ==================== SECTIONS 10, 11: ASSUMPTIONS, CONDITIONS & PHOTOS ==================== -->
+{% include 'partials/signatures_disclaimers.html' %}
+
+<!-- ==================== ANNEXURE: FLOOR PLANS & SOURCES ==================== -->
+{% include 'partials/photos_annexures.html' %}

@@ -149,12 +149,13 @@ def format_owners(owners: list[dict]):
         return f"{', '.join(valid_owners[:-1])} & {valid_owners[-1]}"
 
 def format_rental_frequency(rental_frequency: str) -> str:
-    match rental_frequency:
-        case "Per Week":
-            return "P/W"
-        case "Per Month":
-            return "P/M"
-        case "Per Annum":
-            return "P/A"
-        case _:
-            return "N/A"
+    if not rental_frequency:
+        return ""
+    rf = rental_frequency.strip().lower()
+    if rf in ["per week", "weekly", "pw", "p/w"]:
+        return "P/W"
+    elif rf in ["per month", "monthly", "pm", "p/m"]:
+        return "P/M"
+    elif rf in ["per annum", "annually", "pa", "p/a", "yearly"]:
+        return "P/A"
+    return rental_frequency

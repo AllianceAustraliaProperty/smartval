@@ -40,7 +40,8 @@ RESIDENTIAL_PROPERTY_TYPES = [
     "Terrace",
     "Granny Flat",
     "Semi-detached",
-    "Unit"
+    "Unit",
+    "Block of Units"
 ]
 
 # Initialize models dynamically per-request to prevent PyMongo Gunicorn deadlocks
@@ -581,10 +582,21 @@ def _render_html_report(report, template_name):
         valuation_type = (report.get("valuationDetails", {}).get("valuationType") or "").lower()
         property_type = (report.get("propertyDetails", {}).get("propertyType") or "").lower()
 
-        if template_name not in ["cgt_short.html", "unit-block.html"]:
-            if "unit block" in valuation_type or "unit block" in property_type or "block of units" in valuation_type or "block of units" in property_type or "unit-block" in valuation_type or "unit-block" in property_type:
-                template_name = "unit-block.html"
-            elif "cgt 2027" in valuation_type or "cgt short" in valuation_type or "short report (cgt" in valuation_type or "short cgt" in valuation_type or ("short" in valuation_type and "cgt" in valuation_type) or ("short" in valuation_type and "capital gains" in valuation_type):
+        # Check if property type or valuation type indicates a Block of Units
+        is_unit_block = (
+            "block of units" in property_type or
+            "unit block" in property_type or
+            "unit-block" in property_type or
+            property_type == "block of units" or
+            "block of units" in valuation_type or
+            "unit block" in valuation_type or
+            "unit-block" in valuation_type
+        )
+
+        if is_unit_block:
+            template_name = "unit-block.html"
+        elif template_name not in ["cgt_short.html", "unit-block.html"]:
+            if "cgt 2027" in valuation_type or "cgt short" in valuation_type or "short report (cgt" in valuation_type or "short cgt" in valuation_type or ("short" in valuation_type and "cgt" in valuation_type) or ("short" in valuation_type and "capital gains" in valuation_type):
                 template_name = "cgt_short.html"
             elif valuation_type == "commercial":
                 template_name = "commercial_long.html"
@@ -768,6 +780,11 @@ def _render_html_report(report, template_name):
                     "nla_rate": comp.get("nlaRate"),
                     "yield_": comp.get("yield"),
                     "build_year": comp.get("buildYear"),
+                    "bedrooms": comp.get("bedrooms"),
+                    "bathrooms": comp.get("bathrooms"),
+                    "car_spaces": comp.get("carSpaces"),
+                    "days_on_market": comp.get("daysOnMarket"),
+                    "distance": comp.get("distance"),
                     "image_url": comp.get("photoUrl") or comp.get("imageUrl") or None,
                     "description": comp.get("description"),
                     "comparison": comp.get("comparison"),
@@ -781,11 +798,20 @@ def _render_html_report(report, template_name):
                 mapped_rentals.append({
                     "full_address": comp.get("fullAddress"),
                     "building_area": comp.get("buildingArea"),
+                    "site_area": comp.get("siteArea"),
                     "sale_lease_date": comp.get("saleLeaseDate"),
+                    "sale_lease_price": comp.get("saleLeasePrice"),
+                    "rental_price": comp.get("saleLeasePrice"),
+                    "rental_frequency": comp.get("rentalFrequency", ""),
                     "net_income_rental": comp.get("saleLeasePrice"),
                     "net_income_rental_suffix": "pa",
                     "net_rental_rate": comp.get("rentalRate"),
                     "passing_rent": comp.get("passingRent"),
+                    "bedrooms": comp.get("bedrooms"),
+                    "bathrooms": comp.get("bathrooms"),
+                    "car_spaces": comp.get("carSpaces"),
+                    "build_year": comp.get("buildYear"),
+                    "distance": comp.get("distance"),
                     "image_url": comp.get("photoUrl") or comp.get("imageUrl") or None,
                     "description": comp.get("description"),
                     "comparison": comp.get("comparison"),
@@ -850,6 +876,8 @@ def _render_html_report(report, template_name):
                 "property_descriptors": {
                     "parking_type": "On-site",
                     "car_spaces": report.get("propertyDescriptors", {}).get("carSpaces"),
+                    "no_of_units": report.get("propertyDescriptors", {}).get("numberOfUnits") or report.get("propertyDescriptors", {}).get("noOfUnits"),
+                    "number_of_units": report.get("propertyDescriptors", {}).get("numberOfUnits") or report.get("propertyDescriptors", {}).get("noOfUnits"),
                     "onsite_parking": report.get("propertyDescriptors", {}).get("onsiteParking"),
                     "visitors_parking": report.get("propertyDescriptors", {}).get("visitorsParking"),
                     "general_description": report.get("generalComments", {}).get("propertyDescription"),

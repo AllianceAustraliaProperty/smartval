@@ -19,7 +19,9 @@ export const ResidentialMainBuildingTypes = [
   "Residential studio",
   "Residential apartment",
   "Residential villa",
-  "Freestanding two storey terrace house dwelling"
+  "Freestanding two storey terrace house dwelling",
+  "Residential unit block",
+  "Freestanding residential block of units"
 ] as const;
 
 export const CommercialMainBuildingTypes = [

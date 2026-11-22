@@ -183,6 +183,8 @@ export type ConditionRating = 'Very Good' | 'Good' | 'Fair' | 'Average' | 'Poor'
 export interface PropertyDescriptorsData {
   bedrooms?: number;
   bathrooms?: number;
+  numberOfUnits?: number;
+  noOfUnits?: number;
   carSpaces?: number;
   onsiteParking?: number;
   visitorsParking?: number;

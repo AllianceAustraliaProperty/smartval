@@ -322,8 +322,7 @@
         <tr>
           <td>Flooring</td>
           <td>
-            {{ valuation_report["photosSummary"]["floorings"]|join(',
-            ')|default('N/A') }}
+            {{ (valuation_report.get("photosSummary", {}).get("floorings") or [])|join(', ')|default('N/A') }}
           </td>
         </tr>
         <tr>

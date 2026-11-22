@@ -163,6 +163,89 @@ def get_additional_information(rp_id: str):
         }), 500
 
 
+def extract_description_from_timeline(timeline_data):
+    """Extract listing / campaign property description from RP Data timeline."""
+    if not isinstance(timeline_data, dict):
+        return ""
+
+    # 1. Check for sale property campaigns
+    for sale_camp in timeline_data.get('saleCampaignListV2', {}).get('forSalePropertyCampaign', {}).get('campaigns', []):
+        desc = sale_camp.get('campaignDescription')
+        if desc and str(desc).strip():
+            return str(desc).strip()
+
+    # 2. Check for sale agency campaigns
+    for agency_camp in timeline_data.get('saleCampaignListV2', {}).get('forSaleAgencyCampaign', {}).get('campaigns', []):
+        desc = agency_camp.get('campaignDescription')
+        if desc and str(desc).strip():
+            return str(desc).strip()
+
+    # 3. Check for rental property campaigns
+    for rent_camp in timeline_data.get('rentCampaignListV2', {}).get('forRentPropertyCampaign', {}).get('campaigns', []):
+        desc = rent_camp.get('campaignDescription')
+        if desc and str(desc).strip():
+            return str(desc).strip()
+
+    # 4. Check for rental agency campaigns
+    for rent_agency in timeline_data.get('rentCampaignListV2', {}).get('forRentAgencyCampaign', {}).get('campaigns', []):
+        desc = rent_agency.get('campaignDescription')
+        if desc and str(desc).strip():
+            return str(desc).strip()
+
+    return ""
+
+
+@rpdata_bp.route('/api/rpdata/property-description/<rp_id>', methods=['GET'])
+def get_property_description(rp_id: str):
+    """
+    Retrieve listing property description for a given RP Data property id.
+    """
+    try:
+        if not rp_id or not str(rp_id).strip():
+            return jsonify({
+                'error': 'Missing required parameter',
+                'message': 'Path parameter "rp_id" is required'
+            }), 400
+
+        rp_id = str(rp_id).strip()
+        logger.info(f"RP Data property description request received: rp_id={rp_id}")
+        description = ""
+
+        try:
+            timeline = rpdata_api.get_property_timeline(rp_id)
+            description = extract_description_from_timeline(timeline)
+        except Exception as t_err:
+            logger.warning(f"Failed to fetch timeline for rp_id={rp_id}: {t_err}")
+
+        # If not found in timeline, check additional information
+        if not description:
+            try:
+                add_info = rpdata_api.get_additional_information(rp_id)
+                if isinstance(add_info, dict):
+                    description = (
+                        add_info.get('propertyDescription') or
+                        add_info.get('description') or
+                        add_info.get('legal', {}).get('realPropertyDescription') or
+                        add_info.get('legalDescription') or
+                        ""
+                    )
+            except Exception as a_err:
+                logger.warning(f"Failed to fetch additional info for rp_id={rp_id}: {a_err}")
+
+        return jsonify({
+            'success': True,
+            'rp_id': rp_id,
+            'description': description,
+            'message': 'Property description retrieved successfully'
+        })
+    except Exception as e:
+        logger.error(f"Unexpected error in get_property_description: {str(e)}")
+        return jsonify({
+            'error': 'Internal server error',
+            'message': 'An unexpected error occurred while processing the request'
+        }), 500
+
+
 @rpdata_bp.route('/api/rpdata/property-timeline/<rp_id>', methods=['GET'])
 def get_property_timeline(rp_id: str):
     """
@@ -402,6 +485,25 @@ def get_sales_comparables_by_id(rpdata_id: str):
         # Call RP Data API service
         try:
             response = rpdata_api.get_sales_comparables_by_rpdata_id(rpdata_id, latitude, longitude)
+
+            # Enrich response with property description from timeline
+            try:
+                timeline = rpdata_api.get_property_timeline(rpdata_id)
+                prop_desc = extract_description_from_timeline(timeline)
+                if prop_desc:
+                    if isinstance(response, dict):
+                        if 'data' in response and isinstance(response['data'], list):
+                            for comp_item in response['data']:
+                                if isinstance(comp_item, dict):
+                                    comp_item['description'] = prop_desc
+                                    if 'listings' in comp_item and isinstance(comp_item['listings'], dict):
+                                        comp_item['listings']['description'] = prop_desc
+                                    if 'core' in comp_item and isinstance(comp_item['core'], dict):
+                                        comp_item['core']['description'] = prop_desc
+                        else:
+                            response['description'] = prop_desc
+            except Exception as enrich_err:
+                logger.warning(f"Failed to enrich sales comparable with description (rpdata_id={rpdata_id}): {enrich_err}")
 
             # Log successful response
             logger.info(f"RP Data API call successful for property ID {rpdata_id}")

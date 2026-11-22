@@ -12,5 +12,6 @@ RESIDENTIAL_PROPERTY_TYPES = [
     "Granny Flat",
     "Semi-detached",
     "Unit",
-    "Rural"
+    "Rural",
+    "Block of Units"
 ]

@@ -84,6 +84,11 @@
                 </div>
               </div>
 
+              {% if comparable.get("description") %}
+              <div class="property-comparison" style="margin-bottom: 4px;">
+                Property Description: {{ comparable["description"] }}
+              </div>
+              {% endif %}
               <div class="property-comparison">
                 In comparison to subject: {{ comparable["comparison"] |
                 default('') }}

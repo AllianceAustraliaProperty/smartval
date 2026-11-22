@@ -27,6 +27,7 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
 
   // Watch the property type to determine which building types to show
   const propertyType = watch('propertyDetails.propertyType');
+  const isBlockOfUnits = (propertyType || '').toLowerCase() === 'block of units';
   const isGrannyFlat = watch('propertyDescriptors.isGrannyFlat');
   const photos = watch('photos') || [];
   
@@ -405,7 +406,7 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className={`grid grid-cols-1 ${isBlockOfUnits ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
         <FormField
           label="Bedrooms"
           error={errors.propertyDescriptors?.bedrooms?.message}
@@ -432,6 +433,21 @@ export const PropertyDescriptorsSection: React.FC<SectionProps> = ({ register, e
             error={errors.propertyDescriptors?.bathrooms?.message}
           />
         </FormField>
+
+        {isBlockOfUnits && (
+          <FormField
+            label="No. of units"
+            error={(errors.propertyDescriptors as any)?.numberOfUnits?.message || (errors.propertyDescriptors as any)?.noOfUnits?.message}
+          >
+            <Input
+              type="number"
+              min={1}
+              {...register('propertyDescriptors.numberOfUnits', { valueAsNumber: true })}
+              placeholder="e.g., 4"
+              error={(errors.propertyDescriptors as any)?.numberOfUnits?.message || (errors.propertyDescriptors as any)?.noOfUnits?.message}
+            />
+          </FormField>
+        )}
 
         <FormField
           label="Car Spaces"
