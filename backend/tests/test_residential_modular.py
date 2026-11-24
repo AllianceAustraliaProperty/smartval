@@ -263,6 +263,44 @@ class ModularTemplateTests(unittest.TestCase):
         self.assertNotIn("No Separate Land Value (Strata Titled Unit)", html_house)
         print("✓ test_strata_unit_suppresses_separate_land_value passed!")
 
+    def test_section_1_3_valuation_amount_renders_for_houses_and_units(self):
+        template = self.env.get_template('residential.html')
+        
+        # Test Freehold House (is_unit=False)
+        report_house = build_mock_report('AAP', 'House', is_unit=False)
+        report_house['valuationDetails']['marketValue'] = 985000
+        html_house = template.render(
+            valuation_report=report_house,
+            property=report_house['address'],
+            logo_type='AAP',
+            page_logo_url='https://example.com/logo.png',
+            now=now
+        )
+        self.assertIn("1.3 Valuation Details", html_house)
+        self.assertIn("<td>Market Value</td>", html_house)
+        self.assertIn("$985,000.00", html_house)
+        self.assertIn("<td>Valuation Amount</td>", html_house)
+        self.assertIn("$985,000.00", html_house)
+        self.assertIn("(Sample Dollars)", html_house)
+        
+        # Test Strata Unit (is_unit=True)
+        report_unit = build_mock_report('AAP', 'Unit', is_unit=True)
+        report_unit['valuationDetails']['marketValue'] = 420000
+        html_unit = template.render(
+            valuation_report=report_unit,
+            property=report_unit['address'],
+            logo_type='AAP',
+            page_logo_url='https://example.com/logo.png',
+            now=now
+        )
+        self.assertIn("1.3 Valuation Details", html_unit)
+        self.assertIn("<td>Market Value</td>", html_unit)
+        self.assertIn("$420,000.00", html_unit)
+        self.assertIn("<td>Valuation Amount</td>", html_unit)
+        self.assertIn("$420,000.00", html_unit)
+        self.assertIn("(Sample Dollars)", html_unit)
+        print("✓ test_section_1_3_valuation_amount_renders_for_houses_and_units passed!")
+
 
 if __name__ == '__main__':
     unittest.main()

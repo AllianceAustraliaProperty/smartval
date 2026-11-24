@@ -329,15 +329,13 @@
             {{ valuation_report["valuationDetails"]["marketValue"]|format_currency|default('') }}
           </td>
         </tr>
-        {% if valuation_report["valuationDetails"].get("isUnit") %}
         <tr>
           <td>Valuation Amount</td>
           <td>
-            {{ valuation_report["valuationDetails"]["valuationAmount"]|format_currency|default('N/A') }} ({{
-            valuation_report["valuationDetails"]["valuationAmount"]|format_currency_words|default('N/A') }})
+            {{ (valuation_report["valuationDetails"].get("valuationAmount") or valuation_report["valuationDetails"].get("marketValue"))|format_currency|default('N/A') }} ({{
+            (valuation_report["valuationDetails"].get("valuationAmount") or valuation_report["valuationDetails"].get("marketValue"))|format_currency_words|default('N/A') }})
           </td>
         </tr>
-        {% endif %}
         <tr>
           <td>Interest Valued</td>
           <td>
