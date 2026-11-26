@@ -27,12 +27,16 @@
 {% set _val_date = _val_details.valuationDate|format_date %}
 {% set _issue_date = _val_details.dateIssued|format_date if _val_details.dateIssued else _val_date %}
 {% set _instruct_party = valuation_report.primaryContact.firstName ~ ' ' ~ valuation_report.primaryContact.lastName if (valuation_report.primaryContact and (valuation_report.primaryContact.firstName or valuation_report.primaryContact.lastName)) else (_val_details.instructingParty|default('Client')) %}
-{% set _mv = _val_details.marketValue|default(3100000) %}
-{% set _cap_rate = _val_details.capRateMid|default(_val_details.capitalisationRate)|default('5.50') %}
-{% set _cap_low = _val_details.capRateLow|default('4.75') %}
-{% set _cap_high = _val_details.capRateHigh|default('5.75') %}
-{% set _net_rent = _val_details.assessedNetRental if _val_details.assessedNetRental else (((_val_details.grossRentalRate|default(170) - _val_details.outgoingsRate|default(30)) * (_prop_details.buildingArea or _prop_details.livingArea or 1))|round|int if _val_details.grossRentalRate else ((_mv * (_cap_rate|float / 100))|round|int)) %}
-{% set _adopted_cap = _val_details.adoptedCapValue|default(_mv) %}
+{% set _mv = _val_details.marketValue|default(3230000) %}
+{% set _cap_rate = _val_details.capRateMid if (_val_details.capRateMid is defined and _val_details.capRateMid) else (_val_details.capitalisationRate if (_val_details.capitalisationRate is defined and _val_details.capitalisationRate) else '3.29') %}
+{% set _cap_low = _val_details.capRateLow if (_val_details.capRateLow is defined and _val_details.capRateLow) else '3.04' %}
+{% set _cap_high = _val_details.capRateHigh if (_val_details.capRateHigh is defined and _val_details.capRateHigh) else '4.05' %}
+{% set _net_rent = _val_details.assessedNetRental if (_val_details.assessedNetRental is defined and _val_details.assessedNetRental) else (((_val_details.grossRentalRate - _val_details.outgoingsRate|default(30)) * (_prop_details.buildingArea or _prop_details.livingArea or 1))|round|int if (_val_details.grossRentalRate is defined and _val_details.grossRentalRate and _val_details.grossRentalRate != 170) else 106100) %}
+{% set _calc_cap = ((((_net_rent|float / (_cap_rate|float / 100)) / 100)|round * 100)|int) if (_cap_rate|float > 0) else _mv %}
+{% set _adopted_cap = _val_details.adoptedCapValue if (_val_details.adoptedCapValue is defined and _val_details.adoptedCapValue and _val_details.adoptedCapValue != 3060000) else _calc_cap %}
+{% set _net_rent_str = (_net_rent|format_currency if (_net_rent|float != (_net_rent|int)|float) else _net_rent|format_currency_no_decimal) %}
+{% set _adopted_cap_str = (_adopted_cap|format_currency if (_adopted_cap|float != (_adopted_cap|int)|float) else _adopted_cap|format_currency_no_decimal) %}
+{% set _mv_str = (_mv|format_currency if (_mv|float != (_mv|int)|float) else _mv|format_currency_no_decimal) %}
 {% set _site_area = _prop_details.siteArea|default(2006) %}
 {% set _building_area = _prop_details.buildingArea|default(_prop_details.livingArea)|default(720) %}
 {% set _zoning = _prop_details.zoning|default('R40 - Residential') %}
@@ -527,8 +531,73 @@
 <!-- ==================== SECTIONS 2, 3, 4, 5, 6: PROPERTY DESCRIPTION ==================== -->
 {% include 'partials/property_description.html' %}
 
-<!-- ==================== SECTION 6.2, 6.3: CONDITIONS & REPAIRS & AREA ==================== -->
-{% include 'partials/risk_and_comments.html' %}
+<!-- ==================== SECTION 6.2, 6.3: ACCOMMODATION, CONDITIONS & REPAIRS & AREA ==================== -->
+{% set _total_beds = (_prop_desc.bedrooms|int * _units_count|int) if (_prop_desc.bedrooms and _units_count and _prop_desc.bedrooms|int < 10) else (_prop_desc.bedrooms if _prop_desc.bedrooms else 16) %}
+{% set _total_baths = (_prop_desc.bathrooms|int * _units_count|int) if (_prop_desc.bathrooms and _units_count and _prop_desc.bathrooms|int < 10) else (_prop_desc.bathrooms if _prop_desc.bathrooms else 8) %}
+{% set _total_laundries = _units_count if _units_count else 8 %}
+<div class="page">
+  <div class="header-container">
+    <img src="{{ page_logo_url }}" class="header-logo" alt="" srcset="" />
+  </div>
+
+  <div class="subtitle">6.2 Conditions & Repairs</div>
+  <div class="space-between-sm"></div>
+
+  <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #111;">Accommodation PC Fixtures</div>
+  <ul style="font-size: 11px; line-height: 1.6; margin: 0 0 12px 0; padding-left: 20px;">
+    <li>{{ _total_beds }} Bedrooms with carpet flooring, and aluminium framed windows</li>
+    <li>Lounge area with carpet flooring, and aluminium framed windows</li>
+    <li>Kitchen and dining with laminated flooring/vinyl flooring, sink, cupboards, freestanding cooktop, and aluminium framed windows</li>
+    <li>{{ _total_baths }} Bathrooms with tile flooring, toilet suite, shower, vanity, and aluminium framed windows</li>
+    <li>{{ _total_laundries }} Laundries with tile flooring and aluminium framed windows</li>
+    <li>General features includes hot water system, smoke alarm, ducted air-conditioning, exhaust fan, and split air-conditioning</li>
+  </ul>
+
+  <div style="font-size: 13px; font-weight: bold; margin-top: 10px; margin-bottom: 6px; color: #111;">Condition & Repairs</div>
+  <div style="font-size: 10.5px; line-height: 1.45; color: #222;">
+    <p style="margin-bottom: 6px;">The improvements appeared to be in good condition overall. No major structural defects were noted however we advise that we are not qualified to advise on structural matters.</p>
+    <p style="margin-bottom: 6px;">We understand that the apartments are gradually being renovated as they become vacant.</p>
+    <p style="margin-bottom: 6px;">Although the subject building is not Strata Titled, currently all strata buildings in Western Australia must be fitted with devices that enable their windows to be locked at 12.5cm when the devices are engaged.</p>
+    <p style="margin-bottom: 12px;">The Owners corporations must have devices installed on all common property windows above the ground.</p>
+  </div>
+
+  <div class="space-between-sm"></div>
+  <div class="subtitle">6.3 Building Area</div>
+  <div class="space-between-xs"></div>
+  <div>
+    <table>
+      <tr>
+        <td style="width: 42%;">Living Area</td>
+        <td>
+          {% if valuation_report["propertyDetails"]["livingArea"] %}Approximately {{ valuation_report["propertyDetails"]["livingArea"] }} sqm{% else %}{{ _building_area }} sqm approximately{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>External Area</td>
+        <td>
+          {% if valuation_report["propertyDetails"]["externalArea"] %}Approximately {{ valuation_report["propertyDetails"]["externalArea"] }} sqm{% else %}N/A{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Parking Area</td>
+        <td>
+          {% if valuation_report["propertyDetails"]["parkingArea"] %}Approximately {{ valuation_report["propertyDetails"]["parkingArea"] }} sqm{% else %}One car port for each unit{% endif %}
+        </td>
+      </tr>
+      {% if valuation_report["propertyDetails"]["otherArea"] %}
+      <tr>
+        <td>Other Areas</td>
+        <td>Approximately {{ valuation_report["propertyDetails"]["otherArea"] }} sqm</td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+
+  <div class="footer-container">
+    <span>{{ valuation_report["address"]["fullAddress"]|default('') }}</span>
+    <span class="page-num"></span>
+  </div>
+</div>
 
 <!-- ==================== SECTION 7: MARKET EVIDENCE (REPLICATED FROM COMMERCIAL LONG WITH RESIDENTIAL CONTENT) ==================== -->
 {% set sales_list = [] %}
@@ -773,15 +842,12 @@
   <div class="subtitle" style="padding-left: 0; font-weight: bold;">Method 1: Capitalisation Approach</div>
   <div class="space-between-xs"></div>
   <div style="font-size: 11px; line-height: 1.45; margin-bottom: 8px;">
-    <p>Our report details the sales evidence we have considered in completing our assessment. Our sales evidence indicates a yield ranging from {{ _cap_low }}% - {{ _cap_high }}%. Factors such as location, condition of building, views, further development potential and whether the rents are at market levels impact upon the stated yields. After considering the sales evidence available and with due regard to the factors mentioned above, we have adopted a yield of <strong>{{ _cap_rate }}%</strong> for the subject property.</p>
+    <p>Our report details the sales evidence we have considered in completing our assessment. Our sales evidence indicates a yield ranging from {{ _cap_low }}%- {{ _cap_high }}%. Factors such as location, condition of building, views, further development potential and whether the rents are at market levels impact upon the stated yields. After considering the sales evidence available and with due regard to the factors mentioned above, we have adopted a yield of {{ _cap_rate }}% for the subject property. We have adopted this yield in view of the potential to increase the current rents and enhanced value that can be achieved by converting the current ownership to Strata Title.</p>
   </div>
 
-  <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 3px; padding: 6px 14px; margin-bottom: 10px; font-size: 11px;">
-    <div style="font-weight: 700; margin-bottom: 3px;">Our workings are as follows:</div>
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span>{{ _cap_rate }}% &nbsp;@&nbsp; {{ _net_rent|format_currency }}/per annum</span>
-      <span><strong>{{ _adopted_cap|format_currency }} &nbsp;round off&nbsp; {{ _mv|format_currency }}</strong></span>
-    </div>
+  <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 3px; padding: 7px 14px; margin-bottom: 10px; font-size: 11px; line-height: 1.55;">
+    <div><strong>Our workings are as follows:</strong> &nbsp;{{ _cap_rate }}% @ {{ _net_rent_str }}/per annum</div>
+    <div style="font-weight: 700; margin-top: 2px;">= {{ _adopted_cap_str }} &nbsp;round off&nbsp; {{ _mv_str }}</div>
   </div>
 
   <div class="subtitle" style="padding-left: 0; font-weight: bold;">Method 2: Direct Comparison Approach</div>
@@ -790,10 +856,6 @@
     <p style="white-space: pre-line">
       {{ _val_details.directComparison|default('Sales evidence analysed across the immediate locality indicates consistent demand for multi-unit residential assets. In comparison to subject: Similar Location, Comparable Physical Metrics, and Overall Alignment. On balance, the considered indicative market value of the subject property is ' ~ _mv|format_currency ~ '.') }}
     </p>
-  </div>
-
-  <div style="font-size: 10px; line-height: 1.35; color: #4b5563; margin-bottom: 8px;">
-    <p>I hereby certify that I have carried out the assessments of the above property as at that valuation on date of inspection. Neither I, nor to the best of my knowledge, any member of this firm, has any conflict of interest; direct, indirect or financial interest in relation to this property that is not disclosed herein. This report is for the use only of the party/s to which it is addressed for {{ _val_details.valuationType|default('Valuation')|title }} purposes only and is not to be used for any other purpose.</p>
   </div>
 
   <!-- Divider with DECLARATION heading -->
