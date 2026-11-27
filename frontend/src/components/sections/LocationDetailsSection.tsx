@@ -96,9 +96,120 @@ const LocationItem: React.FC<{
 export const LocationDetailsSection: React.FC<SectionProps> = ({ register, errors, watch, setValue, reportId }) => {
   const [isAutomating, setIsAutomating] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [isFetchingSuburbDesc, setIsFetchingSuburbDesc] = useState(false);
   const [showMap, setShowMap] = useState(true);
   const [isUploadingSiteMap, setIsUploadingSiteMap] = useState(false);
   const siteMapInputRef = useRef<HTMLInputElement>(null);
+
+  const buildSuburbDescriptionContent = (
+    suburbName: string,
+    stateName: string,
+    nearestLocs: any,
+    wikiDesc: string | null
+  ): string => {
+    const cleanSub = suburbName
+      .replace(/\s*,?\s*(?:NSW|VIC|QLD|WA|SA|TAS|ACT|NT)(?:\s+\d{4})?\s*$/i, '')
+      .replace(/\s+\d{4}\s*$/, '')
+      .trim();
+
+    const rawTransportType = nearestLocs?.nearestTransportation?.type || 'train station';
+    const transportType = rawTransportType.replace(/_/g, ' ').toLowerCase();
+    const transportDist = nearestLocs?.nearestTransportation?.distance;
+    const transportUnit = nearestLocs?.nearestTransportation?.unit || 'km';
+    const transportStr = transportDist !== undefined && transportDist !== null && !isNaN(Number(transportDist))
+      ? `${transportDist} ${transportUnit}`
+      : null;
+
+    const rawShopType = nearestLocs?.nearestShop?.type || 'shopping centre';
+    const shopType = rawShopType.replace(/_/g, ' ').toLowerCase();
+    const shopDist = nearestLocs?.nearestShop?.distance;
+    const shopUnit = nearestLocs?.nearestShop?.unit || 'km';
+    const shopStr = shopDist !== undefined && shopDist !== null && !isNaN(Number(shopDist))
+      ? `${shopDist} ${shopUnit}`
+      : null;
+
+    const primaryName = nearestLocs?.nearestPrimarySchool?.name;
+    const primaryDist = nearestLocs?.nearestPrimarySchool?.distance;
+    const primaryUnit = nearestLocs?.nearestPrimarySchool?.unit || 'km';
+
+    const secondaryName = nearestLocs?.nearestSecondarySchool?.name;
+    const secondaryDist = nearestLocs?.nearestSecondarySchool?.distance;
+    const secondaryUnit = nearestLocs?.nearestSecondarySchool?.unit || 'km';
+
+    let schoolsSentence = '';
+    if (primaryName && secondaryName && primaryDist !== undefined && secondaryDist !== undefined) {
+      schoolsSentence = ` The nearest schools, ${primaryName} and ${secondaryName}, are ${primaryDist} ${primaryUnit} and ${secondaryDist} ${secondaryUnit} away respectively from the property.`;
+    } else if (primaryName && primaryDist !== undefined) {
+      schoolsSentence = ` The nearest school, ${primaryName}, is located approximately ${primaryDist} ${primaryUnit} from the property.`;
+    }
+
+    const rawCbd = nearestLocs?.nearestCBD?.name || '';
+    const cbdName = rawCbd.replace(/CBD/i, '').trim();
+    const cbdDist = nearestLocs?.nearestCBD?.distance;
+    const cbdUnit = nearestLocs?.nearestCBD?.unit || 'km';
+    const cbdSentence = cbdDist !== undefined && cbdDist !== null && !isNaN(Number(cbdDist))
+      ? ` Road transport to the ${cbdName ? cbdName + ' ' : ''}CBD by car covers approximately ${cbdDist} ${cbdUnit}.`
+      : '';
+
+    let amenitiesSentence = '';
+    if (transportStr && shopStr) {
+      amenitiesSentence = `The nearest ${transportType} is ${transportStr} away. The nearest ${shopType} is available ${shopStr} away from the subject property.`;
+    } else if (transportStr) {
+      amenitiesSentence = `The nearest ${transportType} is ${transportStr} away from the subject property.`;
+    } else if (shopStr) {
+      amenitiesSentence = `The nearest ${shopType} is available ${shopStr} away from the subject property.`;
+    }
+
+    const neighbourhoodText = `The subject property is located in a well-established residential neighbourhood, comprising predominantly dwellings of varying age and style of complementary nature. The property is situated within close distance to local shops, schools, parks and public transport.`;
+
+    const detailsBlock = [amenitiesSentence + schoolsSentence + cbdSentence, neighbourhoodText].filter(Boolean).join('\n\n');
+
+    if (wikiDesc && wikiDesc.trim().length > 0) {
+      return `${wikiDesc.trim()}\n\n${detailsBlock}`.trim();
+    }
+
+    return `${cleanSub} is an established residential suburb located in ${stateName}, Australia.\n\n${detailsBlock}`.trim();
+  };
+
+  const handleFetchSuburbDescriptionOnly = async () => {
+    const address = watch('address') || {};
+    let suburbVal = (watch('address.suburb') || address.suburb || '').trim();
+    let stateVal = (watch('address.state') || address.state || '').trim();
+    const fullAddress = buildFullAddress(address as any);
+
+    if ((!suburbVal || !stateVal) && fullAddress) {
+      const match = fullAddress.match(/(?:,\s*|\s+)([A-Za-z\s]+?)\s+(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\b(?:\s+(\d{4}))?/i);
+      if (match) {
+        if (!suburbVal) suburbVal = match[1].trim();
+        if (!stateVal) stateVal = match[2].trim().toUpperCase();
+      }
+    }
+
+    if (!suburbVal || !stateVal) {
+      alert('Please enter the suburb and state in Property Address first.');
+      return;
+    }
+
+    setIsFetchingSuburbDesc(true);
+    try {
+      const cleanSub = suburbVal.replace(/\b(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\b.*$/i, '').trim();
+      const wikiDesc = await getWikiSuburbDescription(cleanSub, stateVal);
+      const currentLocs = {
+        nearestTransportation: watch('locationDetails.nearestTransportation'),
+        nearestShop: watch('locationDetails.nearestShop'),
+        nearestPrimarySchool: watch('locationDetails.nearestPrimarySchool'),
+        nearestSecondarySchool: watch('locationDetails.nearestSecondarySchool'),
+        nearestCBD: watch('locationDetails.nearestCBD'),
+        nearestConnectingStreet: watch('locationDetails.nearestConnectingStreet'),
+      };
+      const generated = buildSuburbDescriptionContent(cleanSub, stateVal, currentLocs, wikiDesc);
+      setValue('locationDetails.suburbDescription', generated, { shouldDirty: true });
+    } catch (err) {
+      console.error('Failed to fetch suburb description:', err);
+    } finally {
+      setIsFetchingSuburbDesc(false);
+    }
+  };
 
   const handleSiteMapUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -159,15 +270,25 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
       }
     }
     
-    const address = watch('address');
-    const suburb = watch('address.suburb');
-    const state = watch('address.state');
+    const address = watch('address') || {};
+    let suburb = (watch('address.suburb') || address.suburb || '').trim();
+    let state = (watch('address.state') || address.state || '').trim();
     const fullAddress = buildFullAddress(address as any);
     
-    if (!fullAddress) {
+    if (!fullAddress && !suburb) {
       alert('Please enter the property address first.');
       return;
     }
+
+    if ((!suburb || !state) && fullAddress) {
+      const match = fullAddress.match(/(?:,\s*|\s+)([A-Za-z\s]+?)\s+(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\b(?:\s+(\d{4}))?/i);
+      if (match) {
+        if (!suburb) suburb = match[1].trim();
+        if (!state) state = match[2].trim().toUpperCase();
+      }
+    }
+
+    const cleanSuburb = suburb.replace(/\b(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\b.*$/i, '').trim();
     
     setIsAutomating(true);
     const steps = [];
@@ -239,43 +360,22 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
         steps.push('⚠ Nearest locations failed');
       }
       
-      // Step 3: Suburb Description - ALWAYS fetch
-      if (suburb && state) {
+      // Step 3: Suburb Description - ALWAYS fetch & populate
+      if (cleanSuburb && state) {
         steps.push('Fetching suburb description...');
         try {
-          let description = await getWikiSuburbDescription(suburb, state);
-          if (description) {
-            // Add a paragraph about nearest locations
-            const transportType = nearestLocations.nearestTransportation?.type?.toLowerCase();
-            const transportDistance = nearestLocations.nearestTransportation?.distance || 'N/A';
-            const transportUnit = nearestLocations.nearestTransportation?.unit || 'N/A';
-            
-            const shopType = nearestLocations.nearestShop?.type?.toLowerCase();
-            const shopDistance = nearestLocations.nearestShop?.distance || 'N/A';
-            const shopUnit = nearestLocations.nearestShop?.unit || 'N/A';
-            
-            const primarySchool = nearestLocations.nearestPrimarySchool?.name || 'N/A';
-            const primaryDistance = nearestLocations.nearestPrimarySchool?.distance || 'N/A';
-            const primaryUnit = nearestLocations.nearestPrimarySchool?.unit || 'N/A';
-            
-            const secondarySchool = nearestLocations.nearestSecondarySchool?.name || 'N/A';
-            const secondaryDistance = nearestLocations.nearestSecondarySchool?.distance || 'N/A';
-            const secondaryUnit = nearestLocations.nearestSecondarySchool?.unit || 'N/A';
-            
-            const cbdName = nearestLocations.nearestCBD?.name?.replace('CBD', '').trim() || 'N/A';
-            const cbdDistance = nearestLocations.nearestCBD?.distance || 'N/A';
-            const cbdUnit = nearestLocations.nearestCBD?.unit || 'N/A';
-            
-            const additionalParagraph = `\n\nThe nearest ${transportType} is ${transportDistance} ${transportUnit} away. The nearest ${shopType} is available ${shopDistance} ${shopUnit} away from the subject property. The nearest schools, ${primarySchool} and ${secondarySchool}, are ${primaryDistance} ${primaryUnit} and ${secondaryDistance} ${secondaryUnit} away respectively from the property. Road transport to the ${cbdName} CBD by car covers approximately ${cbdDistance} ${cbdUnit}.\n\nThe subject property is located in a well-established residential neighbourhood, comprising predominantly dwellings of varying age and style of complementary nature. The property is situated within close distance to local shops, schools, parks and public transport.`;
-            
-            description += additionalParagraph;
-            setValue('locationDetails.suburbDescription', description, { shouldDirty: true });
-            steps.push('✓ Suburb description added');
-          }
+          const wikiDesc = await getWikiSuburbDescription(cleanSuburb, state);
+          const fullDesc = buildSuburbDescriptionContent(cleanSuburb, state, nearestLocations, wikiDesc);
+          setValue('locationDetails.suburbDescription', fullDesc, { shouldDirty: true });
+          steps.push('✓ Suburb description added');
         } catch (error) {
           console.error('Error fetching suburb description:', error);
-          steps.push('⚠ Suburb description failed');
+          const fallback = buildSuburbDescriptionContent(cleanSuburb, state, nearestLocations, null);
+          setValue('locationDetails.suburbDescription', fallback, { shouldDirty: true });
+          steps.push('⚠ Suburb description added from local data');
         }
+      } else {
+        steps.push('⚠ Suburb and state needed for suburb description');
       }
       // After populating values, auto-save the full form
       if (reportId) {
@@ -323,12 +423,24 @@ export const LocationDetailsSection: React.FC<SectionProps> = ({ register, error
 
       <FormField
         label="Suburb Description"
+        headerRight={
+          <button
+            type="button"
+            onClick={handleFetchSuburbDescriptionOnly}
+            disabled={isFetchingSuburbDesc || isAutomating}
+            className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-[#006ABE] hover:bg-[#006ABE] hover:text-white transition-all disabled:opacity-50 cursor-pointer"
+            title="Fetch suburb description from Wikipedia and local amenities"
+          >
+            <Wand2 className="w-3.5 h-3.5" />
+            {isFetchingSuburbDesc ? 'Fetching...' : 'Fetch Description'}
+          </button>
+        }
         error={errors.locationDetails?.suburbDescription?.message as string}
       >
         <Textarea
           {...register('locationDetails.suburbDescription')}
           placeholder="Summarise the suburb, proximity to amenities, demographics, etc."
-          rows={4}
+          rows={5}
           error={errors.locationDetails?.suburbDescription?.message as string}
         />
       </FormField>
